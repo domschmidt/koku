@@ -1,0 +1,72 @@
+<div *ngIf="!createMode && activity">
+  <mat-menu #menu>
+    <button (click)="delete(activity)" mat-menu-item>
+      <mat-icon>delete</mat-icon>
+      <span>Löschen</span>
+    </button>
+  </mat-menu>
+  <div class="dialog-split-header">
+    <h2 mat-dialog-title>Tätigkeit bearbeiten</h2>
+    <button [matMenuTriggerFor]="menu"
+            class="dialog-split-header__menu-btn"
+            mat-icon-button>
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  </div>
+</div>
+<h2 *ngIf="createMode" mat-dialog-title>Tätigkeit anlegen</h2>
+<mat-spinner *ngIf="!activity" class="spinner-center" diameter="30"></mat-spinner>
+<form #form="ngForm" (ngSubmit)="save(activity, form)" class="activity-details-form">
+  <mat-dialog-content *ngIf="activity">
+    <mat-form-field class="activity-details-field firstname-field">
+      <mat-label>Name</mat-label>
+      <input [(ngModel)]="activity.description"
+             cdkFocusInitial
+             matInput
+             name="description"
+             placeholder="Name eingeben"
+      >
+    </mat-form-field>
+    <mat-form-field class="activity-details-field firstname-field">
+      <mat-label>Ungefähre Behandlungsdauer (Stunden:Minuten)</mat-label>
+      <input (ngModelChange)="activity.approximatelyDuration = numericToDuration($event)"
+             [ngModel]="durationToNumeric(activity.approximatelyDuration || '')"
+             matInput
+             name="approximatelyDuration"
+             placeholder="Ungefähre Behandlungsdauer eingeben"
+             type="time"
+      >
+    </mat-form-field>
+    <mat-form-field class="activity-details-field estimated-revenue-field">
+      <mat-label>Preis</mat-label>
+      <input [(ngModel)]="activity.currentPrice"
+             [formControl]="priceCtl"
+             inputmode="decimal"
+             matInput
+             name="price"
+             placeholder="Preis eingeben"
+             step="0.01"
+             type="number">
+    </mat-form-field>
+
+    <canvas #priceChart *ngIf="activity.priceHistory && activity.priceHistory.length > 1"></canvas>
+
+  </mat-dialog-content>
+  <mat-dialog-actions *ngIf="activity" align="end">
+    <button mat-button mat-dialog-close>Abbrechen</button>
+    <button *ngIf="!createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Speichern
+    </button>
+    <button *ngIf="createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Erstellen
+    </button>
+  </mat-dialog-actions>
+</form>

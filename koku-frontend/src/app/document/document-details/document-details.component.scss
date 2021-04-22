@@ -1,0 +1,114 @@
+
+@import '~@angular/material/theming';
+@import "~src/styles";
+
+.document-name-field {
+  width: 100%;
+}
+
+$oddColor: rgb(255,255,255);
+$evenColor: rgb(229,229,229);
+
+.document {
+  &__row-info {
+    display: flex;
+    justify-content: center;
+  }
+  &__row {
+    transition: background-color 0.1s ease-out;
+    align-items: center;
+    display: flex;
+    position: relative;
+    border: 1px dashed transparent;
+
+    &__menu {
+      align-items: center;
+      left: -1px;
+      top: 0;
+      transform: translateY(-100%);
+      position: absolute;
+      z-index: 1;
+      background-color: rgba($oddColor, 0.95);
+      border: 1px dashed mat-color($koku-accent, 400);
+      border-bottom-width: 0;
+      display: none;
+    }
+
+    &:hover {
+      border-color: mat-color($koku-accent, 400);
+
+      .document__row__menu {
+        display: flex;
+      }
+    }
+
+    &:nth-child(even) {
+      background-color: $evenColor;
+      .document__row__menu {
+        background-color: rgba($evenColor, 0.95);
+      }
+      .document__row__contents__item__menu {
+        background-color: rgba($evenColor, 0.95);
+      }
+    }
+
+    &--handle-grabbed {
+      background-color: rgba(0, 0, 0, 0.25);
+    }
+
+    &__handle-btn {
+      cursor: grab;
+    }
+
+    &__contents {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      margin-top: 40px;
+
+      &__row-info {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        justify-content: center;
+
+        &__add-content-button {
+          min-height: 42px;
+        }
+      }
+
+      &__item {
+        position: relative;
+        border: 1px dashed transparent;
+
+        &__menu {
+          align-items: center;
+          right: -1px;
+          top: 0;
+          transform: translateY(-100%);
+          position: absolute;
+          z-index: 1;
+          background-color: rgba($oddColor, 0.95);
+          border: 1px dashed mat-color($koku-primary, 400);
+          border-bottom-width: 0;
+          display: none;
+        }
+
+        &:hover {
+          .document__row__contents__item__menu {
+            display: flex;
+          }
+          border-color: mat-color($koku-primary, 400);
+        }
+
+        &__inner {
+          min-height: 42px;
+          display: flex;
+          align-items: center;
+        }
+      }
+    }
+
+  }
+
+}

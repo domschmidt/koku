@@ -1,0 +1,1 @@
+alter table koku.customer_appointment_activities_composing drop column activities_order;

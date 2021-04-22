@@ -1,0 +1,45 @@
+<div class="page-skeleton">
+  <div class="page-skeleton__spacing">
+    <form class="customer-search-form">
+      <mat-form-field class="search-field">
+        <mat-label>Suchen</mat-label>
+        <input (ngModelChange)='searchFieldChangeSubject.next($event)'
+               [(ngModel)]='searchFieldModel'
+               matInput
+               name="customerSearch"
+               placeholder="Name eingeben"
+        >
+        <button (click)="clearSearchField()"
+                *ngIf="searchFieldModel"
+                aria-label="Clear"
+                type="button"
+                mat-button
+                mat-icon-button
+                matSuffix>
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </form>
+  </div>
+  <mat-action-list class="page-skeleton__scroll-area">
+    <button (click)="openCustomerDetails(customer)"
+            *ngFor="let customer of customers$ | async; trackBy: trackByFn"
+            mat-list-item>
+      <circle-with-letters [letters]="customer.initials" style="margin-right: 12px;"></circle-with-letters>
+      <h3 matLine>{{customer.firstName}} {{customer.lastName}} {{customer.onFirstNameBasis ? '*' : ''}}</h3>
+      <p matLine>{{customer.address}}</p>
+      <p matLine>{{customer.postalCode}} {{customer.city}}</p>
+    </button>
+  </mat-action-list>
+
+  <div class="fab-button-container">
+    <button (click)="addNewCustomer();"
+            aria-label="Neuer Kunde hinzufügen"
+            color="primary"
+            mat-fab
+            class="fab-button"
+    >
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+</div>

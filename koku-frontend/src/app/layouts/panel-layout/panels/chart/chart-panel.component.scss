@@ -1,0 +1,26 @@
+:host {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.filter {
+  display: flex;
+  flex-direction: column;
+  margin: 8px 16px;
+
+  &__form {
+    display: flex;
+    &__item {
+      display: flex;
+    }
+  }
+
+  &__apply-btn {
+
+  }
+}
+
+.chart-wrapper {
+  height: 60vh;
+}

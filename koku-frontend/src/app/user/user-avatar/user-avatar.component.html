@@ -1,0 +1,12 @@
+<ng-container *ngIf="user">
+  <div *ngIf="user.avatarBase64"
+       class="picture"
+       [class.picture--large]="large"
+       [style.background-image]="'url(data:image/png;base64,' + user.avatarBase64 + ')'"
+  ></div>
+  <circle-with-letters *ngIf="!user.avatarBase64"
+                       class="initials"
+                       [large]="large"
+                       [letters]="(user.firstname ? user.firstname.trim().substring(0, 1) : '') + (user.lastname ? user.lastname.trim().substring(0, 1) : '')">
+  </circle-with-letters>
+</ng-container>

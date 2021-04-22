@@ -1,0 +1,184 @@
+<form #form="ngForm"
+      (ngSubmit)="save(customer, form)"
+      class="customer-details-form">
+  <mat-dialog-content>
+    <div style="padding: 12px 0;">
+      <mat-spinner *ngIf="!customer" class="spinner-center" diameter="30"></mat-spinner>
+      <div *ngIf="customer">
+        <mat-form-field class="user-details-field firstname-field">
+          <mat-label>Vorname</mat-label>
+          <input [(ngModel)]="customer.firstName"
+                 cdkFocusInitial
+                 matInput
+                 name="firstname"
+                 placeholder="Vorname eingeben"
+          >
+        </mat-form-field>
+        <mat-form-field class="user-details-field lastname-field">
+          <mat-label>Nachname</mat-label>
+          <input [(ngModel)]="customer.lastName"
+                 matInput
+                 name="lastname"
+                 placeholder="Nachname eingeben"
+          >
+        </mat-form-field>
+        <mat-checkbox class="user-details-field onFirstNameBasis-field"
+                      [(ngModel)]="customer.onFirstNameBasis"
+                      name="onFirstNameBasis"
+        >Duzen
+        </mat-checkbox>
+        <mat-form-field class="user-details-field address-field">
+          <mat-label>Email</mat-label>
+          <input [(ngModel)]="customer.email"
+                 matInput
+                 name="email"
+                 placeholder="Email eingeben"
+                 type="email"
+          >
+          <a (click)="$event.stopPropagation();"
+             [href]="'mailto:' + customer.email"
+             mat-button
+             matSuffix>
+            <mat-icon>mail_outline</mat-icon>
+          </a>
+        </mat-form-field>
+        <mat-form-field class="user-details-field address-field">
+          <mat-label>Adresse</mat-label>
+          <input [(ngModel)]="customer.address"
+                 matInput
+                 name="address"
+                 placeholder="Adresse eingeben"
+          >
+        </mat-form-field>
+        <mat-form-field class="user-details-field postalcode-field">
+          <mat-label>Postleitzahl</mat-label>
+          <input [(ngModel)]="customer.postalCode"
+                 matInput
+                 name="postalcode"
+                 placeholder="Postleitzahl eingeben"
+          >
+        </mat-form-field>
+        <mat-form-field class="user-details-field city-field">
+          <mat-label>Wohnort</mat-label>
+          <input [(ngModel)]="customer.city"
+                 matInput
+                 name="city"
+                 placeholder="Wohnort eingeben"
+          >
+        </mat-form-field>
+        <mat-form-field class="user-details-field birthday-field">
+          <mat-label>Geburtstag</mat-label>
+          <input [(ngModel)]="customer.birthday"
+                 matInput
+                 name="birthday"
+                 placeholder="Geburtstag eingeben"
+                 type="date"
+          >
+        </mat-form-field>
+        <mat-form-field class="user-details-field private-phone-field">
+          <mat-label>Private Telefonnummer</mat-label>
+          <input [(ngModel)]="customer.privateTelephoneNo"
+                 matInput
+                 name="privateTelephoneNo"
+                 placeholder="Private Telefonnummer eingeben"
+                 type="tel"
+          >
+          <a (click)="$event.stopPropagation();"
+             [href]="bypassUri('tel:' + convertTelephoneNo(customer.privateTelephoneNo))"
+             *ngIf="convertTelephoneNo(customer.privateTelephoneNo) !== ''"
+             mat-button
+             matSuffix>
+            <mat-icon>phone</mat-icon>
+          </a>
+          <a (click)="$event.stopPropagation();"
+             [href]="bypassUri('sip:' + convertTelephoneNo(customer.privateTelephoneNo))"
+             *ngIf="convertTelephoneNo(customer.privateTelephoneNo) !== ''"
+             mat-button
+             matSuffix>
+            <mat-icon svgIcon="voip" class="custom-svg-icon"></mat-icon>
+          </a>
+        </mat-form-field>
+        <mat-form-field class="user-details-field mobile-phone-field">
+          <mat-label>Mobile Telefonnummer</mat-label>
+          <input [(ngModel)]="customer.mobileTelephoneNo"
+                 matInput
+                 name="mobileTelephoneNo"
+                 placeholder="Mobile Telefonnummer eingeben"
+                 type="tel"
+          >
+          <a (click)="$event.stopPropagation();"
+             [href]="bypassUri('tel:' + convertTelephoneNo(customer.mobileTelephoneNo))"
+             *ngIf="convertTelephoneNo(customer.mobileTelephoneNo) !== ''"
+             mat-button
+             matSuffix>
+            <mat-icon>phone</mat-icon>
+          </a>
+          <a (click)="$event.stopPropagation();"
+             [href]="bypassUri('sip:' + convertTelephoneNo(customer.mobileTelephoneNo))"
+             *ngIf="convertTelephoneNo(customer.mobileTelephoneNo) !== ''"
+             mat-button
+             matSuffix>
+            <mat-icon svgIcon="voip" class="custom-svg-icon"></mat-icon>
+          </a>
+        </mat-form-field>
+        <mat-form-field class="user-details-field business-phone-field">
+          <mat-label>Geschäftliche Telefonnummer</mat-label>
+          <input [(ngModel)]="customer.businessTelephoneNo"
+                 matInput
+                 name="businessTelephoneNo"
+                 placeholder="Geschäftliche Telefonnummer eingeben"
+                 type="tel"
+          >
+          <a (click)="$event.stopPropagation();"
+             [href]="bypassUri('tel:' + convertTelephoneNo(customer.businessTelephoneNo))"
+             *ngIf="convertTelephoneNo(customer.businessTelephoneNo) !== ''"
+             mat-button
+             matSuffix>
+            <mat-icon>phone</mat-icon>
+          </a>
+          <a (click)="$event.stopPropagation();"
+             [href]="bypassUri('sip:' + convertTelephoneNo(customer.businessTelephoneNo))"
+             *ngIf="convertTelephoneNo(customer.businessTelephoneNo) !== ''"
+             mat-button
+             matSuffix>
+            <mat-icon svgIcon="voip" class="custom-svg-icon"></mat-icon>
+          </a>
+        </mat-form-field>
+        <mat-form-field class="user-details-field additionalInfo-field">
+          <mat-label>Zusätzliche Informationen</mat-label>
+          <textarea [(ngModel)]="customer.additionalInfo" cdkTextareaAutosize
+                    matInput
+                    name="additionalInfo"
+                    placeholder="Zusätzliche Informationen eingeben"
+          ></textarea>
+        </mat-form-field>
+        <mat-form-field class="user-details-field medicalTolerance-field">
+          <mat-label>Medizinische Informationen</mat-label>
+          <textarea [(ngModel)]="customer.medicalTolerance" cdkTextareaAutosize
+                    matInput
+                    name="medicalTolerance"
+                    placeholder="Medizinische Informationen eingeben"
+          ></textarea>
+        </mat-form-field>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions *ngIf="customer" align="end">
+    <button mat-button mat-dialog-close>Abbrechen</button>
+    <button *ngIf="!createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Speichern
+    </button>
+    <button *ngIf="createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Erstellen
+    </button>
+  </mat-dialog-actions>
+</form>

@@ -1,0 +1,29 @@
+<div class="page-skeleton">
+  <mat-toolbar color="primary">
+    <mat-toolbar-row>
+      <button (click)="naviService.open()" mat-icon-button>
+        <mat-icon>menu</mat-icon>
+      </button>
+      <h1>{{activatedRoute.snapshot.data?.name}}</h1>
+    </mat-toolbar-row>
+
+    <mat-toolbar-row *ngIf="activatedRoute.routeConfig?.children">
+      <nav [style.width]="'100%'"
+           backgroundColor="primary"
+           mat-tab-nav-bar>
+        <ng-container *ngFor="let currentRouteChildren of activatedRoute.routeConfig?.children">
+          <a #rla="routerLinkActive"
+             *ngIf="currentRouteChildren.component"
+             [active]="rla.isActive"
+             [routerLink]="currentRouteChildren.path"
+             mat-tab-link
+             routerLinkActive> {{currentRouteChildren.data?.name}} </a>
+        </ng-container>
+      </nav>
+    </mat-toolbar-row>
+  </mat-toolbar>
+
+  <div class="page-skeleton__scroll-area">
+    <router-outlet></router-outlet>
+  </div>
+</div>

@@ -1,0 +1,16 @@
+@import '~@angular/material/theming';
+@import "~src/styles";
+
+.panel-layout {
+  &__item {
+    display: flex;
+
+    &__inner {
+      width: 100%;
+      margin: 10px;
+      background-color: #fff;
+      @include mat-elevation(2);
+      @include mat-elevation-transition;
+    }
+  }
+}

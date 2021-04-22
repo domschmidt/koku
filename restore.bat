@@ -1,0 +1,1 @@
+docker exec -t %1 pg_dumpall -c -U %2 > %3

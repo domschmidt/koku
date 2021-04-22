@@ -1,0 +1,120 @@
+import {AfterViewInit, Component, ElementRef, Inject, ViewChild} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {FormControl, NgForm, Validators} from "@angular/forms";
+import {PromotionService} from "../promotion.service";
+import {PreventLosingChangesService} from "../../prevent-losing-changes/prevent-losing-changes.service";
+
+export interface PromotionDetailsComponentData {
+  promotionId?: number;
+  promotionName?: string;
+}
+
+export interface PromotionDetailsComponentResponseData {
+  promotion?: KokuDto.PromotionDto;
+}
+
+
+@Component({
+  selector: 'promotion-details',
+  templateUrl: './promotion-details.component.html',
+  styleUrls: ['./promotion-details.component.scss']
+})
+export class PromotionDetailsComponent implements AfterViewInit {
+
+  promotion: KokuDto.PromotionDto | undefined;
+  saving: boolean = false;
+  loading: boolean = true;
+  createMode: boolean;
+  productAbsouteSavingsCtl = new FormControl('', Validators.pattern('^\\d+(\\.\\d{0,2})?$'));
+  productRelativeSavingsCtl = new FormControl('', Validators.pattern('^\\d+(\\.\\d{0,2})?$'));
+  productAbsouteItemSavingsCtl = new FormControl('', Validators.pattern('^\\d+(\\.\\d{0,2})?$'));
+  productRelativeItemSavingsCtl = new FormControl('', Validators.pattern('^\\d+(\\.\\d{0,2})?$'));
+  activityAbsouteSavingsCtl = new FormControl('', Validators.pattern('^\\d+(\\.\\d{0,2})?$'));
+  activityRelativeSavingsCtl = new FormControl('', Validators.pattern('^\\d+(\\.\\d{0,2})?$'));
+  activityAbsouteItemSavingsCtl = new FormControl('', Validators.pattern('^\\d+(\\.\\d{0,2})?$'));
+  activityRelativeItemSavingsCtl = new FormControl('', Validators.pattern('^\\d+(\\.\\d{0,2})?$'));
+  priceCtl = new FormControl('', Validators.pattern('^\\d+(\\.\\d{0,2})?$'));
+  @ViewChild('form') ngForm: NgForm | undefined;
+  @ViewChild('priceChart') priceCharts: ElementRef<HTMLCanvasElement> | undefined;
+  private dirty: boolean = false;
+
+  constructor(@Inject(MAT_DIALOG_DATA) public data: PromotionDetailsComponentData,
+              public dialogRef: MatDialogRef<PromotionDetailsComponent>,
+              private readonly preventLosingChangesService: PreventLosingChangesService,
+              public promotionService: PromotionService) {
+    this.createMode = data.promotionId === undefined;
+    if (data.promotionId) {
+      this.promotionService.getPromotion(data.promotionId).subscribe((promotion) => {
+        this.promotion = promotion;
+        this.loading = false;
+      }, () => {
+        this.loading = false;
+      });
+    } else {
+      this.promotion = {
+        name: this.data.promotionName || '',
+        activitySettings: {},
+        productSettings: {}
+      };
+      this.loading = false;
+    }
+    this.dialogRef.disableClose = true;
+    this.dialogRef.backdropClick().subscribe(() => {
+      this.preventLosingChangesService.preventLosingChanges(this.dirty, () => {
+        this.dialogRef.close();
+      });
+    });
+    this.dialogRef.keydownEvents().subscribe((event) => {
+      if (event.key === 'Escape') {
+        this.preventLosingChangesService.preventLosingChanges(this.dirty, () => {
+          this.dialogRef.close();
+        });
+      }
+    });
+    this.priceCtl.valueChanges.subscribe(() => {
+      this.dirty = true;
+    });
+  }
+
+  save(promotion: KokuDto.PromotionDto | undefined, form: NgForm) {
+    if (form.valid && promotion) {
+      this.saving = true;
+      if (!promotion.id) {
+        this.promotionService.createPromotion(promotion).subscribe((result) => {
+          const dialogResult: PromotionDetailsComponentResponseData = {
+            promotion: result
+          };
+          this.dialogRef.close(dialogResult);
+          this.saving = false;
+        }, () => {
+          this.saving = false;
+        });
+      } else {
+        this.promotionService.updatePromotion(promotion).subscribe(() => {
+          const dialogResult: PromotionDetailsComponentResponseData = {
+            promotion: promotion
+          };
+          this.dialogRef.close(dialogResult);
+          this.saving = false;
+        }, () => {
+          this.saving = false;
+        });
+      }
+    }
+  }
+
+  delete(promotion: KokuDto.PromotionDto) {
+    this.saving = true;
+    this.promotionService.deletePromotion(promotion).subscribe(() => {
+      this.dialogRef.close();
+      this.saving = false;
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.ngForm?.statusChanges?.subscribe(() => {
+      this.dirty = (this.ngForm || {}).dirty || false;
+    });
+  }
+
+}

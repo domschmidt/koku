@@ -1,0 +1,16 @@
+:host {
+  display: inline-flex;
+  order: -1;
+}
+.picture {
+  height: 40px;
+  width: 40px;
+  background-size: cover;
+  border-radius: 50%;
+  background-position: center;
+
+  &--large {
+    height: 200px;
+    width: 200px;
+  }
+}

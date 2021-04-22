@@ -1,0 +1,1 @@
+alter table koku.customer add column birthday date;

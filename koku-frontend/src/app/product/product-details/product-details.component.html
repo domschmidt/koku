@@ -1,0 +1,61 @@
+<mat-spinner *ngIf="!product" class="spinner-center" diameter="30"></mat-spinner>
+<form #form="ngForm" (ngSubmit)="save(product, form)" class="customer-details-form">
+  <mat-dialog-content *ngIf="product">
+
+    <mat-action-list>
+      <button (click)="selectProductManufacturer()" *ngIf="product.manufacturer" mat-list-item>
+        <circle-with-letters [letters]="product.manufacturer?.name?.trim()?.substring(0, 1)"
+        ></circle-with-letters>
+        <h3 matLine>{{product.manufacturer?.name}}</h3>
+        <mat-icon matListIcon matSuffix style="order: 10;">open_in_new</mat-icon>
+      </button>
+      <button (click)="selectProductManufacturer()" *ngIf="!product.manufacturer" mat-list-item>
+        <circle-with-letters [letters]="'?'"
+        ></circle-with-letters>
+        <h3 matLine>Hersteller auswählen</h3>
+        <mat-icon matListIcon matSuffix style="order: 10;">open_in_new</mat-icon>
+      </button>
+    </mat-action-list>
+
+    <mat-form-field class="product-details-field firstname-field">
+      <mat-label>Name</mat-label>
+      <input [(ngModel)]="product.description"
+             cdkFocusInitial
+             matInput
+             name="description"
+             placeholder="Name eingeben"
+      >
+    </mat-form-field>
+    <mat-form-field class="product-details-field estimated-revenue-field">
+      <mat-label>Preis</mat-label>
+      <input [(ngModel)]="product.currentPrice"
+             [formControl]="priceCtl"
+             inputmode="decimal"
+             matInput
+             name="price"
+             placeholder="Preis eingeben"
+             step="0.01"
+             type="number">
+    </mat-form-field>
+
+    <canvas #priceChart *ngIf="product.priceHistory && product.priceHistory.length > 1"></canvas>
+
+  </mat-dialog-content>
+  <mat-dialog-actions *ngIf="product" align="end">
+    <button mat-button mat-dialog-close>Abbrechen</button>
+    <button *ngIf="!createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid || !product.manufacturer"
+            mat-button
+            type="submit">
+      Speichern
+    </button>
+    <button *ngIf="createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid || !product.manufacturer"
+            mat-button
+            type="submit">
+      Erstellen
+    </button>
+  </mat-dialog-actions>
+</form>

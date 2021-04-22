@@ -1,0 +1,37 @@
+<div *ngIf="data.soldProduct">
+  <div class="dialog-split-header">
+    <h2 mat-dialog-title>Produktverkauf bearbeiten</h2>
+  </div>
+</div>
+<form #form="ngForm" (ngSubmit)="save(data.soldProduct, form)" class="customer-details-form" *ngIf="data.soldProduct">
+  <mat-dialog-content class="sold-products-form">
+    <mat-checkbox class="sold-product-take-usual-price-field"
+                  (change)="toggleTakeUsualPrice()"
+                  [ngModel]="takeUsualPrice"
+                  name="takeUsualProductPrice">
+      üblichen Verkaufspreis verwenden ({{data.soldProduct.product?.currentPrice}} €)
+    </mat-checkbox>
+    <mat-form-field class="sold-product-revenue-field" *ngIf="!takeUsualPrice">
+      <mat-label>Verkaufspreis</mat-label>
+      <input [(ngModel)]="data.soldProduct.sellPrice"
+             [formControl]="priceCtl"
+             inputmode="decimal"
+             matInput
+             name="price"
+             placeholder="Preis eingeben"
+             step="0.01"
+             min="0"
+             type="number">
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions *ngIf="data.soldProduct" align="end">
+    <button mat-button mat-dialog-close>Abbrechen</button>
+    <button [disabled]="form.invalid || priceCtl.invalid"
+            mat-button
+            type="submit">
+      Speichern
+    </button>
+  </mat-dialog-actions>
+
+</form>

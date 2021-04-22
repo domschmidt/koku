@@ -1,0 +1,47 @@
+<div class="page-skeleton">
+  <div class="page-skeleton__spacing">
+    <form class="product-search-form">
+      <mat-form-field class="search-field">
+        <mat-label>Suchen</mat-label>
+        <input (ngModelChange)='searchFieldChangeSubject.next($event)'
+               [(ngModel)]='searchFieldModel'
+               matInput
+               name="productSearch"
+               placeholder="Name eingeben"
+        >
+        <button (click)="clearSearchField()"
+                *ngIf="searchFieldModel"
+                aria-label="Clear"
+                type="button"
+                mat-button
+                mat-icon-button
+                matSuffix>
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </form>
+  </div>
+  <div class="page-skeleton__scroll-area">
+    <mat-action-list>
+      <button (click)="openProductManufacturerDetails(manufacturer)"
+              *ngFor="let manufacturer of productManufacturers$ | async; trackBy: trackByFn"
+              mat-list-item>
+        <circle-with-letters [letters]="manufacturer.name?.trim()?.substring(0, 1)"
+                             style="margin-right: 12px;"
+        ></circle-with-letters>
+        <h3 matLine>{{manufacturer.name}}</h3>
+      </button>
+    </mat-action-list>
+
+    <div class="fab-button-container">
+      <button (click)="addNewProductManufacturer();"
+              aria-label="Neuer Hersteller hinzufügen"
+              color="primary"
+              mat-fab
+              class="fab-button"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,35 @@
+<div class="dialog-split-header">
+  <h2 mat-dialog-title>Nutzer auswählen</h2>
+</div>
+
+<form class="user-search-form">
+  <mat-form-field class="search-field">
+    <mat-label>Suchen</mat-label>
+    <input (ngModelChange)='searchFieldChangeSubject.next($event)'
+           [(ngModel)]='searchFieldModel'
+           matInput
+           name="userSearch"
+           placeholder="Name eingeben"
+    >
+    <button (click)="clearSearchField()"
+            *ngIf="searchFieldModel"
+            aria-label="Clear"
+            type="button"
+            mat-button
+            mat-icon-button
+            matSuffix>
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-form-field>
+</form>
+
+<mat-dialog-content>
+  <mat-action-list>
+    <button (click)="selectUser(user)"
+            *ngFor="let user of users$ | async; trackBy: trackByFn"
+            mat-list-item>
+      <user-avatar [user]="user" style="margin-right: 12px;"></user-avatar>
+      <h3 matLine>{{user.firstname}} {{user.lastname}}</h3>
+    </button>
+  </mat-action-list>
+</mat-dialog-content>

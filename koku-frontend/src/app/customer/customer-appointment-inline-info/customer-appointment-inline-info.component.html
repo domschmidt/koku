@@ -1,0 +1,66 @@
+<mat-spinner *ngIf="!customerAppointment" class="spinner-center" diameter="30"></mat-spinner>
+<div *ngIf="customerAppointment" style="display: flex; flex-direction: column;">
+  <div style="display: flex;justify-content: space-between;align-items: center;">
+    Uhrzeit: {{ customerAppointment.startTime | amParse: 'HH:mm:ss' | amDateFormat: 'HH:mm [Uhr]' }}
+
+    <button (click)="openAppointmentDetails($event, customerAppointment)"
+            mat-button
+            mat-icon-button
+            matSuffix>
+      <mat-icon>edit</mat-icon>
+    </button>
+  </div>
+
+  <mat-form-field *ngIf="customerAppointment.activities && customerAppointment.activities.length"
+                  class="customerAppointment-details-field used-product-selection-field">
+    <mat-label>Tätigkeiten</mat-label>
+    <mat-chip-list>
+      <mat-chip *ngFor="let customerAppointmentActivity of customerAppointment.activities"
+                class="activity-selection-chip-list__item">
+        {{customerAppointmentActivity.activity?.description}}
+      </mat-chip>
+    </mat-chip-list>
+  </mat-form-field>
+
+  <mat-form-field *ngIf="customerAppointment.activitySequenceItems && customerAppointment.activitySequenceItems.length"
+                  class="customerAppointment-details-field used-product-selection-field">
+    <mat-label>Behandlung</mat-label>
+    <mat-chip-list aria-label="Behandlung">
+      <mat-chip *ngFor="let activitySequenceItem of customerAppointment.activitySequenceItems"
+                [class.activity-sequence-chip-list__item--activity-step]="activitySequenceItem['@type']==='ActivityStepDto'"
+                [class.activity-sequence-chip-list__item--product]="activitySequenceItem['@type']==='ProductDto'"
+                class="activity-sequence-chip-list__item">
+        <circle-with-letters *ngIf="activitySequenceItem['@type']==='ProductDto'"
+                             [letters]="activitySequenceItem.manufacturer?.name?.trim()?.substring(0, 1)"
+                             [small]="true"></circle-with-letters>
+        <span style="margin: 0 0 0 2px;">{{activitySequenceItem.description}}</span>
+      </mat-chip>
+    </mat-chip-list>
+  </mat-form-field>
+
+  <mat-form-field *ngIf="customerAppointment.soldProducts && customerAppointment.soldProducts.length"
+                  class="customerAppointment-details-field sold-product-selection-field">
+    <mat-label>Verkaufte Produkte</mat-label>
+    <mat-chip-list aria-label="Verkaufte Produkte">
+      <mat-chip
+        *ngFor="let soldProductInfo of customerAppointment.soldProducts"
+        class="sold-products-chip-list">
+        <circle-with-letters [letters]="soldProductInfo.product?.manufacturer?.name?.trim()?.substring(0, 1)"
+                             [small]="true"></circle-with-letters>
+        <span style="margin: 0 0 0 2px;">{{soldProductInfo.product?.description}}</span>
+      </mat-chip>
+    </mat-chip-list>
+  </mat-form-field>
+
+  <mat-form-field *ngIf="customerAppointment.additionalInfo"
+                  class="customerAppointment-details-field additional-info-field">
+    <mat-label>Zusätzliche Informationen</mat-label>
+    <textarea [(ngModel)]="customerAppointment.additionalInfo"
+              cdkTextareaAutosize
+              matInput
+              name="additionalInfo"
+              placeholder="Zusätzliche Informationen eingeben"
+              readonly
+    ></textarea>
+  </mat-form-field>
+</div>

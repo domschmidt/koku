@@ -1,0 +1,40 @@
+<div class="dialog-split-header">
+  <h2 mat-dialog-title>Aktion auswählen</h2>
+  <button class="dialog-split-header__menu-btn"
+          (click)="addNewPromotion()"
+          mat-icon-button>
+    <mat-icon>add</mat-icon>
+  </button>
+</div>
+
+<form class="promotion-search-form">
+  <mat-form-field class="search-field">
+    <mat-label>Suchen</mat-label>
+    <input (ngModelChange)='searchFieldChangeSubject.next($event)'
+           [(ngModel)]='searchFieldModel'
+           matInput
+           name="promotionSearch"
+           placeholder="Name eingeben"
+    >
+    <button (click)="clearSearchField()"
+            *ngIf="searchFieldModel"
+            aria-label="Clear"
+            type="button"
+            mat-button
+            mat-icon-button
+            matSuffix>
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-form-field>
+</form>
+
+<mat-dialog-content>
+  <mat-action-list>
+    <button (click)="selectPromotion(promotion)"
+            *ngFor="let promotion of promotions$ | async; trackBy: trackByFn"
+            mat-list-item>
+      <circle-with-letters [letters]="promotion.name?.trim()?.substring(0, 1)"></circle-with-letters>
+      <h3 matLine style="margin-left: 12px;">{{promotion.name}}</h3>
+    </button>
+  </mat-action-list>
+</mat-dialog-content>

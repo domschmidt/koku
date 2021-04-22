@@ -1,0 +1,48 @@
+<div *ngIf="!createMode && customer">
+  <mat-menu #menu>
+    <button (click)="addNewCustomerAppointment(customer)" mat-menu-item>
+      <mat-icon>add</mat-icon>
+      <span>Neuer Termin</span>
+    </button>
+    <button (click)="delete(customer)" mat-menu-item>
+      <mat-icon>delete</mat-icon>
+      <span>Löschen</span>
+    </button>
+  </mat-menu>
+  <div class="dialog-split-header">
+    <h2 mat-dialog-title>Kunde bearbeiten</h2>
+    <button [matMenuTriggerFor]="menu"
+            class="dialog-split-header__menu-btn"
+            mat-icon-button>
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  </div>
+</div>
+<h2 *ngIf="createMode" mat-dialog-title>Kunde anlegen</h2>
+<mat-tab-group #tabGroup>
+  <ng-container *ngFor="let tab of customerTabs">
+    <mat-tab *ngIf="(tab.showInCreateMode && this.createMode) || !this.createMode" label="{{tab.label}}">
+    </mat-tab>
+  </ng-container>
+</mat-tab-group>
+
+<mat-dialog-content>
+  <customer-details (afterSaved)="onCustomerSaved($event)"
+                    (dirty)="formularDirty($event)"
+                    *ngIf="customerTabs[activeTabIndex].label === 'Info'"
+                    [customerId]="customerId"></customer-details>
+  <customer-appointments *ngIf="customerTabs[activeTabIndex].label === 'Termine'"
+                         [customerAppointmentsChanged]="afterAppointmentChanged.asObservable()"
+                         [customerId]="customerId"></customer-appointments>
+  <customer-sales        *ngIf="customerTabs[activeTabIndex].label === 'Verkauf'"
+                         [customerAppointmentsChanged]="afterAppointmentChanged.asObservable()"
+                         [customerId]="customerId"></customer-sales>
+
+  <customer-uploads *ngIf="customerTabs[activeTabIndex].label === 'Documents'"
+                    [customerId]="customerId"></customer-uploads>
+
+  <customer-statistics *ngIf="customerTabs[activeTabIndex].label === 'Statistik'"
+                       [customerId]="customerId"></customer-statistics>
+
+
+</mat-dialog-content>

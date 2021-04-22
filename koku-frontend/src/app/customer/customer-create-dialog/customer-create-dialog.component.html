@@ -1,0 +1,4 @@
+<h2 mat-dialog-title>Kunde anlegen</h2>
+<customer-details (afterSaved)="onCustomerSaved($event)"
+                  (dirty)="formularDirty($event)"
+                  [customerId]="customerId"></customer-details>

@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: "koku backend"
+  profiles:
+    active:
+      - logging
+      - hibernate
+      - security
+  servlet:
+    multipart:
+      maxFileSize: 268435456  # Limit for a single file (256 MiB)
+      maxRequestSize: 536870912  # Limit for all files in a single request (512 MiB)
+  mvc:
+    async:
+      request-timeout: 3600000 #1 hour request timeout
+server:
+  port: 1337
+uploads:
+  dir: C:\\uploads

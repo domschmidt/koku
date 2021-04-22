@@ -1,0 +1,67 @@
+version: '2'
+services:
+  gateway:
+    container_name: koku-gatway
+    build:
+      context: koku-gateway/
+      dockerfile: Dockerfile
+    image: domschmidt/koku:koku-gateway
+    restart: always
+    ports:
+      - 443:4040
+      - 80:3030
+    depends_on:
+      - backend
+      - frontend
+    environment:
+      - FRONTEND_URL=http://frontend:1338/
+      - BACKEND_URL=http://backend:1337/
+      - NGINX_SECURE_PORT=4040
+      - NGINX_INSECURE_PORT=3030
+      - CLIENT_MAX_BODY_SIZE=30M
+      - SERVER_NAME=localhost
+    volumes:
+      - ./ssl:/etc/nginx/certs
+
+  frontend:
+    container_name: koku-frontend
+    build:
+      context: koku-frontend/
+      dockerfile: Dockerfile
+    image: domschmidt/koku:koku-frontend
+    restart: always
+    expose:
+      - 1338
+    depends_on:
+      - backend
+    environment:
+      - NGINX_PORT=1338
+
+  backend:
+    container_name: koku-backend
+    build:
+      context: koku-backend/
+      dockerfile: Dockerfile
+    image: domschmidt/koku:koku-backend
+    restart: always
+    expose:
+      - 1337
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/koku
+      - SPRING_DATASOURCE_USERNAME=koku
+      - SPRING_DATASOURCE_PASSWORD=<DB_PW>
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+      - UPLOADS_DIR=/data/uploads
+      # - SECURITY_JWT_SECRET=<JWT_SECRET_HS512> use your own jwt secret
+    volumes:
+      - ./uploads:/data/uploads
+
+  db:
+    container_name: db
+    image: 'postgres:13.1-alpine'
+    restart: always
+    environment:
+      - POSTGRES_USER=koku
+      - POSTGRES_PASSWORD=<DB_PW>

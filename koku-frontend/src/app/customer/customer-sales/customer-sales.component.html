@@ -1,0 +1,16 @@
+<mat-dialog-content>
+  <mat-spinner *ngIf="!customerSales" class="spinner-center" diameter="30"></mat-spinner>
+
+  <mat-card *ngFor="let customerSale of customerSales; trackBy: trackByFn"
+            style="margin: 12px 0;">
+    <mat-card-title>
+      {{ customerSale.startDate | amParse: 'YYYY-MM-DD' | amDateFormat:'LL' }}
+    </mat-card-title>
+    <mat-card-content>
+      <p *ngFor="let soldProduct of customerSale.soldProducts">
+        {{soldProduct.description}}
+      </p>
+    </mat-card-content>
+  </mat-card>
+
+</mat-dialog-content>

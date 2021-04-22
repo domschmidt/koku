@@ -1,0 +1,89 @@
+<div *ngIf="!createMode && privateAppointment">
+  <mat-menu #menu>
+    <button (click)="delete(privateAppointment)" mat-menu-item>
+      <mat-icon>delete</mat-icon>
+      <span>Löschen</span>
+    </button>
+  </mat-menu>
+  <div class="dialog-split-header">
+    <h2 mat-dialog-title>Privaten Termin bearbeiten</h2>
+    <button [matMenuTriggerFor]="menu"
+            class="dialog-split-header__menu-btn"
+            mat-icon-button>
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  </div>
+</div>
+<h2 *ngIf="createMode" mat-dialog-title>Privaten Termin anlegen</h2>
+<mat-spinner *ngIf="!privateAppointment" class="spinner-center" diameter="30"></mat-spinner>
+<form #form="ngForm"
+      (ngSubmit)="save(privateAppointment, form)"
+      class="customer-appointment-details-form"
+>
+  <mat-dialog-content *ngIf="privateAppointment">
+
+    <mat-form-field class="private-appointment-details-field description-field">
+      <mat-label>Titel</mat-label>
+      <input [(ngModel)]="privateAppointment.description"
+             cdkFocusInitial
+             matInput
+             name="title"
+             placeholder="Titel eingeben"
+      >
+    </mat-form-field>
+
+    <mat-form-field class="private-appointment-details-field startDate-field">
+      <mat-label>Datum von</mat-label>
+      <input [(ngModel)]="privateAppointment.startDate"
+             matInput
+             name="startDate"
+             placeholder="Datum eingeben"
+             required
+             type="date">
+    </mat-form-field>
+    <mat-form-field class="private-appointment-details-field startTime-field">
+      <mat-label>Uhrzeit von</mat-label>
+      <input [(ngModel)]="privateAppointment.startTime"
+             matInput
+             name="startTime"
+             placeholder="Uhrzeit eingeben"
+             required
+             type="time">
+    </mat-form-field>
+    <mat-form-field class="private-appointment-details-field endDate-field">
+      <mat-label>Datum bis</mat-label>
+      <input [(ngModel)]="privateAppointment.endDate"
+             matInput
+             name="endDate"
+             placeholder="Datum eingeben"
+             required
+             type="date">
+    </mat-form-field>
+    <mat-form-field class="private-appointment-details-field endTime-field">
+      <mat-label>Uhrzeit bis</mat-label>
+      <input [(ngModel)]="privateAppointment.endTime"
+             matInput
+             name="endTime"
+             placeholder="Uhrzeit eingeben"
+             required
+             type="time">
+    </mat-form-field>
+  </mat-dialog-content>
+  <mat-dialog-actions *ngIf="privateAppointment" align="end">
+    <button mat-button mat-dialog-close>Abbrechen</button>
+    <button *ngIf="!createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Speichern
+    </button>
+    <button *ngIf="createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Erstellen
+    </button>
+  </mat-dialog-actions>
+</form>

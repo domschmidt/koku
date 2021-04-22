@@ -1,0 +1,22 @@
+<ng-container *ngIf="naviEntry">
+  <a #rla="routerLinkActive"
+     (click)="naviService.close()"
+     [class.navigation-entry--active]="rla.isActive"
+     [class.navigation-entry--leaf]="!naviEntry.children || !naviEntry.children.length"
+     [class.navigation-entry--node]="naviEntry.children && naviEntry.children.length"
+     [routerLink]="naviEntry.path"
+     class="navigation-entry navigation-entry--depth-{{depth}}"
+     mat-list-item
+     routerLinkActive
+  >
+    {{naviEntry.text}}
+  </a>
+  <mat-list style="padding: 0;">
+    <navigation-entry
+      *ngFor="let currentNaviEntryChildren of naviEntry.children"
+      [depth]="depth + 1"
+      [naviEntry]="currentNaviEntryChildren"
+    >
+    </navigation-entry>
+  </mat-list>
+</ng-container>

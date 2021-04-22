@@ -1,0 +1,39 @@
+@import '~@angular/material/theming';
+@import "~src/styles";
+
+[data-letters] {
+  &:before {
+    $circle-size: 40px;
+    font-size: 24px;
+    width: $circle-size;
+    height: $circle-size;
+    line-height: $circle-size;
+
+    content: attr(data-letters);
+    display: inline-flex;
+    justify-content: center;
+    border-radius: 50%;
+    background: mat-color($koku-primary);
+    color: white;
+  }
+
+  &.letters-small:before {
+    $circle-size: 16px;
+    width: $circle-size;
+    height: $circle-size;
+    line-height: $circle-size;
+    font-size: 12px;
+  }
+
+  &.letters-large:before {
+    $circle-size: 200px;
+    width: $circle-size;
+    height: $circle-size;
+    line-height: $circle-size;
+    font-size: 100px;
+  }
+}
+
+:host {
+  order: -1;
+}

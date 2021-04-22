@@ -1,0 +1,30 @@
+<div class="login-page__content" fxLayout fxLayoutAlign="center center">
+  <div fxFlex="100%"
+       fxFlex.lg="50%"
+       fxFlex.md="50%"
+       fxFlex.xl="33.33333333%"
+       fxFlex.xs="100%"
+       style="padding: 14px;"
+  >
+    <form #profileForm="ngForm"
+          (keydown.enter)="save(profileForm,userDetails)"
+          (submit)="save(profileForm, userDetails)"
+          *ngIf="userDetails">
+      <mat-card class="user-details-card">
+        <mat-card-content class="user-details-card__content">
+          <user-info [userDetails]="userDetails"></user-info>
+          <button [class.button-spinner]="loading"
+                  [disabled]="profileForm.invalid || loading"
+                  class="login-page__content__login-btn"
+                  color="primary"
+                  mat-raised-button
+                  title="Speichern"
+                  type="submit"
+          >
+            Speichern
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </form>
+  </div>
+</div>

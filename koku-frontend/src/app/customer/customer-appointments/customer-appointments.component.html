@@ -1,0 +1,19 @@
+<mat-dialog-content>
+  <div style="padding: 12px 0;">
+    <mat-spinner *ngIf="!customerAppointments" class="spinner-center" diameter="30"></mat-spinner>
+    <mat-accordion>
+      <mat-expansion-panel *ngFor="let customerAppointment of customerAppointments; trackBy: trackByFn">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            {{ customerAppointment.startDate | amParse: 'YYYY-MM-DD' | amDateFormat:'LL' }}
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <ng-template matExpansionPanelContent>
+          <customer-appointment-inline-info (afterChanged)="afterChanged($event)"
+                                            [appointmentId]="customerAppointment.id"></customer-appointment-inline-info>
+        </ng-template>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+</mat-dialog-content>

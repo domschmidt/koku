@@ -1,0 +1,558 @@
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {CalendarOptions, FullCalendarComponent} from '@fullcalendar/angular';
+import deLocale from '@fullcalendar/core/locales/de';
+import {EventInput} from "@fullcalendar/common";
+
+import * as moment from "moment";
+import {MatDialog} from "@angular/material/dialog";
+import {
+  CustomerAppointmentDetailsComponent,
+  CustomerAppointmentDetailsData
+} from "../customer/customer-appointment-details/customer-appointment-details.component";
+import {
+  CustomerInfoDialogComponent,
+  CustomerInfoDialogData
+} from "../customer/customer-info-dialog/customer-info-dialog.component";
+import {AppointmentService} from "./appointment.service";
+import {
+  PrivateAppointmentDetailsComponent,
+  PrivateAppointmentDetailsData
+} from "../user/private-appointment-details/private-appointment-details.component";
+import {MatMenu, MatMenuTrigger} from "@angular/material/menu";
+import {ResizeSensor} from "css-element-queries";
+import {NaviService} from "../navi/navi.service";
+import {ActivatedRoute} from "@angular/router";
+import * as DateHolidays from 'date-holidays';
+import {MatSelectChange} from "@angular/material/select";
+import {
+  UserSelectionComponent,
+  UserSelectionComponentData,
+  UserSelectionComponentResponseData
+} from "../user/user-selection/user-selection.component";
+import {MyUserDetailsService} from "../user/my-user-details.service";
+
+type ViewIdentifier = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay';
+
+interface CalendarSettings {
+  currentView: ViewIdentifier;
+  privateAppointments: boolean;
+  customerAppointments: boolean;
+  customerBirthdays: boolean;
+  holidays: boolean;
+  holidayCountry: DateHolidays.Country
+}
+
+interface ExtendedHolidays {
+  countryAndStateString: string;
+  holidayCountry: DateHolidays.Country;
+}
+
+@Component({
+  selector: 'calendar',
+  templateUrl: './calendar.component.html',
+  styleUrls: ['./calendar.component.scss']
+})
+export class CalendarComponent implements OnInit {
+
+  private static readonly CALENDAR_LOCAL_STORAGE_KEY = 'lastCalendarView';
+  @ViewChild('fullCalendarComponent') fullCalendarComponent: FullCalendarComponent | undefined;
+  @ViewChild('calendarContextMenu') calendarContextMenu: MatMenu | undefined;
+  @ViewChild('menuTrigger') menuTrigger: MatMenuTrigger | undefined;
+  @ViewChild('pageWrapper', {
+    read: ElementRef,
+    static: true
+  }) pageWrapper: ElementRef<HTMLDivElement> | undefined;
+  positionX: number = 0;
+  positionY: number = 0;
+  loading: boolean = true;
+  user: KokuDto.KokuUserDetailsDto | undefined;
+  self: KokuDto.KokuUserDetailsDto | undefined;
+  holidayCountriesAndStates: ExtendedHolidays[] = (() => {
+    const result: ExtendedHolidays[] = [];
+
+    const dateHoliday = new DateHolidays();
+
+    const allCountries = dateHoliday.getCountries(); // e.g. {de: 'Deutschland', ...}
+    for (const currentCountryKey of Object.keys(allCountries)) { // e.g. 'de'
+      const currentCountryName = allCountries[currentCountryKey]; // e.g. 'Deutschland'
+
+      const allCountryStates = dateHoliday.getStates(currentCountryKey);
+      if (allCountryStates) {
+        for (const currentCountryStateKey of Object.keys(allCountryStates)) { // e.g. 'RP'
+          const currentCountryStateName = allCountryStates[currentCountryStateKey];
+
+          result.push({
+            countryAndStateString: currentCountryName + ' / ' + currentCountryStateName,
+            holidayCountry: {
+              country: currentCountryKey,
+              state: currentCountryStateKey
+            }
+          });
+        }
+      } else {
+        result.push({
+          countryAndStateString: currentCountryName,
+          holidayCountry: {
+            country: currentCountryKey
+          }
+        });
+      }
+    }
+
+    return result;
+  })();
+
+  calendarSettings: CalendarSettings = this.restoreViewSettings();
+
+  humanReadableDateRange: string = '';
+  calendarOptions: CalendarOptions = {
+    initialView: this.calendarSettings.currentView,
+    height: 'auto',
+    allDaySlot: true,
+    locale: deLocale,
+    headerToolbar: false,
+    dateClick: (event) => {
+      let clientX = event.jsEvent.clientX;
+      let clientY = event.jsEvent.clientY;
+      if (event.jsEvent && (<any>event.jsEvent).changedTouches) {
+        const firstTouchEvent: Touch = (<any>event.jsEvent).changedTouches[0];
+        clientX = firstTouchEvent.clientX;
+        clientY = firstTouchEvent.clientY;
+      }
+      this.askForCreationType(clientX, clientY, event.dateStr);
+    },
+    viewDidMount: () => {
+      setTimeout(() => {
+        this.humanReadableDateRange = this.buildHumanReadableDateRange();
+        setTimeout(() => {
+            const scrollToNodeList = document.querySelectorAll("[data-time='07:00:00']");
+            if (scrollToNodeList && scrollToNodeList.length > 0) {
+              scrollToNodeList[0].scrollIntoView();
+            }
+          }
+        );
+      });
+    },
+    eventMouseEnter: (args) => {
+      args.el.classList.add('calendar-event--hover');
+    },
+    eventMouseLeave: (args) => {
+      args.el.classList.remove('calendar-event--hover');
+    },
+    eventClick: (args) => {
+      const content: KokuDto.ICalendarContentUnion = <KokuDto.ICalendarContentUnion>args.event.extendedProps;
+      if (content['@type'] === 'CustomerAppointment') {
+        const dialogData: CustomerAppointmentDetailsData = {
+          customerAppointmentId: content.id
+        };
+        const dialogRef = this.dialog.open(CustomerAppointmentDetailsComponent, {
+          data: dialogData,
+          autoFocus: false,
+          closeOnNavigation: false,
+          position: {
+            top: '20px'
+          }
+        });
+        dialogRef.afterClosed().subscribe(() => {
+          this.refreshCalendarEvents();
+        });
+      } else if (content['@type'] === 'CustomerBirthday') {
+        const dialogData: CustomerInfoDialogData = {
+          customerId: content.id
+        };
+        const dialogRef = this.dialog.open(CustomerInfoDialogComponent, {
+          data: dialogData,
+          closeOnNavigation: false,
+          position: {
+            top: '20px'
+          }
+        });
+        dialogRef.afterClosed().subscribe(() => {
+          this.refreshCalendarEvents();
+        });
+      } else if (content['@type'] === 'PrivateAppointment') {
+        const dialogData: PrivateAppointmentDetailsData = {
+          privateAppointmentId: content.id
+        };
+        const dialogRef = this.dialog.open(PrivateAppointmentDetailsComponent, {
+          data: dialogData,
+          closeOnNavigation: false,
+          position: {
+            top: '20px'
+          }
+        });
+        dialogRef.afterClosed().subscribe(() => {
+          this.refreshCalendarEvents();
+        });
+      }
+    },
+    nowIndicator: true,
+    businessHours: {
+      daysOfWeek: [1, 2, 3, 4, 5], // Monday - Thursday
+      startTime: '08:00:00', // a start time (10am in this example)
+      endTime: '20:00:00', // an end time (6pm in this example)
+    },
+    selectable: false,
+    events: (
+      args,
+      successCallback,
+      failureCallback
+    ) => {
+      this.loading = true;
+      this.appointmentService.loadAppointments(
+        {
+          start: args.start,
+          end: args.end,
+          privateAppointments: this.calendarSettings.privateAppointments,
+          customerBirthdays: this.calendarSettings.customerBirthdays,
+          customerAppointments: this.calendarSettings.customerAppointments,
+          userId: (this.user && this.user.id && this.self && this.user.id !== this.self.id) ? this.user.id : undefined
+        }
+      ).subscribe((result) => {
+        this.loading = false;
+        successCallback([
+          ...this.transformAppointmentsToCalendarEvents(result),
+          ...(this.calendarSettings.holidays ? this.defineHolidays(args.start, args.end) : [])
+        ]);
+      }, (error) => {
+        this.loading = false;
+        failureCallback(error);
+      });
+    },
+  };
+  private clickedDate: string | undefined;
+
+  constructor(private readonly dialog: MatDialog,
+              private readonly appointmentService: AppointmentService,
+              private readonly userDetailsService: MyUserDetailsService,
+              public naviService: NaviService,
+              public activatedRoute: ActivatedRoute) {
+    this.userDetailsService.getDetails().subscribe((userDetails) => {
+      this.self = userDetails;
+      this.user = userDetails;
+    });
+  }
+
+  addNewAppointment() {
+    const dialogData: CustomerAppointmentDetailsData = {};
+    const dialogRef = this.dialog.open(CustomerAppointmentDetailsComponent, {
+      data: dialogData,
+      autoFocus: false,
+      closeOnNavigation: false,
+      position: {
+        top: '20px'
+      }
+    });
+    dialogRef.afterClosed().subscribe(() => {
+      this.refreshCalendarEvents();
+    });
+  }
+
+  createNewCustomerAppointment() {
+    const dialogData: CustomerAppointmentDetailsData = {
+      startDate: this.clickedDate ? moment(this.clickedDate).format('YYYY-MM-DD') : undefined,
+      startTime: this.clickedDate ? moment(this.clickedDate).format('HH:mm') : undefined,
+    };
+    const dialogRef = this.dialog.open(CustomerAppointmentDetailsComponent, {
+      data: dialogData,
+      autoFocus: false,
+      closeOnNavigation: false,
+      position: {
+        top: '20px'
+      }
+    });
+    dialogRef.afterClosed().subscribe(() => {
+      this.refreshCalendarEvents();
+    });
+  }
+
+  createNewPersonalAppointment() {
+    const dialogData: PrivateAppointmentDetailsData = {
+      startDate: this.clickedDate ? moment(this.clickedDate).format('YYYY-MM-DD') : undefined,
+      startTime: this.clickedDate ? moment(this.clickedDate).format('HH:mm') : undefined,
+      endDate: this.clickedDate ? moment(this.clickedDate).format('YYYY-MM-DD') : undefined,
+      endTime: this.clickedDate ? moment(this.clickedDate).add(30, 'minutes').format('HH:mm') : undefined,
+    };
+    const dialogRef = this.dialog.open(PrivateAppointmentDetailsComponent, {
+      data: dialogData,
+      closeOnNavigation: false,
+      position: {
+        top: '20px'
+      }
+    });
+    dialogRef.afterClosed().subscribe(() => {
+      this.refreshCalendarEvents();
+    });
+  }
+
+  askForCreationType(clientX: number, clientY: number, dateString?: string) {
+    if (this.menuTrigger) {
+      this.positionX = clientX;
+      this.positionY = clientY;
+      this.menuTrigger.openMenu();
+      if (dateString) {
+        this.clickedDate = dateString;
+      } else {
+        delete this.clickedDate;
+      }
+    }
+  }
+
+  ngOnInit(): void {
+    if (this.pageWrapper) {
+      new ResizeSensor(this.pageWrapper.nativeElement, () => {
+        this.menuTrigger?.closeMenu();
+      });
+    }
+  }
+
+  private transformAppointmentsToCalendarEvents(apiResponse: KokuDto.ICalendarContentUnion[]): EventInput[] {
+    const result: EventInput[] = [];
+
+    for (const currentAppointment of apiResponse) {
+      if (currentAppointment['@type'] === 'CustomerAppointment') {
+        let approxEnd;
+        if (currentAppointment.approximatelyDuration) {
+          const currentDuration = moment.duration(currentAppointment.approximatelyDuration);
+          let approxEndMoment = moment(currentAppointment.startDate + 'T' + currentAppointment.startTime).add(currentDuration);
+          const approxEndDate = approxEndMoment.format('YYYY-MM-DD');
+          const approxEndTime = approxEndMoment.format('HH:mm:ss');
+          approxEnd = approxEndDate + 'T' + approxEndTime;
+        } else {
+          approxEnd = currentAppointment.startDate + 'T' + moment(currentAppointment.startTime, 'HH:mm').format('HH:mm:ss');
+        }
+
+        result.push({
+          title: (currentAppointment.customer?.firstName ? currentAppointment.customer?.firstName : '') + ' ' + (currentAppointment.customer?.lastName ? currentAppointment.customer?.lastName : ''),
+          start: currentAppointment.startDate + 'T' + moment(currentAppointment.startTime, 'HH:mm').format('HH:mm:ss'),
+          end: approxEnd,
+          id: String(currentAppointment.id),
+          extendedProps: currentAppointment,
+          classNames: [
+            'calendar-event',
+            'calendar-event--clickable',
+            'customer-appointment',
+            'clickable-event'
+          ]
+        });
+      } else if (currentAppointment['@type'] === 'CustomerBirthday') {
+        result.push({
+          title: 'Geburtstag ' + currentAppointment.firstName + ' ' + currentAppointment.lastName,
+          id: String(currentAppointment.id),
+          allDay: true,
+          classNames: [
+            'calendar-event',
+            'calendar-event--clickable',
+            'customer-birthday',
+          ],
+          extendedProps: currentAppointment,
+          rrule: {
+            freq: 'yearly',
+            dtstart: moment.utc(currentAppointment.birthday).toDate()
+          }
+        });
+      } else if (currentAppointment['@type'] === 'PrivateAppointment') {
+        result.push({
+          title: currentAppointment.description,
+          id: String(currentAppointment.id),
+          start: currentAppointment.startDate + 'T' + moment(currentAppointment.startTime, 'HH:mm').format('HH:mm:ss'),
+          end: currentAppointment.endDate && currentAppointment.endTime ?
+            currentAppointment.endDate + 'T' + moment(currentAppointment.endTime, 'HH:mm').format('HH:mm:ss') : currentAppointment.startDate + 'T' + moment(currentAppointment.startTime, 'HH:mm').add(30, 'minutes').format('HH:mm:ss'),
+          classNames: [
+            'calendar-event',
+            'calendar-event--clickable',
+            'private-appointment',
+          ],
+          extendedProps: currentAppointment
+        });
+      }
+    }
+
+    return result;
+  }
+
+  private restoreViewSettings(): CalendarSettings {
+    let result: CalendarSettings = {
+      currentView: 'timeGridWeek',
+      privateAppointments: true,
+      customerAppointments: true,
+      customerBirthdays: true,
+      holidays: true,
+      holidayCountry: {
+        country: 'DE',
+        state: 'RP'
+      }
+    };
+    const savedValue = localStorage.getItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY);
+    if (savedValue !== null) {
+      try {
+        const castedInsecureVal = <CalendarSettings>JSON.parse(savedValue);
+        result = {
+          customerAppointments: castedInsecureVal.customerAppointments,
+          privateAppointments: castedInsecureVal.privateAppointments,
+          customerBirthdays: castedInsecureVal.customerBirthdays,
+          currentView: castedInsecureVal.currentView || 'timeGridWeek',
+          holidays: castedInsecureVal.holidays,
+          holidayCountry: castedInsecureVal.holidayCountry
+        }
+      } catch (e) {
+
+      }
+    }
+    return result;
+  }
+
+  refreshCalendarEvents() {
+    if (this.fullCalendarComponent) {
+      this.fullCalendarComponent.getApi().refetchEvents();
+    }
+  }
+
+  changeCalendarView(viewIdentificator: ViewIdentifier) {
+    if (this.fullCalendarComponent) {
+      this.fullCalendarComponent.getApi().changeView(viewIdentificator);
+      this.humanReadableDateRange = this.buildHumanReadableDateRange();
+      this.calendarSettings.currentView = viewIdentificator;
+      localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
+    }
+  }
+
+  buildHumanReadableDateRange() {
+    let result = '';
+    if (this.fullCalendarComponent) {
+      const viewType: ViewIdentifier = <ViewIdentifier>this.fullCalendarComponent.getApi().view.type;
+      const startMoment = moment(this.fullCalendarComponent.getApi().view.currentStart);
+      const endMoment = moment(this.fullCalendarComponent.getApi().view.currentEnd).subtract(1, 'ms');
+      const startDay = startMoment.format('D');
+      const endDay = endMoment.format('D');
+      const currentMonth = endMoment.format('MMM');
+      const currentYear = startMoment.format('YYYY');
+      switch (viewType) {
+        case "dayGridMonth":
+          result = `${startDay} - ${endDay}. ${currentMonth} ${currentYear}`;
+          break;
+        case "timeGridWeek":
+          result = `${startDay} - ${endDay}. ${currentMonth} ${currentYear}`;
+          break;
+        case "timeGridDay":
+          result = `${startDay} . ${currentMonth} ${currentYear}`;
+          break;
+        default:
+          break;
+      }
+    }
+    return result;
+  }
+
+  prevYear() {
+    if (this.fullCalendarComponent) {
+      this.fullCalendarComponent.getApi().prevYear();
+      this.humanReadableDateRange = this.buildHumanReadableDateRange();
+    }
+  }
+
+  prev() {
+    if (this.fullCalendarComponent) {
+      this.fullCalendarComponent.getApi().prev();
+      this.humanReadableDateRange = this.buildHumanReadableDateRange();
+    }
+  }
+
+  next() {
+    if (this.fullCalendarComponent) {
+      this.fullCalendarComponent.getApi().next();
+      this.humanReadableDateRange = this.buildHumanReadableDateRange();
+    }
+  }
+
+  nextYear() {
+    if (this.fullCalendarComponent) {
+      this.fullCalendarComponent.getApi().nextYear();
+      this.humanReadableDateRange = this.buildHumanReadableDateRange();
+    }
+  }
+
+  toggleLoadPrivateAppointments() {
+    this.calendarSettings.privateAppointments = !this.calendarSettings.privateAppointments;
+    this.refreshCalendarEvents();
+    localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
+  }
+
+  toggleLoadCustomerAppointments() {
+    this.calendarSettings.customerAppointments = !this.calendarSettings.customerAppointments;
+    this.refreshCalendarEvents();
+    localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
+  }
+
+  toggleLoadCustomerBirthdays() {
+    this.calendarSettings.customerBirthdays = !this.calendarSettings.customerBirthdays;
+    this.refreshCalendarEvents();
+    localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
+  }
+
+  toggleLoadHolidays() {
+    this.calendarSettings.holidays = !this.calendarSettings.holidays;
+    this.refreshCalendarEvents();
+    localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
+  }
+
+  private defineHolidays(start: Date, end: Date): EventInput[] {
+    const result: EventInput[] = [];
+    const holidays = new DateHolidays(this.calendarSettings.holidayCountry);
+
+    const rangeOfYears = (start: number, end: number) => {
+      return Array<number>(end - start + 1)
+        .fill(start)
+        .map((year, index) => year + index)
+    }
+    const years = rangeOfYears(start.getFullYear(), end.getFullYear())
+
+    for (const currentYear of years) {
+      for (const holiday of holidays.getHolidays(currentYear)) {
+        result.push({
+          title: holiday.name,
+          start: holiday.start,
+          end: holiday.end,
+          editable: false,
+          allDay: true
+        });
+      }
+    }
+    return result;
+  }
+
+  changeHolidayCountry($event: MatSelectChange) {
+    this.calendarSettings.holidayCountry = $event.value;
+    this.refreshCalendarEvents();
+    localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
+  }
+
+  compareHolidayCountry(o1: DateHolidays.Country, o2: DateHolidays.Country): boolean {
+    if (o1.country === o2.country) {
+      if (o1.state === null && o2.state == null) {
+        return true;
+      } else if (o1.state === o2.state) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  selectUser() {
+    const dialogData: UserSelectionComponentData = {};
+    const dialogRef = this.dialog.open(UserSelectionComponent, {
+      data: dialogData,
+      closeOnNavigation: false,
+      position: {
+        top: '20px'
+      }
+    })
+
+    dialogRef.afterClosed().subscribe((result: UserSelectionComponentResponseData) => {
+      if (result && result.user) {
+        this.user = result.user;
+        this.refreshCalendarEvents();
+      }
+    });
+  }
+}

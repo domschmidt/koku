@@ -1,0 +1,49 @@
+<div *ngIf="!createMode && activityStep">
+  <mat-menu #menu>
+    <button (click)="delete(activityStep)" mat-menu-item>
+      <mat-icon>delete</mat-icon>
+      <span>Löschen</span>
+    </button>
+  </mat-menu>
+  <div class="dialog-split-header">
+    <h2 mat-dialog-title>Behandlungschritt bearbeiten</h2>
+    <button [matMenuTriggerFor]="menu"
+            class="dialog-split-header__menu-btn"
+            mat-icon-button>
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  </div>
+</div>
+<h2 *ngIf="createMode" mat-dialog-title>Behandlungschritt anlegen</h2>
+<mat-spinner *ngIf="!activityStep" class="spinner-center" diameter="30"></mat-spinner>
+<form #form="ngForm" (ngSubmit)="save(activityStep, form)" class="activity-details-form">
+  <mat-dialog-content *ngIf="activityStep">
+    <mat-form-field class="activity-details-field firstname-field">
+      <mat-label>Name</mat-label>
+      <input [(ngModel)]="activityStep.description"
+             cdkFocusInitial
+             matInput
+             name="description"
+             placeholder="Name eingeben"
+      >
+    </mat-form-field>
+
+  </mat-dialog-content>
+  <mat-dialog-actions *ngIf="activityStep" align="end">
+    <button mat-button mat-dialog-close>Abbrechen</button>
+    <button *ngIf="!createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Speichern
+    </button>
+    <button *ngIf="createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Erstellen
+    </button>
+  </mat-dialog-actions>
+</form>

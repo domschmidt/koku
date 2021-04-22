@@ -1,0 +1,11 @@
+<div class="page-skeleton">
+  <div class="page-skeleton__scroll-area">
+    <h1 *ngIf="userDetails$ | async as userDetails" class="welcome-message page-skeleton__spacing">
+
+      Willkommen, {{userDetails.firstname}} {{userDetails.lastname}}!
+
+    </h1>
+
+    <overview></overview>
+  </div>
+</div>

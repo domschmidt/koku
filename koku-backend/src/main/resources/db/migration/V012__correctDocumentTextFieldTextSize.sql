@@ -1,0 +1,1 @@
+alter table koku.field_definition_text alter column text type varchar(65536)

@@ -1,0 +1,168 @@
+<div class="main">
+  <mat-drawer-container class="calendar-filter-drawer-container">
+    <mat-drawer #drawer [mode]="'over'" [position]="'end'">
+      <mat-toolbar color="primary">
+        <mat-toolbar-row>
+          <h1>Kalendereinstellungen</h1>
+        </mat-toolbar-row>
+      </mat-toolbar>
+
+      <div class="visibility-control-card">
+        <h2 class="visibility-control-card__headline">Sichtbarkeit</h2>
+        <div class="visibility-control-card__item">
+          <mat-slide-toggle
+            color="primary"
+            [checked]="calendarSettings.privateAppointments"
+            (change)="toggleLoadPrivateAppointments()">
+            Privattermine
+          </mat-slide-toggle>
+        </div>
+        <div class="visibility-control-card__item">
+          <mat-slide-toggle
+            color="primary"
+            [checked]="calendarSettings.customerAppointments"
+            (change)="toggleLoadCustomerAppointments()">
+            Kundentermine
+          </mat-slide-toggle>
+        </div>
+        <div class="visibility-control-card__item">
+          <mat-slide-toggle
+            color="primary"
+            [checked]="calendarSettings.customerBirthdays"
+            (change)="toggleLoadCustomerBirthdays()">
+            Geburtstage
+          </mat-slide-toggle>
+        </div>
+        <div class="visibility-control-card__item">
+          <mat-slide-toggle
+            color="primary"
+            [checked]="calendarSettings.holidays"
+            (change)="toggleLoadHolidays()">
+            Feiertage
+          </mat-slide-toggle>
+        </div>
+      </div>
+      <div class="visibility-control-card">
+        <h2 class="visibility-control-card__headline">Ländereinstellung</h2>
+        <div class="visibility-control-card__item">
+          <mat-form-field appearance="fill">
+            <mat-label>Landauswahl</mat-label>
+            <mat-select [value]="calendarSettings.holidayCountry"
+                        (selectionChange)="changeHolidayCountry($event)"
+                        [compareWith]="compareHolidayCountry"
+            >
+              <mat-option *ngFor="let holidayCountryAndState of holidayCountriesAndStates"
+                          [value]="holidayCountryAndState.holidayCountry">
+                {{holidayCountryAndState.countryAndStateString}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-drawer>
+    <mat-drawer-content>
+      <div class="page-skeleton">
+        <mat-toolbar color="primary">
+          <mat-toolbar-row>
+            <button (click)="naviService.open()" mat-icon-button>
+              <mat-icon>menu</mat-icon>
+            </button>
+            <h1>{{activatedRoute.snapshot.data?.name}}</h1>
+
+            <div style="flex: 1 1 auto;"></div>
+
+            <mat-button-toggle-group>
+              <mat-button-toggle title="Monatsansicht"
+                                 [checked]="calendarSettings.currentView === 'dayGridMonth'"
+                                 (change)="changeCalendarView('dayGridMonth')">
+                <mat-icon>calendar_view_month</mat-icon>
+              </mat-button-toggle>
+              <mat-button-toggle title="Wochenansicht"
+                                 [checked]="calendarSettings.currentView === 'timeGridWeek'"
+                                 (change)="changeCalendarView('timeGridWeek')">
+                <mat-icon>calendar_view_week</mat-icon>
+              </mat-button-toggle>
+              <mat-button-toggle title="Tagesansicht"
+                                 [checked]="calendarSettings.currentView === 'timeGridDay'"
+                                 (change)="changeCalendarView('timeGridDay')">
+                <mat-icon>calendar_view_day</mat-icon>
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+          </mat-toolbar-row>
+          <mat-toolbar-row class="calendar-date-control">
+            <div>
+              <button mat-icon-button
+                      title="vorheriges Jahr"
+                      (click)="prevYear()">
+                <mat-icon>fast_rewind</mat-icon>
+              </button>
+              <button mat-icon-button
+                      title="vorheriger Monat"
+                      (click)="prev()">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+            </div>
+            <div *ngIf="humanReadableDateRange">
+              {{humanReadableDateRange}}
+            </div>
+            <div>
+              <button mat-icon-button
+                      title="nächster Monat"
+                      (click)="next()">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+              <button mat-icon-button
+                      title="nächstes Jahr"
+                      (click)="nextYear()">
+                <mat-icon>fast_forward</mat-icon>
+              </button>
+            </div>
+          </mat-toolbar-row>
+
+        </mat-toolbar>
+        <mat-progress-bar [mode]="loading ? 'indeterminate' : 'determinate'"></mat-progress-bar>
+        <div class="page-skeleton__scroll-area">
+          <div #pageWrapper>
+            <full-calendar [options]="calendarOptions" #fullCalendarComponent></full-calendar>
+            <div #menuTrigger="matMenuTrigger" [matMenuTriggerFor]="calendarContextMenu"
+                 id="calendar-context-menu-trigger"
+                 [style.left.px]="positionX" [style.top.px]="positionY" style="position: fixed;"></div>
+            <mat-menu #calendarContextMenu="matMenu">
+              <button mat-menu-item (click)="createNewCustomerAppointment()">Kundentermin</button>
+              <button mat-menu-item (click)="createNewPersonalAppointment()">Privattermin</button>
+            </mat-menu>
+            <div class="fab-button-container fab-button-container--left">
+              <button (click)="selectUser()"
+                      *ngIf="user"
+                      color="primary"
+                      mat-fab
+                      class="fab-button"
+                      title="Nutzer wählen">
+                <user-avatar [user]="user"></user-avatar>
+              </button>
+            </div>
+            <div class="fab-button-container">
+              <button (click)="askForCreationType($event.clientX, $event.clientY);"
+                      aria-label="Neuer Kundentermin hinzufügen"
+                      color="primary"
+                      mat-fab
+                      class="fab-button"
+              >
+                <mat-icon>add</mat-icon>
+              </button>
+              <button (click)="drawer.open()"
+                      aria-label="Filter ändern"
+                      color="primary"
+                      mat-fab
+                      class="fab-button"
+              >
+                <mat-icon>filter_list</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-drawer-content>
+  </mat-drawer-container>
+
+</div>

@@ -1,0 +1,48 @@
+<div class="page-skeleton">
+  <div class="page-skeleton__spacing">
+    <form class="product-search-form">
+      <mat-form-field class="search-field">
+        <mat-label>Suchen</mat-label>
+        <input (ngModelChange)='searchFieldChangeSubject.next($event)'
+               [(ngModel)]='searchFieldModel'
+               matInput
+               name="userSearch"
+               placeholder="Name eingeben"
+               class="no-space"
+        >
+        <button (click)="clearSearchField()"
+                *ngIf="searchFieldModel"
+                aria-label="Clear"
+                type="button"
+                mat-button
+                mat-icon-button
+                matSuffix>
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </form>
+  </div>
+  <div class="page-skeleton__scroll-area">
+    <mat-action-list>
+      <button (click)="openUserDetails(user)"
+              *ngFor="let user of users$ | async; trackBy: trackByFn"
+              mat-list-item>
+        <user-avatar [user]="user"
+                     style="margin-right: 12px;"></user-avatar>
+        <h3 matLine>{{user.username}}</h3>
+        <p matLine>{{user.firstname}} {{user.lastname}}</p>
+      </button>
+    </mat-action-list>
+
+    <div class="fab-button-container">
+      <button (click)="addNewUser();"
+              aria-label="Neuer Nutzer hinzufügen"
+              color="primary"
+              mat-fab
+              class="fab-button"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>

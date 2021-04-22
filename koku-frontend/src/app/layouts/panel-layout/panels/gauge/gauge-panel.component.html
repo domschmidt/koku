@@ -1,0 +1,20 @@
+<mat-spinner *ngIf="!apiData" class="spinner-center" diameter="30"></mat-spinner>
+
+<div *ngIf="apiData" class="content">
+  <div class="content__title">
+    {{apiData.title}}
+  </div>
+  <div class="content__gauge">
+    <mwl-gauge
+      [max]="100"
+      [dialStartAngle]="-90"
+      [dialEndAngle]="-90.001"
+      [value]="apiData.percentage || 0"
+      [animated]="true"
+      [animationDuration]="1"
+      [label]="getPercentageLabel"
+      *ngIf="apiData"
+    >
+    </mwl-gauge>
+  </div>
+</div>

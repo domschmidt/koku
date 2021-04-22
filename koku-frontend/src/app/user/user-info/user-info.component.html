@@ -1,0 +1,52 @@
+<ng-container *ngIf="userDetails">
+  <ngx-file-drop (onFileDrop)="dropped($event)"
+                 [multiple]="false"
+                 contentClassName="content-zone"
+                 dropZoneClassName="drop-zone">
+    <ng-template let-openFileSelector="openFileSelector" ngx-file-drop-content-tmp>
+      <user-avatar [user]="userDetails" [large]="true"></user-avatar>
+      <div>Drag and Drop</div>
+      <div class="content-zone__separator">oder</div>
+      <button (click)="openFileSelector()"
+              class="content-zone__file-select-btn"
+              color="primary"
+              mat-raised-button
+              type="button">
+        Datei auswählen
+      </button>
+    </ng-template>
+  </ngx-file-drop>
+  <mat-form-field class=""
+                  floatLabel="always">
+    <mat-label>Nutzername</mat-label>
+    <input [(ngModel)]="userDetails.username"
+           autocomplete="username"
+           matInput
+           name="username">
+  </mat-form-field>
+  <mat-form-field class=""
+                  floatLabel="always">
+    <mat-label>Vorname</mat-label>
+    <input [(ngModel)]="userDetails.firstname"
+           autocomplete="firstname"
+           matInput
+           name="firstname">
+  </mat-form-field>
+  <mat-form-field class=""
+                  floatLabel="always">
+    <mat-label>Nachname</mat-label>
+    <input [(ngModel)]="userDetails.lastname"
+           autocomplete="lastname"
+           matInput
+           name="lastname">
+  </mat-form-field>
+  <mat-form-field class=""
+                  floatLabel="always">
+    <mat-label>Passwort</mat-label>
+    <input [(ngModel)]="userDetails.password"
+           autocomplete="current-password"
+           matInput
+           name="password"
+           type="password">
+  </mat-form-field>
+</ng-container>

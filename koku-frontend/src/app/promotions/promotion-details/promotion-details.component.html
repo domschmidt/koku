@@ -1,0 +1,190 @@
+<div *ngIf="!createMode && promotion">
+  <mat-menu #menu>
+    <button (click)="delete(promotion)" mat-menu-item>
+      <mat-icon>delete</mat-icon>
+      <span>Löschen</span>
+    </button>
+  </mat-menu>
+  <div class="dialog-split-header">
+    <h2 mat-dialog-title>Aktion bearbeiten</h2>
+    <button [matMenuTriggerFor]="menu"
+            class="dialog-split-header__menu-btn"
+            mat-icon-button>
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  </div>
+</div>
+<h2 *ngIf="createMode" mat-dialog-title>Aktion anlegen</h2>
+<mat-spinner *ngIf="!promotion" class="spinner-center" diameter="30"></mat-spinner>
+<form #form="ngForm" (ngSubmit)="save(promotion, form)" class="promotion-details-form">
+  <mat-dialog-content *ngIf="promotion" class="promotion-details-form-content">
+
+    <mat-form-field class="name-field">
+      <mat-label>Name</mat-label>
+      <input [(ngModel)]="promotion.name"
+             cdkFocusInitial
+             matInput
+             name="description"
+             placeholder="Name eingeben"
+             required
+      >
+    </mat-form-field>
+
+    <mat-form-field class="startDate-field">
+      <mat-label>Gültig von</mat-label>
+      <input [(ngModel)]="promotion.startDate"
+             matInput
+             name="startDate"
+             placeholder="Datum eingeben"
+             type="date">
+    </mat-form-field>
+
+    <mat-form-field class="endDate-field">
+      <mat-label>Gültig bis</mat-label>
+      <input [(ngModel)]="promotion.endDate"
+             matInput
+             name="endDate"
+             placeholder="Datum eingeben"
+             type="date">
+    </mat-form-field>
+
+    <ng-container *ngIf="promotion.productSettings">
+      Produkte
+      <mat-form-field class="product-absolute-savings-field">
+        <mat-label>Absolute Ersparnis</mat-label>
+        <input matInput
+               name="productsAbsoluteSaving"
+               [(ngModel)]="promotion.productSettings.absoluteSavings"
+               [formControl]="productAbsouteSavingsCtl"
+               inputmode="decimal"
+               placeholder="Preis eingeben"
+               step="0.01"
+               min="0"
+               type="number"
+        >
+      </mat-form-field>
+      <mat-form-field class="product-relative-savings-field">
+        <mat-label>Prozentuale Ersparnis</mat-label>
+        <input matInput
+               name="productsRelativeSaving"
+               [(ngModel)]="promotion.productSettings.relativeSavings"
+               [formControl]="productRelativeSavingsCtl"
+               inputmode="decimal"
+               placeholder="Preis eingeben"
+               step="0.01"
+               min="0"
+               type="number"
+        >
+      </mat-form-field>
+      <mat-form-field class="product-absolute-item-savings-field">
+        <mat-label>Absolute Ersparnis pro Produkt</mat-label>
+        <input matInput
+               name="productsAbsoluteItemSaving"
+               [(ngModel)]="promotion.productSettings.absoluteItemSavings"
+               [formControl]="productAbsouteItemSavingsCtl"
+               inputmode="decimal"
+               placeholder="Preis eingeben"
+               step="0.01"
+               min="0"
+               type="number"
+        >
+      </mat-form-field>
+      <mat-form-field class="product-relative-item-savings-field">
+        <mat-label>Prozentuale Ersparnis pro Produkt</mat-label>
+        <input matInput
+               name="productsAbsoluteItemSaving"
+               [(ngModel)]="promotion.productSettings.relativeItemSavings"
+               [formControl]="productRelativeItemSavingsCtl"
+               inputmode="decimal"
+               placeholder="Preis eingeben"
+               step="0.01"
+               min="0"
+               type="number"
+        >
+      </mat-form-field>
+    </ng-container>
+
+    <ng-container *ngIf="promotion.activitySettings">
+      Tätigkeiten
+      <mat-form-field class="activity-absolute-savings-field">
+        <mat-label>Absolute Ersparnis</mat-label>
+        <input matInput
+               name="activitiesAbsoluteSaving"
+               [(ngModel)]="promotion.activitySettings.absoluteSavings"
+               [formControl]="activityAbsouteSavingsCtl"
+               inputmode="decimal"
+               placeholder="Preis eingeben"
+               step="0.01"
+               min="0"
+               type="number"
+        >
+      </mat-form-field>
+      <mat-form-field class="activity-relative-savings-field">
+        <mat-label>Prozentuale Ersparnis</mat-label>
+        <input matInput
+               name="activitiesRelativeSaving"
+               [(ngModel)]="promotion.activitySettings.relativeSavings"
+               [formControl]="activityRelativeSavingsCtl"
+               inputmode="decimal"
+               placeholder="Preis eingeben"
+               step="0.01"
+               min="0"
+               type="number"
+        >
+      </mat-form-field>
+      <mat-form-field class="activity-absolute-item-savings-field">
+        <mat-label>Absolute Ersparnis pro Tätigkeit</mat-label>
+        <input matInput
+               name="activitiesAbsoluteItemSaving"
+               [(ngModel)]="promotion.activitySettings.absoluteItemSavings"
+               [formControl]="activityAbsouteItemSavingsCtl"
+               inputmode="decimal"
+               placeholder="Preis eingeben"
+               step="0.01"
+               min="0"
+               type="number"
+        >
+      </mat-form-field>
+      <mat-form-field class="activity-relative-item-savings-field">
+        <mat-label>Prozentuale Ersparnis pro Tätigkeit</mat-label>
+        <input matInput
+               name="activitiesAbsoluteItemSaving"
+               [(ngModel)]="promotion.activitySettings.relativeItemSavings"
+               [formControl]="activityRelativeItemSavingsCtl"
+               inputmode="decimal"
+               placeholder="Preis eingeben"
+               step="0.01"
+               min="0"
+               type="number"
+        >
+      </mat-form-field>
+    </ng-container>
+
+  </mat-dialog-content>
+  <mat-dialog-actions *ngIf="promotion" align="end">
+    <button mat-button mat-dialog-close>Abbrechen</button>
+    <button *ngIf="!createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid
+               || activityRelativeItemSavingsCtl.invalid || activityAbsouteItemSavingsCtl.invalid
+               || activityRelativeSavingsCtl.invalid || activityAbsouteSavingsCtl.invalid
+               || productRelativeItemSavingsCtl.invalid || productAbsouteItemSavingsCtl.invalid
+               || productRelativeSavingsCtl.invalid || productAbsouteSavingsCtl.invalid"
+            mat-button
+            type="submit">
+      Speichern
+    </button>
+    <button *ngIf="createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid
+               || activityRelativeItemSavingsCtl.invalid || activityAbsouteItemSavingsCtl.invalid
+               || activityRelativeSavingsCtl.invalid || activityAbsouteSavingsCtl.invalid
+               || productRelativeItemSavingsCtl.invalid || productAbsouteItemSavingsCtl.invalid
+               || productRelativeSavingsCtl.invalid || productAbsouteSavingsCtl.invalid"
+            mat-button
+            type="submit">
+      Erstellen
+    </button>
+  </mat-dialog-actions>
+</form>
+

@@ -1,0 +1,53 @@
+<mat-dialog-content>
+  <div style="padding: 12px 0;">
+    <mat-spinner *ngIf="!possibleFormulars" class="spinner-center" diameter="30"></mat-spinner>
+    <mat-list>
+      <button (click)="openFormularCapture(possibleFormular)"
+              *ngFor="let possibleFormular of possibleFormulars"
+              mat-list-item>
+        {{ possibleFormular.description }}
+      </button>
+    </mat-list>
+
+    <ngx-file-drop (onFileDrop)="dropped($event)"
+                   contentClassName="content-zone"
+                   dropZoneClassName="drop-zone">
+      <ng-template let-openFileSelector="openFileSelector" ngx-file-drop-content-tmp>
+        <div>Drag and Drop</div>
+        <div class="content-zone__separator">oder</div>
+        <button (click)="openFileSelector()"
+                class="content-zone__file-select-btn"
+                color="primary"
+                mat-raised-button
+                type="button">
+          Datei auswählen
+        </button>
+      </ng-template>
+    </ngx-file-drop>
+
+    <mat-spinner *ngIf="!uploads" class="spinner-center" diameter="30"></mat-spinner>
+    <mat-chip-list class="uploads-section">
+      <a (click)="download(upload)" *ngFor="let upload of uploads; trackBy: trackByFn"
+         [color]="upload.errorStatusText ? 'warn' : 'primary'"
+         class="uploads-section__item"
+         mat-chip
+         selected
+      >
+        {{upload.fileName}}
+        {{upload.creationDate ? '(' + upload.creationDate + ')' : ''}}
+        <span class="flex: 1">
+      </span>
+        <mat-progress-spinner
+          *ngIf="upload.progress !== undefined"
+          [mode]="upload.progress > 0 ? 'determinate' : 'indeterminate'"
+          [value]="upload.progress"
+          color="accent"
+          diameter="20"
+        >
+        </mat-progress-spinner>
+        <mat-icon (click)="delete(upload)" *ngIf="upload.progress === undefined" matChipRemove>cancel</mat-icon>
+      </a>
+    </mat-chip-list>
+  </div>
+</mat-dialog-content>
+

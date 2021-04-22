@@ -1,0 +1,36 @@
+@import '../../../node_modules/@angular/material/theming';
+@import "../../styles";
+
+.navigation-entry {
+  &--active {
+    color: mat-color($koku-primary, 400) !important;
+
+    &.navigation-entry--leaf {
+      background-color: mat-color($koku-primary, 50) !important;
+    }
+  }
+
+  &--leaf {
+
+  }
+
+  &--node {
+    cursor: none;
+    pointer-events: none;
+  }
+
+  &--depth-1 {
+    padding-left: 30px;
+    max-width: calc(100% - 30px);
+  }
+
+  &--depth-2 {
+    padding-left: 60px;
+    max-width: calc(100% - 60px);
+  }
+
+  &--depth-3 {
+    padding-left: 90px;
+    max-width: calc(100% - 90px);
+  }
+}

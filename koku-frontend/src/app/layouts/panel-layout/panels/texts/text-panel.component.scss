@@ -1,0 +1,29 @@
+@import '../../../../../../node_modules/@angular/material/theming';
+@import "../../../../../styles";
+
+:host {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: center;
+  background-color: mat-color($koku-primary, 400);
+  color: mat-color($koku-primary, '400-contrast');
+
+  &__title {
+    text-align: center;
+    margin: 0 0 16px;
+    font-size: 3vw;
+  }
+
+  &__text-item {
+    text-align: center;
+    font-size: 3vw;
+  }
+}

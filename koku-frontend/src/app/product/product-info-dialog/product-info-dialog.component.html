@@ -1,0 +1,32 @@
+<div *ngIf="!createMode && product">
+  <mat-menu #menu>
+    <button (click)="delete(product)" mat-menu-item>
+      <mat-icon>delete</mat-icon>
+      <span>Löschen</span>
+    </button>
+  </mat-menu>
+  <div class="dialog-split-header">
+    <h2 mat-dialog-title>Produkt bearbeiten</h2>
+    <button [matMenuTriggerFor]="menu"
+            class="dialog-split-header__menu-btn"
+            mat-icon-button>
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  </div>
+</div>
+<h2 *ngIf="createMode" mat-dialog-title>Produkt anlegen</h2>
+<mat-dialog-content>
+  <mat-tab-group #tabGroup>
+    <ng-container *ngFor="let tab of productTabs">
+      <mat-tab *ngIf="(tab.showInCreateMode && this.createMode) || !this.createMode" label="{{tab.label}}">
+      </mat-tab>
+    </ng-container>
+  </mat-tab-group>
+</mat-dialog-content>
+<product-details (afterSaved)="onProductSaved($event)"
+                 (dirty)="formularDirty($event)"
+                 *ngIf="productTabs[activeTabIndex].label === 'Info'"
+                 [productId]="productId"
+                 [productName]="data.productName"></product-details>
+<product-statistics *ngIf="productTabs[activeTabIndex].label === 'Statistik'"
+                    [productId]="productId"></product-statistics>
