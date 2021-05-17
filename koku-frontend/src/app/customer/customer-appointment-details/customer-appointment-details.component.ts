@@ -17,7 +17,6 @@ import {MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {forkJoin, Observable} from "rxjs";
 import {ActivityService} from "../../activity/activity.service";
 import {map, startWith, take} from "rxjs/operators";
-import {MatSnackBar} from "@angular/material/snack-bar";
 import BigNumber from 'bignumber.js';
 import {ProductService} from "../../product/product.service";
 import * as moment from 'moment';
@@ -55,6 +54,7 @@ import {
   CustomerAppointmentActivityInfoDialogComponentData,
   CustomerAppointmentActivityInfoDialogComponentResponseData
 } from "../customer-appointment-activity-info-dialog/customer-appointment-activity-info-dialog.component";
+import {SnackBarService} from "../../snackbar/snack-bar.service";
 
 export interface CustomerAppointmentDetailsData {
   customer?: KokuDto.CustomerDto;
@@ -103,7 +103,7 @@ export class CustomerAppointmentDetailsComponent implements AfterViewInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: CustomerAppointmentDetailsData,
               public dialogRef: MatDialogRef<CustomerAppointmentDetailsComponent>,
               public dialog: MatDialog,
-              public snackBar: MatSnackBar,
+              public snackBarService: SnackBarService,
               public activityService: ActivityService,
               public router: Router,
               public customerAppointmentService: CustomerAppointmentService,
@@ -444,11 +444,7 @@ export class CustomerAppointmentDetailsComponent implements AfterViewInit {
       this.customerAppointmentActivityCtrl.setValue(null);
       this.dirty = true;
     } else {
-      this.snackBar.open('bereits hinzugefügt', undefined, {
-        duration: 3000,
-        verticalPosition: 'top',
-        politeness: "polite"
-      });
+      this.snackBarService.openCommonSnack('bereits hinzugefügt', 'top');
     }
   }
 
@@ -573,9 +569,7 @@ export class CustomerAppointmentDetailsComponent implements AfterViewInit {
       this.dirty = true;
       this.activitySequenceCtrl.setValue(null);
     } else {
-      this.snackBar.open('bereits hinzugefügt', undefined, {
-        duration: 3000
-      });
+      this.snackBarService.openCommonSnack('bereits hinzugefügt');
     }
   }
 

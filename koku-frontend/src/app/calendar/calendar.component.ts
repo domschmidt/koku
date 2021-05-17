@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/core';
 import {CalendarOptions, FullCalendarComponent} from '@fullcalendar/angular';
 import deLocale from '@fullcalendar/core/locales/de';
 import {EventInput} from "@fullcalendar/common";
@@ -30,6 +30,9 @@ import {
   UserSelectionComponentResponseData
 } from "../user/user-selection/user-selection.component";
 import {MyUserDetailsService} from "../user/my-user-details.service";
+import {PrivateAppointmentService} from "../user/private-appointment-details/private-appointment.service";
+import {CustomerAppointmentService} from "../customer-appointment.service";
+import {SnackBarService} from "../snackbar/snack-bar.service";
 
 type ViewIdentifier = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay';
 
@@ -53,6 +56,26 @@ interface ExtendedHolidays {
   styleUrls: ['./calendar.component.scss']
 })
 export class CalendarComponent implements OnInit {
+
+  @HostListener('window:keyup', ['$event'])
+  keyEvent(event: KeyboardEvent) {
+    if (!this.dialog.openDialogs.length) {
+      switch (event.key) {
+        case 'ArrowUp':
+          this.nextYear();
+          break;
+        case 'ArrowRight':
+          this.next();
+          break;
+        case 'ArrowDown':
+          this.prevYear();
+          break;
+        case 'ArrowLeft':
+          this.prev();
+          break;
+      }
+    }
+  }
 
   private static readonly CALENDAR_LOCAL_STORAGE_KEY = 'lastCalendarView';
   @ViewChild('fullCalendarComponent') fullCalendarComponent: FullCalendarComponent | undefined;
@@ -112,14 +135,91 @@ export class CalendarComponent implements OnInit {
     locale: deLocale,
     headerToolbar: false,
     dateClick: (event) => {
-      let clientX = event.jsEvent.clientX;
-      let clientY = event.jsEvent.clientY;
-      if (event.jsEvent && (<any>event.jsEvent).changedTouches) {
-        const firstTouchEvent: Touch = (<any>event.jsEvent).changedTouches[0];
-        clientX = firstTouchEvent.clientX;
-        clientY = firstTouchEvent.clientY;
+      let clientX = 0;
+      let clientY = 0;
+      if (event.jsEvent) {
+        clientX = event.jsEvent.clientX;
+        clientY = event.jsEvent.clientY;
+        if ((<any>event.jsEvent).changedTouches) {
+          const firstTouchEvent: Touch = (<any>event.jsEvent).changedTouches[0];
+          clientX = firstTouchEvent.clientX;
+          clientY = firstTouchEvent.clientY;
+        }
       }
-      this.askForCreationType(clientX, clientY, event.dateStr);
+      if (event.allDay) {
+        this.askForCreationType(clientX, clientY, event.date, moment(event.date).endOf('day').toDate());
+      } else {
+        this.askForCreationType(clientX, clientY, event.date);
+      }
+    },
+    editable: true,
+    eventDrop: (event) => {
+      const content: KokuDto.ICalendarContentUnion = <KokuDto.ICalendarContentUnion>event.event.extendedProps;
+      if (content['@type'] === 'CustomerAppointment') {
+        this.loading = true;
+        this.customerAppointmentService.updateCustomerAppointmentTiming({
+          '@type': 'CustomerAppointment',
+          id: content.id,
+          startDate: moment(event.event.start).format('YYYY-MM-DD'),
+          startTime: moment(event.event.start).format('HH:mm')
+        }).subscribe(() => {
+          this.loading = false;
+        }, () => {
+          this.snackBarService.openCommonSnack('Speichern nicht möglich.');
+          this.loading = false;
+          event.revert();
+        });
+      } else if (content['@type'] === 'PrivateAppointment') {
+        this.loading = true;
+        this.privateAppointmentService.updatePrivateAppointmentTiming({
+          '@type': 'PrivateAppointment',
+          id: content.id,
+          startDate: moment(event.event.start).format('YYYY-MM-DD'),
+          startTime: moment(event.event.start).format('HH:mm'),
+          endDate: moment(event.event.end).format('YYYY-MM-DD'),
+          endTime: moment(event.event.end).format('HH:mm')
+        }).subscribe(() => {
+          this.loading = false;
+        }, () => {
+          this.snackBarService.openCommonSnack('Speichern nicht möglich.');
+          this.loading = false;
+          event.revert();
+        });
+      }
+    },
+    eventResize: (event) => {
+      const content: KokuDto.ICalendarContentUnion = <KokuDto.ICalendarContentUnion>event.event.extendedProps;
+      if (content['@type'] === 'PrivateAppointment') {
+        this.loading = true;
+        this.privateAppointmentService.updatePrivateAppointmentTiming({
+          '@type': 'PrivateAppointment',
+          id: content.id,
+          startDate: moment(event.event.start).format('YYYY-MM-DD'),
+          startTime: moment(event.event.start).format('HH:mm'),
+          endDate: moment(event.event.end).format('YYYY-MM-DD'),
+          endTime: moment(event.event.end).format('HH:mm')
+        }).subscribe(() => {
+          this.loading = false;
+        }, () => {
+          this.snackBarService.openCommonSnack('Speichern nicht möglich.');
+          this.loading = false;
+          event.revert();
+        });
+      }
+    },
+    select: (event) => {
+      let clientX = 0;
+      let clientY = 0;
+      if (event.jsEvent) {
+        clientX = event.jsEvent.clientX;
+        clientY = event.jsEvent.clientY;
+        if ((<any>event.jsEvent).changedTouches) {
+          const firstTouchEvent: Touch = (<any>event.jsEvent).changedTouches[0];
+          clientX = firstTouchEvent.clientX;
+          clientY = firstTouchEvent.clientY;
+        }
+      }
+      this.askForCreationType(clientX, clientY, event.start, event.end);
     },
     viewDidMount: () => {
       setTimeout(() => {
@@ -192,7 +292,7 @@ export class CalendarComponent implements OnInit {
       startTime: '08:00:00', // a start time (10am in this example)
       endTime: '20:00:00', // an end time (6pm in this example)
     },
-    selectable: false,
+    selectable: true,
     events: (
       args,
       successCallback,
@@ -220,11 +320,15 @@ export class CalendarComponent implements OnInit {
       });
     },
   };
-  private clickedDate: string | undefined;
+  private dateFrom: Date | undefined;
+  private dateTo: Date | undefined;
 
   constructor(private readonly dialog: MatDialog,
               private readonly appointmentService: AppointmentService,
               private readonly userDetailsService: MyUserDetailsService,
+              private readonly privateAppointmentService: PrivateAppointmentService,
+              private readonly customerAppointmentService: CustomerAppointmentService,
+              private readonly snackBarService: SnackBarService,
               public naviService: NaviService,
               public activatedRoute: ActivatedRoute) {
     this.userDetailsService.getDetails().subscribe((userDetails) => {
@@ -250,8 +354,8 @@ export class CalendarComponent implements OnInit {
 
   createNewCustomerAppointment() {
     const dialogData: CustomerAppointmentDetailsData = {
-      startDate: this.clickedDate ? moment(this.clickedDate).format('YYYY-MM-DD') : undefined,
-      startTime: this.clickedDate ? moment(this.clickedDate).format('HH:mm') : undefined,
+      startDate: this.dateFrom ? moment(this.dateFrom).format('YYYY-MM-DD') : undefined,
+      startTime: this.dateFrom ? moment(this.dateFrom).format('HH:mm') : undefined
     };
     const dialogRef = this.dialog.open(CustomerAppointmentDetailsComponent, {
       data: dialogData,
@@ -268,10 +372,18 @@ export class CalendarComponent implements OnInit {
 
   createNewPersonalAppointment() {
     const dialogData: PrivateAppointmentDetailsData = {
-      startDate: this.clickedDate ? moment(this.clickedDate).format('YYYY-MM-DD') : undefined,
-      startTime: this.clickedDate ? moment(this.clickedDate).format('HH:mm') : undefined,
-      endDate: this.clickedDate ? moment(this.clickedDate).format('YYYY-MM-DD') : undefined,
-      endTime: this.clickedDate ? moment(this.clickedDate).add(30, 'minutes').format('HH:mm') : undefined,
+      startDate: this.dateFrom ? moment(this.dateFrom).format('YYYY-MM-DD') : undefined,
+      startTime: this.dateFrom ? moment(this.dateFrom).format('HH:mm') : undefined,
+      endDate: this.dateTo
+        ? moment(this.dateTo).format('YYYY-MM-DD')
+        : this.dateFrom
+          ? moment(this.dateFrom).format('YYYY-MM-DD')
+          : undefined,
+      endTime: this.dateTo
+        ? moment(this.dateTo).format('HH:mm')
+        : this.dateFrom
+          ? moment(this.dateFrom).add(30, 'minutes').format('HH:mm')
+          : undefined,
     };
     const dialogRef = this.dialog.open(PrivateAppointmentDetailsComponent, {
       data: dialogData,
@@ -285,15 +397,20 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  askForCreationType(clientX: number, clientY: number, dateString?: string) {
+  askForCreationType(clientX: number, clientY: number, dateFrom?: Date, dateTo?: Date) {
     if (this.menuTrigger) {
       this.positionX = clientX;
       this.positionY = clientY;
       this.menuTrigger.openMenu();
-      if (dateString) {
-        this.clickedDate = dateString;
+      if (dateFrom) {
+        this.dateFrom = dateFrom;
       } else {
-        delete this.clickedDate;
+        delete this.dateFrom;
+      }
+      if (dateTo) {
+        this.dateTo = dateTo;
+      } else {
+        delete this.dateTo;
       }
     }
   }
@@ -333,7 +450,8 @@ export class CalendarComponent implements OnInit {
             'calendar-event--clickable',
             'customer-appointment',
             'clickable-event'
-          ]
+          ],
+          durationEditable: false
         });
       } else if (currentAppointment['@type'] === 'CustomerBirthday') {
         result.push({
@@ -349,7 +467,8 @@ export class CalendarComponent implements OnInit {
           rrule: {
             freq: 'yearly',
             dtstart: moment.utc(currentAppointment.birthday).toDate()
-          }
+          },
+          editable: false
         });
       } else if (currentAppointment['@type'] === 'PrivateAppointment') {
         result.push({

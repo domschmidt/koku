@@ -82,4 +82,21 @@ export class CustomerAppointmentService {
   private loadAppointmentGroups() {
     return this.httpClient.get<KokuDto.AppointmentGroupDto[]>('/api/users/@self/appointmentgroups');
   }
+
+  updateCustomerAppointmentTiming(customerAppointment: KokuDto.CustomerAppointmentDto) {
+    return new Observable((observer) => {
+      this.httpClient.put(`/api/customers/appointments/${customerAppointment.id}/timing`, customerAppointment).subscribe(() => {
+        this.loadAppointmentGroups().subscribe((newResult) => {
+          this._appointmentGroups.next(newResult);
+          observer.next();
+          observer.complete();
+        }, (error) => {
+          observer.error(error);
+        })
+      }, (error) => {
+        observer.error(error);
+      });
+    });
+  }
+
 }

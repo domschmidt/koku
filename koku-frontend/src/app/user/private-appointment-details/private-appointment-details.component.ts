@@ -1,10 +1,10 @@
 import {AfterViewInit, Component, Inject, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NgForm} from "@angular/forms";
-import {MatSnackBar} from "@angular/material/snack-bar";
 import {PreventLosingChangesService} from "../../prevent-losing-changes/prevent-losing-changes.service";
 import {PrivateAppointmentService} from "./private-appointment.service";
 import * as moment from "moment";
+import {SnackBarService} from "../../snackbar/snack-bar.service";
 
 export interface PrivateAppointmentDetailsData {
   privateAppointmentId?: number;
@@ -35,7 +35,7 @@ export class PrivateAppointmentDetailsComponent implements AfterViewInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: PrivateAppointmentDetailsData,
               public dialogRef: MatDialogRef<PrivateAppointmentDetailsComponent>,
               public dialog: MatDialog,
-              public snackBar: MatSnackBar,
+              public snackBarService: SnackBarService,
               private readonly preventLosingChangesService: PreventLosingChangesService,
               public privateAppointmentService: PrivateAppointmentService) {
     this.dialogRef.disableClose = true;
@@ -74,11 +74,7 @@ export class PrivateAppointmentDetailsComponent implements AfterViewInit {
       const endMoment = moment(privateAppointment.endDate + 'T' + privateAppointment.endTime);
       const startMoment = moment(privateAppointment.startDate + 'T' + privateAppointment.startTime);
       if (endMoment.isBefore(startMoment)) {
-        this.snackBar.open('Das Enddatum liegt vor dem Startdatum', undefined, {
-          duration: 3000,
-          verticalPosition: 'top',
-          politeness: "polite"
-        });
+        this.snackBarService.openCommonSnack('Das Enddatum liegt vor dem Startdatum', 'top');
       } else {
         this.saving = true;
         if (!privateAppointment.id) {

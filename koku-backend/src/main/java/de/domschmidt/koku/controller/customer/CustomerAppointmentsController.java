@@ -51,6 +51,16 @@ public class CustomerAppointmentsController extends AbstractController<CustomerA
         super.update(id, updatedDto);
     }
 
+    @PutMapping(value = "/customers/appointments/{id}/timing")
+    @ResponseStatus(HttpStatus.OK)
+    @Transactional
+    public void updateTiming(@PathVariable("id") Long id, @RequestBody CustomerAppointmentDto updatedDto) {
+        final CustomerAppointmentDto existingAppointment = super.findByIdTransformed(id);
+        existingAppointment.setStartDate(updatedDto.getStartDate());
+        existingAppointment.setStartTime(updatedDto.getStartTime());
+        super.update(id, existingAppointment);
+    }
+
     @DeleteMapping(value = "/customers/appointments/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void delete(@PathVariable("id") Long id) {

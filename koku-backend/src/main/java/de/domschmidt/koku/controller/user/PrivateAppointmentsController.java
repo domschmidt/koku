@@ -33,6 +33,17 @@ public class PrivateAppointmentsController extends AbstractController<PrivateApp
         super.update(id, updatedDto);
     }
 
+    @PutMapping(value = "/users/@self/privateappointments/{id}/timing")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateTiming(@PathVariable("id") Long id, @RequestBody PrivateAppointmentDto updatedDto) {
+        final PrivateAppointmentDto existingAppointment = super.findByIdTransformed(id);
+        existingAppointment.setStartDate(updatedDto.getStartDate());
+        existingAppointment.setStartTime(updatedDto.getStartTime());
+        existingAppointment.setEndDate(updatedDto.getEndDate());
+        existingAppointment.setEndTime(updatedDto.getEndTime());
+        super.update(id, existingAppointment);
+    }
+
     @DeleteMapping(value = "/users/@self/privateappointments/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void delete(@PathVariable("id") Long id) {

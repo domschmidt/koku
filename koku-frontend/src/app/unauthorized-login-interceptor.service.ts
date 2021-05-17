@@ -4,7 +4,7 @@ import {EMPTY, Observable, throwError} from "rxjs";
 import {AuthService} from "./auth.service";
 import {Router} from "@angular/router";
 import {catchError, mergeMap} from "rxjs/operators";
-import {MatSnackBar} from "@angular/material/snack-bar";
+import {SnackBarService} from "./snackbar/snack-bar.service";
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ export class UnauthorizedLoginInterceptorService implements HttpInterceptor {
 
   constructor(private readonly authService: AuthService,
               private readonly router: Router,
-              private readonly snackBar: MatSnackBar) {
+              private readonly snackBarService: SnackBarService) {
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -31,14 +31,7 @@ export class UnauthorizedLoginInterceptorService implements HttpInterceptor {
           return this.authService.refreshToken().pipe(mergeMap(() => {
             return this.handleRequest(next, req);
           }), catchError(() => {
-            this.snackBar.open('Nutzersitzung ist abgelaufen. Bitte erneut anmelden.',
-              undefined,
-              {
-                duration: 10000,
-                verticalPosition: 'bottom',
-                politeness: "polite"
-              }
-            );
+            this.snackBarService.openCommonSnack('Nutzersitzung ist abgelaufen. Bitte erneut anmelden.');
             this.router.navigate(['/login'], {
               state: {
                 enforce: true
@@ -47,25 +40,11 @@ export class UnauthorizedLoginInterceptorService implements HttpInterceptor {
             return EMPTY;
           }));
         } else {
-          this.snackBar.open(`Es ist ein Fehler bei der Anfrage aufgetreten. ${err.status}: ${err.statusText}`,
-            undefined,
-            {
-              duration: 10000,
-              verticalPosition: 'bottom',
-              politeness: "polite"
-            }
-          );
+          this.snackBarService.openCommonSnack(`Es ist ein Fehler bei der Anfrage aufgetreten. ${err.status}: ${err.statusText}`);
           return throwError(err);
         }
       } else {
-        this.snackBar.open(`Es ist ein Fehler bei der Anfrage aufgetreten. ${err.status}`,
-          undefined,
-          {
-            duration: 10000,
-            verticalPosition: 'bottom',
-            politeness: "polite"
-          }
-        );
+        this.snackBarService.openCommonSnack(`Es ist ein Fehler bei der Anfrage aufgetreten. ${err.status}`);
         return throwError(err);
       }
     }));

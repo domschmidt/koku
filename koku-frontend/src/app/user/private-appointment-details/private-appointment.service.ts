@@ -45,4 +45,15 @@ export class PrivateAppointmentService {
       });
     });
   }
+
+  updatePrivateAppointmentTiming(appointment: KokuDto.PrivateAppointmentDto) {
+    return new Observable((observer) => {
+      this.httpClient.put(`/api/users/@self/privateappointments/${appointment.id}/timing`, appointment).subscribe(() => {
+        observer.next();
+        observer.complete();
+      }, (error) => {
+        observer.error(error);
+      });
+    });
+  }
 }
