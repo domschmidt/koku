@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.30.840 on 2021-04-22 21:50:50.
+// Generated using typescript-generator version 2.30.840 on 2021-05-26 19:38:50.
 
 declare namespace KokuDto {
 
@@ -155,12 +155,38 @@ declare namespace KokuDto {
         additionalInfo?: string;
         birthday?: string;
         onFirstNameBasis?: boolean;
+        hayFever?: boolean;
+        plasterAllergy?: boolean;
+        cyanoacrylateAllergy?: boolean;
+        asthma?: boolean;
+        dryEyes?: boolean;
+        circulationProblems?: boolean;
+        epilepsy?: boolean;
+        diabetes?: boolean;
+        claustrophobia?: boolean;
+        neurodermatitis?: boolean;
+        contacts?: boolean;
+        glasses?: boolean;
+        eyeDisease?: string;
+        allergy?: string;
     }
 
     interface CustomerSalesDto {
         startDate?: string;
         startTime?: string;
         soldProducts?: ProductDto[];
+    }
+
+    interface CheckboxFormularItemDto extends FormularItemDto {
+        "@type": "CheckboxFormularItemDto";
+        value?: boolean;
+        readOnly?: boolean;
+        label?: string;
+        context?: string;
+        fontSize?: FontSizeDto;
+    }
+
+    interface CheckboxFormularItemDtoBuilderImpl {
     }
 
     interface FormularDto {
@@ -170,7 +196,7 @@ declare namespace KokuDto {
     }
 
     interface FormularItemDto {
-        "@type": "SVGFormularItemDto" | "SignatureFormularItemDto" | "TextFormularItemDto";
+        "@type": "CheckboxFormularItemDto" | "SVGFormularItemDto" | "SignatureFormularItemDto" | "TextFormularItemDto";
         id?: number;
         fieldDefinitionTypeId?: number;
         xs?: number;
@@ -212,6 +238,7 @@ declare namespace KokuDto {
     interface TextFormularItemDto extends FormularItemDto {
         "@type": "TextFormularItemDto";
         text?: string;
+        readOnly?: boolean;
         fontSize?: FontSizeDto;
     }
 
@@ -353,6 +380,6 @@ declare namespace KokuDto {
 
     type ChartFilterUnion = ChartYearMonthFilter;
 
-    type FormularItemDtoUnion = SVGFormularItemDto | SignatureFormularItemDto | TextFormularItemDto;
+    type FormularItemDtoUnion = SVGFormularItemDto | SignatureFormularItemDto | TextFormularItemDto | CheckboxFormularItemDto;
 
 }

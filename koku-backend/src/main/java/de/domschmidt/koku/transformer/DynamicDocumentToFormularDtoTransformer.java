@@ -65,6 +65,11 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
         final List<FormularItemDto> result = new ArrayList<>();
 
         if (fields != null) {
+            final TemplateEngine templateEngine = new SpringTemplateEngine();
+            final StringTemplateResolver templateResolver = new StringTemplateResolver();
+            templateResolver.setTemplateMode(TemplateMode.HTML);
+            templateEngine.addDialect(new Java8TimeDialect());
+            templateEngine.setTemplateResolver(templateResolver);
             for (final DocumentField currentField : fields) {
                 final FieldDefinitionType fieldDefinitionType = currentField.getFieldDefinitionType();
                 if (fieldDefinitionType instanceof SVGFieldDefinitionType) {
@@ -92,12 +97,36 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .align(transformDocumentFieldAlignToFormularItemAlign(currentField))
                             .fieldDefinitionTypeId(fieldDefinitionType.getId())
                             .build());
+                } else if (fieldDefinitionType instanceof CheckboxFieldDefinitionType) {
+                    final Context ctx = new Context();
+                    for (Map.Entry<String, Object> currentContextEntry : replacementToken.entrySet()) {
+                        ctx.setVariable(currentContextEntry.getKey(), currentContextEntry.getValue());
+                    }
+                    final boolean isCheckboxChecked;
+                    final String replacedText;
+                    final String fieldContext = ((CheckboxFieldDefinitionType) fieldDefinitionType).getContext();
+                    if (replacementToken.size() > 0 && fieldContext != null) {
+                        replacedText = templateEngine.process(fieldContext, ctx);
+                        isCheckboxChecked = replacedText.trim().equalsIgnoreCase(Boolean.TRUE.toString());
+                    } else {
+                        isCheckboxChecked = ((CheckboxFieldDefinitionType) fieldDefinitionType).isValue();
+                    }
+                    result.add(CheckboxFormularItemDto.builder()
+                            .id(currentField.getId())
+                            .xs(currentField.getXs())
+                            .sm(currentField.getSm())
+                            .md(currentField.getMd())
+                            .lg(currentField.getLg())
+                            .xl(currentField.getXl())
+                            .align(transformDocumentFieldAlignToFormularItemAlign(currentField))
+                            .value(isCheckboxChecked)
+                            .label(((CheckboxFieldDefinitionType) fieldDefinitionType).getLabel())
+                            .context(fieldContext)
+                            .fontSize(transformFieldDefintionTypeFontSizeToFontSizeDto(((CheckboxFieldDefinitionType)fieldDefinitionType).getFontSize()))
+                            .fieldDefinitionTypeId(fieldDefinitionType.getId())
+                            .readOnly(((CheckboxFieldDefinitionType)fieldDefinitionType).isReadOnly())
+                            .build());
                 } else if (fieldDefinitionType instanceof TextFieldDefinitionType) {
-                    final TemplateEngine templateEngine = new SpringTemplateEngine();
-                    final StringTemplateResolver templateResolver = new StringTemplateResolver();
-                    templateResolver.setTemplateMode(TemplateMode.HTML);
-                    templateEngine.addDialect(new Java8TimeDialect());
-                    templateEngine.setTemplateResolver(templateResolver);
                     final Context ctx = new Context();
                     for (Map.Entry<String, Object> currentContextEntry : replacementToken.entrySet()) {
                         ctx.setVariable(currentContextEntry.getKey(), currentContextEntry.getValue());
@@ -125,8 +154,9 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .xl(currentField.getXl())
                             .align(transformDocumentFieldAlignToFormularItemAlign(currentField))
                             .text(replacedText)
-                            .fontSize(transformFieldDefintionTypeFontSizeToFontSizeDto((TextFieldDefinitionType)fieldDefinitionType))
+                            .fontSize(transformFieldDefintionTypeFontSizeToFontSizeDto(((TextFieldDefinitionType) fieldDefinitionType).getFontSize()))
                             .fieldDefinitionTypeId(fieldDefinitionType.getId())
+                            .readOnly(((TextFieldDefinitionType) fieldDefinitionType).isReadOnly())
                             .build());
                 }
             }
@@ -135,10 +165,10 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
         return result;
     }
 
-    private FontSizeDto transformFieldDefintionTypeFontSizeToFontSizeDto(final TextFieldDefinitionType fieldDefinitionType) {
+    private FontSizeDto transformFieldDefintionTypeFontSizeToFontSizeDto(final FontSize fontSize) {
         FontSizeDto result;
-        if (fieldDefinitionType.getFontSize() != null) {
-            switch (fieldDefinitionType.getFontSize()) {
+        if (fontSize != null) {
+            switch (fontSize) {
                 case LARGE:
                     result = FontSizeDto.LARGE;
                     break;
@@ -305,7 +335,28 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .fieldDefinitionType(TextFieldDefinitionType.builder()
                                     .id(currentField.getFieldDefinitionTypeId())
                                     .text(((TextFormularItemDto) currentField).getText())
+                                    .isReadOnly(((TextFormularItemDto) currentField).isReadOnly())
                                     .fontSize(transformFontSizeDtoToFieldDefintionTypeFontSize(((TextFormularItemDto) currentField).getFontSize()))
+                                    .build())
+                            .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
+                            .build());
+                } else if (currentField instanceof CheckboxFormularItemDto) {
+                    result.add(DocumentField.builder()
+                            .row(newRow)
+                            .id(currentField.getId())
+                            .xs(currentField.getXs())
+                            .sm(currentField.getSm())
+                            .md(currentField.getMd())
+                            .lg(currentField.getLg())
+                            .xl(currentField.getXl())
+                            .positionIndex(fieldIndex)
+                            .fieldDefinitionType(CheckboxFieldDefinitionType.builder()
+                                    .id(currentField.getFieldDefinitionTypeId())
+                                    .label(((CheckboxFormularItemDto) currentField).getLabel())
+                                    .context(((CheckboxFormularItemDto) currentField).getContext())
+                                    .value(((CheckboxFormularItemDto) currentField).isValue())
+                                    .readOnly(((CheckboxFormularItemDto) currentField).isReadOnly())
+                                    .fontSize(transformFontSizeDtoToFieldDefintionTypeFontSize(((CheckboxFormularItemDto) currentField).getFontSize()))
                                     .build())
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
                             .build());

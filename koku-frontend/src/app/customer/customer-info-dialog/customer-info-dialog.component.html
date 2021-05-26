@@ -26,23 +26,20 @@
   </ng-container>
 </mat-tab-group>
 
-<mat-dialog-content>
-  <customer-details (afterSaved)="onCustomerSaved($event)"
-                    (dirty)="formularDirty($event)"
-                    *ngIf="customerTabs[activeTabIndex].label === 'Info'"
-                    [customerId]="customerId"></customer-details>
-  <customer-appointments *ngIf="customerTabs[activeTabIndex].label === 'Termine'"
-                         [customerAppointmentsChanged]="afterAppointmentChanged.asObservable()"
-                         [customerId]="customerId"></customer-appointments>
-  <customer-sales        *ngIf="customerTabs[activeTabIndex].label === 'Verkauf'"
-                         [customerAppointmentsChanged]="afterAppointmentChanged.asObservable()"
-                         [customerId]="customerId"></customer-sales>
+<customer-details (afterSaved)="onCustomerSaved($event)"
+                  (dirty)="formularDirty($event)"
+                  *ngIf="customerTabs[activeTabIndex].label === 'Info'"
+                  [customerId]="customerId"></customer-details>
+<customer-appointments *ngIf="customerTabs[activeTabIndex].label === 'Termine'"
+                       [customerAppointmentsChanged]="afterAppointmentChanged.asObservable()"
+                       [customerId]="customerId"></customer-appointments>
+<customer-sales *ngIf="customerTabs[activeTabIndex].label === 'Verkauf'"
+                [customerAppointmentsChanged]="afterAppointmentChanged.asObservable()"
+                [customerId]="customerId"></customer-sales>
 
-  <customer-uploads *ngIf="customerTabs[activeTabIndex].label === 'Documents'"
-                    [customerId]="customerId"></customer-uploads>
+<customer-uploads *ngIf="customerTabs[activeTabIndex].label === 'Documents'"
+                  [customerId]="customerId"></customer-uploads>
 
-  <customer-statistics *ngIf="customerTabs[activeTabIndex].label === 'Statistik'"
-                       [customerId]="customerId"></customer-statistics>
+<customer-statistics *ngIf="customerTabs[activeTabIndex].label === 'Statistik'"
+                     [customerId]="customerId"></customer-statistics>
 
-
-</mat-dialog-content>

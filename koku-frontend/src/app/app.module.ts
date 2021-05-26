@@ -107,6 +107,8 @@ import {PromotionComponent} from "./promotions/promotion.component";
 import {PromotionDetailsComponent} from "./promotions/promotion-details/promotion-details.component";
 import {PromotionSelectionComponent} from "./promotions/promotion-selection/promotion-selection.component";
 import {CustomerAppointmentActivityInfoDialogComponent} from "./customer/customer-appointment-activity-info-dialog/customer-appointment-activity-info-dialog.component";
+import {DocumentCheckboxFieldComponent} from "./document/document-details/document-checkbox-field/document-checkbox-field.component";
+import {CheckboxFieldComponent} from "./fields/checkbox/checkbox-field.component";
 
 FullCalendarModule.registerPlugins([ // register FullCalendar plugins
   dayGridPlugin,
@@ -178,7 +180,9 @@ Chart.register(...registerables);
     PromotionComponent,
     PromotionDetailsComponent,
     PromotionSelectionComponent,
-    CustomerAppointmentActivityInfoDialogComponent
+    CustomerAppointmentActivityInfoDialogComponent,
+    DocumentCheckboxFieldComponent,
+    CheckboxFieldComponent
   ],
   imports: [
     GaugeModule.forRoot(),

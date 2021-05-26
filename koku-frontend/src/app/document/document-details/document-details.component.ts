@@ -12,6 +12,7 @@ import {
   AlertDialogData
 } from "../../alert-dialog/alert-dialog.component";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {DocumentCheckboxFieldComponent} from "./document-checkbox-field/document-checkbox-field.component";
 
 export interface DocumentDetailsComponentData {
   documentId?: number;
@@ -233,6 +234,22 @@ export class DocumentDetailsComponent {
           }
         });
         break;
+      case 'CheckboxFormularItemDto':
+        const checkboxCreationDialog = this.dialog.open(DocumentCheckboxFieldComponent, {
+          data: formField,
+          closeOnNavigation: false,
+          width: '100%',
+          maxWidth: 500,
+          position: {
+            top: '20px'
+          }
+        });
+        checkboxCreationDialog.afterClosed().subscribe((changedField) => {
+          if (changedField && row && row.items) {
+            row.items[row.items.indexOf(formField)] = changedField
+          }
+        });
+        break;
     }
   }
 
@@ -260,6 +277,28 @@ export class DocumentDetailsComponent {
 
   createTextField(row: KokuDto.FormularRowDto, targetPosition?: number) {
     const fieldCreationDialog = this.dialog.open(DocumentTextFieldComponent, {
+      closeOnNavigation: false,
+      width: '100%',
+      maxWidth: 500,
+      position: {
+        top: '20px'
+      }
+    });
+    fieldCreationDialog.afterClosed().subscribe((createdField) => {
+      if (createdField && row && row.items) {
+        if (targetPosition === undefined) {
+          row.items.push(createdField);
+        } else {
+          const itemsClone = [...row.items];
+          itemsClone.splice(targetPosition, 0, createdField);
+          row.items = itemsClone;
+        }
+      }
+    });
+  }
+
+  createCheckboxField(row: KokuDto.FormularRowDto, targetPosition?: number) {
+    const fieldCreationDialog = this.dialog.open(DocumentCheckboxFieldComponent, {
       closeOnNavigation: false,
       width: '100%',
       maxWidth: 500,

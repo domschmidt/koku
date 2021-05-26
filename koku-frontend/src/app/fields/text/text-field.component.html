@@ -1,3 +1,11 @@
-<span class="text-field"
-      [class.text-field--large]="fontSize === 'LARGE'"
-      [class.text-field--small]="fontSize === 'SMALL'">{{internalValue}}</span>
+<mat-form-field class="text-field">
+  <textarea [(ngModel)]="internalValue"
+            matInput
+            class="text-field__inner"
+            [class.text-field__inner--large]="fontSize === 'LARGE'"
+            [class.text-field__inner--small]="fontSize === 'SMALL'"
+            [disabled]="readOnly === true"
+            cdkTextareaAutosize
+            (change)="onChange(internalValue)"
+  ></textarea>
+</mat-form-field>

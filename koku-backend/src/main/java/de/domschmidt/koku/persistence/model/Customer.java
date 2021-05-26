@@ -35,6 +35,20 @@ public class Customer extends DomainModel implements Serializable {
     String medicalTolerance;
     String additionalInfo;
     boolean onFirstNameBasis;
+    boolean hayFever;
+    boolean plasterAllergy;
+    boolean cyanoacrylateAllergy;
+    boolean asthma;
+    boolean dryEyes;
+    boolean circulationProblems;
+    boolean epilepsy;
+    boolean diabetes;
+    boolean claustrophobia;
+    boolean neurodermatitis;
+    boolean contacts;
+    boolean glasses;
+    String eyeDisease;
+    String allergy;
     boolean deleted;
     LocalDate birthday;
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)

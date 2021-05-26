@@ -127,6 +127,10 @@
                       mat-menu-item>
                 <span>Text</span>
               </button>
+              <button (click)="createCheckboxField(row)"
+                      mat-menu-item>
+                <span>Checkbox</span>
+              </button>
               <button (click)="createSignatureField(row)"
                       mat-menu-item>
                 <span>Unterschrift</span>
@@ -170,6 +174,10 @@
                         mat-menu-item>
                   <span>Text</span>
                 </button>
+                <button (click)="createCheckboxField(row, (row.items || []).indexOf(formField))"
+                        mat-menu-item>
+                  <span>Checkbox</span>
+                </button>
                 <button (click)="createSignatureField(row, (row.items || []).indexOf(formField))"
                         mat-menu-item>
                   <span>Unterschrift</span>
@@ -191,6 +199,10 @@
                 <button (click)="createTextField(row, (row.items || []).indexOf(formField) + 1)"
                         mat-menu-item>
                   <span>Text</span>
+                </button>
+                <button (click)="createCheckboxField(row, (row.items || []).indexOf(formField) + 1)"
+                        mat-menu-item>
+                  <span>Checkbox</span>
                 </button>
                 <button (click)="createSignatureField(row, (row.items || []).indexOf(formField) + 1)"
                         mat-menu-item>
@@ -227,6 +239,15 @@
             </div>
 
             <div class="document__row__contents__item__inner">
+              <checkbox-field *ngIf="formField['@type']==='CheckboxFormularItemDto'"
+                              [name]="rowIndex + '' + fieldIndex + ''"
+                              [style.justify-content]="getAlignStyle(formField.align)"
+                              [fontSize]="formField.fontSize"
+                              [label]="formField.label"
+                              [(ngModel)]="formField.value"
+                              [readOnly]="true"
+                              style="padding: 4px 0;">
+              </checkbox-field>
               <signature-field *ngIf="formField['@type']==='SignatureFormularItemDto'"
                                [name]="rowIndex + '' + fieldIndex + ''"
                                [style.justify-content]="getAlignStyle(formField.align)"
@@ -238,6 +259,7 @@
                           [style.justify-content]="getAlignStyle(formField.align)"
                           [fontSize]="formField.fontSize"
                           [(ngModel)]="formField.text"
+                          [readOnly]="true"
                           style="padding: 4px 0;">
               </text-field>
               <svg-field *ngIf="formField['@type']==='SVGFormularItemDto'"

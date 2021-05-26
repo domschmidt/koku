@@ -1,81 +1,70 @@
 <form #form="ngForm"
       (ngSubmit)="save(form)"
-      class="svg-field-form">
+      class="checkbox-field-form">
   <mat-dialog-content>
     <div style="padding: 12px 0;">
-      <div *ngIf="textField">
-        <mat-menu #replacementTokenMenu>
-          <button (click)="addReplacementToken(textArea, replacementToken, textField)"
-                  mat-menu-item
-                  *ngFor="let replacementToken of replacementTokens"
-          >
-            <span>{{replacementToken.tokenName}}</span>
-          </button>
-        </mat-menu>
+      <div *ngIf="checkboxField">
 
-        <mat-form-field class="text-configuration-field text-configuration-field--full-width">
-          <mat-label>Text</mat-label>
-          <textarea [(ngModel)]="textField.text"
-                    #textArea
-                    cdkFocusInitial
-                    matInput
-                    name="text"
-                    placeholder="Text"
-                    inputmode="text"
-                    type="text"
-                    cdkTextareaAutosize
-                    rows="3"
-          ></textarea>
-          <div class="text-field-menu">
-            <div class="text-field-menu__inner">
-              <button mat-icon-button
-                      color="primary"
-                      [mat-menu-trigger-for]="replacementTokenMenu"
-                      type="button">
-                <mat-icon svgIcon="brick_block_add" class="custom-svg-icon"></mat-icon>
-              </button>
-            </div>
-          </div>
+        <mat-form-field class="checkbox-configuration-field checkbox-configuration-field--full-width">
+          <mat-label>Label</mat-label>
+          <input [(ngModel)]="checkboxField.label"
+                 matInput
+                 name="label"
+                 placeholder="Label eingeben"
+          >
         </mat-form-field>
 
-        <mat-button-toggle-group [(ngModel)]="textField.align"
+        <mat-checkbox class="checkbox-configuration-field"
+                      [(ngModel)]="checkboxField.value"
+                      name="value"
+        >Initialer Zustand
+        </mat-checkbox>
+
+        <mat-form-field class="checkbox-configuration-field">
+          <mat-label>Kontext</mat-label>
+          <mat-select [(value)]="checkboxField.context">
+            <mat-option [value]="currentReplacementToken.replacementToken"
+                        *ngFor="let currentReplacementToken of replacementTokens">
+              {{currentReplacementToken.tokenName}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-button-toggle-group [(ngModel)]="checkboxField.align"
                                  name="alignment"
         >
           <mat-button-toggle [value]="'LEFT'"
-                             title="Links ausrichten"
-                             aria-label="Text align left">
+                             title="Links ausrichten">
             <mat-icon>format_align_left</mat-icon>
           </mat-button-toggle>
           <mat-button-toggle [value]="'CENTER'"
-                             title="Mittig ausrichten"
-                             aria-label="Text align center">
+                             title="Mittig ausrichten">
             <mat-icon>format_align_center</mat-icon>
           </mat-button-toggle>
           <mat-button-toggle [value]="'RIGHT'"
-                             title="Rechts ausrichten"
-                             aria-label="Text align right">
+                             title="Rechts ausrichten">
             <mat-icon>format_align_right</mat-icon>
           </mat-button-toggle>
         </mat-button-toggle-group>
 
-        <mat-form-field class="text-configuration-field">
+        <mat-form-field class="checkbox-configuration-field">
           <mat-label>Schriftgröße</mat-label>
-          <mat-select [(value)]="textField.fontSize">
+          <mat-select [(value)]="checkboxField.fontSize">
             <mat-option [value]="null">Normal</mat-option>
             <mat-option [value]="'SMALL'">Klein</mat-option>
             <mat-option [value]="'LARGE'">Groß</mat-option>
           </mat-select>
         </mat-form-field>
 
-        <mat-checkbox class="text-configuration-field"
-                      [(ngModel)]="textField.readOnly"
+        <mat-checkbox class="checkbox-configuration-field"
+                      [(ngModel)]="checkboxField.readOnly"
                       name="readonly"
         >Eingabe gesperrt
         </mat-checkbox>
 
-        <mat-form-field class="text-configuration-field">
+        <mat-form-field class="checkbox-configuration-field">
           <mat-label>Feldgröße X-Large</mat-label>
-          <mat-select [(value)]="textField.xl">
+          <mat-select [(value)]="checkboxField.xl">
             <mat-option [value]="null"></mat-option>
             <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
             <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
@@ -83,9 +72,9 @@
             <mat-option [value]="12">Gesamte Breite</mat-option>
           </mat-select>
         </mat-form-field>
-        <mat-form-field class="text-configuration-field">
+        <mat-form-field class="checkbox-configuration-field">
           <mat-label>Feldgröße Large</mat-label>
-          <mat-select [(value)]="textField.lg">
+          <mat-select [(value)]="checkboxField.lg">
             <mat-option [value]="null"></mat-option>
             <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
             <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
@@ -93,9 +82,9 @@
             <mat-option [value]="12">Gesamte Breite</mat-option>
           </mat-select>
         </mat-form-field>
-        <mat-form-field class="text-configuration-field">
+        <mat-form-field class="checkbox-configuration-field">
           <mat-label>Feldgröße Medium</mat-label>
-          <mat-select [(value)]="textField.md">
+          <mat-select [(value)]="checkboxField.md">
             <mat-option [value]="null"></mat-option>
             <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
             <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
@@ -103,9 +92,9 @@
             <mat-option [value]="12">Gesamte Breite</mat-option>
           </mat-select>
         </mat-form-field>
-        <mat-form-field class="text-configuration-field">
+        <mat-form-field class="checkbox-configuration-field">
           <mat-label>Feldgröße Small</mat-label>
-          <mat-select [(value)]="textField.sm">
+          <mat-select [(value)]="checkboxField.sm">
             <mat-option [value]="null"></mat-option>
             <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
             <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
@@ -113,9 +102,9 @@
             <mat-option [value]="12">Gesamte Breite</mat-option>
           </mat-select>
         </mat-form-field>
-        <mat-form-field class="text-configuration-field">
+        <mat-form-field class="checkbox-configuration-field">
           <mat-label>Feldgröße X-Small</mat-label>
-          <mat-select [(value)]="textField.xs">
+          <mat-select [(value)]="checkboxField.xs">
             <mat-option [value]="null"></mat-option>
             <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
             <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
@@ -127,7 +116,7 @@
     </div>
   </mat-dialog-content>
 
-  <mat-dialog-actions *ngIf="textField" align="end">
+  <mat-dialog-actions *ngIf="checkboxField" align="end">
     <button mat-button mat-dialog-close>Abbrechen</button>
     <button *ngIf="!createMode"
             [class.button-spinner]="saving"

@@ -12,10 +12,12 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 
-public class TextFormularItemDto extends FormularItemDto {
+public class CheckboxFormularItemDto extends FormularItemDto {
 
-    String text;
+    boolean value;
     boolean readOnly;
+    String label;
+    String context;
     FontSizeDto fontSize;
 
 }

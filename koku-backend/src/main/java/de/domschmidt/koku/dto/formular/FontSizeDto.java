@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum FontSizeDto {
 
     SMALL(8),
+    MEDIUM(12),
     LARGE(20);
 
     // use with openpdf

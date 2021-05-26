@@ -31,7 +31,6 @@ public class DocumentField extends DomainModel implements Serializable {
 
     @Enumerated(EnumType.STRING)
     Alignment alignment;
-    Boolean readOnly;
     Integer xs;
     Integer sm;
     Integer md;
@@ -44,7 +43,6 @@ public class DocumentField extends DomainModel implements Serializable {
         this.positionIndex = fieldToBeCopied.getPositionIndex();
         this.row = documentRow;
         this.alignment = fieldToBeCopied.getAlignment();
-        this.readOnly = fieldToBeCopied.getReadOnly();
         this.xs = fieldToBeCopied.getXs();
         this.sm = fieldToBeCopied.getSm();
         this.md = fieldToBeCopied.getMd();
@@ -57,6 +55,8 @@ public class DocumentField extends DomainModel implements Serializable {
             this.fieldDefinitionType = new SignatureFieldDefinitionType((SignatureFieldDefinitionType) fieldDefintionTypeToBeCopied);
         } else if (fieldDefintionTypeToBeCopied instanceof TextFieldDefinitionType) {
             this.fieldDefinitionType = new TextFieldDefinitionType((TextFieldDefinitionType) fieldDefintionTypeToBeCopied);
+        } else if (fieldDefintionTypeToBeCopied instanceof CheckboxFieldDefinitionType) {
+            this.fieldDefinitionType = new CheckboxFieldDefinitionType((CheckboxFieldDefinitionType) fieldDefintionTypeToBeCopied);
         }
     }
 }

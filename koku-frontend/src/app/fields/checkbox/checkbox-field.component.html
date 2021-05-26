@@ -1,0 +1,7 @@
+<mat-checkbox class="checkbox-field"
+              [(ngModel)]="internalValue"
+              [disabled]="readOnly === true"
+><span class="checkbox-field__label"
+  [class.checkbox-field__label--large]="fontSize === 'LARGE'"
+  [class.checkbox-field__label--small]="fontSize === 'SMALL'">{{label}}</span>
+</mat-checkbox>

@@ -1,0 +1,11 @@
+@import '~@angular/material/theming';
+@import "~src/styles";
+
+.checkbox-configuration-field {
+  display: block;
+
+  &--full-width {
+    width: 100%;
+  }
+
+}

@@ -28,7 +28,7 @@ export class DocumentTextFieldComponent {
     } else {
       this.textField = {...data};
     }
-    this.documentService.getDocumentReplacementToken().subscribe((tokens) => {
+    this.documentService.getDocumentTextReplacementToken().subscribe((tokens) => {
       this.replacementTokens = tokens;
     });
   }

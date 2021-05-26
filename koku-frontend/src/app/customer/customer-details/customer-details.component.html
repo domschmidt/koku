@@ -160,6 +160,82 @@
                     placeholder="Medizinische Informationen eingeben"
           ></textarea>
         </mat-form-field>
+        <mat-checkbox class="user-details-field hayFever-field"
+                      [(ngModel)]="customer.hayFever"
+                      name="hayFever"
+        >Heuschnupfen
+        </mat-checkbox>
+        <mat-checkbox class="user-details-field plasterAllergy-field"
+                      [(ngModel)]="customer.plasterAllergy"
+                      name="plasterAllergy"
+        >Allergie gegen Pflaster
+        </mat-checkbox>
+        <mat-checkbox class="user-details-field cyanoacrylateAllergy-field"
+                      [(ngModel)]="customer.cyanoacrylateAllergy"
+                      name="cyanoacrylateAllergy"
+        >Allergie gegen Cyanacrylat
+        </mat-checkbox>
+        <mat-form-field class="user-details-field allergy-field">
+          <mat-label>Andere Allergien</mat-label>
+          <textarea [(ngModel)]="customer.allergy" cdkTextareaAutosize
+                    matInput
+                    name="allergy"
+                    placeholder="Allergien eingeben"
+          ></textarea>
+        </mat-form-field>
+        <mat-checkbox class="user-details-field asthma-field"
+                      [(ngModel)]="customer.asthma"
+                      name="asthma"
+        >Asthma
+        </mat-checkbox>
+        <mat-checkbox class="user-details-field dryEyes-field"
+                      [(ngModel)]="customer.dryEyes"
+                      name="dryEyes"
+        >Trockene Augen
+        </mat-checkbox>
+        <mat-form-field class="user-details-field allergy-field">
+          <mat-label>Andere Augenerkrankungen</mat-label>
+          <textarea [(ngModel)]="customer.eyeDisease" cdkTextareaAutosize
+                    matInput
+                    name="eyeDisease"
+                    placeholder="Andere Augenerkrankungen eingeben"
+          ></textarea>
+        </mat-form-field>
+        <mat-checkbox class="user-details-field circulationProblems-field"
+                      [(ngModel)]="customer.circulationProblems"
+                      name="circulationProblems"
+        >Kreislaufprobleme
+        </mat-checkbox>
+        <mat-checkbox class="user-details-field epilepsy-field"
+                      [(ngModel)]="customer.epilepsy"
+                      name="epilepsy"
+        >Epilepsie
+        </mat-checkbox>
+        <mat-checkbox class="user-details-field diabetes-field"
+                      [(ngModel)]="customer.diabetes"
+                      name="diabetes"
+        >Diabetes
+        </mat-checkbox>
+        <mat-checkbox class="user-details-field claustrophobia-field"
+                      [(ngModel)]="customer.claustrophobia"
+                      name="claustrophobia"
+        >Klaustrophobie
+        </mat-checkbox>
+        <mat-checkbox class="user-details-field neurodermatitis-field"
+                      [(ngModel)]="customer.neurodermatitis"
+                      name="neurodermatitis"
+        >Neurodermitis
+        </mat-checkbox>
+        <mat-checkbox class="user-details-field contacts-field"
+                      [(ngModel)]="customer.contacts"
+                      name="contacts"
+        >Kontaktlinsen
+        </mat-checkbox>
+        <mat-checkbox class="user-details-field glasses-field"
+                      [(ngModel)]="customer.glasses"
+                      name="glasses"
+        >Brillenträger
+        </mat-checkbox>
       </div>
     </div>
   </mat-dialog-content>

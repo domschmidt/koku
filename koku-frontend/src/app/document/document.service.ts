@@ -24,8 +24,12 @@ export class DocumentService {
     return this.httpClient.get<KokuDto.FormularDto>(`/api/documents/${documentId}`);
   }
 
-  getDocumentReplacementToken() {
-    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/replacementtoken`);
+  getDocumentTextReplacementToken() {
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/replacementtoken/text`);
+  }
+
+  getDocumentCheckboxReplacementToken() {
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/replacementtoken/checkbox`);
   }
 
   createDocument(document: KokuDto.FormularDto) {

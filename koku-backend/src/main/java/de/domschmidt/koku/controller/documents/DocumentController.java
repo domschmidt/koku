@@ -7,7 +7,8 @@ import de.domschmidt.koku.persistence.model.dynamic_documents.DynamicDocument;
 import de.domschmidt.koku.service.impl.DocumentService;
 import de.domschmidt.koku.service.searchoptions.DocumentSearchOptions;
 import de.domschmidt.koku.transformer.DynamicDocumentToFormularDtoTransformer;
-import de.domschmidt.koku.utils.DocumentReplacementToken;
+import de.domschmidt.koku.utils.DocumentCheckboxReplacementToken;
+import de.domschmidt.koku.utils.DocumentTextReplacementToken;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,10 +38,22 @@ public class DocumentController extends AbstractController<DynamicDocument, Form
         return super.findByIdTransformed(id);
     }
 
-    @GetMapping(value = "/replacementtoken")
-    public List<FormularReplacementTokenDto> getAllReplacementTokenPresets() {
+    @GetMapping(value = "/replacementtoken/text")
+    public List<FormularReplacementTokenDto> getAllTextReplacementTokenPresets() {
         final List<FormularReplacementTokenDto> result = new ArrayList<>();
-        for (final DocumentReplacementToken currentReplacementToken : DocumentReplacementToken.values()) {
+        for (final DocumentTextReplacementToken currentReplacementToken : DocumentTextReplacementToken.values()) {
+            result.add(FormularReplacementTokenDto.builder()
+                    .replacementToken(currentReplacementToken.getReplacementString())
+                    .tokenName(currentReplacementToken.getTokenName())
+                    .build());
+        }
+        return result;
+    }
+
+    @GetMapping(value = "/replacementtoken/checkbox")
+    public List<FormularReplacementTokenDto> getAllCheckboxReplacementTokenPresets() {
+        final List<FormularReplacementTokenDto> result = new ArrayList<>();
+        for (final DocumentCheckboxReplacementToken currentReplacementToken : DocumentCheckboxReplacementToken.values()) {
             result.add(FormularReplacementTokenDto.builder()
                     .replacementToken(currentReplacementToken.getReplacementString())
                     .tokenName(currentReplacementToken.getTokenName())

@@ -18,7 +18,8 @@ import lombok.experimental.SuperBuilder;
         value = {
                 @JsonSubTypes.Type(value = SVGFormularItemDto.class, name = "SVGFormularItemDto"),
                 @JsonSubTypes.Type(value = SignatureFormularItemDto.class, name = "SignatureFormularItemDto"),
-                @JsonSubTypes.Type(value = TextFormularItemDto.class, name = "TextFormularItemDto")
+                @JsonSubTypes.Type(value = TextFormularItemDto.class, name = "TextFormularItemDto"),
+                @JsonSubTypes.Type(value = CheckboxFormularItemDto.class, name = "CheckboxFormularItemDto")
         }
 )
 public abstract class FormularItemDto {

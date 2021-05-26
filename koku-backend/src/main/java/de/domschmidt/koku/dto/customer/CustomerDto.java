@@ -29,5 +29,19 @@ public class CustomerDto {
     private String additionalInfo;
     private LocalDate birthday;
     private Boolean onFirstNameBasis;
+    private boolean hayFever;
+    private boolean plasterAllergy;
+    private boolean cyanoacrylateAllergy;
+    private boolean asthma;
+    private boolean dryEyes;
+    private boolean circulationProblems;
+    private boolean epilepsy;
+    private boolean diabetes;
+    private boolean claustrophobia;
+    private boolean neurodermatitis;
+    private boolean contacts;
+    private boolean glasses;
+    private String eyeDisease;
+    private String allergy;
 
 }

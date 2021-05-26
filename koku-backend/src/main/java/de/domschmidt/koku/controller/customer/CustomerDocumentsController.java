@@ -45,6 +45,9 @@ import java.util.Map;
 @Slf4j
 public class CustomerDocumentsController extends AbstractController<DynamicDocument, FormularDto, DocumentSearchOptions> {
 
+    public static final String CHECKBOX_EMPTY_BASE64_SVG = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJ3aWR0aDo0OHB4O2hlaWdodDo0OHB4OyIgdmlld0JveD0iMCAwIDI0IDI0Ij4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBmaWxsPSIjMDAwMDAwIiBuZy1hdHRyLWQ9Int7aWNvbi5kYXRhfX0iIGQ9Ik0xOSwzSDVDMy44OSwzIDMsMy44OSAzLDVWMTlBMiwyIDAgMCwwIDUsMjFIMTlBMiwyIDAgMCwwIDIxLDE5VjVDMjEsMy44OSAyMC4xLDMgMTksM00xOSw1VjE5SDVWNUgxOVoiLz4KICAgICAgICAgICAgICAgIDwvc3ZnPg==";
+    public static final String CHECKBOX_CHECKED_BASE64_SVG = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJ3aWR0aDo0OHB4O2hlaWdodDo0OHB4OyIgdmlld0JveD0iMCAwIDI0IDI0Ij4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBmaWxsPSIjMDAwMDAwIiBuZy1hdHRyLWQ9Int7aWNvbi5kYXRhfX0iIGQ9Ik0xOSwxOUg1VjVIMTVWM0g1QzMuODksMyAzLDMuODkgMyw1VjE5QTIsMiAwIDAsMCA1LDIxSDE5QTIsMiAwIDAsMCAyMSwxOVYxMUgxOU03LjkxLDEwLjA4TDYuNSwxMS41TDExLDE2TDIxLDZMMTkuNTksNC41OEwxMSwxMy4xN0w3LjkxLDEwLjA4WiIvPgogICAgICAgICAgICAgICAgPC9zdmc+";
+
     public static final int COL_COUNT = 12;
     private final ICustomerService customerService;
     private final StorageService storageService;
@@ -105,7 +108,7 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
 
                     final int colspan = getColspan(formularItem);
                     if (usedCols + colspan > COL_COUNT) {
-                        while(usedCols < COL_COUNT) {
+                        while (usedCols < COL_COUNT) {
                             // fill the current row with stupid empty columns
                             // this is required to properly organize the grid
                             // the function table.completeRow() adds strange borders.
@@ -133,17 +136,21 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                         currentCell.setHorizontalAlignment(getAlignment(formularItem));
                         currentCell.setPadding(5);
                         currentCell.setBorderWidth(0);
+                        currentCell.setUseAscender(true);
+                        currentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                         table.addCell(currentCell);
                     } else if (formularItem instanceof SVGFormularItemDto) {
                         final Image svgImage = createImageFromSvgBase64(pdfWriter, ((SVGFormularItemDto) formularItem).getSvgContentBase64encoded());
                         svgImage.setAlignment(getAlignment(formularItem));
-                        svgImage.scaleToFit(((SVGFormularItemDto) formularItem).getMaxWidthInPx(),pageSize.getHeight());
+                        svgImage.scaleToFit(((SVGFormularItemDto) formularItem).getMaxWidthInPx(), pageSize.getHeight());
 
                         final PdfPCell currentCell = new PdfPCell(svgImage);
                         currentCell.setColspan(colspan);
                         currentCell.setHorizontalAlignment(getAlignment(formularItem));
                         currentCell.setPadding(5);
                         currentCell.setBorderWidth(0);
+                        currentCell.setUseAscender(true);
+                        currentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                         table.addCell(currentCell);
                     } else if (formularItem instanceof SignatureFormularItemDto) {
                         final String dataUriString = ((SignatureFormularItemDto) formularItem).getDataUri();
@@ -156,13 +163,66 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                             image = Image.getInstance(Base64.getDecoder().decode(base64ImageContent));
                         }
                         image.setAlignment(getAlignment(formularItem));
-                        image.scaleToFit(300,100);
+                        image.scaleToFit(300, 100);
 
                         final PdfPCell currentCell = new PdfPCell(image);
                         currentCell.setColspan(colspan);
                         currentCell.setHorizontalAlignment(getAlignment(formularItem));
                         currentCell.setPadding(5);
                         currentCell.setBorderWidth(0);
+                        currentCell.setUseAscender(true);
+                        currentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        table.addCell(currentCell);
+                    } else if (formularItem instanceof CheckboxFormularItemDto) {
+                        // build label
+                        final Chunk labelChunk = new Chunk(((CheckboxFormularItemDto) formularItem).getLabel());
+                        final Paragraph labelParagraph = new Paragraph(labelChunk);
+                        FontSizeDto fontSize = ((CheckboxFormularItemDto) formularItem).getFontSize();
+                        if (fontSize == null) {
+                            fontSize = FontSizeDto.MEDIUM;
+                        }
+                        labelParagraph.getFont().setSize(fontSize.getPdfPCellFontSize());
+                        final PdfPCell labelCell = new PdfPCell(labelParagraph);
+                        labelCell.setVerticalAlignment(PdfPCell.ALIGN_MIDDLE);
+                        labelCell.setUseAscender(true);
+                        labelCell.setBorderWidth(0);
+                        labelCell.setPaddingLeft(1);
+                        labelCell.setPaddingRight(1);
+
+                        // build checkbox img
+                        final Image checkboxImage;
+                        if (((CheckboxFormularItemDto) formularItem).isValue()) {
+                            checkboxImage = createImageFromSvgBase64(pdfWriter, CHECKBOX_CHECKED_BASE64_SVG);
+                        } else {
+                            checkboxImage = createImageFromSvgBase64(pdfWriter, CHECKBOX_EMPTY_BASE64_SVG);
+                        }
+                        final PdfPCell imageCell = new PdfPCell(checkboxImage, true);
+                        imageCell.setVerticalAlignment(PdfPCell.ALIGN_MIDDLE);
+                        labelCell.setUseAscender(true);
+                        imageCell.setBorderWidth(0);
+                        imageCell.setPaddingLeft(1);
+                        imageCell.setPaddingRight(1);
+
+                        //build wrapping table (checkbox|label)
+                        final PdfPTable checkboxTable = new PdfPTable(2);
+                        checkboxTable.setHorizontalAlignment(getAlignment(formularItem));
+                        checkboxTable.setWidths(new float[] {fontSize.getPdfPCellFontSize(), labelChunk.getWidthPoint()});
+                        // sum of label text width + checkbox width + padding l&r + magic number 1
+                        checkboxTable.setTotalWidth(labelChunk.getWidthPoint() + fontSize.getPdfPCellFontSize() + 5);
+                        checkboxTable.setLockedWidth(true);
+
+                        // add checkbox image
+                        checkboxTable.addCell(imageCell);
+
+                        // add label
+                        checkboxTable.addCell(labelCell);
+
+                        final PdfPCell currentCell = new PdfPCell(checkboxTable);
+                        currentCell.setColspan(colspan);
+                        currentCell.setPadding(5);
+                        currentCell.setBorderWidth(0);
+                        currentCell.setUseAscender(true);
+                        currentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                         table.addCell(currentCell);
                     }
 
@@ -227,7 +287,7 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
         final int heightInPx = 40; // default height limit
 
         final SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName());
-        final SVGDocument svgDocument = factory.createSVGDocument("", new ByteArrayInputStream(Base64.getDecoder().decode(base64Svg)));
+        final SVGDocument svgDocument = factory.createSVGDocument("http://www.w3.org/2000/svg", new ByteArrayInputStream(Base64.getDecoder().decode(base64Svg)));
         final UserAgent userAgent = new UserAgentAdapter();
         final DocumentLoader loader = new DocumentLoader(userAgent);
         final BridgeContext context = new BridgeContext(userAgent, loader);
@@ -240,6 +300,7 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
         final float widthAccordingToAspectRatio = (svgImageWidthInPx / svgImageHeightInPx) * heightInPx;
         svgDocument.getDocumentElement().setAttribute("width", String.valueOf(widthAccordingToAspectRatio));
         svgDocument.getDocumentElement().setAttribute("height", String.valueOf(heightInPx));
+        svgDocument.getDocumentElement().setAttribute("color", "#000000");
 
         final PdfTemplate template = PdfTemplate.createTemplate(pdfWriter, widthAccordingToAspectRatio, heightInPx);
         final Graphics2D g2d = template.createGraphics(template.getWidth(), template.getHeight());
