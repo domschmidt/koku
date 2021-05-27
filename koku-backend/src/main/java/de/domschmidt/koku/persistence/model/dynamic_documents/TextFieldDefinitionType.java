@@ -24,7 +24,7 @@ public class TextFieldDefinitionType extends FieldDefinitionType implements Seri
     @GeneratedValue(generator = "koku_seq")
     @SequenceGenerator(schema = "koku", name = "koku_seq")
     Long id;
-    boolean isReadOnly;
+    boolean readOnly;
     String text;
     @Enumerated(EnumType.STRING)
     FontSize fontSize;
@@ -34,6 +34,6 @@ public class TextFieldDefinitionType extends FieldDefinitionType implements Seri
         this.id = null;
         this.text = fieldDefintionTypeToBeCopied.getText();
         this.fontSize = fieldDefintionTypeToBeCopied.getFontSize();
-        this.isReadOnly = fieldDefintionTypeToBeCopied.isReadOnly();
+        this.readOnly = fieldDefintionTypeToBeCopied.isReadOnly();
     }
 }

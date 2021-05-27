@@ -39,3 +39,19 @@ update koku.customer set asthma = false;
 alter table koku.customer alter column asthma SET NOT NULL;
 
 alter table koku.document_field drop column read_only;
+
+alter table koku.field_definition_text add column read_only boolean;
+update koku.field_definition_text set read_only = true;
+alter table koku.field_definition_text alter column read_only SET NOT NULL;
+
+create table koku.field_definition_checkbox (
+    context varchar(255),
+    font_size varchar(255),
+    label varchar(255),
+    read_only boolean not null,
+    value boolean not null,
+    id int8 not null,
+    primary key (id)
+);
+
+alter table koku.field_definition_checkbox add constraint FK86e8betoik76e5afqmqnwge3s foreign key (id) references koku.field_definition_type;

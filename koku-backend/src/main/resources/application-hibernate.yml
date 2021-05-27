@@ -22,6 +22,6 @@ spring:
         persistence:
           schema-generation:
             scripts:
-            #create-target: create.sql
-            #create-source: metadata
-            #action: create
+              #create-target: create.sql
+              #create-source: metadata
+              #action: create

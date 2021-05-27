@@ -335,7 +335,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .fieldDefinitionType(TextFieldDefinitionType.builder()
                                     .id(currentField.getFieldDefinitionTypeId())
                                     .text(((TextFormularItemDto) currentField).getText())
-                                    .isReadOnly(((TextFormularItemDto) currentField).isReadOnly())
+                                    .readOnly(((TextFormularItemDto) currentField).isReadOnly())
                                     .fontSize(transformFontSizeDtoToFieldDefintionTypeFontSize(((TextFormularItemDto) currentField).getFontSize()))
                                     .build())
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
