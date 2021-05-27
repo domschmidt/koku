@@ -99,28 +99,12 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
             document.open();
 
             for (final FormularRowDto formularRow : formularDto.getRows()) {
-
                 final PdfPTable table = new PdfPTable(COL_COUNT);
                 table.setWidthPercentage(100);
-                int usedCols = 0;
 
                 for (final FormularItemDto formularItem : formularRow.getItems()) {
 
                     final int colspan = getColspan(formularItem);
-                    if (usedCols + colspan > COL_COUNT) {
-                        while (usedCols < COL_COUNT) {
-                            // fill the current row with stupid empty columns
-                            // this is required to properly organize the grid
-                            // the function table.completeRow() adds strange borders.
-                            // So this is a clone of completeRow() with a difference in the border definition
-                            // (border is removed)
-                            final PdfPCell emptyColumnFiller = new PdfPCell((Phrase) null);
-                            emptyColumnFiller.setBorderWidth(0);
-                            table.addCell(emptyColumnFiller);
-                            usedCols = usedCols + 1;
-                        }
-                        usedCols = 0;
-                    }
 
                     if (formularItem instanceof TextFormularItemDto) {
                         final Paragraph paragraph = new Paragraph(((TextFormularItemDto) formularItem).getText());
@@ -217,7 +201,11 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                         // add label
                         checkboxTable.addCell(labelCell);
 
-                        final PdfPCell currentCell = new PdfPCell(checkboxTable);
+                        final Paragraph ptest = new Paragraph();
+                        ptest.add(new Chunk(checkboxImage, 0, 0));
+                        ptest.add(labelChunk);
+
+                        final PdfPCell currentCell = new PdfPCell(ptest);
                         currentCell.setColspan(colspan);
                         currentCell.setPadding(5);
                         currentCell.setBorderWidth(0);
@@ -225,9 +213,12 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                         currentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                         table.addCell(currentCell);
                     }
-
-                    usedCols = usedCols + colspan;
                 }
+
+                // set border of default cell to be invisible
+                table.getDefaultCell().setBorder(0);
+                // fill the rest of the row using the default cell
+                table.completeRow();
 
                 document.add(table);
             }

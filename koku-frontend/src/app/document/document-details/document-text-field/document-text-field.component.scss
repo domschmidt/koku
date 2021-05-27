@@ -8,6 +8,19 @@
     width: 100%;
   }
 
+  .textarea {
+
+    &--align-center {
+      text-align: center;
+    }
+    &--align-start {
+      text-align: start;
+    }
+    &--align-end {
+      text-align: end;
+    }
+  }
+
   .text-field-menu {
     overflow: hidden;
     position: absolute;

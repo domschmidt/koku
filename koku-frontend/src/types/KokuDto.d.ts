@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.30.840 on 2021-05-26 19:38:50.
+// Generated using typescript-generator version 2.30.840 on 2021-05-27 23:07:09.
 
 declare namespace KokuDto {
 
@@ -370,7 +370,7 @@ declare namespace KokuDto {
 
     type ChartTypeEnum = "line" | "bar" | "radar" | "doughnut" | "polarArea" | "bubble" | "pie" | "scatter";
 
-    type FontSizeDto = "SMALL" | "LARGE";
+    type FontSizeDto = "SMALL" | "MEDIUM" | "LARGE";
 
     type FormularItemAlign = "LEFT" | "CENTER" | "RIGHT";
 

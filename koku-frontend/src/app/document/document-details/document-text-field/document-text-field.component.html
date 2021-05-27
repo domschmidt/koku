@@ -25,6 +25,10 @@
                     type="text"
                     cdkTextareaAutosize
                     rows="3"
+                    class="textarea"
+                    [class.textarea--align-center]="textField.align === 'CENTER'"
+                    [class.textarea--align-end]="textField.align === 'RIGHT'"
+                    [class.textarea--align-start]="textField.align === 'LEFT'"
           ></textarea>
           <div class="text-field-menu">
             <div class="text-field-menu__inner">

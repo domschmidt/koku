@@ -250,13 +250,12 @@
               </checkbox-field>
               <signature-field *ngIf="formField['@type']==='SignatureFormularItemDto'"
                                [name]="rowIndex + '' + fieldIndex + ''"
-                               [style.justify-content]="getAlignStyle(formField.align)"
                                [(ngModel)]="formField.dataUri"
                                style="padding: 4px 0;">
               </signature-field>
               <text-field *ngIf="formField['@type']==='TextFormularItemDto'"
                           [name]="rowIndex + '' + fieldIndex + ''"
-                          [style.justify-content]="getAlignStyle(formField.align)"
+                          [align]="formField.align"
                           [fontSize]="formField.fontSize"
                           [(ngModel)]="formField.text"
                           [readOnly]="true"

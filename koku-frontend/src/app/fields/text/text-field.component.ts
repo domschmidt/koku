@@ -18,6 +18,7 @@ export class TextFieldComponent implements ControlValueAccessor {
 
   internalValue: string = '';
   @Input() fontSize: KokuDto.FontSizeDto | undefined;
+  @Input() align: KokuDto.FormularItemAlign | undefined;
   @Input() readOnly: boolean | undefined;
   onChange: any;
 

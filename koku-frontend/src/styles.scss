@@ -83,6 +83,10 @@ $koku-theme: mat-light-theme((
   .mat-toolbar-multiple-rows {
     min-height: 50px;
   }
+
+  .mat-input-element:disabled {
+    color: inherit;
+  }
 }
 
 // Include the mixin
