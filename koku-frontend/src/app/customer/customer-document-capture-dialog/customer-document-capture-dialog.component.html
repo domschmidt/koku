@@ -32,7 +32,7 @@
           </signature-field>
           <text-field *ngIf="formField['@type']==='TextFormularItemDto'"
                       [name]="formField.id + ''"
-                      [style.justify-content]="getAlignStyle(formField.align)"
+                      [align]="formField.align"
                       [fontSize]="formField.fontSize"
                       [(ngModel)]="formField.text"
                       [readOnly]="formField.readOnly"

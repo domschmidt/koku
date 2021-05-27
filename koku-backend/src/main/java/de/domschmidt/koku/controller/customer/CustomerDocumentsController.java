@@ -201,11 +201,7 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                         // add label
                         checkboxTable.addCell(labelCell);
 
-                        final Paragraph ptest = new Paragraph();
-                        ptest.add(new Chunk(checkboxImage, 0, 0));
-                        ptest.add(labelChunk);
-
-                        final PdfPCell currentCell = new PdfPCell(ptest);
+                        final PdfPCell currentCell = new PdfPCell(checkboxTable);
                         currentCell.setColspan(colspan);
                         currentCell.setPadding(5);
                         currentCell.setBorderWidth(0);
