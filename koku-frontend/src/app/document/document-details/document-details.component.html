@@ -63,7 +63,7 @@
       </div>
 
 
-      <div *ngFor="let row of document.rows; let rowIndex = index; trackBy: trackByRow"
+      <div *ngFor="let row of document.rows; let rowIndex = index"
            class="document__row"
       >
         <div class="document__row__menu">
@@ -146,7 +146,7 @@
             </button>
           </div>
 
-          <div *ngFor="let formField of row.items; let fieldIndex = index; trackBy: trackByFormField"
+          <div *ngFor="let formField of row.items; let fieldIndex = index"
                [fxFlex.xl]="getFxFlex(formField.xl || formField.lg || formField.md || formField.sm || formField.xs || 12)"
                [fxFlex.lg]="getFxFlex(formField.lg || formField.md || formField.sm || formField.xs || 12)"
                [fxFlex.md]="getFxFlex(formField.md || formField.sm || formField.xs || 12)"

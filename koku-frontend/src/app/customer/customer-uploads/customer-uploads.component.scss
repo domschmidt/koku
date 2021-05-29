@@ -2,7 +2,7 @@
 ::ng-deep .drop-zone {
   border: 2px dashed #999;
   border-radius: 0;
-  margin: 20px 10px 10px 10px;
+  margin: 20px 0;
 }
 
 ::ng-deep .content-zone {
@@ -37,4 +37,9 @@
   }
 }
 
-
+.possibleFormularButton {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}

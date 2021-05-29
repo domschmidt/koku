@@ -1,13 +1,19 @@
 <mat-dialog-content>
   <div style="padding: 12px 0;">
     <mat-spinner *ngIf="!possibleFormulars" class="spinner-center" diameter="30"></mat-spinner>
-    <mat-list>
-      <button (click)="openFormularCapture(possibleFormular)"
-              *ngFor="let possibleFormular of possibleFormulars"
-              mat-list-item>
-        {{ possibleFormular.description }}
-      </button>
-    </mat-list>
+
+    <div *ngIf="possibleFormulars">
+      <h4>Verfügbare Dokumentenvorlagen</h4>
+      <mat-action-list>
+        <button mat-list-item
+                (click)="openFormularCapture(possibleFormular)"
+                *ngFor="let possibleFormular of possibleFormulars"
+        >
+          <mat-icon style="margin-right: 8px;">open_in_new</mat-icon>
+          <div class="possibleFormularButton">{{ possibleFormular.description }}</div>
+        </button>
+      </mat-action-list>
+    </div>
 
     <ngx-file-drop (onFileDrop)="dropped($event)"
                    contentClassName="content-zone"

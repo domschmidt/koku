@@ -400,11 +400,4 @@ export class DocumentDetailsComponent {
     });
   }
 
-  trackByFormField(index: number) {
-    return index;
-  }
-  trackByRow(index: number) {
-    return index;
-  }
-
 }
