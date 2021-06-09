@@ -19,6 +19,7 @@ import {ChartPanelComponent} from "./layouts/panel-layout/panels/chart/chart-pan
 import {PreventNavigationIfModalIsOpenService} from "./prevent-losing-changes/prevent-navigation-if-modal-is-open.service";
 import {DocumentComponent} from "./document/document.component";
 import {PromotionComponent} from "./promotions/promotion.component";
+import * as moment from "moment";
 
 const routes: Routes = [
   {
@@ -176,25 +177,32 @@ const routes: Routes = [
               panels: [
                 {
                   component: 'GaugePanelComponent',
-                  widthPercentage: 33.33333333,
+                  widthPercentage: 25,
                   data: {
                     sourceUrl: '/statistics/lastmonthcomparison'
                   }
                 },
                 {
                   component: 'TextPanelComponent',
-                  widthPercentage: 33.33333333,
+                  widthPercentage: 25,
+                  data: {
+                    sourceUrl: '/statistics/monthlyapproxrevenue?month=' + moment().format('YYYY-MM')
+                  }
+                },
+                {
+                  component: 'TextPanelComponent',
+                  widthPercentage: 25,
                   data: {
                     sourceUrl: '/statistics/currentmonthapproxrevenue'
                   }
                 },
                 {
                   component: 'TextPanelComponent',
-                  widthPercentage: 33.33333333,
+                  widthPercentage: 25,
                   data: {
-                    sourceUrl: '/statistics/currentmonthrevenue'
+                    sourceUrl: '/statistics/monthlyapproxrevenue?month=' + moment().add(1, 'month').format('YYYY-MM')
                   }
-                }
+                },
               ]
             },
             canDeactivate: [PreventNavigationIfModalIsOpenService]

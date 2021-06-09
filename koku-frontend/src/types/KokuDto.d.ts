@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.30.840 on 2021-05-27 23:21:35.
+// Generated using typescript-generator version 2.32.889 on 2021-06-09 19:06:22.
 
 declare namespace KokuDto {
 
@@ -169,6 +169,7 @@ declare namespace KokuDto {
         glasses?: boolean;
         eyeDisease?: string;
         allergy?: string;
+        covid19vaccinated?: boolean;
     }
 
     interface CustomerSalesDto {

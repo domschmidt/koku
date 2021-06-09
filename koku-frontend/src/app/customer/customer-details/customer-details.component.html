@@ -236,6 +236,11 @@
                       name="glasses"
         >Brillenträger
         </mat-checkbox>
+        <mat-checkbox class="user-details-field covid19vaccinated-field"
+                      [(ngModel)]="customer.covid19vaccinated"
+                      name="covid19vaccinated"
+        >Covid 19 geimpft
+        </mat-checkbox>
       </div>
     </div>
   </mat-dialog-content>

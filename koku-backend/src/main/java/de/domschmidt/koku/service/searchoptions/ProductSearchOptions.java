@@ -2,6 +2,7 @@ package de.domschmidt.koku.service.searchoptions;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -13,7 +14,8 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class ProductSearchOptions {
     String search;
-    private LocalDate priceDate;
-    @JsonFormat(pattern = "HH:mm")
-    private LocalTime priceTime;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    LocalDate priceDate;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
+    LocalTime priceTime;
 }

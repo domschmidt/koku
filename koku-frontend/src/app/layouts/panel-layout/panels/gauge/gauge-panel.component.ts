@@ -10,7 +10,13 @@ export class GaugePanelComponent {
 
   @Input() sourceUrl: string = '';
   loading: boolean = true;
-  apiData: KokuDto.GaugePanelDto | undefined;
+  apiData: {
+    title: string,
+    percentage: number
+  } = {
+    title: '',
+    percentage: 0
+  };
 
   constructor(private readonly gaugeService: GaugeService) {
   }
@@ -24,7 +30,10 @@ export class GaugePanelComponent {
       this.loading = true;
       this.gaugeService.getGauge(this.sourceUrl).subscribe((response: KokuDto.GaugePanelDto) => {
         this.loading = false;
-        this.apiData = response;
+        this.apiData = {
+          percentage: response.percentage || 0,
+          title: response.title || ''
+        };
       }, () => {
         this.loading = false;
       });

@@ -112,7 +112,7 @@ export class CustomerUploadsComponent implements OnInit {
     const documentCaptureDialog = this.dialog.open(CustomerDocumentCaptureDialogComponent, {
       data: dialogData,
       width: '100%',
-      maxWidth: 700,
+      maxWidth: '90%',
       closeOnNavigation: false,
       position: {
         top: '20px'

@@ -47,6 +47,7 @@ public class Customer extends DomainModel implements Serializable {
     boolean neurodermatitis;
     boolean contacts;
     boolean glasses;
+    boolean covid19vaccinated;
     String eyeDisease;
     String allergy;
     boolean deleted;

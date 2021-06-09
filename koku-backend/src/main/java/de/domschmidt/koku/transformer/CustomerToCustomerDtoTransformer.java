@@ -49,6 +49,7 @@ public class CustomerToCustomerDtoTransformer implements ITransformer<Customer, 
                 .glasses(model.isGlasses())
                 .eyeDisease(model.getEyeDisease())
                 .allergy(model.getAllergy())
+                .covid19vaccinated(model.isCovid19vaccinated())
                 .build();
     }
 
@@ -93,6 +94,7 @@ public class CustomerToCustomerDtoTransformer implements ITransformer<Customer, 
                 .glasses(Boolean.TRUE.equals(dtoModel.isGlasses()))
                 .eyeDisease(dtoModel.getEyeDisease())
                 .allergy(dtoModel.getAllergy())
+                .covid19vaccinated(dtoModel.isCovid19vaccinated())
                 .build();
     }
 }

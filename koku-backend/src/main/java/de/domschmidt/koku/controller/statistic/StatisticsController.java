@@ -1,9 +1,9 @@
 package de.domschmidt.koku.controller.statistic;
 
-import de.domschmidt.koku.dto.statistic.StatisticsCurrentMonthInfo;
 import de.domschmidt.koku.dto.panels.GaugePanelDto;
 import de.domschmidt.koku.dto.panels.TextPanelContent;
 import de.domschmidt.koku.dto.panels.TextPanelDto;
+import de.domschmidt.koku.dto.statistic.StatisticsCurrentMonthInfo;
 import de.domschmidt.koku.persistence.dao.CustomerAppointmentRepository;
 import de.domschmidt.koku.persistence.model.CustomerAppointment;
 import de.domschmidt.koku.persistence.model.CustomerAppointmentActivity;
@@ -43,41 +43,42 @@ public class StatisticsController {
     public GaugePanelDto getLastMonthComparison() {
         return GaugePanelDto.builder()
                 .percentage(generateStatisticsForLastMonthComparison())
-                .title("Prozentualer Umsatz vom letzten Monat")
+                .title("Prozent vom letzten Monat")
                 .build();
     }
 
-    @GetMapping(value = "/currentmonthapproxrevenue")
-    public TextPanelDto getCurrentMonthApproxRevenue() {
+    @GetMapping(value = "/monthlyapproxrevenue")
+    public TextPanelDto getMonthlyApproxRevenue(final YearMonth month) {
         return TextPanelDto.builder()
                 .texts(Arrays.asList(
                         TextPanelContent.builder()
-                                .text(YearMonth.now().getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN))
+                                .text(month.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN))
                                 .build(),
                         TextPanelContent.builder()
                                 .text(
                                         generateStatisticsForRange(
-                                                YearMonth.now().atDay(1).atStartOfDay(),
-                                                YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX)
+                                                month.atDay(1).atStartOfDay(),
+                                                month.atEndOfMonth().atTime(LocalTime.MAX)
                                         ).getTotal().toString() + "€"
                                 )
                                 .build()
                 ))
-                .title("Vorraussichtlicher Monatsumsatz")
+                .title("Erwarteter Monatsumsatz")
                 .build();
     }
 
-    @GetMapping(value = "/currentmonthrevenue")
-    public TextPanelDto getCurrentMonthRevenue() {
+    @GetMapping(value = "/currentmonthapproxrevenue")
+    public TextPanelDto getMonthlyRevenue() {
+        final YearMonth yearMonth = YearMonth.now();
         return TextPanelDto.builder()
                 .texts(Arrays.asList(
                         TextPanelContent.builder()
-                                .text(YearMonth.now().getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN))
+                                .text(yearMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN))
                                 .build(),
                         TextPanelContent.builder()
                                 .text(
                                         generateStatisticsForRange(
-                                                YearMonth.now().atDay(1).atStartOfDay(),
+                                                yearMonth.atDay(1).atStartOfDay(),
                                                 LocalDateTime.now()
                                         ).getTotal().toString() + "€"
                                 )
