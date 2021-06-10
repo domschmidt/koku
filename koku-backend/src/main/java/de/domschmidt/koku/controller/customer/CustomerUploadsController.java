@@ -8,6 +8,7 @@ import de.domschmidt.koku.persistence.model.uploads.FileUpload;
 import de.domschmidt.koku.service.ICustomerService;
 import de.domschmidt.koku.service.impl.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -111,16 +112,27 @@ public class CustomerUploadsController {
         File file = new File(this.uploadConfiguration.getUploadsDir() + File.separator + uploadedFile.getUuid() + "." + getExtension(uploadedFile.getFileName()));
 
         final HttpHeaders header = new HttpHeaders();
-        header.setContentDisposition(ContentDisposition.builder("attachment").filename(uploadedFile.getFileName(), StandardCharsets.UTF_8).build());
+        header.setContentDisposition(
+                ContentDisposition.builder("attachment")
+                        .filename(uploadedFile.getFileName(), StandardCharsets.UTF_8)
+                        .build()
+        );
         // Disable caching
         header.add("Cache-Control", "no-cache, no-store, must-revalidate");
         header.add("Pragma", "no-cache");
         header.add("Expires", "0");
 
+        MediaType fileMediaType = MediaType.APPLICATION_OCTET_STREAM;
+        try {
+            fileMediaType = MediaType.parseMediaType(new Tika().detect(file));
+        } catch (final Exception e) {
+            // ignore errors
+        }
+
         return ResponseEntity
                 .ok().headers(header)
                 .contentLength(file.length())
-                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                .contentType(fileMediaType)
                 .body(new FileSystemResource(file));
     }
 

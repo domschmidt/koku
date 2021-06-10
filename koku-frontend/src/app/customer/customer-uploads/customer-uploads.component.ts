@@ -99,8 +99,7 @@ export class CustomerUploadsComponent implements OnInit {
 
   download(upload: KokuDto.UploadDto) {
     this.httpClient.get('/api/customers/' + this.customerId + '/uploads/' + upload.uuid, {responseType: 'blob'}).subscribe((result) => {
-      const blob = new Blob([result]);
-      FileSaver.saveAs(blob, upload.fileName);
+      FileSaver.saveAs(result, upload.fileName);
     });
   }
 
