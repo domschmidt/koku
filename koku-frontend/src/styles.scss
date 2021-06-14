@@ -87,6 +87,11 @@ $koku-theme: mat-light-theme((
   .mat-input-element:disabled {
     color: inherit;
   }
+
+  .mat-dialog-content {
+    max-height: calc(100vh - 250px) !important;
+  }
+
 }
 
 // Include the mixin
