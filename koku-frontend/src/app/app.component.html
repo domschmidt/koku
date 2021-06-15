@@ -57,7 +57,7 @@
       </mat-nav-list>
     </div>
   </mat-drawer>
-  <mat-drawer-content>
-    <router-outlet></router-outlet>
+  <mat-drawer-content [@routeAnimations]="prepareRoute(outlet)">
+    <router-outlet #outlet="outlet"></router-outlet>
   </mat-drawer-content>
 </mat-drawer-container>

@@ -89,7 +89,7 @@ $koku-theme: mat-light-theme((
   }
 
   .mat-dialog-content {
-    max-height: calc(100vh - 250px) !important;
+    max-height: calc(100vh - 350px) !important; // + 100px due to android chrome
   }
 
 }

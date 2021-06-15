@@ -1,17 +1,21 @@
 import {Component, OnInit} from '@angular/core';
 import {NaviService} from "./navi/navi.service";
-import {ActivatedRoute, Route, Router} from "@angular/router";
+import {ActivatedRoute, Route, Router, RouterOutlet} from "@angular/router";
 import {Observable} from "rxjs";
 import {MyUserDetailsService} from "./user/my-user-details.service";
 import {DomSanitizer} from "@angular/platform-browser";
 import {NaviNode} from "./navi/navigation-entry.component";
 import {MatIconRegistry} from "@angular/material/icon";
+import {slideInAnimation} from "./animations";
 
 
 @Component({
   selector: 'root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  animations: [
+    slideInAnimation
+  ]
 })
 export class AppComponent implements OnInit {
   userDetails$: Observable<KokuDto.KokuUserDetailsDto>;
@@ -79,5 +83,9 @@ export class AppComponent implements OnInit {
       }
     }
     return result;
+  }
+
+  prepareRoute(outlet: RouterOutlet) {
+    return outlet && outlet.activatedRouteData && outlet.activatedRouteData.animation;
   }
 }

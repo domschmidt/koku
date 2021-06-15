@@ -20,6 +20,9 @@ import {PreventNavigationIfModalIsOpenService} from "./prevent-losing-changes/pr
 import {DocumentComponent} from "./document/document.component";
 import {PromotionComponent} from "./promotions/promotion.component";
 import * as moment from "moment";
+import {CustomerDetailsV2Component} from "./customer/customer-details-v2/customer-details-v2.component";
+import {BreadcrumbLayoutComponent} from "./layouts/breadcrumb-layout/breadcrumb-layout.component";
+import {CustomerAppointmentsV2Component} from "./customer/customer-appointments-v2/customer-appointments-v2.component";
 
 const routes: Routes = [
   {
@@ -62,6 +65,7 @@ const routes: Routes = [
     data: {
       name: 'Stammdaten'
     },
+    component: PageLayoutComponent,
     children: [
       {
         component: TabLayoutComponent,
@@ -71,9 +75,9 @@ const routes: Routes = [
             path: 'customer',
             component: CustomerComponent,
             data: {
-              name: 'Kunden'
+              name: 'Kunden',
             },
-            canDeactivate: [PreventNavigationIfModalIsOpenService]
+            canDeactivate: [PreventNavigationIfModalIsOpenService],
           },
           {
             path: 'product',
@@ -125,10 +129,44 @@ const routes: Routes = [
     ]
   },
   {
+    path: 'customer',
+    component: BreadcrumbLayoutComponent,
+    children: [
+      {
+        component: TabLayoutComponent,
+        path: ':customerId',
+        children: [
+          {
+            path: 'info',
+            component: CustomerDetailsV2Component,
+            data: {
+              name: 'Info',
+            },
+            canDeactivate: [PreventNavigationIfModalIsOpenService],
+          },
+          {
+            path: 'appointments',
+            component: CustomerAppointmentsV2Component,
+            data: {
+              name: 'Termine',
+            },
+            canDeactivate: [PreventNavigationIfModalIsOpenService],
+          },
+          {
+            path: '',
+            redirectTo: 'info',
+            pathMatch: 'full'
+          },
+        ]
+      }
+    ]
+  },
+  {
     path: 'administration',
     data: {
       name: 'Administration'
     },
+    component: PageLayoutComponent,
     children: [
       {
         component: TabLayoutComponent,
@@ -164,6 +202,7 @@ const routes: Routes = [
     data: {
       name: 'Statistik'
     },
+    component: PageLayoutComponent,
     children: [
       {
         component: TabLayoutComponent,
@@ -361,7 +400,9 @@ const routes: Routes = [
 
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, {})],
+  imports: [RouterModule.forRoot(routes, {
+    paramsInheritanceStrategy: 'always'
+  })],
   exports: [RouterModule]
 })
 export class AppRoutingModule {

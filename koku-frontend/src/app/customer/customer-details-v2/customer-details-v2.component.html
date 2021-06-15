@@ -1,0 +1,256 @@
+<form #form="ngForm"
+      (ngSubmit)="save(customer, form)"
+      class="customer-details-form">
+  <div style="padding: 16px;">
+    <mat-spinner *ngIf="!customer" class="spinner-center" diameter="30"></mat-spinner>
+    <div *ngIf="customer">
+      <mat-form-field class="user-details-field firstname-field">
+        <mat-label>Vorname</mat-label>
+        <input [(ngModel)]="customer.firstName"
+               cdkFocusInitial
+               matInput
+               name="firstname"
+               placeholder="Vorname eingeben"
+        >
+      </mat-form-field>
+      <mat-form-field class="user-details-field lastname-field">
+        <mat-label>Nachname</mat-label>
+        <input [(ngModel)]="customer.lastName"
+               matInput
+               name="lastname"
+               placeholder="Nachname eingeben"
+        >
+      </mat-form-field>
+      <mat-checkbox class="user-details-field onFirstNameBasis-field"
+                    [(ngModel)]="customer.onFirstNameBasis"
+                    name="onFirstNameBasis"
+      >Duzen
+      </mat-checkbox>
+      <mat-form-field class="user-details-field address-field">
+        <mat-label>Email</mat-label>
+        <input [(ngModel)]="customer.email"
+               matInput
+               name="email"
+               placeholder="Email eingeben"
+               type="email"
+        >
+        <a (click)="$event.stopPropagation();"
+           [href]="'mailto:' + customer.email"
+           mat-button
+           matSuffix>
+          <mat-icon>mail_outline</mat-icon>
+        </a>
+      </mat-form-field>
+      <mat-form-field class="user-details-field address-field">
+        <mat-label>Adresse</mat-label>
+        <input [(ngModel)]="customer.address"
+               matInput
+               name="address"
+               placeholder="Adresse eingeben"
+        >
+      </mat-form-field>
+      <mat-form-field class="user-details-field postalcode-field">
+        <mat-label>Postleitzahl</mat-label>
+        <input [(ngModel)]="customer.postalCode"
+               matInput
+               name="postalcode"
+               placeholder="Postleitzahl eingeben"
+        >
+      </mat-form-field>
+      <mat-form-field class="user-details-field city-field">
+        <mat-label>Wohnort</mat-label>
+        <input [(ngModel)]="customer.city"
+               matInput
+               name="city"
+               placeholder="Wohnort eingeben"
+        >
+      </mat-form-field>
+      <mat-form-field class="user-details-field birthday-field">
+        <mat-label>Geburtstag</mat-label>
+        <input [(ngModel)]="customer.birthday"
+               matInput
+               name="birthday"
+               placeholder="Geburtstag eingeben"
+               type="date"
+        >
+      </mat-form-field>
+      <mat-form-field class="user-details-field private-phone-field">
+        <mat-label>Private Telefonnummer</mat-label>
+        <input [(ngModel)]="customer.privateTelephoneNo"
+               matInput
+               name="privateTelephoneNo"
+               placeholder="Private Telefonnummer eingeben"
+               type="tel"
+        >
+        <a (click)="$event.stopPropagation();"
+           [href]="bypassUri('tel:' + convertTelephoneNo(customer.privateTelephoneNo))"
+           *ngIf="convertTelephoneNo(customer.privateTelephoneNo) !== ''"
+           mat-button
+           matSuffix>
+          <mat-icon>phone</mat-icon>
+        </a>
+        <a (click)="$event.stopPropagation();"
+           [href]="bypassUri('sip:' + convertTelephoneNo(customer.privateTelephoneNo))"
+           *ngIf="convertTelephoneNo(customer.privateTelephoneNo) !== ''"
+           mat-button
+           matSuffix>
+          <mat-icon svgIcon="voip" class="custom-svg-icon"></mat-icon>
+        </a>
+      </mat-form-field>
+      <mat-form-field class="user-details-field mobile-phone-field">
+        <mat-label>Mobile Telefonnummer</mat-label>
+        <input [(ngModel)]="customer.mobileTelephoneNo"
+               matInput
+               name="mobileTelephoneNo"
+               placeholder="Mobile Telefonnummer eingeben"
+               type="tel"
+        >
+        <a (click)="$event.stopPropagation();"
+           [href]="bypassUri('tel:' + convertTelephoneNo(customer.mobileTelephoneNo))"
+           *ngIf="convertTelephoneNo(customer.mobileTelephoneNo) !== ''"
+           mat-button
+           matSuffix>
+          <mat-icon>phone</mat-icon>
+        </a>
+        <a (click)="$event.stopPropagation();"
+           [href]="bypassUri('sip:' + convertTelephoneNo(customer.mobileTelephoneNo))"
+           *ngIf="convertTelephoneNo(customer.mobileTelephoneNo) !== ''"
+           mat-button
+           matSuffix>
+          <mat-icon svgIcon="voip" class="custom-svg-icon"></mat-icon>
+        </a>
+      </mat-form-field>
+      <mat-form-field class="user-details-field business-phone-field">
+        <mat-label>Geschäftliche Telefonnummer</mat-label>
+        <input [(ngModel)]="customer.businessTelephoneNo"
+               matInput
+               name="businessTelephoneNo"
+               placeholder="Geschäftliche Telefonnummer eingeben"
+               type="tel"
+        >
+        <a (click)="$event.stopPropagation();"
+           [href]="bypassUri('tel:' + convertTelephoneNo(customer.businessTelephoneNo))"
+           *ngIf="convertTelephoneNo(customer.businessTelephoneNo) !== ''"
+           mat-button
+           matSuffix>
+          <mat-icon>phone</mat-icon>
+        </a>
+        <a (click)="$event.stopPropagation();"
+           [href]="bypassUri('sip:' + convertTelephoneNo(customer.businessTelephoneNo))"
+           *ngIf="convertTelephoneNo(customer.businessTelephoneNo) !== ''"
+           mat-button
+           matSuffix>
+          <mat-icon svgIcon="voip" class="custom-svg-icon"></mat-icon>
+        </a>
+      </mat-form-field>
+      <mat-form-field class="user-details-field additionalInfo-field">
+        <mat-label>Zusätzliche Informationen</mat-label>
+        <textarea [(ngModel)]="customer.additionalInfo" cdkTextareaAutosize
+                  matInput
+                  name="additionalInfo"
+                  placeholder="Zusätzliche Informationen eingeben"
+        ></textarea>
+      </mat-form-field>
+      <mat-form-field class="user-details-field medicalTolerance-field">
+        <mat-label>Medizinische Informationen</mat-label>
+        <textarea [(ngModel)]="customer.medicalTolerance" cdkTextareaAutosize
+                  matInput
+                  name="medicalTolerance"
+                  placeholder="Medizinische Informationen eingeben"
+        ></textarea>
+      </mat-form-field>
+      <mat-checkbox class="user-details-field hayFever-field"
+                    [(ngModel)]="customer.hayFever"
+                    name="hayFever"
+      >Heuschnupfen
+      </mat-checkbox>
+      <mat-checkbox class="user-details-field plasterAllergy-field"
+                    [(ngModel)]="customer.plasterAllergy"
+                    name="plasterAllergy"
+      >Allergie gegen Pflaster
+      </mat-checkbox>
+      <mat-checkbox class="user-details-field cyanoacrylateAllergy-field"
+                    [(ngModel)]="customer.cyanoacrylateAllergy"
+                    name="cyanoacrylateAllergy"
+      >Allergie gegen Cyanacrylat
+      </mat-checkbox>
+      <mat-form-field class="user-details-field allergy-field">
+        <mat-label>Andere Allergien</mat-label>
+        <textarea [(ngModel)]="customer.allergy" cdkTextareaAutosize
+                  matInput
+                  name="allergy"
+                  placeholder="Allergien eingeben"
+        ></textarea>
+      </mat-form-field>
+      <mat-checkbox class="user-details-field asthma-field"
+                    [(ngModel)]="customer.asthma"
+                    name="asthma"
+      >Asthma
+      </mat-checkbox>
+      <mat-checkbox class="user-details-field dryEyes-field"
+                    [(ngModel)]="customer.dryEyes"
+                    name="dryEyes"
+      >Trockene Augen
+      </mat-checkbox>
+      <mat-form-field class="user-details-field allergy-field">
+        <mat-label>Andere Augenerkrankungen</mat-label>
+        <textarea [(ngModel)]="customer.eyeDisease" cdkTextareaAutosize
+                  matInput
+                  name="eyeDisease"
+                  placeholder="Andere Augenerkrankungen eingeben"
+        ></textarea>
+      </mat-form-field>
+      <mat-checkbox class="user-details-field circulationProblems-field"
+                    [(ngModel)]="customer.circulationProblems"
+                    name="circulationProblems"
+      >Kreislaufprobleme
+      </mat-checkbox>
+      <mat-checkbox class="user-details-field epilepsy-field"
+                    [(ngModel)]="customer.epilepsy"
+                    name="epilepsy"
+      >Epilepsie
+      </mat-checkbox>
+      <mat-checkbox class="user-details-field diabetes-field"
+                    [(ngModel)]="customer.diabetes"
+                    name="diabetes"
+      >Diabetes
+      </mat-checkbox>
+      <mat-checkbox class="user-details-field claustrophobia-field"
+                    [(ngModel)]="customer.claustrophobia"
+                    name="claustrophobia"
+      >Klaustrophobie
+      </mat-checkbox>
+      <mat-checkbox class="user-details-field neurodermatitis-field"
+                    [(ngModel)]="customer.neurodermatitis"
+                    name="neurodermatitis"
+      >Neurodermitis
+      </mat-checkbox>
+      <mat-checkbox class="user-details-field contacts-field"
+                    [(ngModel)]="customer.contacts"
+                    name="contacts"
+      >Kontaktlinsen
+      </mat-checkbox>
+      <mat-checkbox class="user-details-field glasses-field"
+                    [(ngModel)]="customer.glasses"
+                    name="glasses"
+      >Brillenträger
+      </mat-checkbox>
+      <mat-checkbox class="user-details-field covid19vaccinated-field"
+                    [(ngModel)]="customer.covid19vaccinated"
+                    name="covid19vaccinated"
+      >Covid 19 geimpft
+      </mat-checkbox>
+    </div>
+  </div>
+
+  <div class="fab-button-container">
+    <button [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            color="primary"
+            mat-fab
+            class="fab-button"
+            type="submit">
+      <mat-icon>save</mat-icon>
+    </button>
+  </div>
+</form>

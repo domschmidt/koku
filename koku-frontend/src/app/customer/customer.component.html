@@ -21,16 +21,16 @@
       </mat-form-field>
     </form>
   </div>
-  <mat-action-list class="page-skeleton__scroll-area">
-    <button (click)="openCustomerDetails(customer)"
+  <mat-nav-list class="page-skeleton__scroll-area">
+    <a [routerLink]="['/customer', customer.id]"
             *ngFor="let customer of customers$ | async; trackBy: trackByFn"
             mat-list-item>
       <circle-with-letters [letters]="customer.initials" style="margin-right: 12px;"></circle-with-letters>
       <h3 matLine>{{customer.firstName}} {{customer.lastName}} {{customer.onFirstNameBasis ? '*' : ''}}</h3>
       <p matLine>{{customer.address}}</p>
       <p matLine>{{customer.postalCode}} {{customer.city}}</p>
-    </button>
-  </mat-action-list>
+    </a>
+  </mat-nav-list>
 
   <div class="fab-button-container">
     <button (click)="addNewCustomer();"

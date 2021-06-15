@@ -13,7 +13,7 @@ import {CustomerComponent} from './customer/customer.component';
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {MatListModule} from "@angular/material/list";
-import {CustomerDetailsComponent} from './customer/customer-details/customer-details.component';
+import {CustomerDetailsV2Component} from './customer/customer-details-v2/customer-details-v2.component';
 import {MatDialogModule} from "@angular/material/dialog";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -109,6 +109,12 @@ import {PromotionSelectionComponent} from "./promotions/promotion-selection/prom
 import {CustomerAppointmentActivityInfoDialogComponent} from "./customer/customer-appointment-activity-info-dialog/customer-appointment-activity-info-dialog.component";
 import {DocumentCheckboxFieldComponent} from "./document/document-details/document-checkbox-field/document-checkbox-field.component";
 import {CheckboxFieldComponent} from "./fields/checkbox/checkbox-field.component";
+import {CustomerDetailsComponent} from "./customer/customer-details/customer-details.component";
+import {RouterModule, Routes} from "@angular/router";
+import {PreventNavigationIfModalIsOpenService} from "./prevent-losing-changes/prevent-navigation-if-modal-is-open.service";
+import * as moment from "moment";
+import {BreadcrumbLayoutComponent} from "./layouts/breadcrumb-layout/breadcrumb-layout.component";
+import {CustomerAppointmentsV2Component} from "./customer/customer-appointments-v2/customer-appointments-v2.component";
 
 FullCalendarModule.registerPlugins([ // register FullCalendar plugins
   dayGridPlugin,
@@ -130,6 +136,7 @@ Chart.register(...registerables);
     OverviewComponent,
     CalendarComponent,
     CustomerComponent,
+    CustomerDetailsV2Component,
     CustomerDetailsComponent,
     CustomerAppointmentDetailsComponent,
     UserComponent,
@@ -182,7 +189,9 @@ Chart.register(...registerables);
     PromotionSelectionComponent,
     CustomerAppointmentActivityInfoDialogComponent,
     DocumentCheckboxFieldComponent,
-    CheckboxFieldComponent
+    CheckboxFieldComponent,
+    BreadcrumbLayoutComponent,
+    CustomerAppointmentsV2Component,
   ],
   imports: [
     GaugeModule.forRoot(),

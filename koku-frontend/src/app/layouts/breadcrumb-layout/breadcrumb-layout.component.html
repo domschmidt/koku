@@ -1,0 +1,15 @@
+<div class="page-skeleton">
+  <mat-toolbar color="primary">
+    <mat-toolbar-row>
+        <button [routerLink]="['/manage', 'customer']"
+                mat-icon-button>
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span>Kunden / tqwe qwe</span>
+    </mat-toolbar-row>
+  </mat-toolbar>
+
+  <div class="page-skeleton__scroll-area">
+    <router-outlet></router-outlet>
+  </div>
+</div>
