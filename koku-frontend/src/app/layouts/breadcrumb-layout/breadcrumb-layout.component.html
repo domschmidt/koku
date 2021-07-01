@@ -1,11 +1,28 @@
 <div class="page-skeleton">
   <mat-toolbar color="primary">
     <mat-toolbar-row>
-        <button [routerLink]="['/manage', 'customer']"
-                mat-icon-button>
-          <mat-icon>chevron_left</mat-icon>
-        </button>
-        <span>Kunden / tqwe qwe</span>
+      <div class="wrapper">
+        <div class="left">
+          <button
+            [routerLink]="activatedRoute.snapshot.queryParams.backRouterLink || activatedRoute.snapshot.data.backRouterLink || '..'"
+            [queryParams]="activatedRoute.snapshot.queryParams.backQueryParams || activatedRoute.snapshot.data.backQueryParams || ''"
+            mat-icon-button
+            *ngIf="!activatedRoute.snapshot.queryParams.backLink">
+            <mat-icon>first_page</mat-icon>
+          </button>
+          <a [href]="activatedRoute.snapshot.queryParams.backLink"
+             mat-icon-button
+             *ngIf="activatedRoute.snapshot.queryParams.backLink">
+            <mat-icon>first_page</mat-icon>
+          </a>
+          <div class="header-line">
+            {{activatedRoute.snapshot.queryParams.backLabel || activatedRoute.snapshot.data.backLabel || ''}}
+          </div>
+        </div>
+        <div class="right">
+          <router-outlet name="right"></router-outlet>
+        </div>
+      </div>
     </mat-toolbar-row>
   </mat-toolbar>
 

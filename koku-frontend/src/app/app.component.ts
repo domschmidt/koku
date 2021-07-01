@@ -54,6 +54,10 @@ export class AppComponent implements OnInit {
       'brick_block_add',
       this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/brick_block_add.svg')
     );
+    this.matIconRegistry.addSvgIcon(
+      'account',
+      this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/account.svg')
+    );
   }
 
   ngOnInit(): void {

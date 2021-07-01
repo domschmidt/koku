@@ -1,0 +1,4 @@
+<div *ngIf="customerId" style="padding: 16px;">
+  <chart-panel [sourceUrl]="'/customers/' + customerId + '/statistics/visits'"></chart-panel>
+  <chart-panel [sourceUrl]="'/customers/' + customerId + '/statistics/revenue'"></chart-panel>
+</div>

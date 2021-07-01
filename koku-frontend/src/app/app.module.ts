@@ -115,6 +115,11 @@ import {PreventNavigationIfModalIsOpenService} from "./prevent-losing-changes/pr
 import * as moment from "moment";
 import {BreadcrumbLayoutComponent} from "./layouts/breadcrumb-layout/breadcrumb-layout.component";
 import {CustomerAppointmentsV2Component} from "./customer/customer-appointments-v2/customer-appointments-v2.component";
+import {CustomerSalesV2Component} from "./customer/customer-sales-v2/customer-sales-v2.component";
+import {CustomerUploadsV2Component} from "./customer/customer-uploads-v2/customer-uploads-v2.component";
+import {CustomerStatisticsV2Component} from "./customer/customer-statistics-v2/customer-statistics-v2.component";
+import {CustomerNameComponent} from "./customer/customer-name/customer-name.component";
+import { environment } from '../environments/environment';
 
 FullCalendarModule.registerPlugins([ // register FullCalendar plugins
   dayGridPlugin,
@@ -192,6 +197,10 @@ Chart.register(...registerables);
     CheckboxFieldComponent,
     BreadcrumbLayoutComponent,
     CustomerAppointmentsV2Component,
+    CustomerSalesV2Component,
+    CustomerUploadsV2Component,
+    CustomerStatisticsV2Component,
+    CustomerNameComponent
   ],
   imports: [
     GaugeModule.forRoot(),

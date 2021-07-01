@@ -123,7 +123,9 @@
         <mat-progress-bar [mode]="loading ? 'indeterminate' : 'determinate'"></mat-progress-bar>
         <div class="page-skeleton__scroll-area">
           <div #pageWrapper>
-            <full-calendar [options]="calendarOptions" #fullCalendarComponent></full-calendar>
+            <full-calendar [options]="calendarOptions"
+                           #fullCalendarComponent
+                           *ngIf="calendarOptions"></full-calendar>
             <div #menuTrigger="matMenuTrigger" [matMenuTriggerFor]="calendarContextMenu"
                  id="calendar-context-menu-trigger"
                  [style.left.px]="positionX" [style.top.px]="positionY" style="position: fixed;"></div>

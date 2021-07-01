@@ -36,7 +36,7 @@ import {
   ProductInfoDialogComponentData,
   ProductInfoDialogComponentResponseData
 } from "../../product/product-info-dialog/product-info-dialog.component";
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {
   UserSelectionComponent,
   UserSelectionComponentData,
@@ -105,6 +105,7 @@ export class CustomerAppointmentDetailsComponent implements AfterViewInit {
               public dialog: MatDialog,
               public snackBarService: SnackBarService,
               public activityService: ActivityService,
+              public readonly activatedRoute: ActivatedRoute,
               public router: Router,
               public customerAppointmentService: CustomerAppointmentService,
               public promotionService: PromotionService,
@@ -637,15 +638,17 @@ export class CustomerAppointmentDetailsComponent implements AfterViewInit {
 
   openCustomerDetails(customer: KokuDto.CustomerDto) {
     if (customer) {
-      const dialogData: CustomerInfoDialogData = {
-        customerId: customer.id
-      };
-      this.dialog.open(CustomerInfoDialogComponent, {
-        data: dialogData,
-        closeOnNavigation: false,
-        position: {
-          top: '20px'
-        }
+      this.preventLosingChangesService.preventLosingChanges(this.dirty, () => {
+        this.dialogRef.close();
+        this.router.navigate(['customer', customer.id], {
+          state: {
+            enforce: true
+          },
+          queryParams: {
+            backLabel: 'zurück zum Kalender',
+            backLink: this.router.url,
+          }
+        });
       });
     }
   }

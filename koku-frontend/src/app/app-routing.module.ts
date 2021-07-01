@@ -23,6 +23,11 @@ import * as moment from "moment";
 import {CustomerDetailsV2Component} from "./customer/customer-details-v2/customer-details-v2.component";
 import {BreadcrumbLayoutComponent} from "./layouts/breadcrumb-layout/breadcrumb-layout.component";
 import {CustomerAppointmentsV2Component} from "./customer/customer-appointments-v2/customer-appointments-v2.component";
+import {CustomerSalesV2Component} from "./customer/customer-sales-v2/customer-sales-v2.component";
+import {CustomerUploadsV2Component} from "./customer/customer-uploads-v2/customer-uploads-v2.component";
+import {CustomerStatisticsComponent} from "./customer/customer-statistics/customer-statistics.component";
+import {CustomerStatisticsV2Component} from "./customer/customer-statistics-v2/customer-statistics-v2.component";
+import {CustomerNameComponent} from "./customer/customer-name/customer-name.component";
 
 const routes: Routes = [
   {
@@ -129,12 +134,22 @@ const routes: Routes = [
     ]
   },
   {
-    path: 'customer',
+    path: 'customer/:customerId',
     component: BreadcrumbLayoutComponent,
+    data: {
+      backLabel: 'Kunden',
+      backRouterLink: ['/manage', 'customer'],
+      hideInNav: true,
+    },
     children: [
       {
+        path: '',
+        outlet: 'right',
+        component: CustomerNameComponent
+      },
+      {
         component: TabLayoutComponent,
-        path: ':customerId',
+        path: '',
         children: [
           {
             path: 'info',
@@ -149,6 +164,30 @@ const routes: Routes = [
             component: CustomerAppointmentsV2Component,
             data: {
               name: 'Termine',
+            },
+            canDeactivate: [PreventNavigationIfModalIsOpenService],
+          },
+          {
+            path: 'sales',
+            component: CustomerSalesV2Component,
+            data: {
+              name: 'Verkauf',
+            },
+            canDeactivate: [PreventNavigationIfModalIsOpenService],
+          },
+          {
+            path: 'uploads',
+            component: CustomerUploadsV2Component,
+            data: {
+              name: 'Dokumente',
+            },
+            canDeactivate: [PreventNavigationIfModalIsOpenService],
+          },
+          {
+            path: 'statistics',
+            component: CustomerStatisticsV2Component,
+            data: {
+              name: 'Statistik',
             },
             canDeactivate: [PreventNavigationIfModalIsOpenService],
           },

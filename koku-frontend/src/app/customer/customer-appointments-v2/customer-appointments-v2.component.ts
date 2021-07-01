@@ -10,7 +10,7 @@ import {ActivatedRoute} from "@angular/router";
   templateUrl: './customer-appointments-v2.component.html'
 })
 export class CustomerAppointmentsV2Component implements OnInit {
-  @Input('customerId') customerId: number | undefined;
+  customerId: number | undefined;
   customerAppointments: KokuDto.CustomerAppointmentDto[] | undefined;
   now = moment();
   @Input() customerAppointmentsChanged: Observable<undefined> | undefined;
