@@ -109,6 +109,8 @@ import {PromotionSelectionComponent} from "./promotions/promotion-selection/prom
 import {CustomerAppointmentActivityInfoDialogComponent} from "./customer/customer-appointment-activity-info-dialog/customer-appointment-activity-info-dialog.component";
 import {DocumentCheckboxFieldComponent} from "./document/document-details/document-checkbox-field/document-checkbox-field.component";
 import {CheckboxFieldComponent} from "./fields/checkbox/checkbox-field.component";
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 FullCalendarModule.registerPlugins([ // register FullCalendar plugins
   dayGridPlugin,
@@ -223,6 +225,10 @@ Chart.register(...registerables);
     NgxFileDropModule,
     SortablejsModule.forRoot({animation: 0}),
     MatDatepickerModule,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production,
+      registrationStrategy: 'registerImmediately'
+    }),
   ],
   providers: [
     NaviService,

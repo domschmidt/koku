@@ -37,11 +37,16 @@
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
+              "moment-timezone",
               "moment/locale/de",
               "css-element-queries",
               "bignumber.js",
               "image-conversion"
-            ]
+            ],
+            "serviceWorker": true,
+            "ngswConfigPath": "ngsw-config.json",
+            "sourceMap": true,
+            "optimization": false
           },
           "configurations": {
             "production": {

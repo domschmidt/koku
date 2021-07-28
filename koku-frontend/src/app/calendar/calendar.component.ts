@@ -33,6 +33,7 @@ import {MyUserDetailsService} from "../user/my-user-details.service";
 import {PrivateAppointmentService} from "../user/private-appointment-details/private-appointment.service";
 import {CustomerAppointmentService} from "../customer-appointment.service";
 import {SnackBarService} from "../snackbar/snack-bar.service";
+import Holidays, {HolidaysTypes} from "date-holidays";
 
 type ViewIdentifier = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay';
 
@@ -42,12 +43,12 @@ interface CalendarSettings {
   customerAppointments: boolean;
   customerBirthdays: boolean;
   holidays: boolean;
-  holidayCountry: DateHolidays.Country
+  holidayCountry: HolidaysTypes.Country
 }
 
 interface ExtendedHolidays {
   countryAndStateString: string;
-  holidayCountry: DateHolidays.Country;
+  holidayCountry: HolidaysTypes.Country;
 }
 
 @Component({
@@ -93,7 +94,7 @@ export class CalendarComponent implements OnInit {
   holidayCountriesAndStates: ExtendedHolidays[] = (() => {
     const result: ExtendedHolidays[] = [];
 
-    const dateHoliday = new DateHolidays();
+    const dateHoliday = new Holidays();
 
     const allCountries = dateHoliday.getCountries(); // e.g. {de: 'Deutschland', ...}
     for (const currentCountryKey of Object.keys(allCountries)) { // e.g. 'de'
@@ -617,7 +618,7 @@ export class CalendarComponent implements OnInit {
 
   private defineHolidays(start: Date, end: Date): EventInput[] {
     const result: EventInput[] = [];
-    const holidays = new DateHolidays(this.calendarSettings.holidayCountry);
+    const holidays = new Holidays(this.calendarSettings.holidayCountry);
 
     const rangeOfYears = (start: number, end: number) => {
       return Array<number>(end - start + 1)
@@ -646,7 +647,7 @@ export class CalendarComponent implements OnInit {
     localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
   }
 
-  compareHolidayCountry(o1: DateHolidays.Country, o2: DateHolidays.Country): boolean {
+  compareHolidayCountry(o1: HolidaysTypes.Country, o2: HolidaysTypes.Country): boolean {
     if (o1.country === o2.country) {
       if (o1.state === null && o2.state == null) {
         return true;

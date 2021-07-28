@@ -1,8 +1,9 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Inject, OnInit, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {DocumentService} from "../../document/document.service";
 import {NgForm} from "@angular/forms";
 import {CustomerService} from "../customer.service";
+import {PreventLosingChangesService} from "../../prevent-losing-changes/prevent-losing-changes.service";
 
 export interface CustomerDocumentCaptureDialogData {
   documentId?: number;
@@ -25,19 +26,42 @@ export class CustomerDocumentCaptureDialogComponent implements OnInit {
   customerId: number | undefined;
   documentId: number | undefined;
   document: KokuDto.FormularDto | undefined;
+  private dirty: boolean = false;
+  @ViewChild('form') ngForm: NgForm | undefined;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: CustomerDocumentCaptureDialogData,
               public dialogRef: MatDialogRef<CustomerDocumentCaptureDialogComponent>,
+              private readonly preventLosingChangesService: PreventLosingChangesService,
+              private readonly changeDetector: ChangeDetectorRef,
               public documentService: DocumentService,
               public customerService: CustomerService) {
     this.customerId = data.customerId;
     this.documentId = data.documentId;
+
+    this.dialogRef.disableClose = true;
+    this.dialogRef.backdropClick().subscribe(() => {
+      this.preventLosingChangesService.preventLosingChanges(this.dirty, () => {
+        this.dialogRef.close();
+      });
+    });
+    this.dialogRef.keydownEvents().subscribe((event) => {
+      if (event.key === 'Escape') {
+        this.preventLosingChangesService.preventLosingChanges(this.dirty, () => {
+          this.dialogRef.close();
+        });
+      }
+    });
   }
 
   ngOnInit(): void {
     if (this.customerId && this.documentId) {
       this.customerService.getDocument(this.customerId, this.documentId).subscribe((document) => {
         this.document = document;
+
+        this.changeDetector.detectChanges();
+        this.ngForm?.statusChanges?.subscribe(() => {
+          this.dirty = (this.ngForm || {}).dirty || false;
+        });
       });
     }
   }
