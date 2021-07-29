@@ -1,6 +1,6 @@
-<div *ngIf="document">
-  <form #form="ngForm"
-        (ngSubmit)="save(document, form)">
+<form #form="ngForm"
+      (ngSubmit)="save(document, form)">
+  <div *ngIf="document">
     <h2 mat-dialog-title>{{document.description}}</h2>
 
     <mat-dialog-content>
@@ -60,6 +60,5 @@
         Speichern
       </button>
     </mat-dialog-actions>
-  </form>
-
-</div>
+  </div>
+</form>

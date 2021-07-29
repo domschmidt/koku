@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Inject, OnInit, ViewChild} from '@angular/core';
+import {Component, Inject, OnInit, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {DocumentService} from "../../document/document.service";
 import {NgForm} from "@angular/forms";
@@ -32,7 +32,6 @@ export class CustomerDocumentCaptureDialogComponent implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: CustomerDocumentCaptureDialogData,
               public dialogRef: MatDialogRef<CustomerDocumentCaptureDialogComponent>,
               private readonly preventLosingChangesService: PreventLosingChangesService,
-              private readonly changeDetector: ChangeDetectorRef,
               public documentService: DocumentService,
               public customerService: CustomerService) {
     this.customerId = data.customerId;
@@ -57,13 +56,14 @@ export class CustomerDocumentCaptureDialogComponent implements OnInit {
     if (this.customerId && this.documentId) {
       this.customerService.getDocument(this.customerId, this.documentId).subscribe((document) => {
         this.document = document;
-
-        this.changeDetector.detectChanges();
-        this.ngForm?.statusChanges?.subscribe(() => {
-          this.dirty = (this.ngForm || {}).dirty || false;
-        });
       });
     }
+  }
+
+  ngAfterViewInit(): void {
+    this.ngForm?.statusChanges?.subscribe(() => {
+      this.dirty = (this.ngForm || {}).dirty || false;
+    });
   }
 
   getFxFlex(size: number) {
@@ -88,8 +88,8 @@ export class CustomerDocumentCaptureDialogComponent implements OnInit {
     return result;
   }
 
-  save(document: KokuDto.FormularDto, form: NgForm) {
-    if (this.customerId && this.documentId && form.valid) {
+  save(document: KokuDto.FormularDto | undefined, form: NgForm) {
+    if (document && this.customerId && this.documentId && form.valid) {
       this.saving = true;
       this.customerService.createCustomerDocument(this.customerId, document).subscribe((upload) => {
         const dialogResult: CustomerDocumentCaptureDialogResponseData = {
