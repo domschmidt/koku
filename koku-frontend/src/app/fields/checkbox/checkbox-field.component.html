@@ -1,5 +1,6 @@
 <mat-checkbox class="checkbox-field"
               [(ngModel)]="internalValue"
+              (change)="onChange(internalValue)"
               [disabled]="readOnly === true"
 ><span class="checkbox-field__label"
   [class.checkbox-field__label--large]="fontSize === 'LARGE'"

@@ -20,7 +20,7 @@ export class CheckboxFieldComponent implements ControlValueAccessor {
   @Input() label: string | undefined;
   @Input() fontSize: KokuDto.FontSizeDto | undefined;
   @Input() readOnly: boolean | undefined;
-  private onChange: any;
+  onChange: any;
 
   registerOnChange(fn: any): void {
     this.onChange = fn;
