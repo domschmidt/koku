@@ -25,7 +25,6 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
-            "aot": true,
             "assets": [
               "src/favicon.ico",
               "src/apple-touch-icon.png",
@@ -46,7 +45,11 @@
             "serviceWorker": true,
             "ngswConfigPath": "ngsw-config.json",
             "sourceMap": true,
-            "optimization": false
+            "optimization": false,
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -76,7 +79,8 @@
                 }
               ]
             }
-          }
+          },
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
