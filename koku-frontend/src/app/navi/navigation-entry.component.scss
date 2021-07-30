@@ -1,12 +1,13 @@
+@use '~@angular/material' as mat;
 @import '../../../node_modules/@angular/material/theming';
 @import "../../styles";
 
 .navigation-entry {
   &--active {
-    color: mat-color($koku-primary, 400) !important;
+    color: mat.get-color-from-palette($koku-primary, 400) !important;
 
     &.navigation-entry--leaf {
-      background-color: mat-color($koku-primary, 50) !important;
+      background-color: mat.get-color-from-palette($koku-primary, 50) !important;
     }
   }
 

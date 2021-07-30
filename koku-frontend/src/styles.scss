@@ -1,3 +1,4 @@
+@use '~@angular/material' as mat;
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
 @import '~@angular/material/theming';
@@ -6,12 +7,12 @@
 // Include the common styles for Angular Material. We include this here so that you only
 // have to load a single css file for Angular Material in your app.
 // Be sure that you only ever include this mixin once!
-@include mat-core();
+@include mat.core();
 
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
-$koku-primary: mat-palette((
+$koku-primary: mat.define-palette((
   50: #ede7f6,
   100: #d1c4e9,
   200: #b39ddb,
@@ -43,14 +44,14 @@ $koku-primary: mat-palette((
     A700: $light-primary-text,
   )
 ));
-$koku-accent: mat-palette($mat-pink, A200, A100, A400);
+$koku-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
 
 // The warn palette is optional (defaults to red).
-$koku-warn: mat-palette($mat-red);
+$koku-warn: mat.define-palette(mat.$red-palette);
 
 // Create the theme object. A theme consists of configurations for individual
 // theming systems such as "color" or "typography".
-$koku-theme: mat-light-theme((
+$koku-theme: mat.define-light-theme((
   color: (
     primary: $koku-primary,
     accent: $koku-accent,
@@ -61,20 +62,20 @@ $koku-theme: mat-light-theme((
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
-@include angular-material-theme($koku-theme);
+@include mat.all-component-themes($koku-theme);
 
 @mixin mix-app-theme($app-theme) {
   $primary: map-get($app-theme, primary);
   $accent: map-get($app-theme, accent);
 
   .mat-button-toggle {
-    background-color: mat-color($koku-primary, 200);
-    color: mat-color($koku-primary, '200-contrast');
+    background-color: mat.get-color-from-palette($koku-primary, 200);
+    color: mat.get-color-from-palette($koku-primary, '200-contrast');
   }
 
   .mat-button-toggle-checked.mat-button-toggle-appearance-standard {
-    background-color: mat-color($koku-primary, 400);
-    color: mat-color($koku-primary, '400-contrast');
+    background-color: mat.get-color-from-palette($koku-primary, 400);
+    color: mat.get-color-from-palette($koku-primary, '400-contrast');
   }
 
   .mat-toolbar-row, .mat-toolbar-single-row {
@@ -156,6 +157,11 @@ body {
     justify-content: center;
     align-items: center;
   }
+  &--toolbar-right-side {
+    bottom: auto;
+    top: 6px;
+    right: 12px;
+  }
 }
 
 .spinner-center {
@@ -181,16 +187,16 @@ body {
 }
 
 .sold-product-chip-list__item {
-  background-color: mat-color($koku-accent, 50) !important;
+  background-color: mat.get-color-from-palette($koku-accent, 50) !important;
 }
 
 .activity-sequence-chip-list__item {
   &--product {
-    background-color: mat-color($koku-accent, 50) !important;
+    background-color: mat.get-color-from-palette($koku-accent, 50) !important;
   }
 
   &--activity-step {
-    background-color: mat-color($koku-primary, 50) !important;
+    background-color: mat.get-color-from-palette($koku-primary, 50) !important;
   }
 }
 

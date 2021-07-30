@@ -1,0 +1,15 @@
+{
+  "name": "koku-cypress",
+  "version": "1.0.0",
+  "description": "Cypress Project for KoKu",
+  "scripts": {
+    "cypress": "cypress"
+  },
+  "author": "Dominik Schmidt",
+  "license": "MIT",
+  "devDependencies": {
+    "@bahmutov/add-typescript-to-cypress": "^2.1.2",
+    "cypress": "^8.1.0",
+    "typescript": "^4.3.5"
+  }
+}

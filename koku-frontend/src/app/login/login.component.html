@@ -7,6 +7,7 @@
        style="padding: 14px;"
   >
     <form #loginForm="ngForm"
+          id="login-form"
           (keydown.enter)="login(username,password)"
           (submit)="login(username, password)">
       <mat-card>
@@ -19,6 +20,7 @@
             <mat-label>Nutzername</mat-label>
             <input matInput
                    autocomplete="username"
+                   id="login-form__username-input"
                    #username>
           </mat-form-field>
           <mat-form-field class="login-page__content__field login-page__content__field--password"
@@ -27,6 +29,7 @@
             <input matInput
                    autocomplete="current-password"
                    type="password"
+                   id="login-form__password-input"
                    #password>
           </mat-form-field>
           <button mat-raised-button
@@ -36,6 +39,7 @@
                   [class.button-spinner]="loading"
                   title="Anmelden"
                   type="submit"
+                  id="login-form__submit-btn"
           >
             Login
           </button>

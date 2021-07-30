@@ -18,11 +18,12 @@
     "@angular/core": "12.1.4",
     "@angular/flex-layout": "12.0.0-beta.34",
     "@angular/forms": "12.1.4",
-    "@angular/material": "11.2.13",
+    "@angular/material": "12.1.4",
     "@angular/material-moment-adapter": "12.1.4",
     "@angular/platform-browser": "12.1.4",
     "@angular/platform-browser-dynamic": "12.1.4",
     "@angular/router": "12.1.4",
+    "@angular/service-worker": "12.1.4",
     "@fullcalendar/angular": "5.9.0",
     "@fullcalendar/daygrid": "5.9.0",
     "@fullcalendar/interaction": "5.9.0",
@@ -47,7 +48,7 @@
     "signature_pad": "3.0.0-beta.4",
     "sortablejs": "1.14.0",
     "tslib": "2.3.0",
-    "zone.js": "~0.11.4"
+    "zone.js": "0.11.4"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "12.1.4",

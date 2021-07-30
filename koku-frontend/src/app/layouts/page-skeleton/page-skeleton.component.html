@@ -1,0 +1,75 @@
+<mat-drawer-container (backdropClick)="naviService.close()" class="app-skeleton">
+  <mat-drawer
+    [mode]="'over'"
+    [opened]="naviService.openState.value"
+    [style.min-width.px]="250"
+    class="nav-drawer"
+  >
+    <div class="nav-drawer__content">
+      <mat-toolbar color="primary" style="flex-shrink: 0;">
+        <button (click)="naviService.close()" mat-icon-button>
+          <mat-icon>menu</mat-icon>
+        </button>
+        <h1>Navigation</h1>
+      </mat-toolbar>
+
+      <mat-nav-list *ngIf="navi" style="overflow: auto; padding: 0;">
+        <ng-container *ngFor="let currentNaviEntry of navi">
+          <navigation-entry [naviEntry]="currentNaviEntry"></navigation-entry>
+          <mat-divider></mat-divider>
+        </ng-container>
+
+      </mat-nav-list>
+      <div class="nav-drawer__content__spacer"></div>
+
+      <button (click)="naviService.close()"
+              *ngIf="userDetails$ | async as userDetails"
+              class="nav-drawer__content__user-profile-card"
+              routerLink="myprofile"
+              mat-button
+      >
+        <user-avatar [user]="userDetails"
+                     class="nav-drawer__content__user-profile-card__content__profile-avatar"></user-avatar>
+        <span class="nav-drawer__content__user-profile-card__content__profile-name">
+          {{userDetails.firstname}} {{userDetails.lastname}}
+        </span>
+      </button>
+
+      <mat-nav-list style="padding: 0;">
+        <ng-container *ngFor="let currentRouteConfig of router.config">
+          <ng-container *ngIf="!currentRouteConfig.data?.hideInNav && currentRouteConfig.data?.align === 'bottom'">
+            <a #rla="routerLinkActive"
+               (click)="naviService.close()"
+               [class.root-navigation-entry--active]="rla.isActive"
+               [routerLink]="currentRouteConfig.path"
+               class="root-navigation-entry"
+               mat-list-item
+               routerLink="/customerAppointments"
+               routerLinkActive
+            >
+              {{currentRouteConfig.data?.name}}
+            </a>
+            <mat-divider></mat-divider>
+          </ng-container>
+        </ng-container>
+
+      </mat-nav-list>
+    </div>
+  </mat-drawer>
+  <mat-drawer-content>
+    <div class="page-skeleton">
+      <mat-toolbar color="primary">
+        <mat-toolbar-row>
+          <button (click)="naviService.open()" mat-icon-button>
+            <mat-icon>menu</mat-icon>
+          </button>
+          <h1>{{activatedRoute.snapshot.firstChild?.data?.name}}</h1>
+        </mat-toolbar-row>
+      </mat-toolbar>
+      <div class="page-skeleton__scroll-area">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+
+  </mat-drawer-content>
+</mat-drawer-container>

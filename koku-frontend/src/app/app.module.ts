@@ -76,7 +76,6 @@ import {PrivateAppointmentDetailsComponent} from "./user/private-appointment-det
 import {CustomerAppointmentInlineInfoComponent} from "./customer/customer-appointment-inline-info/customer-appointment-inline-info.component";
 import {NavigationEntryComponent} from "./navi/navigation-entry.component";
 import {TabLayoutComponent} from "./layouts/tab-layout/tab-layout.component";
-import {PageLayoutComponent} from "./layouts/page-layout/page-layout.component";
 import {PanelLayoutComponent} from "./layouts/panel-layout/panel-layout.component";
 import {ChartPanelComponent} from "./layouts/panel-layout/panels/chart/chart-panel.component";
 import {CustomerStatisticsComponent} from "./customer/customer-statistics/customer-statistics.component";
@@ -111,6 +110,7 @@ import {DocumentCheckboxFieldComponent} from "./document/document-details/docume
 import {CheckboxFieldComponent} from "./fields/checkbox/checkbox-field.component";
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
+import {PageSkeletonComponent} from "./layouts/page-skeleton/page-skeleton.component";
 
 FullCalendarModule.registerPlugins([ // register FullCalendar plugins
   dayGridPlugin,
@@ -161,7 +161,6 @@ Chart.register(...registerables);
     SvgFieldComponent,
     NavigationEntryComponent,
     TabLayoutComponent,
-    PageLayoutComponent,
     PanelLayoutComponent,
     ChartPanelComponent,
     CustomerStatisticsComponent,
@@ -184,7 +183,8 @@ Chart.register(...registerables);
     PromotionSelectionComponent,
     CustomerAppointmentActivityInfoDialogComponent,
     DocumentCheckboxFieldComponent,
-    CheckboxFieldComponent
+    CheckboxFieldComponent,
+    PageSkeletonComponent
   ],
   imports: [
     GaugeModule.forRoot(),

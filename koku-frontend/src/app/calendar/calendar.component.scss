@@ -1,3 +1,4 @@
+@use '~@angular/material' as mat;
 @import '~@fullcalendar/common/main.css';
 @import '~@fullcalendar/daygrid/main.css';
 @import '~@angular/material/theming';
@@ -11,10 +12,10 @@
 ::ng-deep .calendar-event {
   &--clickable {
     cursor: pointer;
-    @include mat-elevation-transition;
+    @include mat.elevation-transition;
 
     &.calendar-event--hover {
-      @include mat-elevation(2);
+      @include mat.elevation(2);
     }
   }
 }
@@ -35,22 +36,22 @@
 }
 
 ::ng-deep .private-appointment {
-  background-color: mat-color($koku-accent, 300) !important;
-  color: mat-color($koku-accent, '300-contrast') !important;
+  background-color: mat.get-color-from-palette($koku-accent, 300) !important;
+  color: mat.get-color-from-palette($koku-accent, '300-contrast') !important;
 
   &:hover {
-    background-color: mat-color($koku-accent, 400) !important;
-    color: mat-color($koku-accent, '400-contrast') !important;
+    background-color: mat.get-color-from-palette($koku-accent, 400) !important;
+    color: mat.get-color-from-palette($koku-accent, '400-contrast') !important;
   }
 }
 
 ::ng-deep .customer-appointment {
-  background-color: mat-color($koku-primary, 100) !important;
-  color: mat-color($koku-primary, '100-contrast') !important;
+  background-color: mat.get-color-from-palette($koku-primary, 100) !important;
+  color: mat.get-color-from-palette($koku-primary, '100-contrast') !important;
 
   &:hover {
-    background-color: mat-color($koku-primary, 200) !important;
-    color: mat-color($koku-primary, '200-contrast') !important;
+    background-color: mat.get-color-from-palette($koku-primary, 200) !important;
+    color: mat.get-color-from-palette($koku-primary, '200-contrast') !important;
   }
 }
 

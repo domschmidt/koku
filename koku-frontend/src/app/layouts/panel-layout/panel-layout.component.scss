@@ -1,3 +1,4 @@
+@use '~@angular/material' as mat;
 @import '~@angular/material/theming';
 @import "~src/styles";
 
@@ -9,8 +10,8 @@
       width: 100%;
       margin: 10px;
       background-color: #fff;
-      @include mat-elevation(2);
-      @include mat-elevation-transition;
+      @include mat.elevation(2);
+      @include mat.elevation-transition;
     }
   }
 }

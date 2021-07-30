@@ -1,3 +1,4 @@
+@use '~@angular/material' as mat;
 
 @import '~@angular/material/theming';
 @import "~src/styles";
@@ -29,13 +30,13 @@ $evenColor: rgb(229,229,229);
       position: absolute;
       z-index: 1;
       background-color: rgba($oddColor, 0.95);
-      border: 1px dashed mat-color($koku-accent, 400);
+      border: 1px dashed mat.get-color-from-palette($koku-accent, 400);
       border-bottom-width: 0;
       display: none;
     }
 
     &:hover {
-      border-color: mat-color($koku-accent, 400);
+      border-color: mat.get-color-from-palette($koku-accent, 400);
 
       .document__row__menu {
         display: flex;
@@ -89,7 +90,7 @@ $evenColor: rgb(229,229,229);
           position: absolute;
           z-index: 1;
           background-color: rgba($oddColor, 0.95);
-          border: 1px dashed mat-color($koku-primary, 400);
+          border: 1px dashed mat.get-color-from-palette($koku-primary, 400);
           border-bottom-width: 0;
           display: none;
         }
@@ -98,7 +99,7 @@ $evenColor: rgb(229,229,229);
           .document__row__contents__item__menu {
             display: flex;
           }
-          border-color: mat-color($koku-primary, 400);
+          border-color: mat.get-color-from-palette($koku-primary, 400);
         }
 
         &__inner {

@@ -1,3 +1,4 @@
+@use '~@angular/material' as mat;
 @import '../../../../../../node_modules/@angular/material/theming';
 @import "../../../../../styles";
 
@@ -12,8 +13,8 @@
   flex-direction: column;
   flex-grow: 1;
   justify-content: center;
-  background-color: mat-color($koku-primary, 400);
-  color: mat-color($koku-primary, '400-contrast');
+  background-color: mat.get-color-from-palette($koku-primary, 400);
+  color: mat.get-color-from-palette($koku-primary, '400-contrast');
 
   &__title {
     text-align: center;

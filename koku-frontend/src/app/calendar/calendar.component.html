@@ -61,34 +61,29 @@
       </div>
     </mat-drawer>
     <mat-drawer-content>
+
+      <div class="fab-button-container fab-button-container--toolbar-right-side">
+        <mat-button-toggle-group>
+          <mat-button-toggle title="Monatsansicht"
+                             [checked]="calendarSettings.currentView === 'dayGridMonth'"
+                             (change)="changeCalendarView('dayGridMonth')">
+            <mat-icon>calendar_view_month</mat-icon>
+          </mat-button-toggle>
+          <mat-button-toggle title="Wochenansicht"
+                             [checked]="calendarSettings.currentView === 'timeGridWeek'"
+                             (change)="changeCalendarView('timeGridWeek')">
+            <mat-icon>calendar_view_week</mat-icon>
+          </mat-button-toggle>
+          <mat-button-toggle title="Tagesansicht"
+                             [checked]="calendarSettings.currentView === 'timeGridDay'"
+                             (change)="changeCalendarView('timeGridDay')">
+            <mat-icon>calendar_view_day</mat-icon>
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+
       <div class="page-skeleton">
         <mat-toolbar color="primary">
-          <mat-toolbar-row>
-            <button (click)="naviService.open()" mat-icon-button>
-              <mat-icon>menu</mat-icon>
-            </button>
-            <h1>{{activatedRoute.snapshot.data?.name}}</h1>
-
-            <div style="flex: 1 1 auto;"></div>
-
-            <mat-button-toggle-group>
-              <mat-button-toggle title="Monatsansicht"
-                                 [checked]="calendarSettings.currentView === 'dayGridMonth'"
-                                 (change)="changeCalendarView('dayGridMonth')">
-                <mat-icon>calendar_view_month</mat-icon>
-              </mat-button-toggle>
-              <mat-button-toggle title="Wochenansicht"
-                                 [checked]="calendarSettings.currentView === 'timeGridWeek'"
-                                 (change)="changeCalendarView('timeGridWeek')">
-                <mat-icon>calendar_view_week</mat-icon>
-              </mat-button-toggle>
-              <mat-button-toggle title="Tagesansicht"
-                                 [checked]="calendarSettings.currentView === 'timeGridDay'"
-                                 (change)="changeCalendarView('timeGridDay')">
-                <mat-icon>calendar_view_day</mat-icon>
-              </mat-button-toggle>
-            </mat-button-toggle-group>
-          </mat-toolbar-row>
           <mat-toolbar-row class="calendar-date-control">
             <div>
               <button mat-icon-button
