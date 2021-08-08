@@ -43,7 +43,7 @@ export class CustomerAppointmentsComponent implements OnInit {
     if (changedAppointment) {
       for (let customerAppointmentIndex = 0;
            customerAppointmentIndex < (this.customerAppointments || []).length;
-           customerAppointmentIndex++){
+           customerAppointmentIndex++) {
         let currentAppointment = (this.customerAppointments || [])[customerAppointmentIndex];
         if (currentAppointment.id === changedAppointment.id) {
           (this.customerAppointments || [])[customerAppointmentIndex] = changedAppointment;

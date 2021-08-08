@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, ElementRef, Inject, ViewChild} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {ActivityService} from "../activity.service";
 import {FormControl, NgForm, Validators} from "@angular/forms";
 import {Chart} from 'chart.js';
@@ -8,6 +8,11 @@ import {padStart} from 'lodash';
 import * as moment from "moment";
 import {PreventLosingChangesService} from "../../prevent-losing-changes/prevent-losing-changes.service";
 import ActivityDto = KokuDto.ActivityDto;
+import {
+  AlertDialogButtonConfig,
+  AlertDialogComponent,
+  AlertDialogData
+} from "../../alert-dialog/alert-dialog.component";
 
 export interface ActivityDetailsComponentData {
   activityId?: number;
@@ -39,6 +44,7 @@ export class ActivityDetailsComponent implements AfterViewInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: ActivityDetailsComponentData,
               public dialogRef: MatDialogRef<ActivityDetailsComponent>,
               private readonly preventLosingChangesService: PreventLosingChangesService,
+              public dialog: MatDialog,
               public activityService: ActivityService) {
     this.createMode = data.activityId === undefined;
     if (data.activityId) {
@@ -146,10 +152,36 @@ export class ActivityDetailsComponent implements AfterViewInit {
   }
 
   delete(activity: KokuDto.ActivityDto) {
-    this.saving = true;
-    this.activityService.deleteActivity(activity).subscribe(() => {
-      this.dialogRef.close();
-      this.saving = false;
+    const dialogData: AlertDialogData = {
+      headline: 'Termin Löschen',
+      message: `Wollen Sie den Behandlungschritt wirklich löschen?`,
+      buttons: [{
+        text: 'Abbrechen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          dialogRef.close();
+        }
+      }, {
+        text: 'Bestätigen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          button.loading = true;
+          this.activityService.deleteActivity(activity).subscribe(() => {
+            dialogRef.close();
+            this.dialogRef.close();
+          }, () => {
+            button.loading = false;
+          });
+        }
+      }]
+    };
+
+    this.dialog.open(AlertDialogComponent, {
+      data: dialogData,
+      width: '100%',
+      maxWidth: 700,
+      closeOnNavigation: false,
+      position: {
+        top: '20px'
+      }
     });
   }
 

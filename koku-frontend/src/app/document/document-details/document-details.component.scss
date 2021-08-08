@@ -7,14 +7,15 @@
   width: 100%;
 }
 
-$oddColor: rgb(255,255,255);
-$evenColor: rgb(229,229,229);
+$oddColor: rgb(255, 255, 255);
+$evenColor: rgb(229, 229, 229);
 
 .document {
   &__row-info {
     display: flex;
     justify-content: center;
   }
+
   &__row {
     transition: background-color 0.1s ease-out;
     align-items: center;
@@ -45,9 +46,11 @@ $evenColor: rgb(229,229,229);
 
     &:nth-child(even) {
       background-color: $evenColor;
+
       .document__row__menu {
         background-color: rgba($evenColor, 0.95);
       }
+
       .document__row__contents__item__menu {
         background-color: rgba($evenColor, 0.95);
       }
@@ -99,6 +102,7 @@ $evenColor: rgb(229,229,229);
           .document__row__contents__item__menu {
             display: flex;
           }
+
           border-color: mat.get-color-from-palette($koku-primary, 400);
         }
 

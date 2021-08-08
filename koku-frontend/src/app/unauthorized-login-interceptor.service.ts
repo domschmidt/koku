@@ -16,8 +16,10 @@ export class UnauthorizedLoginInterceptorService implements HttpInterceptor {
               private readonly snackBarService: SnackBarService) {
   }
 
+  private readonly UNAUTHORIZED_ROUTES = ['/api/auth/login', '/api/auth/logout', '/api/auth/refresh'];
+
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if (['/api/auth/login', '/api/auth/logout', '/api/auth/refresh'].indexOf(req.url) < 0) {
+    if (this.UNAUTHORIZED_ROUTES.indexOf(req.url) < 0) {
       return this.handleRequest(next, req);
     } else {
       return next.handle(req);

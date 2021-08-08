@@ -108,8 +108,8 @@ import {PromotionSelectionComponent} from "./promotions/promotion-selection/prom
 import {CustomerAppointmentActivityInfoDialogComponent} from "./customer/customer-appointment-activity-info-dialog/customer-appointment-activity-info-dialog.component";
 import {DocumentCheckboxFieldComponent} from "./document/document-details/document-checkbox-field/document-checkbox-field.component";
 import {CheckboxFieldComponent} from "./fields/checkbox/checkbox-field.component";
-import { ServiceWorkerModule } from '@angular/service-worker';
-import { environment } from '../environments/environment';
+import {ServiceWorkerModule} from '@angular/service-worker';
+import {environment} from '../environments/environment';
 import {PageSkeletonComponent} from "./layouts/page-skeleton/page-skeleton.component";
 
 FullCalendarModule.registerPlugins([ // register FullCalendar plugins

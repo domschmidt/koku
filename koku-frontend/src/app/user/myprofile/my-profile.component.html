@@ -9,6 +9,7 @@
     <form #profileForm="ngForm"
           (keydown.enter)="save(profileForm,userDetails)"
           (submit)="save(profileForm, userDetails)"
+          id="my-profile-form"
           *ngIf="userDetails">
       <mat-card class="user-details-card">
         <mat-card-content class="user-details-card__content">

@@ -1,4 +1,4 @@
-<div class="page-skeleton">
+<div class="page-skeleton" id="customer-page">
   <div class="page-skeleton__spacing">
     <form class="customer-search-form">
       <mat-form-field class="search-field">
@@ -8,6 +8,7 @@
                matInput
                name="customerSearch"
                placeholder="Name eingeben"
+               id="customer-page__search"
         >
         <button (click)="clearSearchField()"
                 *ngIf="searchFieldModel"
@@ -21,25 +22,30 @@
       </mat-form-field>
     </form>
   </div>
-  <mat-action-list class="page-skeleton__scroll-area">
-    <button (click)="openCustomerDetails(customer)"
-            *ngFor="let customer of customers$ | async; trackBy: trackByFn"
-            mat-list-item>
-      <circle-with-letters [letters]="customer.initials" style="margin-right: 12px;"></circle-with-letters>
-      <h3 matLine>{{customer.firstName}} {{customer.lastName}} {{customer.onFirstNameBasis ? '*' : ''}}</h3>
-      <p matLine>{{customer.address}}</p>
-      <p matLine>{{customer.postalCode}} {{customer.city}}</p>
-    </button>
-  </mat-action-list>
+  <div class="page-skeleton__scroll-area">
+    <mat-action-list id="customer-page__results">
+      <button (click)="openCustomerDetails(customer)"
+              *ngFor="let customer of customers$ | async; trackBy: trackByFn"
+              class="customer-page__results__item"
+              mat-list-item>
+        <circle-with-letters [letters]="customer.initials" style="margin-right: 12px;"></circle-with-letters>
+        <h3 matLine
+            class="customer-page__results__item__name">{{customer.firstName}} {{customer.lastName}} {{customer.onFirstNameBasis ? '*' : ''}}</h3>
+        <p matLine class="customer-page__results__item__address">{{customer.address}}</p>
+        <p matLine class="customer-page__results__item__city">{{customer.postalCode}} {{customer.city}}</p>
+      </button>
+    </mat-action-list>
 
-  <div class="fab-button-container">
-    <button (click)="addNewCustomer();"
-            aria-label="Neuer Kunde hinzufügen"
-            color="primary"
-            mat-fab
-            class="fab-button"
-    >
-      <mat-icon>add</mat-icon>
-    </button>
+    <div class="fab-button-container">
+      <button (click)="addNewCustomer();"
+              aria-label="Neuer Kunde hinzufügen"
+              color="primary"
+              mat-fab
+              class="fab-button"
+              id="customer-page__add-new-customer-btn"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
   </div>
 </div>

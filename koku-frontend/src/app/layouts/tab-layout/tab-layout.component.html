@@ -1,4 +1,4 @@
-<div class="page-skeleton">
+<div class="page-skeleton koku-tab-page">
   <mat-toolbar color="primary">
     <mat-toolbar-row *ngIf="activatedRoute.routeConfig?.children">
       <nav [style.width]="'100%'"
@@ -9,6 +9,7 @@
              *ngIf="currentRouteChildren.component"
              [active]="rla.isActive"
              [routerLink]="currentRouteChildren.path"
+             class="koku-tab-page__item"
              mat-tab-link
              routerLinkActive> {{currentRouteChildren.data?.name}} </a>
         </ng-container>

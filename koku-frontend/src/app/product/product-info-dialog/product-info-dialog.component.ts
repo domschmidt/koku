@@ -13,6 +13,11 @@ import {
 } from "../../product-manufacturer/product-manufacturer-selection/product-manufacturer-selection.component";
 import {PreventLosingChangesService} from "../../prevent-losing-changes/prevent-losing-changes.service";
 import {MatTabGroup} from "@angular/material/tabs";
+import {
+  AlertDialogButtonConfig,
+  AlertDialogComponent,
+  AlertDialogData
+} from "../../alert-dialog/alert-dialog.component";
 
 export interface ProductInfoDialogComponentData {
   productId?: number;
@@ -148,10 +153,36 @@ export class ProductInfoDialogComponent implements AfterViewInit {
   }
 
   delete(product: KokuDto.ProductDto) {
-    this.saving = true;
-    this.productService.deleteProduct(product).subscribe(() => {
-      this.dialogRef.close();
-      this.saving = false;
+    const dialogData: AlertDialogData = {
+      headline: 'Produkt Löschen',
+      message: `Wollen Sie das Produkt mit dem Namen ${product.description} wirklich löschen?`,
+      buttons: [{
+        text: 'Abbrechen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          dialogRef.close();
+        }
+      }, {
+        text: 'Bestätigen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          button.loading = true;
+          this.productService.deleteProduct(product).subscribe(() => {
+            dialogRef.close();
+            this.dialogRef.close();
+          }, () => {
+            button.loading = false;
+          });
+        }
+      }]
+    };
+
+    this.dialog.open(AlertDialogComponent, {
+      data: dialogData,
+      width: '100%',
+      maxWidth: 700,
+      closeOnNavigation: false,
+      position: {
+        top: '20px'
+      }
     });
   }
 

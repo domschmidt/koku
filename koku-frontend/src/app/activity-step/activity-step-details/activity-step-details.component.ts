@@ -1,8 +1,13 @@
 import {AfterViewInit, Component, Inject, ViewChild} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NgForm} from "@angular/forms";
 import {ActivityStepService} from "../activity-step.service";
 import {PreventLosingChangesService} from "../../prevent-losing-changes/prevent-losing-changes.service";
+import {
+  AlertDialogButtonConfig,
+  AlertDialogComponent,
+  AlertDialogData
+} from "../../alert-dialog/alert-dialog.component";
 
 export interface ActivityStepDetailsComponentData {
   activityStepId?: number;
@@ -31,6 +36,7 @@ export class ActivityStepDetailsComponent implements AfterViewInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: ActivityStepDetailsComponentData,
               public dialogRef: MatDialogRef<ActivityStepDetailsComponent>,
               private readonly preventLosingChangesService: PreventLosingChangesService,
+              public dialog: MatDialog,
               public activityStepService: ActivityStepService) {
     this.createMode = data.activityStepId === undefined;
     if (data.activityStepId) {
@@ -90,10 +96,36 @@ export class ActivityStepDetailsComponent implements AfterViewInit {
   }
 
   delete(activityStep: KokuDto.ActivityStepDto) {
-    this.saving = true;
-    this.activityStepService.deleteActivityStep(activityStep).subscribe(() => {
-      this.dialogRef.close();
-      this.saving = false;
+    const dialogData: AlertDialogData = {
+      headline: 'Termin Löschen',
+      message: `Wollen Sie den Behandlungschritt wirklich löschen?`,
+      buttons: [{
+        text: 'Abbrechen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          dialogRef.close();
+        }
+      }, {
+        text: 'Bestätigen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          button.loading = true;
+          this.activityStepService.deleteActivityStep(activityStep).subscribe(() => {
+            dialogRef.close();
+            this.dialogRef.close();
+          }, () => {
+            button.loading = false;
+          });
+        }
+      }]
+    };
+
+    this.dialog.open(AlertDialogComponent, {
+      data: dialogData,
+      width: '100%',
+      maxWidth: 700,
+      closeOnNavigation: false,
+      position: {
+        top: '20px'
+      }
     });
   }
 

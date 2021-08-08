@@ -1,8 +1,13 @@
 import {AfterViewInit, Component, ElementRef, Inject, ViewChild} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {FormControl, NgForm, Validators} from "@angular/forms";
 import {ProductManufacturerService} from "../product-manufacturer.service";
 import {PreventLosingChangesService} from "../../prevent-losing-changes/prevent-losing-changes.service";
+import {
+  AlertDialogButtonConfig,
+  AlertDialogComponent,
+  AlertDialogData
+} from "../../alert-dialog/alert-dialog.component";
 
 export interface ProductManufacturerDetailsComponentData {
   manufacturerId?: number;
@@ -32,6 +37,7 @@ export class ProductManufacturerDetailsComponent implements AfterViewInit {
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: ProductManufacturerDetailsComponentData,
               public dialogRef: MatDialogRef<ProductManufacturerDetailsComponent>,
+              public dialog: MatDialog,
               private readonly preventLosingChangesService: PreventLosingChangesService,
               public productManufacturerService: ProductManufacturerService) {
     this.createMode = data.manufacturerId === undefined;
@@ -94,10 +100,36 @@ export class ProductManufacturerDetailsComponent implements AfterViewInit {
   }
 
   delete(productManufacturer: KokuDto.ProductManufacturerDto) {
-    this.saving = true;
-    this.productManufacturerService.deleteProductManufacturer(productManufacturer).subscribe(() => {
-      this.dialogRef.close();
-      this.saving = false;
+    const dialogData: AlertDialogData = {
+      headline: 'Produkthersteller Löschen',
+      message: `Wollen Sie den Hersteller mit dem Namen ${productManufacturer.name} wirklich löschen?`,
+      buttons: [{
+        text: 'Abbrechen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          dialogRef.close();
+        }
+      }, {
+        text: 'Bestätigen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          button.loading = true;
+          this.productManufacturerService.deleteProductManufacturer(productManufacturer).subscribe(() => {
+            dialogRef.close();
+            this.dialogRef.close();
+          }, () => {
+            button.loading = false;
+          });
+        }
+      }]
+    };
+
+    this.dialog.open(AlertDialogComponent, {
+      data: dialogData,
+      width: '100%',
+      maxWidth: 700,
+      closeOnNavigation: false,
+      position: {
+        top: '20px'
+      }
     });
   }
 

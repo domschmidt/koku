@@ -8,7 +8,8 @@ import {Observable} from "rxjs";
 })
 export class PreventNavigationIfModalIsOpenService implements CanDeactivate<any> {
   constructor(private readonly matDialog: MatDialog,
-              private readonly router: Router) {}
+              private readonly router: Router) {
+  }
 
   canDeactivate(component: any,
                 currentRoute: ActivatedRouteSnapshot,

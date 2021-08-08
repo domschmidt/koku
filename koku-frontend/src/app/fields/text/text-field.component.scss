@@ -2,8 +2,10 @@
   width: 100%;
   display: flex;
 }
+
 .text-field {
   width: 100%;
+
   &__inner {
     white-space: pre-wrap;
     line-height: 1.5em;
@@ -11,6 +13,7 @@
     &--small {
       font-size: 8px;
     }
+
     &--large {
       font-size: 24px;
     }
@@ -18,9 +21,11 @@
     &--align-center {
       text-align: center;
     }
+
     &--align-start {
       text-align: start;
     }
+
     &--align-end {
       text-align: end;
     }

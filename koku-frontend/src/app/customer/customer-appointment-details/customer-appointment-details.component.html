@@ -32,7 +32,8 @@
       <mat-label>Kunde</mat-label>
       <button (click)="selectCustomer()" *ngIf="customerAppointment.customer" mat-list-item>
         <circle-with-letters [letters]="customerAppointment.customer?.initials"></circle-with-letters>
-        <h3 matLine>{{customerAppointment.customer?.firstName}} {{customerAppointment.customer?.lastName}} {{customerAppointment.customer.onFirstNameBasis ? '*' : ''}}</h3>
+        <h3
+          matLine>{{customerAppointment.customer?.firstName}} {{customerAppointment.customer?.lastName}} {{customerAppointment.customer.onFirstNameBasis ? '*' : ''}}</h3>
         <p matLine>{{customerAppointment.customer?.address}}</p>
         <p matLine>{{customerAppointment.customer?.postalCode}} {{customerAppointment.customer?.city}}</p>
         <mat-icon matListIcon matSuffix style="order: 10;">open_in_new</mat-icon>
@@ -197,18 +198,20 @@
                         draggable: '.sold-product-chip-list__item'
                       }"
                      sortablejsContainer=".mat-chip-list-wrapper">
-          <mat-chip (removed)="removeSoldProduct(customerAppointmentSoldProduct)"
-                    *ngFor="let customerAppointmentSoldProduct of customerAppointment.soldProducts"
-                    class="sold-product-chip-list__item"
-                    (click)="customerAppointmentSoldProductClicked(customerAppointmentSoldProduct)"
-                    style="height: auto;">
-            <circle-with-letters [letters]="customerAppointmentSoldProduct.product?.manufacturer?.name?.trim()?.substring(0, 1)" [small]="true"></circle-with-letters>
-            <span style="margin: 0 0 0 2px;">
+        <mat-chip (removed)="removeSoldProduct(customerAppointmentSoldProduct)"
+                  *ngFor="let customerAppointmentSoldProduct of customerAppointment.soldProducts"
+                  class="sold-product-chip-list__item"
+                  (click)="customerAppointmentSoldProductClicked(customerAppointmentSoldProduct)"
+                  style="height: auto;">
+          <circle-with-letters
+            [letters]="customerAppointmentSoldProduct.product?.manufacturer?.name?.trim()?.substring(0, 1)"
+            [small]="true"></circle-with-letters>
+          <span style="margin: 0 0 0 2px;">
               {{customerAppointmentSoldProduct.product?.description}}
-              {{customerAppointmentSoldProduct.sellPrice !== undefined ? ' / ' + ((customerAppointmentSoldProduct.sellPrice === 0) ? 'kostenlos' : customerAppointmentSoldProduct.sellPrice + ' €') : ''}}
+            {{customerAppointmentSoldProduct.sellPrice !== undefined ? ' / ' + ((customerAppointmentSoldProduct.sellPrice === 0) ? 'kostenlos' : customerAppointmentSoldProduct.sellPrice + ' €') : ''}}
             </span>
-            <mat-icon matChipRemove>cancel</mat-icon>
-          </mat-chip>
+          <mat-icon matChipRemove>cancel</mat-icon>
+        </mat-chip>
         <input
           #customerAppointmentSoldProductsInput
           [formControl]="customerAppointmentSoldProductsCtrl"
@@ -225,7 +228,8 @@
                         (optionSelected)="selectedSoldProduct($event)"
                         autoActiveFirstOption>
         <mat-option *ngFor="let product of filteredSoldProducts$ | async" [value]="product">
-          <circle-with-letters [letters]="product.manufacturer?.name?.trim()?.substring(0, 1)" [small]="true"></circle-with-letters>
+          <circle-with-letters [letters]="product.manufacturer?.name?.trim()?.substring(0, 1)"
+                               [small]="true"></circle-with-letters>
           <span style="margin: 0 0 0 2px;">{{product.description}}</span>
         </mat-option>
       </mat-autocomplete>

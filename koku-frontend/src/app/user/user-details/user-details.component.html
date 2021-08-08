@@ -19,6 +19,7 @@
 <form #profileForm="ngForm"
       (keydown.enter)="save(user, profileForm)"
       (submit)="save(user, profileForm)"
+      id="user-manage-form"
       *ngIf="user">
   <mat-dialog-content *ngIf="user">
 

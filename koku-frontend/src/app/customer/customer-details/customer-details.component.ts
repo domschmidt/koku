@@ -46,15 +46,6 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  delete(customer: KokuDto.CustomerDto) {
-    this.saving = true;
-    this.customerService.deleteCustomer(customer).subscribe(() => {
-      this.saving = false;
-    }, () => {
-      this.saving = false;
-    });
-  }
-
   ngOnInit(): void {
     this.createMode = this.customerId === undefined;
     if (this.customerId) {

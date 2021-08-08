@@ -98,7 +98,7 @@ export class CustomerInfoDialogComponent implements AfterViewInit {
   delete(customer: KokuDto.CustomerDto) {
     const dialogData: AlertDialogData = {
       headline: 'Kunde Löschen',
-      message: `Wollen Sie den Kunde mit dem Namen ${customer.firstName} ${customer.lastName} wirklich löschen?`,
+      message: `Wollen Sie den Kunden mit dem Namen ${customer.firstName} ${customer.lastName} wirklich löschen?`,
       buttons: [{
         text: 'Abbrechen',
         onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {

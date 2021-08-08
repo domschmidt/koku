@@ -1,6 +1,6 @@
-<div class="page-skeleton">
+<div class="page-skeleton" id="user-page">
   <div class="page-skeleton__spacing">
-    <form class="product-search-form">
+    <form class="user-search-form">
       <mat-form-field class="search-field">
         <mat-label>Suchen</mat-label>
         <input (ngModelChange)='searchFieldChangeSubject.next($event)'
@@ -8,7 +8,7 @@
                matInput
                name="userSearch"
                placeholder="Name eingeben"
-               class="no-space"
+               id="user-page__search"
         >
         <button (click)="clearSearchField()"
                 *ngIf="searchFieldModel"
@@ -23,14 +23,15 @@
     </form>
   </div>
   <div class="page-skeleton__scroll-area">
-    <mat-action-list>
+    <mat-action-list id="user-page__results">
       <button (click)="openUserDetails(user)"
               *ngFor="let user of users$ | async; trackBy: trackByFn"
+              class="user-page__results__item"
               mat-list-item>
         <user-avatar [user]="user"
                      style="margin-right: 12px;"></user-avatar>
-        <h3 matLine>{{user.username}}</h3>
-        <p matLine>{{user.firstname}} {{user.lastname}}</p>
+        <h3 matLine class="user-page__results__item__username">{{user.username}}</h3>
+        <p matLine class="user-page__results__item__name">{{user.firstname}} {{user.lastname}}</p>
       </button>
     </mat-action-list>
 
@@ -40,6 +41,7 @@
               color="primary"
               mat-fab
               class="fab-button"
+              id="user-page__add-new-user-btn"
       >
         <mat-icon>add</mat-icon>
       </button>

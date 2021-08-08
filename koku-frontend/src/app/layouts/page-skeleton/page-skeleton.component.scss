@@ -1,6 +1,6 @@
 .app-skeleton {
   height: 100%;
-  -webkit-transform: translate3d(0,0,0); // fix for safari (ios)
+  -webkit-transform: translate3d(0, 0, 0); // fix for safari (ios)
 }
 
 .nav-drawer {
@@ -31,6 +31,7 @@
         &__profile-avatar {
           margin-right: 16px;
         }
+
         &__profile-name {
           margin: 0;
         }

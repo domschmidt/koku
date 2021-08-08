@@ -1,8 +1,13 @@
 import {AfterViewInit, Component, ElementRef, Inject, ViewChild} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {FormControl, NgForm, Validators} from "@angular/forms";
 import {PromotionService} from "../promotion.service";
 import {PreventLosingChangesService} from "../../prevent-losing-changes/prevent-losing-changes.service";
+import {
+  AlertDialogButtonConfig,
+  AlertDialogComponent,
+  AlertDialogData
+} from "../../alert-dialog/alert-dialog.component";
 
 export interface PromotionDetailsComponentData {
   promotionId?: number;
@@ -41,6 +46,7 @@ export class PromotionDetailsComponent implements AfterViewInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: PromotionDetailsComponentData,
               public dialogRef: MatDialogRef<PromotionDetailsComponent>,
               private readonly preventLosingChangesService: PreventLosingChangesService,
+              private dialog: MatDialog,
               public promotionService: PromotionService) {
     this.createMode = data.promotionId === undefined;
     if (data.promotionId) {
@@ -104,10 +110,36 @@ export class PromotionDetailsComponent implements AfterViewInit {
   }
 
   delete(promotion: KokuDto.PromotionDto) {
-    this.saving = true;
-    this.promotionService.deletePromotion(promotion).subscribe(() => {
-      this.dialogRef.close();
-      this.saving = false;
+    const dialogData: AlertDialogData = {
+      headline: 'Aktion Löschen',
+      message: `Wollen Sie die Aktion mit dem Namen ${promotion.name} wirklich löschen?`,
+      buttons: [{
+        text: 'Abbrechen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          dialogRef.close();
+        }
+      }, {
+        text: 'Bestätigen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          button.loading = true;
+          this.promotionService.deletePromotion(promotion).subscribe(() => {
+            dialogRef.close();
+            this.dialogRef.close();
+          }, () => {
+            button.loading = false;
+          });
+        }
+      }]
+    };
+
+    this.dialog.open(AlertDialogComponent, {
+      data: dialogData,
+      width: '100%',
+      maxWidth: 700,
+      closeOnNavigation: false,
+      position: {
+        top: '20px'
+      }
     });
   }
 

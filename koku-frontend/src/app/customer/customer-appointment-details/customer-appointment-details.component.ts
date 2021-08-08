@@ -55,6 +55,11 @@ import {
   CustomerAppointmentActivityInfoDialogComponentResponseData
 } from "../customer-appointment-activity-info-dialog/customer-appointment-activity-info-dialog.component";
 import {SnackBarService} from "../../snackbar/snack-bar.service";
+import {
+  AlertDialogButtonConfig,
+  AlertDialogComponent,
+  AlertDialogData
+} from "../../alert-dialog/alert-dialog.component";
 
 export interface CustomerAppointmentDetailsData {
   customer?: KokuDto.CustomerDto;
@@ -251,12 +256,36 @@ export class CustomerAppointmentDetailsComponent implements AfterViewInit {
   }
 
   delete(appointment: KokuDto.CustomerAppointmentDto) {
-    this.saving = true;
-    this.customerAppointmentService.deleteCustomerAppointment(appointment).subscribe(() => {
-      this.dialogRef.close();
-      this.saving = false;
-    }, () => {
-      this.saving = false;
+    const dialogData: AlertDialogData = {
+      headline: 'Termin Löschen',
+      message: `Wollen Sie den Termin wirklich löschen?`,
+      buttons: [{
+        text: 'Abbrechen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          dialogRef.close();
+        }
+      }, {
+        text: 'Bestätigen',
+        onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
+          button.loading = true;
+          this.customerAppointmentService.deleteCustomerAppointment(appointment).subscribe(() => {
+            dialogRef.close();
+            this.dialogRef.close();
+          }, () => {
+            button.loading = false;
+          });
+        }
+      }]
+    };
+
+    this.dialog.open(AlertDialogComponent, {
+      data: dialogData,
+      width: '100%',
+      maxWidth: 700,
+      closeOnNavigation: false,
+      position: {
+        top: '20px'
+      }
     });
   }
 

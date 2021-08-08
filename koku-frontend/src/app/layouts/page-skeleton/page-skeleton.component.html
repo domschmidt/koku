@@ -1,4 +1,7 @@
-<mat-drawer-container (backdropClick)="naviService.close()" class="app-skeleton">
+<mat-drawer-container (backdropClick)="naviService.close()"
+                      class="app-skeleton"
+                      id="page-skeleton"
+>
   <mat-drawer
     [mode]="'over'"
     [opened]="naviService.openState.value"
@@ -7,13 +10,18 @@
   >
     <div class="nav-drawer__content">
       <mat-toolbar color="primary" style="flex-shrink: 0;">
-        <button (click)="naviService.close()" mat-icon-button>
+        <button (click)="naviService.close()"
+                mat-icon-button
+                id="page-skeleton__close-navi-btn"
+        >
           <mat-icon>menu</mat-icon>
         </button>
         <h1>Navigation</h1>
       </mat-toolbar>
 
-      <mat-nav-list *ngIf="navi" style="overflow: auto; padding: 0;">
+      <mat-nav-list *ngIf="navi"
+                    style="overflow: auto; padding: 0;"
+                    id="navigation__top-section">
         <ng-container *ngFor="let currentNaviEntry of navi">
           <navigation-entry [naviEntry]="currentNaviEntry"></navigation-entry>
           <mat-divider></mat-divider>
@@ -27,6 +35,7 @@
               class="nav-drawer__content__user-profile-card"
               routerLink="myprofile"
               mat-button
+              id="page-skeleton__my-profile"
       >
         <user-avatar [user]="userDetails"
                      class="nav-drawer__content__user-profile-card__content__profile-avatar"></user-avatar>
@@ -60,7 +69,10 @@
     <div class="page-skeleton">
       <mat-toolbar color="primary">
         <mat-toolbar-row>
-          <button (click)="naviService.open()" mat-icon-button>
+          <button (click)="naviService.open()"
+                  mat-icon-button
+                  id="page-skeleton__open-navi-btn"
+          >
             <mat-icon>menu</mat-icon>
           </button>
           <h1>{{activatedRoute.snapshot.firstChild?.data?.name}}</h1>

@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from "rxjs";
 import {HttpClient} from "@angular/common/http";
+import {AuthService} from "../auth.service";
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,10 @@ export class MyUserDetailsService {
 
   public readonly details: Observable<KokuDto.KokuUserDetailsDto> = this._mydetails.asObservable();
 
-  constructor(public httpClient: HttpClient) {
+  constructor(
+    public httpClient: HttpClient,
+    private readonly authService: AuthService
+  ) {
   }
 
   public getDetails() {
@@ -27,13 +31,15 @@ export class MyUserDetailsService {
   updateDetails(userDetails: KokuDto.KokuUserDetailsDto) {
     return new Observable((observer) => {
       return this.httpClient.put('/api/users/@self', userDetails).subscribe(() => {
-        this.loadDetails().subscribe((newResult) => {
-          this._mydetails.next(newResult);
-          observer.next();
-          observer.complete();
-        }, (error) => {
-          observer.error(error);
-        })
+        this.authService.refreshToken().subscribe(() => {
+          this.loadDetails().subscribe((newResult) => {
+            this._mydetails.next(newResult);
+            observer.next();
+            observer.complete();
+          }, (error) => {
+            observer.error(error);
+          });
+        });
       }, (error) => {
         observer.error(error);
       });

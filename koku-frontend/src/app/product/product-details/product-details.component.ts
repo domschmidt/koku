@@ -67,16 +67,6 @@ export class ProductDetailsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  delete(product: KokuDto.ProductDto) {
-    this.saving = true;
-    this.productService.deleteProduct(product).subscribe(() => {
-      this.saving = false;
-    }, () => {
-      this.saving = false;
-    });
-  }
-
-
   ngOnInit(): void {
     this.priceCtl.valueChanges.subscribe(() => {
       this.dirty.emit(true);
