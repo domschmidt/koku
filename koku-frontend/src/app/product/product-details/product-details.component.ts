@@ -47,7 +47,7 @@ export class ProductDetailsComponent implements OnInit, AfterViewInit {
   }
 
   save(product: KokuDto.ProductDto | undefined, form: NgForm) {
-    if (form.valid && product) {
+    if (form.valid && product && product.manufacturer) {
       this.saving = true;
       if (!product.id) {
         this.productService.createProduct(product).subscribe((response) => {

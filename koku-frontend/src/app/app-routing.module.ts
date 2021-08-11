@@ -175,32 +175,25 @@ const routes: Routes = [
                   panels: [
                     {
                       component: 'GaugePanelComponent',
-                      widthPercentage: 25,
+                      widthPercentage: 33,
                       data: {
                         sourceUrl: '/statistics/lastmonthcomparison'
                       }
                     },
                     {
                       component: 'TextPanelComponent',
-                      widthPercentage: 25,
-                      data: {
-                        sourceUrl: '/statistics/monthlyapproxrevenue?month=' + moment().format('YYYY-MM')
-                      }
-                    },
-                    {
-                      component: 'TextPanelComponent',
-                      widthPercentage: 25,
+                      widthPercentage: 33,
                       data: {
                         sourceUrl: '/statistics/currentmonthapproxrevenue'
                       }
                     },
                     {
                       component: 'TextPanelComponent',
-                      widthPercentage: 25,
+                      widthPercentage: 33,
                       data: {
-                        sourceUrl: '/statistics/monthlyapproxrevenue?month=' + moment().add(1, 'month').format('YYYY-MM')
+                        sourceUrl: '/statistics/monthlyapproxrevenue?startMonth=' + moment().format('YYYY-MM') + '&monthCount=3'
                       }
-                    },
+                    }
                   ]
                 },
                 canDeactivate: [PreventNavigationIfModalIsOpenService]

@@ -16,7 +16,10 @@
 </div>
 <h2 *ngIf="createMode" mat-dialog-title>Hersteller anlegen</h2>
 <mat-spinner *ngIf="!manufacturer" class="spinner-center" diameter="30"></mat-spinner>
-<form #form="ngForm" (ngSubmit)="save(manufacturer, form)" class="activity-details-form">
+<form #form="ngForm"
+      (ngSubmit)="save(manufacturer, form)"
+      class="product-manufacturer-details-form"
+      id="product-manufacturer-details-form">
   <mat-dialog-content *ngIf="manufacturer">
     <mat-form-field class="product-manufacturer-details-field name-field">
       <mat-label>Name</mat-label>
@@ -26,6 +29,7 @@
              name="description"
              placeholder="Name eingeben"
              required
+             id="product-manufacturer-details-form__name"
       >
     </mat-form-field>
   </mat-dialog-content>

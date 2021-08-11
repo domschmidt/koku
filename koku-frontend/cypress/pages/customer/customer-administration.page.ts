@@ -10,13 +10,12 @@ import {CustomerManageDialog} from "./customer-manage.dialog";
 export class CustomerAdministrationPage implements KokuTabPage, KokuNavigatablePage, KokuInternalPage, KokuSearchPage {
 
   private readonly SELECTOR_CUSTOMER_PAGE = "#customer-page"
-  private readonly SELECTOR_USER_RESULTS = '#customer-page__results';
+  private readonly SELECTOR_CUSTOMER_RESULTS = '#customer-page__results';
   private readonly SELECTOR_SEARCH_FIELD = '#customer-page__search';
   private readonly SELECTOR_ADD_NEW_USER_BUTTON = '#customer-page__add-new-customer-btn';
 
   validatePageOpened(): void {
-    cy.get(this.SELECTOR_CUSTOMER_PAGE).find(this.SELECTOR_USER_RESULTS)
-      .get(this.SELECTOR_CUSTOMER_PAGE).find(this.SELECTOR_SEARCH_FIELD);
+    cy.get(this.SELECTOR_CUSTOMER_PAGE).find(this.SELECTOR_SEARCH_FIELD);
   }
 
   openCreateDialog(): CustomerManageDialog {
@@ -39,7 +38,7 @@ export class CustomerAdministrationPage implements KokuTabPage, KokuNavigatableP
       '/api/customers',
       '/api/customers/**',
       this.SELECTOR_SEARCH_FIELD,
-      this.SELECTOR_USER_RESULTS
+      this.SELECTOR_CUSTOMER_RESULTS
     );
   }
 

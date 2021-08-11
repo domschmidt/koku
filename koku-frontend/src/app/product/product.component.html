@@ -1,4 +1,4 @@
-<div class="page-skeleton">
+<div class="page-skeleton" id="product-page">
   <div class="page-skeleton__spacing">
     <form class="product-search-form">
       <mat-form-field class="search-field">
@@ -8,6 +8,7 @@
                matInput
                name="productSearch"
                placeholder="Name eingeben"
+               id="product-page__search"
         >
         <button (click)="clearSearchField()"
                 *ngIf="searchFieldModel"
@@ -23,7 +24,7 @@
   </div>
   <div class="page-skeleton__scroll-area">
 
-    <mat-action-list>
+    <mat-action-list id="product-page__results">
       <button (click)="openProductDetails(product)"
               *ngFor="let product of product$ | async; trackBy: trackByFn"
               mat-list-item>
@@ -44,6 +45,7 @@
               color="primary"
               mat-fab
               class="fab-button"
+              id="product-page__add-new-product-btn"
       >
         <mat-icon>add</mat-icon>
       </button>

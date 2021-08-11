@@ -1,15 +1,25 @@
 <mat-spinner *ngIf="!product" class="spinner-center" diameter="30"></mat-spinner>
-<form #form="ngForm" (ngSubmit)="save(product, form)" class="customer-details-form">
+<form #form="ngForm" (ngSubmit)="save(product, form)"
+      class="product-details-form"
+      id="product-details-form">
   <mat-dialog-content *ngIf="product">
 
     <mat-action-list>
-      <button (click)="selectProductManufacturer()" *ngIf="product.manufacturer" mat-list-item>
+      <button (click)="selectProductManufacturer()"
+              *ngIf="product.manufacturer"
+              mat-list-item
+              class="product-details-form__manufacturer"
+      >
         <circle-with-letters [letters]="product.manufacturer?.name?.trim()?.substring(0, 1)"
         ></circle-with-letters>
         <h3 matLine>{{product.manufacturer?.name}}</h3>
         <mat-icon matListIcon matSuffix style="order: 10;">open_in_new</mat-icon>
       </button>
-      <button (click)="selectProductManufacturer()" *ngIf="!product.manufacturer" mat-list-item>
+      <button (click)="selectProductManufacturer()"
+              *ngIf="!product.manufacturer"
+              mat-list-item
+              class="product-details-form__manufacturer"
+      >
         <circle-with-letters [letters]="'?'"
         ></circle-with-letters>
         <h3 matLine>Hersteller auswählen</h3>
@@ -24,6 +34,7 @@
              matInput
              name="description"
              placeholder="Name eingeben"
+             id="product-details-form__description"
       >
     </mat-form-field>
     <mat-form-field class="product-details-field estimated-revenue-field">
@@ -35,10 +46,13 @@
              name="price"
              placeholder="Preis eingeben"
              step="0.01"
+             id="product-details-form__price"
              type="number">
     </mat-form-field>
 
-    <canvas #priceChart *ngIf="product.priceHistory && product.priceHistory.length > 1"></canvas>
+    <canvas #priceChart
+            *ngIf="product.priceHistory && product.priceHistory.length > 1"
+            id="product-details-form__price-chart"></canvas>
 
   </mat-dialog-content>
   <mat-dialog-actions *ngIf="product" align="end">

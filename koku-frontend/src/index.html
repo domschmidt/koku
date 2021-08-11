@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>Koku</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover"/>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32">
   <link rel="icon" type="image/png" href="assets/favicon-128.png" sizes="128x128">
@@ -18,6 +18,12 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#673AB7">
+  <script>
+    document.documentElement.style.setProperty('--vh', `${window.innerHeight}px`);
+    window.addEventListener('resize', () => {
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight}px`);
+    });
+  </script>
 </head>
 <body>
 <root></root>

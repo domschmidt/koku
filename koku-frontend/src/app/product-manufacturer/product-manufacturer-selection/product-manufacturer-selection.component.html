@@ -1,40 +1,46 @@
-<div class="dialog-split-header">
-  <h2 mat-dialog-title>Hersteller auswählen</h2>
-  <button class="dialog-split-header__menu-btn"
-          (click)="addNewProductManufacturer()"
-          mat-icon-button>
-    <mat-icon>add</mat-icon>
-  </button>
+<div id="product-manufacturer">
+  <div class="dialog-split-header">
+    <h2 mat-dialog-title>Hersteller auswählen</h2>
+    <button class="dialog-split-header__menu-btn"
+            (click)="addNewProductManufacturer()"
+            id="product-manufacturer__add-new-product-manufacturer-button"
+            mat-icon-button>
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+
+  <form class="manufacturer-search-form"
+        id="product-manufacturer__search-form"
+  >
+    <mat-form-field class="search-field">
+      <mat-label>Suchen</mat-label>
+      <input (ngModelChange)='searchFieldChangeSubject.next($event)'
+             [(ngModel)]='searchFieldModel'
+             matInput
+             name="manufacturerSearch"
+             placeholder="Name eingeben"
+             id="product-manufacturer__search-form__search"
+      >
+      <button (click)="clearSearchField()"
+              *ngIf="searchFieldModel"
+              aria-label="Clear"
+              type="button"
+              mat-button
+              mat-icon-button
+              matSuffix>
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+  </form>
+
+  <mat-dialog-content>
+    <mat-action-list id="product-manufacturer__search-form__results">
+      <button (click)="selectManufacturer(manufacturer)"
+              *ngFor="let manufacturer of productManufacturers$ | async; trackBy: trackByFn"
+              mat-list-item>
+        <circle-with-letters [letters]="manufacturer.name?.trim()?.substring(0, 1)"></circle-with-letters>
+        <h3 matLine style="margin-left: 12px;">{{manufacturer.name}}</h3>
+      </button>
+    </mat-action-list>
+  </mat-dialog-content>
 </div>
-
-<form class="manufacturer-search-form">
-  <mat-form-field class="search-field">
-    <mat-label>Suchen</mat-label>
-    <input (ngModelChange)='searchFieldChangeSubject.next($event)'
-           [(ngModel)]='searchFieldModel'
-           matInput
-           name="manufacturerSearch"
-           placeholder="Name eingeben"
-    >
-    <button (click)="clearSearchField()"
-            *ngIf="searchFieldModel"
-            aria-label="Clear"
-            type="button"
-            mat-button
-            mat-icon-button
-            matSuffix>
-      <mat-icon>close</mat-icon>
-    </button>
-  </mat-form-field>
-</form>
-
-<mat-dialog-content>
-  <mat-action-list>
-    <button (click)="selectManufacturer(manufacturer)"
-            *ngFor="let manufacturer of productManufacturers$ | async; trackBy: trackByFn"
-            mat-list-item>
-      <circle-with-letters [letters]="manufacturer.name?.trim()?.substring(0, 1)"></circle-with-letters>
-      <h3 matLine style="margin-left: 12px;">{{manufacturer.name}}</h3>
-    </button>
-  </mat-action-list>
-</mat-dialog-content>

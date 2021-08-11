@@ -15,8 +15,7 @@ export class UserAdministrationPage implements KokuSearchPage, KokuNavigatablePa
   private readonly SELECTOR_ADD_NEW_USER_BUTTON = '#user-page__add-new-user-btn';
 
   validatePageOpened(): void {
-    cy.get(this.SELECTOR_USER_PAGE).find(this.SELECTOR_USER_RESULTS)
-      .get(this.SELECTOR_USER_PAGE).find(this.SELECTOR_SEARCH_FIELD);
+    cy.get(this.SELECTOR_USER_PAGE).find(this.SELECTOR_SEARCH_FIELD);
   }
 
   openCreateDialog(): UserManageDialog {

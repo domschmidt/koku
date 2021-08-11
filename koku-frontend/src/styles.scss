@@ -90,7 +90,8 @@ $koku-theme: mat.define-light-theme((
   }
 
   .mat-dialog-content {
-    max-height: calc(100vh - 250px) !important;
+    max-height: calc(100vh - 350px) !important;
+    max-height: calc(var(--vh) - 235px) !important;
   }
 
 }

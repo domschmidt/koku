@@ -20,7 +20,8 @@
       (ngSubmit)="save(privateAppointment, form)"
       class="customer-appointment-details-form"
 >
-  <mat-dialog-content *ngIf="privateAppointment">
+  <mat-dialog-content *ngIf="privateAppointment"
+                      fxLayout="row wrap">
 
     <mat-form-field class="private-appointment-details-field description-field">
       <mat-label>Titel</mat-label>
@@ -32,7 +33,8 @@
       >
     </mat-form-field>
 
-    <mat-form-field class="private-appointment-details-field startDate-field">
+    <mat-form-field class="private-appointment-details-field startDate-field"
+                    fxFlex.gt-md="50%">
       <mat-label>Datum von</mat-label>
       <input [(ngModel)]="privateAppointment.startDate"
              matInput
@@ -41,7 +43,8 @@
              required
              type="date">
     </mat-form-field>
-    <mat-form-field class="private-appointment-details-field startTime-field">
+    <mat-form-field class="private-appointment-details-field startTime-field"
+                    fxFlex.gt-md="50%">
       <mat-label>Uhrzeit von</mat-label>
       <input [(ngModel)]="privateAppointment.startTime"
              matInput
@@ -50,7 +53,8 @@
              required
              type="time">
     </mat-form-field>
-    <mat-form-field class="private-appointment-details-field endDate-field">
+    <mat-form-field class="private-appointment-details-field endDate-field"
+                    fxFlex.gt-md="50%">
       <mat-label>Datum bis</mat-label>
       <input [(ngModel)]="privateAppointment.endDate"
              matInput
@@ -59,7 +63,8 @@
              required
              type="date">
     </mat-form-field>
-    <mat-form-field class="private-appointment-details-field endTime-field">
+    <mat-form-field class="private-appointment-details-field endTime-field"
+                    fxFlex.gt-md="50%">
       <mat-label>Uhrzeit bis</mat-label>
       <input [(ngModel)]="privateAppointment.endTime"
              matInput

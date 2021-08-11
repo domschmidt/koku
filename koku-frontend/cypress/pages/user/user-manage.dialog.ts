@@ -23,9 +23,10 @@ export class UserManageDialog implements KokuDialog {
       .get(this.SELECTOR_PASSWORD_FIELD).clear().type(password);
   }
 
-  saveChanges() {
+  saveChanges(create: boolean) {
     cy.intercept({
-      url: '/api/users'
+      url: create ? '/api/users' : '/api/users/**',
+      method: create ? 'POST' : 'PUT'
     }).as('userUpdateCall')
       .get(this.SELECTOR_USER_FORM)
       .submit()

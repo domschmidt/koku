@@ -22,7 +22,7 @@ describe('user-management', () => {
       initialLastname,
       initialPassword
     )
-    userAdministrationPage = userManageDialog.saveChanges();
+    userAdministrationPage = userManageDialog.saveChanges(true);
     userManageDialog = userAdministrationPage.getPageSearch().searchAndOpen(initialFirstname, new UserManageDialog()) as UserManageDialog;
     userManageDialog.validateUsernameEquality(initialUsername);
     userManageDialog.validateFirstnameEquality(initialFirstname);
@@ -55,11 +55,11 @@ describe('user-management', () => {
       anotherLastname,
       anotherPassword
     )
-    userAdministrationPage = userManageDialog.saveChanges();
+    userAdministrationPage = userManageDialog.saveChanges(true);
     userManageDialog.close();
     userManageDialog = userAdministrationPage.getPageSearch().searchAndOpen(anotherUsername, new UserManageDialog()) as UserManageDialog;
     userManageDialog.writeUserDetails(anotherUsernameChanged, anotherFirstnameChanged, anotherLastnameChanged, anotherPasswordChanged);
-    userManageDialog.saveChanges();
+    userManageDialog.saveChanges(false);
     userManageDialog.close()
 
     const userAdministrationPageSearch = userAdministrationPage.getPageSearch();

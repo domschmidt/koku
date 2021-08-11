@@ -27,8 +27,10 @@
       (ngSubmit)="save(customerAppointment, form)"
       class="customer-appointment-details-form"
 >
-  <mat-dialog-content *ngIf="customerAppointment">
-    <mat-action-list>
+  <mat-dialog-content *ngIf="customerAppointment"
+                      fxLayout="row wrap">
+
+    <mat-action-list fxFlex="100%">
       <mat-label>Kunde</mat-label>
       <button (click)="selectCustomer()" *ngIf="customerAppointment.customer" mat-list-item>
         <circle-with-letters [letters]="customerAppointment.customer?.initials"></circle-with-letters>
@@ -45,7 +47,8 @@
         <mat-icon matListIcon matSuffix style="order: 10;">open_in_new</mat-icon>
       </button>
     </mat-action-list>
-    <mat-form-field class="customer-appointment-details-field startDate-field">
+    <mat-form-field class="customer-appointment-details-field startDate-field"
+                    fxFlex.gt-md="50%">
       <mat-label>Datum</mat-label>
       <input [(ngModel)]="customerAppointment.startDate"
              matInput
@@ -54,7 +57,8 @@
              required
              type="date">
     </mat-form-field>
-    <mat-form-field class="customer-appointment-details-field startTime-field">
+    <mat-form-field class="customer-appointment-details-field startTime-field"
+                    fxFlex.gt-md="50%">
       <mat-label>Uhrzeit</mat-label>
       <input [(ngModel)]="customerAppointment.startTime"
              matInput
@@ -113,11 +117,11 @@
       </button>
     </mat-form-field>
 
-    <mat-label class="estimated-revenue-label">
+    <mat-label class="estimated-revenue-label" fxFlex="100%">
       Erwartete Tätigkeitskosten: {{ getApproxActivityRevenue(customerAppointment.activities || []) }} €
       <div><small>(Stand: {{ now.format('DD.MM.YYYY HH:mm') }})</small></div>
     </mat-label>
-    <mat-label class="estimated-revenue-label">
+    <mat-label class="estimated-revenue-label" fxFlex="100%">
       Erwartete Tätigkeitszeit: {{ getApproxDuration(customerAppointment.activities || []) }}
     </mat-label>
 

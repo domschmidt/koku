@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -48,21 +49,27 @@ public class StatisticsController {
     }
 
     @GetMapping(value = "/monthlyapproxrevenue")
-    public TextPanelDto getMonthlyApproxRevenue(final YearMonth month) {
+    public TextPanelDto getMonthlyApproxRevenue(final YearMonth startMonth, final Integer monthCount) {
+        List<TextPanelContent> contents = new ArrayList<>();
+        for (int i = 0; i < monthCount; i++) {
+            final YearMonth currentMonth = startMonth.plusMonths(i);
+            contents.add(TextPanelContent.builder()
+                            .text(currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN))
+                            .build()
+            );
+            contents.add(TextPanelContent.builder()
+                    .text(
+                            generateStatisticsForRange(
+                                    currentMonth.atDay(1).atStartOfDay(),
+                                    currentMonth.atEndOfMonth().atTime(LocalTime.MAX)
+                            ).getTotal().toString() + "€"
+                    )
+                    .build()
+            );
+        }
+
         return TextPanelDto.builder()
-                .texts(Arrays.asList(
-                        TextPanelContent.builder()
-                                .text(month.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN))
-                                .build(),
-                        TextPanelContent.builder()
-                                .text(
-                                        generateStatisticsForRange(
-                                                month.atDay(1).atStartOfDay(),
-                                                month.atEndOfMonth().atTime(LocalTime.MAX)
-                                        ).getTotal().toString() + "€"
-                                )
-                                .build()
-                ))
+                .texts(contents)
                 .title("Erwarteter Monatsumsatz")
                 .build();
     }
