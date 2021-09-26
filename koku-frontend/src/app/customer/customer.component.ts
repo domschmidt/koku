@@ -57,6 +57,10 @@ export class CustomerComponent {
     });
   }
 
+  exportAllCustomers() {
+    this.customerService.exportAllCustomers();
+  }
+
   clearSearchField() {
     this.searchFieldModel = "";
     this.searchFieldChangeSubject.next("");

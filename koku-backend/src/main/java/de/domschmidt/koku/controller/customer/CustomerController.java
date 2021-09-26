@@ -2,12 +2,12 @@ package de.domschmidt.koku.controller.customer;
 
 import de.domschmidt.koku.controller.common.AbstractController;
 import de.domschmidt.koku.data.CustomerStatistics;
-import de.domschmidt.koku.dto.customer.CustomerDto;
 import de.domschmidt.koku.dto.KokuColor;
 import de.domschmidt.koku.dto.charts.ChartData;
 import de.domschmidt.koku.dto.charts.ChartDataSet;
 import de.domschmidt.koku.dto.charts.ChartTypeEnum;
 import de.domschmidt.koku.dto.charts.ChartYearMonthFilter;
+import de.domschmidt.koku.dto.customer.CustomerDto;
 import de.domschmidt.koku.dto.panels.ChartPanelDto;
 import de.domschmidt.koku.persistence.model.Customer;
 import de.domschmidt.koku.persistence.model.CustomerAppointment;
@@ -20,13 +20,28 @@ import de.domschmidt.koku.service.searchoptions.CustomerSearchOptions;
 import de.domschmidt.koku.transformer.CustomerToCustomerDtoTransformer;
 import de.domschmidt.koku.utils.ActivityPriceUtils;
 import de.domschmidt.koku.utils.ProductPriceUtils;
+import ezvcard.Ezvcard;
+import ezvcard.VCard;
+import ezvcard.VCardVersion;
+import ezvcard.parameter.AddressType;
+import ezvcard.parameter.EmailType;
+import ezvcard.parameter.TelephoneType;
+import ezvcard.property.Address;
+import ezvcard.property.Birthday;
+import ezvcard.property.StructuredName;
+import ezvcard.property.Uid;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
+import org.springframework.security.util.InMemoryResource;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.Year;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.*;
 
 @RestController
@@ -45,6 +60,112 @@ public class CustomerController extends AbstractController<Customer, CustomerDto
     @GetMapping
     public List<CustomerDto> findAll(final CustomerSearchOptions customerSearchOptions) {
         return super.findAll(customerSearchOptions);
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<Resource> exportAll() {
+        final Date exportDate = new Date();
+        final List<CustomerDto> allCustomers = super.findAll(CustomerSearchOptions.builder().search("").build());
+        final List<VCard> result = new ArrayList<>();
+
+        for (final CustomerDto customer : allCustomers) {
+            final VCard vcard = new VCard();
+
+            final StructuredName n = new StructuredName();
+
+            final List<String> nameList = new ArrayList<>();
+            final String firstName = customer.getFirstName();
+            final String lastName = customer.getLastName();
+            if (firstName != null) {
+                nameList.add(firstName);
+                n.setGiven(firstName);
+            }
+            if (lastName != null) {
+                nameList.add(lastName);
+                n.setFamily(lastName);
+            }
+
+            vcard.setStructuredName(n);
+            vcard.setFormattedName(
+                    String.join(" ", nameList)
+            );
+
+            if (customer.getBirthday() != null) {
+                vcard.setBirthday(new Birthday(Date.from(customer.getBirthday().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())));
+            }
+            vcard.setProductId("KoKu");
+
+            final String customerPostalCode = customer.getPostalCode();
+            final String customerAddress = customer.getAddress();
+            final String customerCity = customer.getCity();
+            final boolean hasAddress = StringUtils.isNotBlank(customerPostalCode)
+                    || StringUtils.isNotBlank(customerAddress)
+                    || StringUtils.isNotBlank(customerCity);
+            if (hasAddress) {
+                final Address address = new Address();
+                final List<String> addressLabel = new ArrayList<>();
+                if (StringUtils.isNotBlank(customerAddress)) {
+                    address.setStreetAddress(customerAddress);
+                    addressLabel.add(customerAddress);
+                }
+                if (StringUtils.isNotBlank(customerPostalCode)) {
+                    address.setPostalCode(customerPostalCode);
+                    addressLabel.add(customerPostalCode);
+                }
+                if (StringUtils.isNotBlank(customerCity)) {
+                    address.setLocality(customerCity);
+                    addressLabel.add(customerCity);
+                }
+                address.getTypes().add(AddressType.HOME);
+                //address.setLabel(String.join("\n", addressLabel));
+                vcard.addAddress(address);
+            }
+
+            final String customerBusinessTelephoneNo = customer.getBusinessTelephoneNo();
+            if (StringUtils.isNotBlank(customerBusinessTelephoneNo)) {
+                vcard.addTelephoneNumber(customerBusinessTelephoneNo, TelephoneType.WORK);
+            }
+
+            final String customerMobileTelephoneNo = customer.getMobileTelephoneNo();
+            if (StringUtils.isNotBlank(customerMobileTelephoneNo)) {
+                vcard.addTelephoneNumber(customerMobileTelephoneNo, TelephoneType.CELL);
+            }
+
+            final String customerPrivateTelephoneNo = customer.getPrivateTelephoneNo();
+            if (StringUtils.isNotBlank(customerPrivateTelephoneNo)) {
+                vcard.addTelephoneNumber(customerPrivateTelephoneNo, TelephoneType.HOME);
+            }
+
+            final String customerEmail = customer.getEmail();
+            if (StringUtils.isNotBlank(customerEmail)) {
+                vcard.addEmail(customerEmail, EmailType.HOME);
+            }
+
+            vcard.setUid(new Uid(customer.getId().toString()));
+            vcard.setRevision(exportDate);
+
+            result.add(vcard);
+        }
+
+        final String fileContent = Ezvcard.write(result).version(VCardVersion.V4_0).go();
+
+        final HttpHeaders header = new HttpHeaders();
+        final String fileName = "koku-contacts.vcf";
+        header.setContentDisposition(
+                ContentDisposition.builder("attachment")
+                        .filename(fileName, StandardCharsets.UTF_8)
+                        .build()
+        );
+        // Disable caching
+        header.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        header.add("Pragma", "no-cache");
+        header.add("Expires", "0");
+
+        return ResponseEntity
+                .ok().headers(header)
+                .contentLength(fileContent.length())
+                .contentType(MediaType.parseMediaType("text/vcard"))
+                .body(new InMemoryResource(fileContent));
     }
 
     @GetMapping(value = "/{id}")

@@ -3,6 +3,7 @@ import {HttpClient, HttpEvent, HttpEventType, HttpParams} from "@angular/common/
 import {BehaviorSubject, Observable} from "rxjs";
 import {FileSystemFileEntry} from "ngx-file-drop";
 import {UploadWithProgress} from "./customer-uploads/extended-upload.interface";
+import * as FileSaver from "file-saver";
 
 @Injectable({
   providedIn: 'root'
@@ -152,4 +153,9 @@ export class CustomerService {
     return this.httpClient.get<KokuDto.CustomerDto[]>('/api/customers', {params});
   }
 
+  exportAllCustomers() {
+    this.httpClient.get(`/api/customers/export`, {responseType: 'blob'}).subscribe((result) => {
+      FileSaver.saveAs(result, "koku-customers.vcf");
+    });
+  }
 }
