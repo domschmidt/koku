@@ -147,7 +147,7 @@ public class CustomerController extends AbstractController<Customer, CustomerDto
             result.add(vcard);
         }
 
-        final String fileContent = Ezvcard.write(result).version(VCardVersion.V4_0).go();
+        final String fileContent = Ezvcard.write(result).version(VCardVersion.V2_1).go();
 
         final HttpHeaders header = new HttpHeaders();
         final String fileName = "koku-contacts.vcf";
