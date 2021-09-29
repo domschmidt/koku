@@ -111,6 +111,7 @@ import {CheckboxFieldComponent} from "./fields/checkbox/checkbox-field.component
 import {ServiceWorkerModule} from '@angular/service-worker';
 import {environment} from '../environments/environment';
 import {PageSkeletonComponent} from "./layouts/page-skeleton/page-skeleton.component";
+import {CardDavComponent} from "./carddav/card-dav.component";
 
 FullCalendarModule.registerPlugins([ // register FullCalendar plugins
   dayGridPlugin,
@@ -184,7 +185,8 @@ Chart.register(...registerables);
     CustomerAppointmentActivityInfoDialogComponent,
     DocumentCheckboxFieldComponent,
     CheckboxFieldComponent,
-    PageSkeletonComponent
+    PageSkeletonComponent,
+    CardDavComponent
   ],
   imports: [
     GaugeModule.forRoot(),

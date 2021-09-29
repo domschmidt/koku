@@ -6,7 +6,7 @@ import de.domschmidt.koku.filter.JwtTokenAuthenticationFilter;
 import de.domschmidt.koku.filter.JwtUsernameAndPasswordAuthenticationFilter;
 import de.domschmidt.koku.persistence.dao.KokuUserRefreshTokenRepository;
 import de.domschmidt.koku.persistence.dao.KokuUserRepository;
-import de.domschmidt.koku.service.impl.UserDetailsServiceImpl;
+import de.domschmidt.koku.service.impl.UserDetailsService;
 import de.domschmidt.koku.utils.AuthEndpoints;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -24,12 +24,12 @@ import javax.servlet.http.HttpServletResponse;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final KokuUserRefreshTokenRepository refreshTokenRepository;
     private final AuthConfiguration authConfiguration;
-    private final UserDetailsServiceImpl userDetailsService;
+    private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTLogoutHandler logoutHandler;
     private final KokuUserRepository userRepository;
 
-    public SecurityConfiguration(final UserDetailsServiceImpl userDetailsService,
+    public SecurityConfiguration(final UserDetailsService userDetailsService,
                                  final BCryptPasswordEncoder bCryptPasswordEncoder,
                                  final AuthConfiguration authConfiguration,
                                  final KokuUserRefreshTokenRepository refreshTokenRepository,

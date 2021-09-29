@@ -20,6 +20,7 @@ import {DocumentComponent} from "./document/document.component";
 import {PromotionComponent} from "./promotions/promotion.component";
 import * as moment from "moment";
 import {PageSkeletonComponent} from "./layouts/page-skeleton/page-skeleton.component";
+import {CardDavComponent} from "./carddav/card-dav.component";
 
 const routes: Routes = [
   {
@@ -145,6 +146,14 @@ const routes: Routes = [
                 component: DocumentComponent,
                 data: {
                   name: 'Dokumente'
+                },
+                canDeactivate: [PreventNavigationIfModalIsOpenService]
+              },
+              {
+                path: 'carddav',
+                component: CardDavComponent,
+                data: {
+                  name: 'CardDav'
                 },
                 canDeactivate: [PreventNavigationIfModalIsOpenService]
               },

@@ -1,0 +1,31 @@
+<div class="page-skeleton">
+  <div class="page-skeleton__spacing">
+    <h3>Card Dav Synchronisierung</h3>
+
+    <div *ngIf="info">
+      <p>Durch die Synchronisierung werden relevante Kundeninformationen an das konfigurierte CardDav Kontaktverzeichnis
+        gesendet.</p>
+
+      <h5>CardDav-Adresse:</h5>
+      <div>{{info.endpointUrl}}</div>
+
+      <h5>Benutzer:</h5>
+      <div>{{info.user}}</div>
+
+      <h5>Passwort:</h5>
+      <div>{{info.password}}</div>
+
+      <p>
+        <button (click)="sync();"
+                aria-label="CardDav synchronisieren"
+                color="primary"
+                mat-raised-button
+                [class.button-spinner]="syncing"
+        >
+          <mat-icon>sync</mat-icon>
+          Jetzt Synchronisieren
+        </button>
+      </p>
+    </div>
+  </div>
+</div>
