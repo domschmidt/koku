@@ -21,6 +21,7 @@ import {PromotionComponent} from "./promotions/promotion.component";
 import * as moment from "moment";
 import {PageSkeletonComponent} from "./layouts/page-skeleton/page-skeleton.component";
 import {CardDavComponent} from "./carddav/card-dav.component";
+import {DashboardComponent} from "./dashboard/dashboard.component";
 
 const routes: Routes = [
   {
@@ -177,6 +178,14 @@ const routes: Routes = [
             path: '',
             children: [
               {
+                path: 'dashboard',
+                component: DashboardComponent,
+                data: {
+                  name: 'Dashboard'
+                },
+                canDeactivate: [PreventNavigationIfModalIsOpenService]
+              },
+              {
                 component: PanelLayoutComponent,
                 path: 'currentnumbers',
                 data: {
@@ -295,7 +304,7 @@ const routes: Routes = [
               },
               {
                 path: '',
-                redirectTo: 'currentnumbers',
+                redirectTo: 'dashboard',
                 pathMatch: 'full'
               },
             ]

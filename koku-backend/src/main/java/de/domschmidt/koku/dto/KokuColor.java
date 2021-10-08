@@ -4,6 +4,7 @@ public enum KokuColor {
 
     PRIMARY,
     SECONDARY,
-    TERTIARY
+    TERTIARY,
+    TRANSPARENT,
 
 }

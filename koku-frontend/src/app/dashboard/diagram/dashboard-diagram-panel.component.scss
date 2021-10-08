@@ -1,0 +1,49 @@
+.diagram-panel {
+
+  &__headline {
+    margin: 0 0 10px;
+    text-align: center;
+  }
+
+  &__no-content {
+    text-align: center;
+  }
+
+  &__content {
+    position: relative;
+
+    &__overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%;
+
+      &__sub-text {
+        &__inner {
+          text-align: center;
+          white-space: nowrap;
+          color: #444444;
+          background-color: rgba(255, 255, 255, 0.5);
+        }
+      }
+
+      &__main-text {
+
+        display: flex;
+        justify-content: center;
+
+        &__inner {
+          display: inline-block;
+          white-space: nowrap;
+          color: #7B57BF;
+          background-color: rgba(255, 255, 255, 0.5);
+        }
+      }
+    }
+
+    &__canvas {
+      max-height: 250px;
+    }
+  }
+}

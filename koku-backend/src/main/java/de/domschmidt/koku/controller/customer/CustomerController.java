@@ -103,21 +103,16 @@ public class CustomerController extends AbstractController<Customer, CustomerDto
                     || StringUtils.isNotBlank(customerCity);
             if (hasAddress) {
                 final Address address = new Address();
-                final List<String> addressLabel = new ArrayList<>();
                 if (StringUtils.isNotBlank(customerAddress)) {
                     address.setStreetAddress(customerAddress);
-                    addressLabel.add(customerAddress);
                 }
                 if (StringUtils.isNotBlank(customerPostalCode)) {
                     address.setPostalCode(customerPostalCode);
-                    addressLabel.add(customerPostalCode);
                 }
                 if (StringUtils.isNotBlank(customerCity)) {
                     address.setLocality(customerCity);
-                    addressLabel.add(customerCity);
                 }
                 address.getTypes().add(AddressType.HOME);
-                //address.setLabel(String.join("\n", addressLabel));
                 vcard.addAddress(address);
             }
 
@@ -208,7 +203,9 @@ public class CustomerController extends AbstractController<Customer, CustomerDto
                                 ChartDataSet.builder()
                                         .label("Besuche")
                                         .data(sortedVisitsPerYear)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build()
                         ))
                         .build())
@@ -280,17 +277,23 @@ public class CustomerController extends AbstractController<Customer, CustomerDto
                                 ChartDataSet.builder()
                                         .label("Gesamtumsatz")
                                         .data(sortedRevenue)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build(),
                                 ChartDataSet.builder()
                                         .label("Produktumsatz")
                                         .data(sortedProductRevenue)
-                                        .color(KokuColor.SECONDARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.SECONDARY
+                                        ))
                                         .build(),
                                 ChartDataSet.builder()
                                         .label("Tätigkeitsumsatz")
                                         .data(sortedActivityRevenue)
-                                        .color(KokuColor.TERTIARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.TERTIARY
+                                        ))
                                         .build()
                         ))
                         .build())
@@ -340,7 +343,9 @@ public class CustomerController extends AbstractController<Customer, CustomerDto
                                 ChartDataSet.builder()
                                         .label("Besuche")
                                         .data(sortedActivityApplyCount)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build()
                         ))
                         .build())
@@ -435,17 +440,23 @@ public class CustomerController extends AbstractController<Customer, CustomerDto
                                 ChartDataSet.builder()
                                         .label("Gesamtumsatz")
                                         .data(sortedRevenue)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build(),
                                 ChartDataSet.builder()
                                         .label("Produktumsatz")
                                         .data(sortedProductRevenue)
-                                        .color(KokuColor.SECONDARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.SECONDARY
+                                        ))
                                         .build(),
                                 ChartDataSet.builder()
                                         .label("Tätigkeitsumsatz")
                                         .data(sortedActivityRevenue)
-                                        .color(KokuColor.TERTIARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.TERTIARY
+                                        ))
                                         .build()
                         ))
                         .build())

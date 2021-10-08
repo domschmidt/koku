@@ -3,6 +3,7 @@ package de.domschmidt.koku.persistence.dao;
 import de.domschmidt.koku.persistence.model.CustomerAppointment;
 import de.domschmidt.koku.persistence.model.auth.KokuUser;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -18,5 +19,12 @@ public interface CustomerAppointmentRepository extends JpaRepository<CustomerApp
 
     @Transactional(readOnly = true)
     List<CustomerAppointment> findAllByUserEquals(KokuUser user);
+
+    @Transactional(readOnly = true)
+    @Query("SELECT ca.customer.id FROM CustomerAppointment ca GROUP BY ca.customer.id having MIN(ca.start) >= ?1 AND MIN(ca.start) <= ?2")
+    List<Long> findCustomerIdsHavingFirstCustomerAppointmentStartBetween(
+            LocalDateTime start,
+            LocalDateTime end
+    );
 
 }

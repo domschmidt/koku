@@ -1,0 +1,25 @@
+<div *ngIf="config" class="diagram-panel">
+
+  <h4 *ngIf="config.label" class="diagram-panel__headline">{{config.label}}</h4>
+
+  <div *ngIf="config.data && config.data.datasets && config.data.datasets[0] && config.data.datasets[0].data"
+       class="diagram-panel__content">
+    <div *ngIf="config.overlay" class="diagram-panel__content__overlay">
+      <div class="diagram-panel__content__overlay__main-text">
+        <span #mainEl *ngIf="config.overlay.text"
+              class="diagram-panel__content__overlay__main-text__inner">{{config.overlay.text}}</span>
+      </div>
+      <div #subEl class="diagram-panel__content__overlay__sub-text">
+        <div *ngIf="config.overlay.subline"
+             class="diagram-panel__content__overlay__sub-text__inner">{{config.overlay.subline}}</div>
+        <div *ngIf="config.overlay.subsubline"
+             class="diagram-panel__content__overlay__sub-text__inner">{{config.overlay.subsubline}}</div>
+      </div>
+    </div>
+    <canvas #canvasEl class="diagram-panel__content__canvas"></canvas>
+  </div>
+  <div *ngIf="!config.data || !config.data.datasets || !config.data.datasets[0].data" class="diagram-panel__no-content">
+    keine Daten verfügbar
+  </div>
+
+</div>

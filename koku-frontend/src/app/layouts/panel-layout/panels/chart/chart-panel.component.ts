@@ -21,6 +21,10 @@ export class ChartPanelComponent {
     this.loadData();
   }
 
+  filterChanged() {
+    this.loadData();
+  }
+
   private loadData() {
     if (this.sourceUrl) {
       this.loading = true;
@@ -45,8 +49,8 @@ export class ChartPanelComponent {
                   const result: ChartDataset[] = [];
                   for (const currentDataSet of dataSets || []) {
                     result.push({
-                      backgroundColor: this.getBackgroundColor(currentDataSet.color),
-                      borderColor: this.getBorderColor(currentDataSet.color),
+                      backgroundColor: this.getBackgroundColor(currentDataSet.colors),
+                      borderColor: this.getBorderColor(currentDataSet.colors),
                       pointRadius: 10,
                       pointHitRadius: 10,
                       pointHoverRadius: 15,
@@ -91,46 +95,45 @@ export class ChartPanelComponent {
     }
   }
 
-  private getBackgroundColor(color: KokuDto.KokuColor | undefined) {
-    let result;
-    switch (color) {
-      case "PRIMARY":
-        result = 'rgba(103, 58, 183, 0.25)';
-        break;
-      case "SECONDARY":
-        result = 'rgba(213, 9, 255, 0.25)';
-        break;
-      case "TERTIARY":
-        result = 'rgba(14, 57, 180, 0.25)';
-        break;
-      default:
-        result = undefined
-        break;
+  private getBackgroundColor(colors: KokuDto.KokuColor[] | undefined) {
+    let result: string[] = [];
+
+    for (const color of colors || []) {
+      switch (color) {
+        case "PRIMARY":
+          result.push('rgba(103, 58, 183, 0.25)');
+          break;
+        case "SECONDARY":
+          result.push('rgba(213, 9, 255, 0.25)');
+          break;
+        case "TERTIARY":
+          result.push('rgba(14, 57, 180, 0.25)');
+          break;
+        default:
+          break;
+      }
     }
     return result;
   }
 
-  private getBorderColor(color: KokuDto.KokuColor | undefined) {
-    let result;
-    switch (color) {
-      case "PRIMARY":
-        result = 'rgba(103, 58, 183)';
-        break;
-      case "SECONDARY":
-        result = 'rgba(213, 9, 255)';
-        break;
-      case "TERTIARY":
-        result = 'rgba(14, 57, 180)';
-        break;
-      default:
-        result = undefined
-        break;
+  private getBorderColor(colors: KokuDto.KokuColor[] | undefined) {
+    let result: string[] = [];
+    for (const color of colors || []) {
+      switch (color) {
+        case "PRIMARY":
+          result.push('rgba(103, 58, 183)');
+          break;
+        case "SECONDARY":
+          result.push('rgba(213, 9, 255)');
+          break;
+        case "TERTIARY":
+          result.push('rgba(14, 57, 180)');
+          break;
+        default:
+          break;
+      }
     }
     return result;
-  }
-
-  filterChanged() {
-    this.loadData();
   }
 
 }

@@ -1,8 +1,8 @@
 package de.domschmidt.koku.controller.activity;
 
 import de.domschmidt.koku.controller.common.AbstractController;
-import de.domschmidt.koku.dto.activity.ActivityDto;
 import de.domschmidt.koku.dto.KokuColor;
+import de.domschmidt.koku.dto.activity.ActivityDto;
 import de.domschmidt.koku.dto.charts.ChartData;
 import de.domschmidt.koku.dto.charts.ChartDataSet;
 import de.domschmidt.koku.dto.charts.ChartTypeEnum;
@@ -92,7 +92,9 @@ public class ActivityController extends AbstractController<Activity, ActivityDto
                                 ChartDataSet.builder()
                                         .label("Verwendung in Tätigkeiten")
                                         .data(sortedUsage)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build()
                         ))
                         .build())
@@ -138,7 +140,9 @@ public class ActivityController extends AbstractController<Activity, ActivityDto
                                 ChartDataSet.builder()
                                         .label("Umsatz in Tätigkeiten")
                                         .data(sortedRevenue)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build()
                         ))
                         .build())
@@ -189,7 +193,9 @@ public class ActivityController extends AbstractController<Activity, ActivityDto
                                 ChartDataSet.builder()
                                         .label("Anwendungen")
                                         .data(sortedActivityApplyCount)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build()
                         ))
                         .build())
@@ -257,7 +263,9 @@ public class ActivityController extends AbstractController<Activity, ActivityDto
                                 ChartDataSet.builder()
                                         .label("Umsatz")
                                         .data(sortedProductSellCount)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build()
                         ))
                         .build())

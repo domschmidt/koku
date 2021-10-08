@@ -2,12 +2,12 @@ package de.domschmidt.koku.controller.product;
 
 import de.domschmidt.koku.controller.common.AbstractController;
 import de.domschmidt.koku.dto.KokuColor;
-import de.domschmidt.koku.dto.product.ProductDto;
 import de.domschmidt.koku.dto.charts.ChartData;
 import de.domschmidt.koku.dto.charts.ChartDataSet;
 import de.domschmidt.koku.dto.charts.ChartTypeEnum;
 import de.domschmidt.koku.dto.charts.ChartYearMonthFilter;
 import de.domschmidt.koku.dto.panels.ChartPanelDto;
+import de.domschmidt.koku.dto.product.ProductDto;
 import de.domschmidt.koku.persistence.model.*;
 import de.domschmidt.koku.service.ICustomerAppointmentService;
 import de.domschmidt.koku.service.IProductPriceHistoryEntryService;
@@ -91,7 +91,9 @@ public class ProductController extends AbstractController<Product, ProductDto, P
                                 ChartDataSet.builder()
                                         .label("Verwendung in Behandlungen")
                                         .data(sortedUsage)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build()
                         ))
                         .build())
@@ -138,7 +140,9 @@ public class ProductController extends AbstractController<Product, ProductDto, P
                                 ChartDataSet.builder()
                                         .label("Umsatz in Verkäufen")
                                         .data(sortedRevenue)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build()
                         ))
                         .build())
@@ -189,7 +193,9 @@ public class ProductController extends AbstractController<Product, ProductDto, P
                                 ChartDataSet.builder()
                                         .label("Verkäufe")
                                         .data(sortedProductSellCount)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build()
                         ))
                         .build())
@@ -259,7 +265,9 @@ public class ProductController extends AbstractController<Product, ProductDto, P
                                 ChartDataSet.builder()
                                         .label("Umsatz")
                                         .data(sortedProductSellCount)
-                                        .color(KokuColor.PRIMARY)
+                                        .colors(Arrays.asList(
+                                                KokuColor.PRIMARY
+                                        ))
                                         .build()
                         ))
                         .build())

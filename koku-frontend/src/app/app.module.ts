@@ -112,6 +112,11 @@ import {ServiceWorkerModule} from '@angular/service-worker';
 import {environment} from '../environments/environment';
 import {PageSkeletonComponent} from "./layouts/page-skeleton/page-skeleton.component";
 import {CardDavComponent} from "./carddav/card-dav.component";
+import {DashboardComponent} from "./dashboard/dashboard.component";
+import {DashboardDiagramPanelComponent} from "./dashboard/diagram/dashboard-diagram-panel.component";
+import {DashboardDeferredPanelComponent} from "./dashboard/deferred/dashboard-deferred-panel.component";
+import {TableDiagramPanelComponent} from "./dashboard/table/table-diagram-panel.component";
+import {MatTableModule} from "@angular/material/table";
 
 FullCalendarModule.registerPlugins([ // register FullCalendar plugins
   dayGridPlugin,
@@ -186,7 +191,11 @@ Chart.register(...registerables);
     DocumentCheckboxFieldComponent,
     CheckboxFieldComponent,
     PageSkeletonComponent,
-    CardDavComponent
+    CardDavComponent,
+    DashboardComponent,
+    DashboardDiagramPanelComponent,
+    DashboardDeferredPanelComponent,
+    TableDiagramPanelComponent
   ],
   imports: [
     GaugeModule.forRoot(),
@@ -231,6 +240,7 @@ Chart.register(...registerables);
       enabled: environment.production,
       registrationStrategy: 'registerImmediately'
     }),
+    MatTableModule
   ],
   providers: [
     NaviService,

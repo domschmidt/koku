@@ -16,7 +16,11 @@ import java.util.List;
 public class ChartDataSet {
 
     List<BigDecimal> data;
+    List<SegmentedData> segmentedData;
+    Boolean fill;
+    List<String> backgroundColor;
     String label;
-    KokuColor color;
+    List<KokuColor> colors;
+    ChartDataLabelsConfig datalabels;
 
 }
