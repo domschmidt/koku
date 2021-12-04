@@ -39,6 +39,10 @@ export class AppComponent {
       'brick_block_add',
       this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/brick_block_add.svg')
     );
+    this.matIconRegistry.addSvgIcon(
+      'deposit',
+      this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/deposit.svg')
+    );
   }
 
 }

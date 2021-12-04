@@ -50,6 +50,7 @@ public class CustomerToCustomerDtoTransformer implements ITransformer<Customer, 
                 .eyeDisease(model.getEyeDisease())
                 .allergy(model.getAllergy())
                 .covid19vaccinated(model.isCovid19vaccinated())
+                .covid19boostered(model.isCovid19boostered())
                 .build();
     }
 
@@ -95,6 +96,7 @@ public class CustomerToCustomerDtoTransformer implements ITransformer<Customer, 
                 .eyeDisease(dtoModel.getEyeDisease())
                 .allergy(dtoModel.getAllergy())
                 .covid19vaccinated(dtoModel.isCovid19vaccinated())
+                .covid19boostered(dtoModel.isCovid19boostered())
                 .build();
     }
 }

@@ -44,5 +44,6 @@ public class CustomerDto {
     private String eyeDisease;
     private String allergy;
     boolean covid19vaccinated;
+    boolean covid19boostered;
 
 }
