@@ -55,11 +55,11 @@ export class SignatureFieldComponent implements ControlValueAccessor, OnInit {
         this.signaturePad.clear();
         this.signaturePad.off();
       }
-      const newSignaturePad = new SignaturePad(this.canvas.nativeElement, {
-        onEnd: () => {
-          this.onChange(this.signaturePad?.toDataURL('image/png'));
-        }
+      const newSignaturePad = new SignaturePad(this.canvas.nativeElement, {});
+      newSignaturePad.addEventListener('endStroke', () => {
+        this.onChange(this.signaturePad?.toDataURL('image/png'));
       });
+
       // apply size
       const width = this.canvasWrapper.nativeElement.clientWidth || 300;
       this.width = width;
