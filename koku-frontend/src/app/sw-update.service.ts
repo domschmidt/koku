@@ -1,4 +1,4 @@
-import {Injectable} from "@angular/core";
+import {ApplicationRef, Injectable} from "@angular/core";
 import {SwUpdate} from "@angular/service-worker";
 import {SnackBarService} from "./snackbar/snack-bar.service";
 
@@ -6,12 +6,24 @@ import {SnackBarService} from "./snackbar/snack-bar.service";
 export class SwUpdateService {
 
   constructor(
-    private readonly updates: SwUpdate,
+    private readonly appRef: ApplicationRef,
+    private readonly swUpdate: SwUpdate,
     private readonly snackService: SnackBarService
   ) {
-    updates.available.subscribe(() => {
-      this.snackService.openCommonSnack("Update wird installiert...");
-      updates.activateUpdate().then(() => document.location.reload());
+    swUpdate.versionUpdates.subscribe((evt) => {
+      window.location.reload();
+      switch (evt.type) {
+        case 'VERSION_DETECTED':
+          this.snackService.openCommonSnack(`Update wird installiert...${evt.version.hash}`);
+          break;
+        case 'VERSION_READY':
+          this.snackService.openCommonSnack(`Update wurde erfolgreich installiert...${evt.latestVersion.hash}`);
+          document.location.reload();
+          break;
+        case 'VERSION_INSTALLATION_FAILED':
+          this.snackService.openCommonSnack(`Update konnte nicht installiert werden...${evt.error}`);
+          break;
+      }
     });
   }
 }

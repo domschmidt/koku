@@ -54,7 +54,7 @@ public class CardDavController {
                     && StringUtils.isNotBlank(password);
 
             if (!isProperlyDefined) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "CardDav Konfiguration fehlt");
             }
 
             final URI endpointUri = new URI(endpoint);

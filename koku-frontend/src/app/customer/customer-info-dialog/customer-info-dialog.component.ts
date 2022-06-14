@@ -165,7 +165,7 @@ export class CustomerInfoDialogComponent implements AfterViewInit {
       }
     });
     newCustomerAppointmentDialog.afterClosed().subscribe(() => {
-      this.afterAppointmentChanged.next();
+      this.afterAppointmentChanged.next(undefined);
     });
   }
 }
