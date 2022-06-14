@@ -15,13 +15,16 @@ import {UserComponent} from "./user/user.component";
 import {TabLayoutComponent} from "./layouts/tab-layout/tab-layout.component";
 import {PanelLayoutComponent} from "./layouts/panel-layout/panel-layout.component";
 import {ChartPanelComponent} from "./layouts/panel-layout/panels/chart/chart-panel.component";
-import {PreventNavigationIfModalIsOpenService} from "./prevent-losing-changes/prevent-navigation-if-modal-is-open.service";
+import {
+  PreventNavigationIfModalIsOpenService
+} from "./prevent-losing-changes/prevent-navigation-if-modal-is-open.service";
 import {DocumentComponent} from "./document/document.component";
 import {PromotionComponent} from "./promotions/promotion.component";
 import * as moment from "moment";
 import {PageSkeletonComponent} from "./layouts/page-skeleton/page-skeleton.component";
 import {CardDavComponent} from "./carddav/card-dav.component";
 import {DashboardComponent} from "./dashboard/dashboard.component";
+import {CalendarViewToggleComponent} from "./calendar-view-toggle/calendar-view-toggle.component";
 
 const routes: Routes = [
   {
@@ -35,12 +38,22 @@ const routes: Routes = [
         },
         children: [
           {
-            component: CalendarComponent,
             path: 'calendar',
             data: {
               name: 'Kalender'
             },
-            canDeactivate: [PreventNavigationIfModalIsOpenService]
+            children: [
+              {
+                path: '',
+                component: CalendarComponent,
+                canDeactivate: [PreventNavigationIfModalIsOpenService]
+              },
+              {
+                component: CalendarViewToggleComponent,
+                path: '',
+                outlet: 'toolbar-right'
+              }
+            ]
           },
           {
             component: OverviewComponent,

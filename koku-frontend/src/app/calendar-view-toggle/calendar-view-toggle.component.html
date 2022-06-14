@@ -1,0 +1,18 @@
+
+<mat-button-toggle-group>
+  <mat-button-toggle title="Monatsansicht"
+                     [checked]="viewIdentifier === 'dayGridMonth'"
+                     (change)="changeCalendarView('dayGridMonth')">
+    <mat-icon>calendar_view_month</mat-icon>
+  </mat-button-toggle>
+  <mat-button-toggle title="Wochenansicht"
+                     [checked]="viewIdentifier === 'timeGridWeek'"
+                     (change)="changeCalendarView('timeGridWeek')">
+    <mat-icon>calendar_view_week</mat-icon>
+  </mat-button-toggle>
+  <mat-button-toggle title="Tagesansicht"
+                     [checked]="viewIdentifier === 'timeGridDay'"
+                     (change)="changeCalendarView('timeGridDay')">
+    <mat-icon>calendar_view_day</mat-icon>
+  </mat-button-toggle>
+</mat-button-toggle-group>

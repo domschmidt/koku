@@ -158,12 +158,6 @@ body {
     justify-content: center;
     align-items: center;
   }
-
-  &--toolbar-right-side {
-    bottom: auto;
-    top: 6px;
-    right: 12px;
-  }
 }
 
 .spinner-center {
@@ -214,6 +208,16 @@ body {
   &__scroll-area {
     flex: 1;
     overflow: auto;
+  }
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+
+    &__left, &__right {
+      display: flex;
+      align-items: center;
+    }
   }
 }
 

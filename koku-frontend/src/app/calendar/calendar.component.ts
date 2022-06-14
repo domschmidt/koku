@@ -22,7 +22,7 @@ import {MatMenu, MatMenuTrigger} from "@angular/material/menu";
 import {ResizeSensor} from "css-element-queries";
 import {NaviService} from "../navi/navi.service";
 import {ActivatedRoute} from "@angular/router";
-import * as DateHolidays from 'date-holidays';
+import Holidays, {HolidaysTypes} from 'date-holidays';
 import {MatSelectChange} from "@angular/material/select";
 import {
   UserSelectionComponent,
@@ -33,12 +33,9 @@ import {MyUserDetailsService} from "../user/my-user-details.service";
 import {PrivateAppointmentService} from "../user/private-appointment-details/private-appointment.service";
 import {CustomerAppointmentService} from "../customer-appointment.service";
 import {SnackBarService} from "../snackbar/snack-bar.service";
-import Holidays, {HolidaysTypes} from "date-holidays";
-
-type ViewIdentifier = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay';
+import {CalendarViewSettingsService, ViewIdentifier} from "../calendar-view-toggle/calendar-view-settings.service";
 
 interface CalendarSettings {
-  currentView: ViewIdentifier;
   privateAppointments: boolean;
   customerAppointments: boolean;
   customerBirthdays: boolean;
@@ -130,7 +127,7 @@ export class CalendarComponent implements OnInit {
 
   humanReadableDateRange: string = '';
   calendarOptions: CalendarOptions = {
-    initialView: this.calendarSettings.currentView,
+    initialView: this.calendarViewSettingsService.activeViewIdentifier.value,
     height: 'auto',
     allDaySlot: true,
     locale: deLocale,
@@ -331,10 +328,14 @@ export class CalendarComponent implements OnInit {
               private readonly customerAppointmentService: CustomerAppointmentService,
               private readonly snackBarService: SnackBarService,
               public naviService: NaviService,
-              public activatedRoute: ActivatedRoute) {
+              public activatedRoute: ActivatedRoute,
+              private readonly calendarViewSettingsService: CalendarViewSettingsService) {
     this.userDetailsService.getDetails().subscribe((userDetails) => {
       this.self = userDetails;
       this.user = userDetails;
+    });
+    this.calendarViewSettingsService.activeViewIdentifier.subscribe((viewIdentificator: ViewIdentifier) => {
+      this.changeCalendarView(viewIdentificator);
     });
   }
 
@@ -493,7 +494,6 @@ export class CalendarComponent implements OnInit {
 
   private restoreViewSettings(): CalendarSettings {
     let result: CalendarSettings = {
-      currentView: 'timeGridWeek',
       privateAppointments: true,
       customerAppointments: true,
       customerBirthdays: true,
@@ -511,7 +511,6 @@ export class CalendarComponent implements OnInit {
           customerAppointments: castedInsecureVal.customerAppointments,
           privateAppointments: castedInsecureVal.privateAppointments,
           customerBirthdays: castedInsecureVal.customerBirthdays,
-          currentView: castedInsecureVal.currentView || 'timeGridWeek',
           holidays: castedInsecureVal.holidays,
           holidayCountry: castedInsecureVal.holidayCountry
         }
@@ -532,8 +531,6 @@ export class CalendarComponent implements OnInit {
     if (this.fullCalendarComponent) {
       this.fullCalendarComponent.getApi().changeView(viewIdentificator);
       this.humanReadableDateRange = this.buildHumanReadableDateRange();
-      this.calendarSettings.currentView = viewIdentificator;
-      localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
     }
   }
 

@@ -117,6 +117,8 @@ import {DashboardDiagramPanelComponent} from "./dashboard/diagram/dashboard-diag
 import {DashboardDeferredPanelComponent} from "./dashboard/deferred/dashboard-deferred-panel.component";
 import {TableDiagramPanelComponent} from "./dashboard/table/table-diagram-panel.component";
 import {MatTableModule} from "@angular/material/table";
+import {CalendarViewToggleComponent} from "./calendar-view-toggle/calendar-view-toggle.component";
+import {CalendarViewSettingsService} from "./calendar-view-toggle/calendar-view-settings.service";
 
 FullCalendarModule.registerPlugins([ // register FullCalendar plugins
   dayGridPlugin,
@@ -195,7 +197,8 @@ Chart.register(...registerables);
     DashboardComponent,
     DashboardDiagramPanelComponent,
     DashboardDeferredPanelComponent,
-    TableDiagramPanelComponent
+    TableDiagramPanelComponent,
+    CalendarViewToggleComponent
   ],
   imports: [
     GaugeModule.forRoot(),
@@ -244,6 +247,7 @@ Chart.register(...registerables);
   ],
   providers: [
     NaviService,
+    CalendarViewSettingsService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: UnauthorizedLoginInterceptorService,

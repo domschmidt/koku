@@ -68,14 +68,19 @@
   <mat-drawer-content>
     <div class="page-skeleton">
       <mat-toolbar color="primary">
-        <mat-toolbar-row>
-          <button (click)="naviService.open()"
-                  mat-icon-button
-                  id="page-skeleton__open-navi-btn"
-          >
-            <mat-icon>menu</mat-icon>
-          </button>
-          <h1>{{activatedRoute.snapshot.firstChild?.data?.name}}</h1>
+        <mat-toolbar-row class="page-skeleton__row">
+          <div class="page-skeleton__row__left">
+            <button (click)="naviService.open()"
+                    mat-icon-button
+                    id="page-skeleton__open-navi-btn"
+            >
+              <mat-icon>menu</mat-icon>
+            </button>
+            <h1>{{activatedRoute.snapshot.firstChild?.data?.name}}</h1>
+          </div>
+          <div class="page-skeleton__row__right">
+            <router-outlet name="toolbar-right"></router-outlet>
+          </div>
         </mat-toolbar-row>
       </mat-toolbar>
       <div class="page-skeleton__scroll-area">
