@@ -159,7 +159,10 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                     if (replaceValueByContext && context.size() > 0 && fieldContext != null) {
                         String replacedText = null;
                         try {
-                            replacedText = templateEngine.process(fieldContext, thymeleafCtx);
+                            replacedText = templateEngine.process(
+                                    fieldContext,
+                                    thymeleafCtx
+                            );
                         } finally {
                             isCheckboxChecked = StringUtils.defaultString(replacedText).trim().equalsIgnoreCase(Boolean.TRUE.toString());
                         }
@@ -223,19 +226,19 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .yearDiff(castedField.getYearDiff())
                             .build()
                     );
-                } else if (fieldDefinitionType instanceof TextFieldDefinitionType) {
+                } else if (fieldDefinitionType instanceof final TextFieldDefinitionType castedFieldType) {
                     String textFieldValue;
                     if (replaceValueByContext && context.size() > 0) {
                         try {
                             textFieldValue = templateEngine.process(
-                                    ((TextFieldDefinitionType) fieldDefinitionType).getText(),
+                                    StringUtils.defaultString(castedFieldType.getText()),
                                     thymeleafCtx
                             );
                         } catch (final TemplateInputException tie) {
-                            textFieldValue = ((TextFieldDefinitionType) fieldDefinitionType).getText();
+                            textFieldValue = castedFieldType.getText();
                         }
                     } else {
-                        textFieldValue = ((TextFieldDefinitionType) fieldDefinitionType).getText();
+                        textFieldValue = castedFieldType.getText();
                     }
                     result.add(TextFormularItemDto.builder()
                             .id(currentField.getId())
@@ -246,15 +249,15 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .xl(currentField.getXl())
                             .align(transformDocumentFieldAlignToFormularItemAlign(currentField))
                             .text(textFieldValue)
-                            .fontSize(((TextFieldDefinitionType) fieldDefinitionType).getFontSize())
+                            .fontSize(castedFieldType.getFontSize())
                             .fieldDefinitionTypeId(fieldDefinitionType.getId())
-                            .readOnly(((TextFieldDefinitionType) fieldDefinitionType).isReadOnly()).build());
+                            .readOnly(castedFieldType.isReadOnly()).build());
                 } else if (fieldDefinitionType instanceof final QRCodeFieldDefinitionType castedFieldType) {
                     String replacedContent;
                     if (replaceValueByContext && context.size() > 0) {
                         try {
                             replacedContent = templateEngine.process(
-                                    castedFieldType.getContent(),
+                                    StringUtils.defaultString(castedFieldType.getContent()),
                                     thymeleafCtx
                             );
                         } catch (final TemplateInputException tie) {

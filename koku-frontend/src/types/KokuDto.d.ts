@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.36.1070 on 2022-09-28 20:23:54.
+// Generated using typescript-generator version 2.36.1070 on 2022-09-28 21:06:17.
 
 declare namespace KokuDto {
 
