@@ -213,8 +213,8 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                         currentCell.setUseAscender(true);
                         imageCell.setVerticalAlignment(getVerticalAlignment(formularRow));
                         table.addCell(currentCell);
-                    } else if (formularItem instanceof QrCodeFormularItemDto) {
-                        final String content = ((QrCodeFormularItemDto) formularItem).getValue();
+                    } else if (formularItem instanceof final QrCodeFormularItemDto castedField) {
+                        final String content = castedField.getValue();
 
                         QRCodeWriter barcodeWriter = new QRCodeWriter();
                         final BitMatrix bitMatrix;
@@ -235,9 +235,17 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                                     false
                             );
                             image.setAlignment(getHorizontalAlignment(formularItem));
-                            final float fieldWidthAndHeight = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin()) / 12) * colspan;
-                            image.scaleToFit(fieldWidthAndHeight, fieldWidthAndHeight); // ratio is always 1:1
-
+                            float maxWidth = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin()) / 12) * colspan;
+                            if (castedField.getWidthPercentage() != null) {
+                                maxWidth = maxWidth * castedField.getWidthPercentage() / 100;
+                            }
+                            final float calculatedWidthAndHeight;
+                            if (castedField.getMaxWidthInPx() != null && castedField.getMaxWidthInPx() < maxWidth) {
+                                calculatedWidthAndHeight = castedField.getMaxWidthInPx();
+                            } else {
+                                calculatedWidthAndHeight = maxWidth;
+                            }
+                            image.scaleToFit(calculatedWidthAndHeight, calculatedWidthAndHeight);
                             final PdfPCell currentCell = new PdfPCell(image);
                             currentCell.setColspan(colspan);
                             currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
@@ -254,15 +262,6 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                         LocalDate value = castedDateField.getValue();
                         final Paragraph paragraph;
                         if (value != null) {
-                            if (castedDateField.getDayDiff() != null) {
-                                value = value.plusDays(castedDateField.getDayDiff());
-                            }
-                            if (castedDateField.getMonthDiff() != null) {
-                                value = value.plusMonths(castedDateField.getMonthDiff());
-                            }
-                            if (castedDateField.getYearDiff() != null) {
-                                value = value.plusYears(castedDateField.getYearDiff());
-                            }
                             paragraph = new Paragraph(value.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
                         } else {
                             paragraph = new Paragraph("");

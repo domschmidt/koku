@@ -62,6 +62,29 @@
         </mat-button-toggle-group>
 
         <mat-form-field class="text-configuration-field">
+          <mat-label>Maximale Breite in Pixel</mat-label>
+          <input [(ngModel)]="qrCodeField.maxWidthInPx"
+                 matInput
+                 name="maxWidthInPx"
+                 placeholder="Maximale Breite in Pixel"
+                 inputmode="numeric"
+                 step="1"
+                 type="number"
+          >
+        </mat-form-field>
+        <mat-form-field class="text-configuration-field">
+          <mat-label>Breite in Prozent</mat-label>
+          <input [(ngModel)]="qrCodeField.widthPercentage"
+                 matInput
+                 name="widthPercentage"
+                 placeholder="Breite in Prozent"
+                 inputmode="numeric"
+                 step="1"
+                 type="number"
+          >
+        </mat-form-field>
+
+        <mat-form-field class="text-configuration-field">
           <mat-label>Feldgröße X-Large</mat-label>
           <mat-select [(value)]="qrCodeField.xl">
             <mat-option [value]="null"></mat-option>

@@ -15,5 +15,7 @@ import lombok.experimental.SuperBuilder;
 public class QrCodeFormularItemDto extends FormularItemDto {
 
     String value;
+    Integer widthPercentage;
+    Integer maxWidthInPx;
 
 }

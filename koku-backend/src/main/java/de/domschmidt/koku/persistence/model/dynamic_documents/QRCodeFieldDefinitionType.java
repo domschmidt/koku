@@ -26,11 +26,15 @@ public class QRCodeFieldDefinitionType extends FieldDefinitionType implements Se
     Long id;
 
     String content;
+    Integer widthPercentage;
+    Integer maxWidthInPx;
 
     // copy constructor
     public QRCodeFieldDefinitionType(final QRCodeFieldDefinitionType fieldDefintionTypeToBeCopied) {
         this.id = null;
         this.content = fieldDefintionTypeToBeCopied.getContent();
+        this.widthPercentage = fieldDefintionTypeToBeCopied.getWidthPercentage();
+        this.maxWidthInPx = fieldDefintionTypeToBeCopied.getMaxWidthInPx();
     }
 
 }

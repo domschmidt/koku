@@ -28,7 +28,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
     public List<FormularDto> transformToDtoList(final List<DynamicDocument> documentList) {
         final List<FormularDto> result = new ArrayList<>();
         for (final DynamicDocument dynamicDocument : documentList) {
-            result.add(transformToDto(dynamicDocument, false, new HashMap<>()));
+            result.add(transformToDto(dynamicDocument, false, new HashMap<>(), false));
         }
         return result;
     }
@@ -36,7 +36,8 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
     private FormularDto transformToDto(
             final DynamicDocument document,
             final boolean detailed,
-            final Map<String, Object> context
+            final Map<String, Object> context,
+            final boolean replaceValueByContext
     ) {
         final Map<String, Object> guardedContext;
         if (context == null) {
@@ -55,7 +56,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                 .id(document.getId())
                 .description(document.getDescription())
                 .tags(detailed ? transformContextToTags(guardedContext) : null)
-                .rows(detailed ? transformDocumentRowToFormularRowDto(document.getRows(), guardedContext) : null)
+                .rows(detailed ? transformDocumentRowToFormularRowDto(document.getRows(), guardedContext, replaceValueByContext) : null)
                 .build();
     }
 
@@ -71,7 +72,11 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
         return tags;
     }
 
-    private List<FormularRowDto> transformDocumentRowToFormularRowDto(final List<DocumentRow> rows, final Map<String, Object> context) {
+    private List<FormularRowDto> transformDocumentRowToFormularRowDto(
+            final List<DocumentRow> rows,
+            final Map<String, Object> context,
+            final Boolean replaceValueByContext
+    ) {
         final List<FormularRowDto> result = new ArrayList<>();
 
         if (rows != null) {
@@ -79,7 +84,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                 result.add(FormularRowDto.builder()
                         .id(currentRow.getId())
                         .align(transformRowAlign(currentRow.getAlign()))
-                        .items(transformDocumentFieldToFormularFieldDto(currentRow.getFields(), context))
+                        .items(transformDocumentFieldToFormularFieldDto(currentRow.getFields(), context, replaceValueByContext))
                         .build()
                 );
             }
@@ -103,7 +108,11 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
         return result;
     }
 
-    private List<FormularItemDto> transformDocumentFieldToFormularFieldDto(final List<DocumentField> fields, final Map<String, Object> context) {
+    private List<FormularItemDto> transformDocumentFieldToFormularFieldDto(
+            final List<DocumentField> fields,
+            final Map<String, Object> context,
+            final Boolean replaceValueByContext
+    ) {
         final List<FormularItemDto> result = new ArrayList<>();
 
         final Context thymeleafCtx = new Context();
@@ -147,7 +156,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                 } else if (fieldDefinitionType instanceof CheckboxFieldDefinitionType) {
                     final boolean isCheckboxChecked;
                     final String fieldContext = ((CheckboxFieldDefinitionType) fieldDefinitionType).getContext();
-                    if (context.size() > 0 && fieldContext != null) {
+                    if (replaceValueByContext && context.size() > 0 && fieldContext != null) {
                         String replacedText = null;
                         try {
                             replacedText = templateEngine.process(fieldContext, thymeleafCtx);
@@ -175,7 +184,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                 } else if (fieldDefinitionType instanceof final DateFieldDefinitionType castedField) {
                     final String fieldContext = castedField.getContext();
                     LocalDate value = castedField.getValue();
-                    if (fieldContext != null) {
+                    if (replaceValueByContext && fieldContext != null) {
                         String replacedValue = null;
                         try {
                             replacedValue = templateEngine.process(fieldContext, thymeleafCtx);
@@ -183,13 +192,13 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             try {
                                 value = LocalDate.parse(StringUtils.defaultString(replacedValue));
                                 if (castedField.getDayDiff() != null) {
-                                    value.plusDays(castedField.getDayDiff());
+                                    value = value.plusDays(castedField.getDayDiff());
                                 }
                                 if (castedField.getMonthDiff() != null) {
-                                    value.plusMonths(castedField.getMonthDiff());
+                                    value = value.plusMonths(castedField.getMonthDiff());
                                 }
                                 if (castedField.getYearDiff() != null) {
-                                    value.plusYears(castedField.getYearDiff());
+                                    value = value.plusYears(castedField.getYearDiff());
                                 }
                             } catch (final DateTimeParseException dtpe) {
                                 log.error("Unable to parse value as Date");
@@ -216,7 +225,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                     );
                 } else if (fieldDefinitionType instanceof TextFieldDefinitionType) {
                     String textFieldValue;
-                    if (context.size() > 0) {
+                    if (replaceValueByContext && context.size() > 0) {
                         try {
                             textFieldValue = templateEngine.process(
                                     ((TextFieldDefinitionType) fieldDefinitionType).getText(),
@@ -240,19 +249,19 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .fontSize(((TextFieldDefinitionType) fieldDefinitionType).getFontSize())
                             .fieldDefinitionTypeId(fieldDefinitionType.getId())
                             .readOnly(((TextFieldDefinitionType) fieldDefinitionType).isReadOnly()).build());
-                } else if (fieldDefinitionType instanceof QRCodeFieldDefinitionType) {
+                } else if (fieldDefinitionType instanceof final QRCodeFieldDefinitionType castedFieldType) {
                     String replacedContent;
-                    if (context.size() > 0) {
+                    if (replaceValueByContext && context.size() > 0) {
                         try {
                             replacedContent = templateEngine.process(
-                                    ((QRCodeFieldDefinitionType) fieldDefinitionType).getContent(),
+                                    castedFieldType.getContent(),
                                     thymeleafCtx
                             );
                         } catch (final TemplateInputException tie) {
-                            replacedContent = ((QRCodeFieldDefinitionType) fieldDefinitionType).getContent();
+                            replacedContent = castedFieldType.getContent();
                         }
                     } else {
-                        replacedContent = ((QRCodeFieldDefinitionType) fieldDefinitionType).getContent();
+                        replacedContent = castedFieldType.getContent();
                     }
                     result.add(QrCodeFormularItemDto.builder()
                             .id(currentField.getId())
@@ -264,6 +273,8 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .align(transformDocumentFieldAlignToFormularItemAlign(currentField))
                             .value(replacedContent)
                             .fieldDefinitionTypeId(fieldDefinitionType.getId())
+                            .maxWidthInPx(castedFieldType.getMaxWidthInPx())
+                            .widthPercentage(castedFieldType.getWidthPercentage())
                             .build()
                     );
                 }
@@ -416,7 +427,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                                     .build())
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
                             .build());
-                } else if (currentField instanceof QrCodeFormularItemDto) {
+                } else if (currentField instanceof final QrCodeFormularItemDto castedField) {
                     result.add(DocumentField.builder()
                             .row(newRow)
                             .xs(currentField.getXs())
@@ -427,7 +438,9 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .positionIndex(fieldIndex)
                             .fieldDefinitionType(QRCodeFieldDefinitionType.builder()
                                     .id(currentField.getFieldDefinitionTypeId())
-                                    .content(((QrCodeFormularItemDto) currentField).getValue())
+                                    .content(castedField.getValue())
+                                    .maxWidthInPx(castedField.getMaxWidthInPx())
+                                    .widthPercentage(castedField.getWidthPercentage())
                                     .build()
                             )
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
@@ -482,11 +495,11 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
     }
 
     public FormularDto transformToDto(final DynamicDocument model) {
-        return this.transformToDto(model, true, new HashMap<>());
+        return this.transformToDto(model, true, new HashMap<>(), false);
     }
 
     public FormularDto transformToDto(final DynamicDocument model, final Map<String, Object> context) {
-        return this.transformToDto(model, true, context);
+        return this.transformToDto(model, true, context, true);
     }
 
 }

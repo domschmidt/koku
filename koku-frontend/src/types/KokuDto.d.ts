@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.36.1070 on 2022-09-27 20:16:52.
+// Generated using typescript-generator version 2.36.1070 on 2022-09-28 20:23:54.
 
 declare namespace KokuDto {
 
@@ -54,6 +54,12 @@ declare namespace KokuDto {
         minCharacterLength?: number;
     }
 
+    interface DateSettingsDto {
+    }
+
+    interface DateTimeSettingsDto {
+    }
+
     interface NumberSettingsDto {
         min?: number;
         max?: number;
@@ -63,6 +69,9 @@ declare namespace KokuDto {
 
     interface SelectSettingsDto {
         userPresentableValues?: { [index: string]: string };
+    }
+
+    interface TimeSettingsDto {
     }
 
     interface AppointmentGroupDto {
@@ -408,6 +417,8 @@ declare namespace KokuDto {
     interface QrCodeFormularItemDto extends FormularItemDto {
         "@type": "QrCodeFormularItemDto";
         value?: string;
+        widthPercentage?: number;
+        maxWidthInPx?: number;
     }
 
     interface SVGFormularItemDto extends FormularItemDto {
