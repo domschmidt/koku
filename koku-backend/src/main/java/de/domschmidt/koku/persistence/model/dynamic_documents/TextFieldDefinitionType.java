@@ -26,8 +26,7 @@ public class TextFieldDefinitionType extends FieldDefinitionType implements Seri
     Long id;
     boolean readOnly;
     String text;
-    @Enumerated(EnumType.STRING)
-    FontSize fontSize;
+    Integer fontSize;
 
     // copy constructor
     public TextFieldDefinitionType(final TextFieldDefinitionType fieldDefintionTypeToBeCopied) {

@@ -68,8 +68,10 @@ services:
     image: 'postgres:13.3-alpine'
     restart: always
     environment:
-      - POSTGRES_USER=koku
-      - POSTGRES_PASSWORD=<DB_PW>
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=koku
+    ports:
+      - 5432:5432
 
   nextcloud:
     container_name: nextcloud

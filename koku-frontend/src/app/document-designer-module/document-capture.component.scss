@@ -1,0 +1,17 @@
+.document__row {
+  &__item {
+    display: flex;
+
+    &--align-top {
+      align-items: start;
+    }
+
+    &--align-center {
+      align-items: center;
+    }
+
+    &--align-bottom {
+      align-items: end;
+    }
+  }
+}

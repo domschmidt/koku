@@ -28,8 +28,16 @@ export class DocumentService {
     return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/replacementtoken/text`);
   }
 
+  getDocumentDateReplacementToken() {
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/replacementtoken/date`);
+  }
+
   getDocumentCheckboxReplacementToken() {
     return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/replacementtoken/checkbox`);
+  }
+
+  getDocumentQrcodeReplacementToken() {
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/replacementtoken/qrcode`);
   }
 
   createDocument(document: KokuDto.FormularDto) {

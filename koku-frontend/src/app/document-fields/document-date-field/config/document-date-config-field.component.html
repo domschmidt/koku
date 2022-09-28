@@ -1,0 +1,173 @@
+<form #form="ngForm"
+      (ngSubmit)="save(form)">
+  <mat-dialog-content>
+    <div style="padding: 12px 0;">
+      <div *ngIf="dateField">
+
+        <mat-form-field class="date-configuration-field date-configuration-field--full-width">
+          <mat-label>Datum</mat-label>
+          <input [(ngModel)]="dateField.value"
+                 matInput
+                 name="startDate"
+                 placeholder="Datum eingeben"
+                 type="date"
+                 class="input"
+                 [style.font-size]="dateField.fontSize + 'px'"
+                 [class.input--align-center]="dateField.align === 'CENTER'"
+                 [class.input--align-end]="dateField.align === 'RIGHT'"
+                 [class.input--align-start]="dateField.align === 'LEFT'">
+        </mat-form-field>
+
+        <mat-form-field class="date-configuration-field">
+          <mat-label>Kontext</mat-label>
+          <mat-select [(value)]="dateField.context">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="currentReplacementToken.replacementToken"
+                        *ngFor="let currentReplacementToken of replacementTokens">
+              {{currentReplacementToken.tokenName}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field class="date-configuration-field">
+          <mat-label>Tagesdifferenz</mat-label>
+          <input [(ngModel)]="dateField.dayDiff"
+                 matInput
+                 name="dayDiff"
+                 placeholder="Tagesdifferenz"
+                 inputmode="numeric"
+                 type="number"
+                 step="1">
+        </mat-form-field>
+
+        <mat-form-field class="date-configuration-field">
+          <mat-label>Monatsdifferenz</mat-label>
+          <input [(ngModel)]="dateField.monthDiff"
+                 matInput
+                 name="monthDiff"
+                 placeholder="Monatsdifferenz"
+                 inputmode="numeric"
+                 type="number"
+                 step="1">
+        </mat-form-field>
+
+        <mat-form-field class="date-configuration-field">
+          <mat-label>Jahresdifferenz</mat-label>
+          <input [(ngModel)]="dateField.yearDiff"
+                 matInput
+                 name="yearDiff"
+                 placeholder="Jahresdifferenz"
+                 inputmode="numeric"
+                 type="number"
+                 step="1">
+        </mat-form-field>
+
+        <mat-button-toggle-group [(ngModel)]="dateField.align"
+                                 name="alignment"
+        >
+          <mat-button-toggle [value]="'LEFT'"
+                             title="Links ausrichten"
+                             aria-label="Text align left">
+            <mat-icon>format_align_left</mat-icon>
+          </mat-button-toggle>
+          <mat-button-toggle [value]="'CENTER'"
+                             title="Mittig ausrichten"
+                             aria-label="Text align center">
+            <mat-icon>format_align_center</mat-icon>
+          </mat-button-toggle>
+          <mat-button-toggle [value]="'RIGHT'"
+                             title="Rechts ausrichten"
+                             aria-label="Text align right">
+            <mat-icon>format_align_right</mat-icon>
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+
+        <mat-form-field class="date-configuration-field">
+          <mat-label>Schriftgröße</mat-label>
+          <input [(ngModel)]="dateField.fontSize"
+                 matInput
+                 name="fontSize"
+                 placeholder="Schriftgröße"
+                 inputmode="numeric"
+                 type="number"
+                 step="1">
+        </mat-form-field>
+
+        <mat-checkbox class="date-configuration-field"
+                      [(ngModel)]="dateField.readOnly"
+                      name="readonly"
+        >Eingabe gesperrt
+        </mat-checkbox>
+
+        <mat-form-field class="date-configuration-field">
+          <mat-label>Feldgröße X-Large</mat-label>
+          <mat-select [(value)]="dateField.xl">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="date-configuration-field">
+          <mat-label>Feldgröße Large</mat-label>
+          <mat-select [(value)]="dateField.lg">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="date-configuration-field">
+          <mat-label>Feldgröße Medium</mat-label>
+          <mat-select [(value)]="dateField.md">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="date-configuration-field">
+          <mat-label>Feldgröße Small</mat-label>
+          <mat-select [(value)]="dateField.sm">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="date-configuration-field">
+          <mat-label>Feldgröße X-Small</mat-label>
+          <mat-select [(value)]="dateField.xs">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions *ngIf="dateField" align="end">
+    <button mat-button mat-dialog-close>Abbrechen</button>
+    <button *ngIf="!createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Speichern
+    </button>
+    <button *ngIf="createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Erstellen
+    </button>
+  </mat-dialog-actions>
+</form>

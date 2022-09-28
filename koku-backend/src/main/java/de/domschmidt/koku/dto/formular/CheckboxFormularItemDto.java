@@ -18,6 +18,6 @@ public class CheckboxFormularItemDto extends FormularItemDto {
     boolean readOnly;
     String label;
     String context;
-    FontSizeDto fontSize;
+    Integer fontSize;
 
 }

@@ -1,5 +1,6 @@
 package de.domschmidt.koku.dto.formular;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.AllArgsConstructor;
@@ -19,11 +20,14 @@ import lombok.experimental.SuperBuilder;
                 @JsonSubTypes.Type(value = SVGFormularItemDto.class, name = "SVGFormularItemDto"),
                 @JsonSubTypes.Type(value = SignatureFormularItemDto.class, name = "SignatureFormularItemDto"),
                 @JsonSubTypes.Type(value = TextFormularItemDto.class, name = "TextFormularItemDto"),
-                @JsonSubTypes.Type(value = CheckboxFormularItemDto.class, name = "CheckboxFormularItemDto")
+                @JsonSubTypes.Type(value = CheckboxFormularItemDto.class, name = "CheckboxFormularItemDto"),
+                @JsonSubTypes.Type(value = QrCodeFormularItemDto.class, name = "QrCodeFormularItemDto"),
+                @JsonSubTypes.Type(value = DateFormularItemDto.class, name = "DateFormularItemDto")
         }
 )
 public abstract class FormularItemDto {
 
+    @JsonProperty(required = true)
     Long id;
     Long fieldDefinitionTypeId;
     Integer xs;

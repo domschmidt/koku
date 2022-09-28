@@ -1,12 +1,9 @@
 spring:
-  batch:
-    initialize-schema: embedded
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/
+    url: jdbc:postgresql://localhost:5432/koku
     username: 'postgres'
     password: 'koku'
-    platform: postgres
   flyway:
     enabled: true
     baseline-on-migrate: false
@@ -18,6 +15,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        metadata_builder_contributor: de.domschmidt.koku.db_ext.PostgresFunctionRegister
       javax:
         persistence:
           schema-generation:
@@ -25,3 +23,9 @@ spring:
               #create-target: create.sql
               #create-source: metadata
               #action: create
+  sql:
+    init:
+      platform: postgres
+  batch:
+    jdbc:
+      initialize-schema: embedded

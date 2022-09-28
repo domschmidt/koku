@@ -24,6 +24,9 @@ public class DocumentRow extends DomainModel implements Serializable {
     Long id;
     Integer positionIndex;
 
+    @Enumerated(EnumType.STRING)
+    DocumentRowAlign align;
+
     @OneToMany(mappedBy = "row", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("positionIndex ASC")
     List<DocumentField> fields;
@@ -35,6 +38,7 @@ public class DocumentRow extends DomainModel implements Serializable {
     public DocumentRow(final DynamicDocument document, final DocumentRow rowToBeCopied) {
         this.id = null;
         this.document = document;
+        this.align = rowToBeCopied.getAlign();
         if (rowToBeCopied.getFields() != null) {
             final List<DocumentField> fields = new ArrayList<>();
             for (final DocumentField currentField : rowToBeCopied.getFields()) {

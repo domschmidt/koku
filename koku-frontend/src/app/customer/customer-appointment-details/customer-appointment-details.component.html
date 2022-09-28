@@ -33,11 +33,11 @@
     <mat-action-list fxFlex="100%">
       <mat-label>Kunde</mat-label>
       <button (click)="selectCustomer()" *ngIf="customerAppointment.customer" mat-list-item>
-        <circle-with-letters [letters]="customerAppointment.customer?.initials"></circle-with-letters>
+        <circle-with-letters [letters]="customerAppointment.customer.initials"></circle-with-letters>
         <h3
-          matLine>{{customerAppointment.customer?.firstName}} {{customerAppointment.customer?.lastName}} {{customerAppointment.customer.onFirstNameBasis ? '*' : ''}}</h3>
-        <p matLine>{{customerAppointment.customer?.address}}</p>
-        <p matLine>{{customerAppointment.customer?.postalCode}} {{customerAppointment.customer?.city}}</p>
+          matLine>{{customerAppointment.customer.firstName}} {{customerAppointment.customer.lastName}} {{customerAppointment.customer.onFirstNameBasis ? '*' : ''}}</h3>
+        <p matLine>{{customerAppointment.customer.address}}</p>
+        <p matLine>{{customerAppointment.customer.postalCode}} {{customerAppointment.customer.city}}</p>
         <mat-icon matListIcon matSuffix style="order: 10;">open_in_new</mat-icon>
       </button>
 
@@ -308,7 +308,7 @@
       <mat-label>Bedienung</mat-label>
       <button (click)="selectUser()" *ngIf="customerAppointment.user" mat-list-item>
         <user-avatar [user]="customerAppointment.user"></user-avatar>
-        <h3 matLine>{{customerAppointment.user?.firstname}} {{customerAppointment.user?.lastname}}</h3>
+        <h3 matLine>{{customerAppointment.user.firstname}} {{customerAppointment.user.lastname}}</h3>
         <mat-icon matListIcon matSuffix style="order: 10;">open_in_new</mat-icon>
       </button>
 

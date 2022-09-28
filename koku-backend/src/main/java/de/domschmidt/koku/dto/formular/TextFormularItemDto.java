@@ -16,6 +16,6 @@ public class TextFormularItemDto extends FormularItemDto {
 
     String text;
     boolean readOnly;
-    FontSizeDto fontSize;
+    Integer fontSize;
 
 }

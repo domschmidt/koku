@@ -13,5 +13,6 @@ public class FormularRowDto {
 
     Long id;
     List<FormularItemDto> items;
+    FormularRowAlignDto align;
 
 }

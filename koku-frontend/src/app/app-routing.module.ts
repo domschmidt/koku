@@ -20,11 +20,11 @@ import {
 } from "./prevent-losing-changes/prevent-navigation-if-modal-is-open.service";
 import {DocumentComponent} from "./document/document.component";
 import {PromotionComponent} from "./promotions/promotion.component";
-import * as moment from "moment";
 import {PageSkeletonComponent} from "./layouts/page-skeleton/page-skeleton.component";
 import {CardDavComponent} from "./carddav/card-dav.component";
 import {DashboardComponent} from "./dashboard/dashboard.component";
 import {CalendarViewToggleComponent} from "./calendar-view-toggle/calendar-view-toggle.component";
+import {CustomerDocumentsComponent} from "./customer-documents/customer-documents.component";
 
 const routes: Routes = [
   {
@@ -69,6 +69,13 @@ const routes: Routes = [
             pathMatch: 'full'
           },
         ]
+      },
+      {
+        path: 'customerdocuments',
+        data: {
+          name: 'Kundendokumente'
+        },
+        component: CustomerDocumentsComponent
       },
       {
         path: 'manage',
@@ -195,37 +202,6 @@ const routes: Routes = [
                 component: DashboardComponent,
                 data: {
                   name: 'Dashboard'
-                },
-                canDeactivate: [PreventNavigationIfModalIsOpenService]
-              },
-              {
-                component: PanelLayoutComponent,
-                path: 'currentnumbers',
-                data: {
-                  name: 'Aktuelle Kennzahlen',
-                  panels: [
-                    {
-                      component: 'GaugePanelComponent',
-                      widthPercentage: 33,
-                      data: {
-                        sourceUrl: '/statistics/lastmonthcomparison'
-                      }
-                    },
-                    {
-                      component: 'TextPanelComponent',
-                      widthPercentage: 33,
-                      data: {
-                        sourceUrl: '/statistics/currentmonthapproxrevenue'
-                      }
-                    },
-                    {
-                      component: 'TextPanelComponent',
-                      widthPercentage: 33,
-                      data: {
-                        sourceUrl: '/statistics/monthlyapproxrevenue?startMonth=' + moment().format('YYYY-MM') + '&monthCount=3'
-                      }
-                    }
-                  ]
                 },
                 canDeactivate: [PreventNavigationIfModalIsOpenService]
               },

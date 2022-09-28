@@ -1,6 +1,5 @@
 import {Component, Inject, OnInit, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {DocumentService} from "../../document/document.service";
 import {NgForm} from "@angular/forms";
 import {CustomerService} from "../customer.service";
 import {PreventLosingChangesService} from "../../prevent-losing-changes/prevent-losing-changes.service";
@@ -21,7 +20,7 @@ export interface CustomerDocumentCaptureDialogResponseData {
   styleUrls: ['./customer-document-capture-dialog.component.scss']
 })
 export class CustomerDocumentCaptureDialogComponent implements OnInit {
-  private static GRID_SIZE: number = 12;
+
   saving: boolean = false;
   customerId: number | undefined;
   documentId: number | undefined;
@@ -32,7 +31,6 @@ export class CustomerDocumentCaptureDialogComponent implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: CustomerDocumentCaptureDialogData,
               public dialogRef: MatDialogRef<CustomerDocumentCaptureDialogComponent>,
               private readonly preventLosingChangesService: PreventLosingChangesService,
-              public documentService: DocumentService,
               public customerService: CustomerService) {
     this.customerId = data.customerId;
     this.documentId = data.documentId;
@@ -64,28 +62,6 @@ export class CustomerDocumentCaptureDialogComponent implements OnInit {
     this.ngForm?.statusChanges?.subscribe(() => {
       this.dirty = (this.ngForm || {}).dirty || false;
     });
-  }
-
-  getFxFlex(size: number) {
-    return Math.round((size / CustomerDocumentCaptureDialogComponent.GRID_SIZE) * 100) + '%';
-  }
-
-  getAlignStyle(align?: "LEFT" | "CENTER" | "RIGHT") {
-    let result = 'left'
-    switch (align) {
-      case 'CENTER':
-        result = 'center';
-        break;
-      case 'RIGHT':
-        result = 'flex-end';
-        break;
-      case 'LEFT':
-        result = 'flex-start';
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 
   save(document: KokuDto.FormularDto | undefined, form: NgForm) {

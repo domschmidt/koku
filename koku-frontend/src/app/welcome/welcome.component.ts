@@ -4,10 +4,6 @@ import {Observable} from "rxjs";
 import * as moment from "moment";
 import {MatDialog} from "@angular/material/dialog";
 import {CustomerAppointmentService} from "../customer-appointment.service";
-import {
-  CustomerAppointmentDetailsComponent,
-  CustomerAppointmentDetailsData
-} from "../customer/customer-appointment-details/customer-appointment-details.component";
 
 @Component({
   selector: 'welcome',
@@ -24,18 +20,6 @@ export class WelcomeComponent {
               public readonly appointmentService: CustomerAppointmentService) {
     this.userDetails$ = this.service.getDetails();
     this.appointmentGroups$ = this.appointmentService.getAppointmentGroups();
-  }
-
-  addNewAppointment() {
-    const dialogData: CustomerAppointmentDetailsData = {};
-    this.dialog.open(CustomerAppointmentDetailsComponent, {
-      data: dialogData,
-      autoFocus: false,
-      closeOnNavigation: false,
-      position: {
-        top: '20px'
-      }
-    });
   }
 
 }

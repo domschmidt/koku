@@ -43,6 +43,18 @@ export class AppComponent {
       'deposit',
       this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/deposit.svg')
     );
+    this.matIconRegistry.addSvgIcon(
+      'format_align_vertical_bottom',
+      this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/format_align_vertical_bottom.svg')
+    );
+    this.matIconRegistry.addSvgIcon(
+      'format_align_vertical_center',
+      this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/format_align_vertical_center.svg')
+    );
+    this.matIconRegistry.addSvgIcon(
+      'format_align_vertical_top',
+      this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/format_align_vertical_top.svg')
+    );
   }
 
 }

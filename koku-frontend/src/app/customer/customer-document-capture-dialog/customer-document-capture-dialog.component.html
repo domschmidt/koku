@@ -5,49 +5,7 @@
 
     <mat-dialog-content>
 
-      <div fxLayout="row wrap"
-           *ngFor="let row of document.rows">
-
-        <div *ngFor="let formField of row.items"
-             [fxFlex.xl]="getFxFlex(formField.xl || formField.lg || formField.md || formField.sm || formField.xs || 12)"
-             [fxFlex.lg]="getFxFlex(formField.lg || formField.md || formField.sm || formField.xs || 12)"
-             [fxFlex.md]="getFxFlex(formField.md || formField.sm || formField.xs || 12)"
-             [fxFlex.sm]="getFxFlex(formField.sm || formField.xs || 12)"
-             [fxFlex.xs]="getFxFlex(formField.xs || 12)"
-        >
-          <checkbox-field *ngIf="formField['@type']==='CheckboxFormularItemDto'"
-                          [name]="formField.id + ''"
-                          [style.justify-content]="getAlignStyle(formField.align)"
-                          [fontSize]="formField.fontSize"
-                          [label]="formField.label"
-                          [(ngModel)]="formField.value"
-                          [readOnly]="formField.readOnly"
-                          style="padding: 4px 0;">
-          </checkbox-field>
-          <signature-field *ngIf="formField['@type']==='SignatureFormularItemDto'"
-                           [name]="formField.id + ''"
-                           [style.justify-content]="getAlignStyle(formField.align)"
-                           [(ngModel)]="formField.dataUri"
-                           style="padding: 4px 0;">
-          </signature-field>
-          <text-field *ngIf="formField['@type']==='TextFormularItemDto'"
-                      [name]="formField.id + ''"
-                      [align]="formField.align"
-                      [fontSize]="formField.fontSize"
-                      [(ngModel)]="formField.text"
-                      [readOnly]="formField.readOnly"
-                      style="padding: 4px 0;">
-          </text-field>
-          <svg-field *ngIf="formField['@type']==='SVGFormularItemDto'"
-                     [name]="formField.id + ''"
-                     [style.justify-content]="getAlignStyle(formField.align)"
-                     [maxWidthInPx]="formField.maxWidthInPx"
-                     [widthPercentage]="formField.widthPercentage"
-                     [(ngModel)]="formField.svgContentBase64encoded"
-                     style="padding: 4px 0;">
-          </svg-field>
-        </div>
-      </div>
+      <document-capture [document]="document"></document-capture>
 
     </mat-dialog-content>
 

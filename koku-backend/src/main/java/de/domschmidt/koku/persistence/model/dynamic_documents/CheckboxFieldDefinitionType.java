@@ -1,6 +1,5 @@
 package de.domschmidt.koku.persistence.model.dynamic_documents;
 
-import de.domschmidt.koku.dto.formular.FontSizeDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,16 +28,15 @@ public class CheckboxFieldDefinitionType extends FieldDefinitionType implements 
     boolean value;
     boolean readOnly;
     String label;
-    @Enumerated(EnumType.STRING)
-    FontSize fontSize;
+    Integer fontSize;
 
     // copy constructor
     public CheckboxFieldDefinitionType(final CheckboxFieldDefinitionType fieldDefintionTypeToBeCopied) {
         this.id = null;
         this.context = fieldDefintionTypeToBeCopied.getContext();
-        this.label = fieldDefintionTypeToBeCopied.getLabel();
         this.value = fieldDefintionTypeToBeCopied.isValue();
         this.fontSize = fieldDefintionTypeToBeCopied.getFontSize();
+        this.label = fieldDefintionTypeToBeCopied.getLabel();
         this.readOnly = fieldDefintionTypeToBeCopied.isReadOnly();
     }
 }

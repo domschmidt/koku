@@ -111,31 +111,6 @@ body {
 }
 
 
-// loading button start
-@keyframes spinner {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.button-spinner:before {
-  content: '';
-  box-sizing: border-box;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  margin-top: -10px;
-  margin-left: -10px;
-  border-radius: 50%;
-  border: 2px solid #ffffff;
-  border-top-color: #000000;
-  animation: spinner .8s linear infinite;
-}
-
-// loading button end
-
 .fab-button-container {
   position: fixed;
   bottom: 30px;
@@ -230,3 +205,37 @@ body {
 .no-select {
   user-select: none;
 }
+
+
+// loading button start
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.button-spinner {
+  display: inline-flex !important;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+
+  &:after {
+    content: '';
+
+    width: 20px;
+    height: 20px;
+
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    border-top-color: #000000;
+    animation: spinner .8s linear infinite;
+  }
+
+  &[matprefix]:after {
+    height: 16px;
+    width: 18px;
+  }
+}
+
+// loading button end

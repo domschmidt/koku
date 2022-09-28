@@ -4,24 +4,25 @@ import de.domschmidt.koku.dto.formular.*;
 import de.domschmidt.koku.persistence.model.dynamic_documents.*;
 import de.domschmidt.koku.persistence.model.enums.Alignment;
 import de.domschmidt.koku.transformer.common.ITransformer;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.exceptions.TemplateInputException;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 
 @Component
+@Slf4j
 public class DynamicDocumentToFormularDtoTransformer implements ITransformer<DynamicDocument, FormularDto> {
 
     public List<FormularDto> transformToDtoList(final List<DynamicDocument> documentList) {
@@ -32,37 +33,83 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
         return result;
     }
 
-    private FormularDto transformToDto(final DynamicDocument document,
-                                       final boolean detailed,
-                                       final Map<String, Object> replacementToken) {
+    private FormularDto transformToDto(
+            final DynamicDocument document,
+            final boolean detailed,
+            final Map<String, Object> context
+    ) {
+        final Map<String, Object> guardedContext;
+        if (context == null) {
+            guardedContext = new HashMap<>();
+        } else {
+            guardedContext = context;
+        }
+
+        guardedContext.put("document", document);
+        guardedContext.put("localDateTime", LocalDateTime.now());
+        guardedContext.put("localDate", LocalDate.now());
+        guardedContext.put("localTime", LocalTime.now());
+        guardedContext.put("randomUuid", UUID.randomUUID());
+
         return FormularDto.builder()
                 .id(document.getId())
                 .description(document.getDescription())
-                .rows(detailed ? transformDocumentRowToFormularRowDto(document, document.getRows(), replacementToken) : null)
+                .tags(detailed ? transformContextToTags(guardedContext) : null)
+                .rows(detailed ? transformDocumentRowToFormularRowDto(document.getRows(), guardedContext) : null)
                 .build();
     }
 
-    private List<FormularRowDto> transformDocumentRowToFormularRowDto(final DynamicDocument document,
-                                                                      final List<DocumentRow> rows,
-                                                                      final Map<String, Object> replacementToken) {
+    private Map<String, String> transformContextToTags(final Map<String, Object> context) {
+        final Map<String, String> tags = new HashMap<>();
+
+        for (final Map.Entry<String, Object> currentContextItem : context.entrySet()) {
+            if (currentContextItem.getValue() != null) {
+                tags.put(currentContextItem.getKey(), currentContextItem.getValue().toString());
+            }
+        }
+
+        return tags;
+    }
+
+    private List<FormularRowDto> transformDocumentRowToFormularRowDto(final List<DocumentRow> rows, final Map<String, Object> context) {
         final List<FormularRowDto> result = new ArrayList<>();
 
         if (rows != null) {
             for (final DocumentRow currentRow : rows) {
                 result.add(FormularRowDto.builder()
                         .id(currentRow.getId())
-                        .items(transformDocumentFieldToFormularFieldDto(document, currentRow.getFields(), replacementToken))
-                        .build());
+                        .align(transformRowAlign(currentRow.getAlign()))
+                        .items(transformDocumentFieldToFormularFieldDto(currentRow.getFields(), context))
+                        .build()
+                );
             }
         }
 
         return result;
     }
 
-    private List<FormularItemDto> transformDocumentFieldToFormularFieldDto(final DynamicDocument document,
-                                                                           final List<DocumentField> fields,
-                                                                           final Map<String, Object> replacementToken) {
+    private FormularRowAlignDto transformRowAlign(final DocumentRowAlign align) {
+        FormularRowAlignDto result = FormularRowAlignDto.TOP;
+        if (align != null) {
+            switch (align) {
+                case CENTER:
+                    result = FormularRowAlignDto.CENTER;
+                    break;
+                case BOTTOM:
+                    result = FormularRowAlignDto.BOTTOM;
+                    break;
+            }
+        }
+        return result;
+    }
+
+    private List<FormularItemDto> transformDocumentFieldToFormularFieldDto(final List<DocumentField> fields, final Map<String, Object> context) {
         final List<FormularItemDto> result = new ArrayList<>();
+
+        final Context thymeleafCtx = new Context();
+        for (Map.Entry<String, Object> currentContextEntry : context.entrySet()) {
+            thymeleafCtx.setVariable(currentContextEntry.getKey(), currentContextEntry.getValue());
+        }
 
         if (fields != null) {
             final TemplateEngine templateEngine = new SpringTemplateEngine();
@@ -98,16 +145,15 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .fieldDefinitionTypeId(fieldDefinitionType.getId())
                             .build());
                 } else if (fieldDefinitionType instanceof CheckboxFieldDefinitionType) {
-                    final Context ctx = new Context();
-                    for (Map.Entry<String, Object> currentContextEntry : replacementToken.entrySet()) {
-                        ctx.setVariable(currentContextEntry.getKey(), currentContextEntry.getValue());
-                    }
                     final boolean isCheckboxChecked;
-                    final String replacedText;
                     final String fieldContext = ((CheckboxFieldDefinitionType) fieldDefinitionType).getContext();
-                    if (replacementToken.size() > 0 && fieldContext != null) {
-                        replacedText = templateEngine.process(fieldContext, ctx);
-                        isCheckboxChecked = replacedText.trim().equalsIgnoreCase(Boolean.TRUE.toString());
+                    if (context.size() > 0 && fieldContext != null) {
+                        String replacedText = null;
+                        try {
+                            replacedText = templateEngine.process(fieldContext, thymeleafCtx);
+                        } finally {
+                            isCheckboxChecked = StringUtils.defaultString(replacedText).trim().equalsIgnoreCase(Boolean.TRUE.toString());
+                        }
                     } else {
                         isCheckboxChecked = ((CheckboxFieldDefinitionType) fieldDefinitionType).isValue();
                     }
@@ -120,30 +166,67 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .xl(currentField.getXl())
                             .align(transformDocumentFieldAlignToFormularItemAlign(currentField))
                             .value(isCheckboxChecked)
-                            .label(((CheckboxFieldDefinitionType) fieldDefinitionType).getLabel())
                             .context(fieldContext)
-                            .fontSize(transformFieldDefintionTypeFontSizeToFontSizeDto(((CheckboxFieldDefinitionType)fieldDefinitionType).getFontSize()))
+                            .fontSize(((CheckboxFieldDefinitionType) fieldDefinitionType).getFontSize())
                             .fieldDefinitionTypeId(fieldDefinitionType.getId())
-                            .readOnly(((CheckboxFieldDefinitionType)fieldDefinitionType).isReadOnly())
+                            .readOnly(((CheckboxFieldDefinitionType) fieldDefinitionType).isReadOnly())
+                            .label(((CheckboxFieldDefinitionType) fieldDefinitionType).getLabel())
                             .build());
-                } else if (fieldDefinitionType instanceof TextFieldDefinitionType) {
-                    final Context ctx = new Context();
-                    for (Map.Entry<String, Object> currentContextEntry : replacementToken.entrySet()) {
-                        ctx.setVariable(currentContextEntry.getKey(), currentContextEntry.getValue());
+                } else if (fieldDefinitionType instanceof final DateFieldDefinitionType castedField) {
+                    final String fieldContext = castedField.getContext();
+                    LocalDate value = castedField.getValue();
+                    if (fieldContext != null) {
+                        String replacedValue = null;
+                        try {
+                            replacedValue = templateEngine.process(fieldContext, thymeleafCtx);
+                        } finally {
+                            try {
+                                value = LocalDate.parse(StringUtils.defaultString(replacedValue));
+                                if (castedField.getDayDiff() != null) {
+                                    value.plusDays(castedField.getDayDiff());
+                                }
+                                if (castedField.getMonthDiff() != null) {
+                                    value.plusMonths(castedField.getMonthDiff());
+                                }
+                                if (castedField.getYearDiff() != null) {
+                                    value.plusYears(castedField.getYearDiff());
+                                }
+                            } catch (final DateTimeParseException dtpe) {
+                                log.error("Unable to parse value as Date");
+                            }
+                        }
                     }
-                    ctx.setVariable("document", document);
-                    ctx.setVariable("header", "<div></div>");
-                    ctx.setVariable("footer", "<div></div>");
-                    ctx.setVariable("localDateTime", LocalDateTime.now());
-                    ctx.setVariable("localDate", LocalDate.now());
-                    ctx.setVariable("localTime", LocalTime.now());
-                    ctx.setVariable("timestamp", Instant.now());
-
-                    final String replacedText;
-                    if (replacementToken.size() > 0) {
-                        replacedText = templateEngine.process(((TextFieldDefinitionType) fieldDefinitionType).getText(), ctx);
+                    result.add(DateFormularItemDto.builder()
+                            .id(currentField.getId())
+                            .xs(currentField.getXs())
+                            .sm(currentField.getSm())
+                            .md(currentField.getMd())
+                            .lg(currentField.getLg())
+                            .xl(currentField.getXl())
+                            .align(transformDocumentFieldAlignToFormularItemAlign(currentField))
+                            .value(value)
+                            .context(castedField.getContext())
+                            .fontSize(castedField.getFontSize())
+                            .fieldDefinitionTypeId(fieldDefinitionType.getId())
+                            .readOnly(castedField.isReadOnly())
+                            .dayDiff(castedField.getDayDiff())
+                            .monthDiff(castedField.getMonthDiff())
+                            .yearDiff(castedField.getYearDiff())
+                            .build()
+                    );
+                } else if (fieldDefinitionType instanceof TextFieldDefinitionType) {
+                    String textFieldValue;
+                    if (context.size() > 0) {
+                        try {
+                            textFieldValue = templateEngine.process(
+                                    ((TextFieldDefinitionType) fieldDefinitionType).getText(),
+                                    thymeleafCtx
+                            );
+                        } catch (final TemplateInputException tie) {
+                            textFieldValue = ((TextFieldDefinitionType) fieldDefinitionType).getText();
+                        }
                     } else {
-                        replacedText = ((TextFieldDefinitionType) fieldDefinitionType).getText();
+                        textFieldValue = ((TextFieldDefinitionType) fieldDefinitionType).getText();
                     }
                     result.add(TextFormularItemDto.builder()
                             .id(currentField.getId())
@@ -153,55 +236,40 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .lg(currentField.getLg())
                             .xl(currentField.getXl())
                             .align(transformDocumentFieldAlignToFormularItemAlign(currentField))
-                            .text(replacedText)
-                            .fontSize(transformFieldDefintionTypeFontSizeToFontSizeDto(((TextFieldDefinitionType) fieldDefinitionType).getFontSize()))
+                            .text(textFieldValue)
+                            .fontSize(((TextFieldDefinitionType) fieldDefinitionType).getFontSize())
                             .fieldDefinitionTypeId(fieldDefinitionType.getId())
-                            .readOnly(((TextFieldDefinitionType) fieldDefinitionType).isReadOnly())
-                            .build());
+                            .readOnly(((TextFieldDefinitionType) fieldDefinitionType).isReadOnly()).build());
+                } else if (fieldDefinitionType instanceof QRCodeFieldDefinitionType) {
+                    String replacedContent;
+                    if (context.size() > 0) {
+                        try {
+                            replacedContent = templateEngine.process(
+                                    ((QRCodeFieldDefinitionType) fieldDefinitionType).getContent(),
+                                    thymeleafCtx
+                            );
+                        } catch (final TemplateInputException tie) {
+                            replacedContent = ((QRCodeFieldDefinitionType) fieldDefinitionType).getContent();
+                        }
+                    } else {
+                        replacedContent = ((QRCodeFieldDefinitionType) fieldDefinitionType).getContent();
+                    }
+                    result.add(QrCodeFormularItemDto.builder()
+                            .id(currentField.getId())
+                            .xs(currentField.getXs())
+                            .sm(currentField.getSm())
+                            .md(currentField.getMd())
+                            .lg(currentField.getLg())
+                            .xl(currentField.getXl())
+                            .align(transformDocumentFieldAlignToFormularItemAlign(currentField))
+                            .value(replacedContent)
+                            .fieldDefinitionTypeId(fieldDefinitionType.getId())
+                            .build()
+                    );
                 }
             }
         }
 
-        return result;
-    }
-
-    private FontSizeDto transformFieldDefintionTypeFontSizeToFontSizeDto(final FontSize fontSize) {
-        FontSizeDto result;
-        if (fontSize != null) {
-            switch (fontSize) {
-                case LARGE:
-                    result = FontSizeDto.LARGE;
-                    break;
-                case SMALL:
-                    result = FontSizeDto.SMALL;
-                    break;
-                default:
-                    result = null;
-                    break;
-            }
-        } else {
-            result = null;
-        }
-        return result;
-    }
-
-    private FontSize transformFontSizeDtoToFieldDefintionTypeFontSize(final FontSizeDto fontSizeDto) {
-        FontSize result;
-        if (fontSizeDto != null) {
-            switch (fontSizeDto) {
-                case LARGE:
-                    result = FontSize.LARGE;
-                    break;
-                case SMALL:
-                    result = FontSize.SMALL;
-                    break;
-                default:
-                    result = null;
-                    break;
-            }
-        } else {
-            result = null;
-        }
         return result;
     }
 
@@ -249,15 +317,8 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
         return result;
     }
 
-    public FormularDto transformToDto(final DynamicDocument model) {
-        return this.transformToDto(model, true, new HashMap<>());
-    }
-
     public DynamicDocument transformToEntity(final FormularDto dtoModel) {
-        final DynamicDocument result = DynamicDocument.builder()
-                .id(dtoModel.getId())
-                .description(dtoModel.getDescription())
-                .build();
+        final DynamicDocument result = DynamicDocument.builder().id(dtoModel.getId()).description(dtoModel.getDescription()).build();
 
         result.setRows(transformFormularRowDtoToDocumentRow(result, dtoModel.getRows()));
 
@@ -274,12 +335,30 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                         .document(document)
                         .id(currentRow.getId())
                         .positionIndex(rowIndex)
+                        .align(transformRowAlign(currentRow.getAlign()))
                         .build();
                 newRow.setFields(transformFormularItemToDocumentField(newRow, currentRow.getItems()));
                 result.add(newRow);
             }
         }
 
+        return result;
+    }
+
+    private DocumentRowAlign transformRowAlign(
+            final FormularRowAlignDto align
+    ) {
+        DocumentRowAlign result = DocumentRowAlign.TOP;
+        if (align != null) {
+            switch (align) {
+                case CENTER:
+                    result = DocumentRowAlign.CENTER;
+                    break;
+                case BOTTOM:
+                    result = DocumentRowAlign.BOTTOM;
+                    break;
+            }
+        }
         return result;
     }
 
@@ -292,7 +371,6 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                 if (currentField instanceof SVGFormularItemDto) {
                     result.add(DocumentField.builder()
                             .row(newRow)
-                            .id(currentField.getId())
                             .xs(currentField.getXs())
                             .sm(currentField.getSm())
                             .md(currentField.getMd())
@@ -310,7 +388,6 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                 } else if (currentField instanceof SignatureFormularItemDto) {
                     result.add(DocumentField.builder()
                             .row(newRow)
-                            .id(currentField.getId())
                             .xs(currentField.getXs())
                             .sm(currentField.getSm())
                             .md(currentField.getMd())
@@ -325,7 +402,6 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                 } else if (currentField instanceof TextFormularItemDto) {
                     result.add(DocumentField.builder()
                             .row(newRow)
-                            .id(currentField.getId())
                             .xs(currentField.getXs())
                             .sm(currentField.getSm())
                             .md(currentField.getMd())
@@ -336,14 +412,50 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                                     .id(currentField.getFieldDefinitionTypeId())
                                     .text(((TextFormularItemDto) currentField).getText())
                                     .readOnly(((TextFormularItemDto) currentField).isReadOnly())
-                                    .fontSize(transformFontSizeDtoToFieldDefintionTypeFontSize(((TextFormularItemDto) currentField).getFontSize()))
+                                    .fontSize(((TextFormularItemDto) currentField).getFontSize())
                                     .build())
+                            .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
+                            .build());
+                } else if (currentField instanceof QrCodeFormularItemDto) {
+                    result.add(DocumentField.builder()
+                            .row(newRow)
+                            .xs(currentField.getXs())
+                            .sm(currentField.getSm())
+                            .md(currentField.getMd())
+                            .lg(currentField.getLg())
+                            .xl(currentField.getXl())
+                            .positionIndex(fieldIndex)
+                            .fieldDefinitionType(QRCodeFieldDefinitionType.builder()
+                                    .id(currentField.getFieldDefinitionTypeId())
+                                    .content(((QrCodeFormularItemDto) currentField).getValue())
+                                    .build()
+                            )
+                            .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
+                            .build());
+                } else if (currentField instanceof DateFormularItemDto) {
+                    result.add(DocumentField.builder()
+                            .row(newRow)
+                            .xs(currentField.getXs())
+                            .sm(currentField.getSm())
+                            .md(currentField.getMd())
+                            .lg(currentField.getLg())
+                            .xl(currentField.getXl())
+                            .positionIndex(fieldIndex)
+                            .fieldDefinitionType(DateFieldDefinitionType.builder()
+                                    .id(currentField.getFieldDefinitionTypeId())
+                                    .value(((DateFormularItemDto) currentField).getValue())
+                                    .context(((DateFormularItemDto) currentField).getContext())
+                                    .fontSize(((DateFormularItemDto) currentField).getFontSize())
+                                    .dayDiff(((DateFormularItemDto) currentField).getDayDiff())
+                                    .monthDiff(((DateFormularItemDto) currentField).getMonthDiff())
+                                    .yearDiff(((DateFormularItemDto) currentField).getYearDiff())
+                                    .build()
+                            )
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
                             .build());
                 } else if (currentField instanceof CheckboxFormularItemDto) {
                     result.add(DocumentField.builder()
                             .row(newRow)
-                            .id(currentField.getId())
                             .xs(currentField.getXs())
                             .sm(currentField.getSm())
                             .md(currentField.getMd())
@@ -352,14 +464,16 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .positionIndex(fieldIndex)
                             .fieldDefinitionType(CheckboxFieldDefinitionType.builder()
                                     .id(currentField.getFieldDefinitionTypeId())
-                                    .label(((CheckboxFormularItemDto) currentField).getLabel())
                                     .context(((CheckboxFormularItemDto) currentField).getContext())
                                     .value(((CheckboxFormularItemDto) currentField).isValue())
                                     .readOnly(((CheckboxFormularItemDto) currentField).isReadOnly())
-                                    .fontSize(transformFontSizeDtoToFieldDefintionTypeFontSize(((CheckboxFormularItemDto) currentField).getFontSize()))
-                                    .build())
+                                    .label(((CheckboxFormularItemDto) currentField).getLabel())
+                                    .fontSize(((CheckboxFormularItemDto) currentField).getFontSize())
+                                    .build()
+                            )
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
-                            .build());
+                            .build()
+                    );
                 }
             }
         }
@@ -367,8 +481,12 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
         return result;
     }
 
-    public FormularDto transformToDto(final DynamicDocument model, final Map<String, Object> replacementToken) {
-        return this.transformToDto(model, true, replacementToken);
+    public FormularDto transformToDto(final DynamicDocument model) {
+        return this.transformToDto(model, true, new HashMap<>());
+    }
+
+    public FormularDto transformToDto(final DynamicDocument model, final Map<String, Object> context) {
+        return this.transformToDto(model, true, context);
     }
 
 }

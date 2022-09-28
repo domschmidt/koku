@@ -1,8 +1,11 @@
 package de.domschmidt.koku.persistence.model;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 import de.domschmidt.koku.persistence.model.common.DomainModel;
 import de.domschmidt.koku.persistence.model.uploads.FileUpload;
 import lombok.*;
+import lombok.experimental.FieldNameConstants;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,15 +19,19 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldNameConstants
 @Table(name = "customer", schema = "koku")
 public class Customer extends DomainModel implements Serializable {
     @Id
     @GeneratedValue(generator = "koku_seq")
     @SequenceGenerator(schema = "koku", name = "koku_seq")
+    @Expose
     Long id;
-
+    @Expose
     String firstName;
+    @Expose
     String lastName;
+    @Expose
     String email;
     String address;
     String postalCode;
@@ -63,4 +70,10 @@ public class Customer extends DomainModel implements Serializable {
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     List<FileUpload> uploads;
 
+    @Override
+    public String toString() {
+        return new GsonBuilder()
+                .excludeFieldsWithoutExposeAnnotation()
+                .create().toJson(this);
+    }
 }

@@ -15,9 +15,21 @@ export class SnackBarService {
     this.snackBar.open(msg,
       'ok',
       {
-        duration: 5000,
+        duration: 4000,
         verticalPosition: position,
         politeness: "polite"
+      }
+    );
+  }
+
+  openErrorSnack(msg: string, position: 'top' | 'bottom' = 'bottom') {
+    this.snackBar.open(msg,
+      'ok',
+      {
+        duration: 4000,
+        verticalPosition: position,
+        politeness: "polite",
+        panelClass: 'warning'
       }
     );
   }

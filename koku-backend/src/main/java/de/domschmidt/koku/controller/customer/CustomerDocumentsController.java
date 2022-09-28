@@ -1,5 +1,13 @@
 package de.domschmidt.koku.controller.customer;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.*;
@@ -14,6 +22,7 @@ import de.domschmidt.koku.persistence.dao.FileUploadRepository;
 import de.domschmidt.koku.persistence.model.Customer;
 import de.domschmidt.koku.persistence.model.dynamic_documents.DynamicDocument;
 import de.domschmidt.koku.persistence.model.uploads.FileUpload;
+import de.domschmidt.koku.persistence.model.uploads.FileUploadTag;
 import de.domschmidt.koku.service.ICustomerService;
 import de.domschmidt.koku.service.impl.DocumentService;
 import de.domschmidt.koku.service.impl.StorageService;
@@ -22,7 +31,9 @@ import de.domschmidt.koku.transformer.DynamicDocumentToFormularDtoTransformer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.apache.batik.bridge.*;
+import org.apache.batik.ext.awt.RenderingHintsKeyExt;
 import org.apache.batik.util.XMLResourceDescriptor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -33,12 +44,11 @@ import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/customers/{customerId}/documents")
@@ -70,20 +80,23 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
     @GetMapping(value = "/{id}")
     public FormularDto findByIdTransformed(@PathVariable("id") Long id, @PathVariable("customerId") Long customerId) {
         final Customer customer = this.customerService.findById(customerId);
-        final DynamicDocument model = findById(id);
-        if (model == null) {
+        final DynamicDocument document = findById(id);
+        if (document == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        final Map<String, Object> replacementToken = new HashMap<>();
-        replacementToken.put("customer", customer);
+        final Map<String, Object> context = new HashMap<>();
+        context.put("customer", customer);
 
-        return this.transformer.transformToDto(model, replacementToken);
+        return this.transformer.transformToDto(document, context);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UploadDto createByOpenPdf(@RequestBody final FormularDto formularDto, @PathVariable("customerId") Long customerId) throws IOException {
+    public UploadDto createByOpenPdf(
+            @RequestBody final FormularDto formularDto,
+            @PathVariable("customerId") Long customerId
+    ) throws IOException {
         final Customer customer = this.customerService.findById(customerId);
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         // step 1: creation of a document-object
@@ -108,70 +121,68 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
 
                     if (formularItem instanceof TextFormularItemDto) {
                         final Paragraph paragraph = new Paragraph(((TextFormularItemDto) formularItem).getText());
-                        paragraph.setAlignment(getAlignment(formularItem));
+                        paragraph.setAlignment(getHorizontalAlignment(formularItem));
                         if (((TextFormularItemDto) formularItem).getFontSize() != null) {
-                            final FontSizeDto fontSize = ((TextFormularItemDto) formularItem).getFontSize();
-                            if (fontSize != null) {
-                                paragraph.getFont().setSize(fontSize.getPdfPCellFontSize());
+                            Integer fontSize = ((TextFormularItemDto) formularItem).getFontSize();
+                            if (fontSize == null) {
+                                fontSize = 12;
                             }
+                            paragraph.getFont().setSize(fontSize);
                         }
                         final PdfPCell currentCell = new PdfPCell(paragraph);
                         currentCell.setColspan(colspan);
-                        currentCell.setHorizontalAlignment(getAlignment(formularItem));
+                        currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
                         currentCell.setPadding(5);
                         currentCell.setBorderWidth(0);
                         currentCell.setUseAscender(true);
-                        currentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
                         table.addCell(currentCell);
                     } else if (formularItem instanceof SVGFormularItemDto) {
                         final Image svgImage = createImageFromSvgBase64(pdfWriter, ((SVGFormularItemDto) formularItem).getSvgContentBase64encoded());
-                        svgImage.setAlignment(getAlignment(formularItem));
+                        svgImage.setAlignment(getHorizontalAlignment(formularItem));
                         svgImage.scaleToFit(((SVGFormularItemDto) formularItem).getMaxWidthInPx(), pageSize.getHeight());
 
                         final PdfPCell currentCell = new PdfPCell(svgImage);
                         currentCell.setColspan(colspan);
-                        currentCell.setHorizontalAlignment(getAlignment(formularItem));
+                        currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
                         currentCell.setPadding(5);
                         currentCell.setBorderWidth(0);
                         currentCell.setUseAscender(true);
-                        currentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
                         table.addCell(currentCell);
                     } else if (formularItem instanceof SignatureFormularItemDto) {
-                        final String dataUriString = ((SignatureFormularItemDto) formularItem).getDataUri();
+                        final String dataUriString = StringUtils.defaultString(((SignatureFormularItemDto) formularItem).getDataUri());
                         final String base64ImageContent = dataUriString.substring(dataUriString.indexOf(",") + 1);
                         final Image image;
-                        if (dataUriString.startsWith("data:image/svg+xml;")) {
-                            // svg detected;
-                            image = createImageFromSvgBase64(pdfWriter, base64ImageContent);
+                        if (!dataUriString.trim().isEmpty()) {
+                            if (dataUriString.startsWith("data:image/svg+xml;")) {
+                                // svg detected;
+                                image = createImageFromSvgBase64(pdfWriter, base64ImageContent);
+                            } else {
+                                image = Image.getInstance(Base64.getDecoder().decode(base64ImageContent));
+                            }
                         } else {
-                            image = Image.getInstance(Base64.getDecoder().decode(base64ImageContent));
+                            // do nothing
+                            image = Image.getInstance("");
                         }
-                        image.setAlignment(getAlignment(formularItem));
-                        image.scaleToFit(300, 100);
+                        image.setAlignment(getHorizontalAlignment(formularItem));
+                        final float fieldWidth = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin()) / 12) * colspan;
+                        image.scaleToFit(fieldWidth, fieldWidth / 3);
 
                         final PdfPCell currentCell = new PdfPCell(image);
                         currentCell.setColspan(colspan);
-                        currentCell.setHorizontalAlignment(getAlignment(formularItem));
+                        currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
                         currentCell.setPadding(5);
                         currentCell.setBorderWidth(0);
                         currentCell.setUseAscender(true);
-                        currentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
                         table.addCell(currentCell);
                     } else if (formularItem instanceof CheckboxFormularItemDto) {
                         // build label
-                        final Chunk labelChunk = new Chunk(((CheckboxFormularItemDto) formularItem).getLabel());
-                        final Paragraph labelParagraph = new Paragraph(labelChunk);
-                        FontSizeDto fontSize = ((CheckboxFormularItemDto) formularItem).getFontSize();
+                        Integer fontSize = ((CheckboxFormularItemDto) formularItem).getFontSize();
                         if (fontSize == null) {
-                            fontSize = FontSizeDto.MEDIUM;
+                            fontSize = 12;
                         }
-                        labelParagraph.getFont().setSize(fontSize.getPdfPCellFontSize());
-                        final PdfPCell labelCell = new PdfPCell(labelParagraph);
-                        labelCell.setVerticalAlignment(PdfPCell.ALIGN_MIDDLE);
-                        labelCell.setUseAscender(true);
-                        labelCell.setBorderWidth(0);
-                        labelCell.setPaddingLeft(1);
-                        labelCell.setPaddingRight(1);
 
                         // build checkbox img
                         final Image checkboxImage;
@@ -181,33 +192,99 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                             checkboxImage = createImageFromSvgBase64(pdfWriter, CHECKBOX_EMPTY_BASE64_SVG);
                         }
                         final PdfPCell imageCell = new PdfPCell(checkboxImage, true);
-                        imageCell.setVerticalAlignment(PdfPCell.ALIGN_MIDDLE);
-                        labelCell.setUseAscender(true);
+                        imageCell.setVerticalAlignment(getVerticalAlignment(formularRow));
                         imageCell.setBorderWidth(0);
                         imageCell.setPaddingLeft(1);
                         imageCell.setPaddingRight(1);
 
-                        //build wrapping table (checkbox|label)
-                        final PdfPTable checkboxTable = new PdfPTable(2);
-                        checkboxTable.setHorizontalAlignment(getAlignment(formularItem));
-                        checkboxTable.setWidths(new float[] {fontSize.getPdfPCellFontSize(), labelChunk.getWidthPoint()});
-                        // sum of label text width + checkbox width + padding l&r + magic number 1
-                        checkboxTable.setTotalWidth(labelChunk.getWidthPoint() + fontSize.getPdfPCellFontSize() + 5);
+                        final PdfPTable checkboxTable = new PdfPTable(1);
+                        checkboxTable.setHorizontalAlignment(getHorizontalAlignment(formularItem));
+                        checkboxTable.setWidths(new float[] {fontSize});
+                        checkboxTable.setTotalWidth(fontSize + 5);
                         checkboxTable.setLockedWidth(true);
 
                         // add checkbox image
                         checkboxTable.addCell(imageCell);
-
-                        // add label
-                        checkboxTable.addCell(labelCell);
 
                         final PdfPCell currentCell = new PdfPCell(checkboxTable);
                         currentCell.setColspan(colspan);
                         currentCell.setPadding(5);
                         currentCell.setBorderWidth(0);
                         currentCell.setUseAscender(true);
-                        currentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        imageCell.setVerticalAlignment(getVerticalAlignment(formularRow));
                         table.addCell(currentCell);
+                    } else if (formularItem instanceof QrCodeFormularItemDto) {
+                        final String content = ((QrCodeFormularItemDto) formularItem).getValue();
+
+                        QRCodeWriter barcodeWriter = new QRCodeWriter();
+                        final BitMatrix bitMatrix;
+                        try {
+                            bitMatrix = barcodeWriter.encode(
+                                    content,
+                                    BarcodeFormat.QR_CODE,
+                                    2000,
+                                    2000,
+                                    ImmutableMap.of(
+                                            EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H
+                                    )
+                            );
+
+                            final Image image = Image.getInstance(
+                                    MatrixToImageWriter.toBufferedImage(bitMatrix),
+                                    null,
+                                    false
+                            );
+                            image.setAlignment(getHorizontalAlignment(formularItem));
+                            final float fieldWidthAndHeight = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin()) / 12) * colspan;
+                            image.scaleToFit(fieldWidthAndHeight, fieldWidthAndHeight); // ratio is always 1:1
+
+                            final PdfPCell currentCell = new PdfPCell(image);
+                            currentCell.setColspan(colspan);
+                            currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
+                            currentCell.setPadding(5);
+                            currentCell.setBorderWidth(0);
+                            currentCell.setUseAscender(true);
+                            currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
+                            table.addCell(currentCell);
+                        } catch (final WriterException we) {
+
+                        }
+                    } else if (formularItem instanceof DateFormularItemDto) {
+                        final DateFormularItemDto castedDateField = (DateFormularItemDto) formularItem;
+                        LocalDate value = castedDateField.getValue();
+                        final Paragraph paragraph;
+                        if (value != null) {
+                            if (castedDateField.getDayDiff() != null) {
+                                value = value.plusDays(castedDateField.getDayDiff());
+                            }
+                            if (castedDateField.getMonthDiff() != null) {
+                                value = value.plusMonths(castedDateField.getMonthDiff());
+                            }
+                            if (castedDateField.getYearDiff() != null) {
+                                value = value.plusYears(castedDateField.getYearDiff());
+                            }
+                            paragraph = new Paragraph(value.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+                        } else {
+                            paragraph = new Paragraph("");
+                        }
+                        paragraph.setAlignment(getHorizontalAlignment(formularItem));
+                        if (castedDateField.getFontSize() != null) {
+                            Integer fontSize = castedDateField.getFontSize();
+                            if (fontSize == null) {
+                                fontSize = 12;
+                            }
+                            paragraph.getFont().setSize(fontSize);
+                        }
+                        final PdfPCell currentCell = new PdfPCell(paragraph);
+                        currentCell.setColspan(colspan);
+                        currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
+                        currentCell.setPadding(5);
+                        currentCell.setBorderWidth(0);
+                        currentCell.setUseAscender(true);
+                        currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
+                        table.addCell(currentCell);
+                    } else {
+                        System.out.println("unknown type");
                     }
                 }
 
@@ -230,12 +307,43 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
             customer.setUploads(new ArrayList<>());
         }
         newUpload.setCustomer(customer);
+        final List<FileUploadTag> fileUploadTags = new ArrayList<>();
+        if (formularDto.getTags() != null && !formularDto.getTags().isEmpty()) {
+            int position = 0;
+            for (final Map.Entry<String, String> documentTag : formularDto.getTags().entrySet()) {
+                fileUploadTags.add(FileUploadTag.builder()
+                                .name(documentTag.getKey())
+                                .value(documentTag.getValue())
+                                .fileUpload(newUpload)
+                                .position(position ++)
+                                .build()
+                );
+            }
+        }
+        newUpload.setTags(fileUploadTags);
         this.fileUploadRepository.save(newUpload);
         return UploadDto.builder()
                 .creationDate(newUpload.getCreationDate())
                 .fileName(newUpload.getFileName())
                 .uuid(newUpload.getUuid())
                 .build();
+    }
+
+    private int getVerticalAlignment(final FormularRowDto formularRow) {
+        final int result;
+        switch (formularRow.getAlign()) {
+            case CENTER:
+                result = Paragraph.ALIGN_MIDDLE;
+                break;
+            case BOTTOM:
+                result = Paragraph.ALIGN_BOTTOM;
+                break;
+            case TOP:
+            default:
+                result = Paragraph.ALIGN_TOP;
+                break;
+        }
+        return result;
     }
 
     private int getColspan(FormularItemDto formularItem) {
@@ -252,7 +360,7 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
         return result;
     }
 
-    private int getAlignment(FormularItemDto formularItem) {
+    private int getHorizontalAlignment(FormularItemDto formularItem) {
         final int result;
         switch (formularItem.getAlign()) {
             case CENTER:
@@ -291,6 +399,7 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
 
         final PdfTemplate template = PdfTemplate.createTemplate(pdfWriter, widthAccordingToAspectRatio, heightInPx);
         final Graphics2D g2d = template.createGraphics(template.getWidth(), template.getHeight());
+        g2d.setRenderingHint(RenderingHintsKeyExt.KEY_TRANSCODING, RenderingHintsKeyExt.VALUE_TRANSCODING_PRINTING);
 
         try {
             rootGraphicsNode.paint(g2d);

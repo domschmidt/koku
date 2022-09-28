@@ -15,6 +15,7 @@ public enum DocumentTextReplacementToken {
 
     CUSTOMER_BIRTHDAY("Kunde/Geburtstag", "[[${customer?.birthday} ? ${#temporals.format(customer?.birthday, 'dd.MM.yyyy')} : '']]"),
     DOCUMENT_NAME("Dokumentenname", "[[${document.description}]]"),
+    RANDOM_UUID("Zufall UUID", "[[${randomUuid}]]"),
     DATE("Datum", "[[${#temporals.format(localDate, 'dd.MM.yyyy')}]]"),
     DATE_TIME("Datum mit Zeit", "[[${#temporals.format(localDateTime, 'dd.MM.yyyy HH:mm')}]]"),
     TIME("Zeit", "[[${#temporals.format(localTime, 'HH:mm')}]]");

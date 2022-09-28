@@ -1,5 +1,7 @@
 package de.domschmidt.koku.persistence.model.dynamic_documents;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 import de.domschmidt.koku.persistence.model.common.DomainModel;
 import lombok.*;
 
@@ -21,7 +23,9 @@ public class DynamicDocument extends DomainModel implements Serializable {
     @Id
     @GeneratedValue(generator = "koku_seq")
     @SequenceGenerator(schema = "koku", name = "koku_seq")
+    @Expose
     Long id;
+    @Expose
     String description;
     boolean deleted;
 
@@ -41,5 +45,12 @@ public class DynamicDocument extends DomainModel implements Serializable {
             }
             this.rows = rows;
         }
+    }
+
+    @Override
+    public String toString() {
+        return new GsonBuilder()
+                .excludeFieldsWithoutExposeAnnotation()
+                .create().toJson(this);
     }
 }

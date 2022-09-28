@@ -17,5 +17,6 @@ public class SVGFormularItemDto extends FormularItemDto {
     String svgContentBase64encoded;
     Integer widthPercentage;
     Integer maxWidthInPx;
+    String label;
 
 }

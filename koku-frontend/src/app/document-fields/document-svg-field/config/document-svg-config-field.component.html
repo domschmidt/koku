@@ -1,0 +1,145 @@
+<form #form="ngForm"
+      (ngSubmit)="save(form)">
+  <mat-dialog-content>
+    <div style="padding: 12px 0;">
+      <div *ngIf="svgField">
+
+        <div class="svg-wrapper"
+             [style.justify-content]="getAlignStyle(svgField.align)">
+          <div [innerHTML]="trustedSVGContent"
+               [style.max-width.px]="svgField.maxWidthInPx"
+               [style.width]="svgField.widthPercentage + '%'"
+          ></div>
+        </div>
+
+        <ngx-file-drop (onFileDrop)="dropped($event)"
+                       [multiple]="false"
+                       [accept]="acceptableMimeType"
+                       contentClassName="content-zone"
+                       dropZoneClassName="drop-zone">
+          <ng-template let-openFileSelector="openFileSelector" ngx-file-drop-content-tmp>
+            <div>Drag and Drop</div>
+            <div class="content-zone__separator">oder</div>
+            <button (click)="openFileSelector()"
+                    class="content-zone__file-select-btn"
+                    color="primary"
+                    mat-raised-button
+                    type="button">
+              Datei auswählen
+            </button>
+          </ng-template>
+        </ngx-file-drop>
+        <mat-button-toggle-group [(ngModel)]="svgField.align"
+                                 name="alignment"
+        >
+          <mat-button-toggle [value]="'LEFT'"
+                             title="Links ausrichten"
+                             aria-label="Text align left">
+            <mat-icon>format_align_left</mat-icon>
+          </mat-button-toggle>
+          <mat-button-toggle [value]="'CENTER'"
+                             title="Mittig ausrichten"
+                             aria-label="Text align center">
+            <mat-icon>format_align_center</mat-icon>
+          </mat-button-toggle>
+          <mat-button-toggle [value]="'RIGHT'"
+                             title="Rechts ausrichten"
+                             aria-label="Text align right">
+            <mat-icon>format_align_right</mat-icon>
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+
+        <mat-form-field class="svg-configuration-field">
+          <mat-label>Maximale Breite in Pixel</mat-label>
+          <input [(ngModel)]="svgField.maxWidthInPx"
+                 matInput
+                 name="maxWidthInPx"
+                 placeholder="Maximale Breite in Pixel"
+                 inputmode="numeric"
+                 step="1"
+                 type="number"
+          >
+        </mat-form-field>
+        <mat-form-field class="svg-configuration-field">
+          <mat-label>Breite in Prozent</mat-label>
+          <input [(ngModel)]="svgField.widthPercentage"
+                 matInput
+                 name="widthPercentage"
+                 placeholder="Breite in Prozent"
+                 inputmode="numeric"
+                 step="1"
+                 type="number"
+          >
+        </mat-form-field>
+        <mat-form-field class="svg-configuration-field">
+          <mat-label>Feldgröße X-Large</mat-label>
+          <mat-select [(value)]="svgField.xl">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="svg-configuration-field">
+          <mat-label>Feldgröße Large</mat-label>
+          <mat-select [(value)]="svgField.lg">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="svg-configuration-field">
+          <mat-label>Feldgröße Medium</mat-label>
+          <mat-select [(value)]="svgField.md">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="svg-configuration-field">
+          <mat-label>Feldgröße Small</mat-label>
+          <mat-select [(value)]="svgField.sm">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="svg-configuration-field">
+          <mat-label>Feldgröße X-Small</mat-label>
+          <mat-select [(value)]="svgField.xs">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions *ngIf="svgField" align="end">
+    <button mat-button mat-dialog-close>Abbrechen</button>
+    <button *ngIf="!createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid || !svgField.svgContentBase64encoded"
+            mat-button
+            type="submit">
+      Speichern
+    </button>
+    <button *ngIf="createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid || !svgField.svgContentBase64encoded"
+            mat-button
+            type="submit">
+      Erstellen
+    </button>
+  </mat-dialog-actions>
+</form>

@@ -2,13 +2,12 @@ package de.domschmidt.koku.persistence.model.uploads;
 
 import de.domschmidt.koku.persistence.model.Customer;
 import lombok.*;
+import lombok.experimental.FieldNameConstants;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -17,6 +16,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldNameConstants
 @Table(name = "file", schema = "koku")
 public class FileUpload implements Serializable {
 
@@ -28,5 +28,9 @@ public class FileUpload implements Serializable {
 
     @ManyToOne
     Customer customer;
+
+    @OneToMany(orphanRemoval = true, mappedBy = "fileUpload", cascade = CascadeType.ALL)
+    @OrderBy("position asc")
+    List<FileUploadTag> tags;
 
 }

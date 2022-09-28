@@ -35,7 +35,20 @@
               "src/styles.scss",
               "./node_modules/@fullcalendar/common/main.css",
               "./node_modules/@fullcalendar/daygrid/main.css",
-              "./node_modules/@fullcalendar/timegrid/main.css"
+              "./node_modules/@fullcalendar/timegrid/main.css",
+              "./node_modules/@fontsource/material-icons/index.css",
+              "./node_modules/@fontsource/roboto/100.css",
+              "./node_modules/@fontsource/roboto/100-italic.css",
+              "./node_modules/@fontsource/roboto/300.css",
+              "./node_modules/@fontsource/roboto/300-italic.css",
+              "./node_modules/@fontsource/roboto/400.css",
+              "./node_modules/@fontsource/roboto/400-italic.css",
+              "./node_modules/@fontsource/roboto/500.css",
+              "./node_modules/@fontsource/roboto/500-italic.css",
+              "./node_modules/@fontsource/roboto/700.css",
+              "./node_modules/@fontsource/roboto/700-italic.css",
+              "./node_modules/@fontsource/roboto/900.css",
+              "./node_modules/@fontsource/roboto/900-italic.css"
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
@@ -43,7 +56,9 @@
               "moment/locale/de",
               "css-element-queries",
               "bignumber.js",
-              "image-conversion"
+              "image-conversion",
+              "jalaali-js",
+              "deepmerge"
             ],
             "serviceWorker": true,
             "ngswConfigPath": "ngsw-config.json",
@@ -121,7 +136,20 @@
               "src/styles.scss",
               "./node_modules/@fullcalendar/common/main.css",
               "./node_modules/@fullcalendar/daygrid/main.css",
-              "./node_modules/@fullcalendar/timegrid/main.css"
+              "./node_modules/@fullcalendar/timegrid/main.css",
+              "./node_modules/@fontsource/material-icons/index.css",
+              "./node_modules/@fontsource/roboto/100.css",
+              "./node_modules/@fontsource/roboto/100-italic.css",
+              "./node_modules/@fontsource/roboto/300.css",
+              "./node_modules/@fontsource/roboto/300-italic.css",
+              "./node_modules/@fontsource/roboto/400.css",
+              "./node_modules/@fontsource/roboto/400-italic.css",
+              "./node_modules/@fontsource/roboto/500.css",
+              "./node_modules/@fontsource/roboto/500-italic.css",
+              "./node_modules/@fontsource/roboto/700.css",
+              "./node_modules/@fontsource/roboto/700-italic.css",
+              "./node_modules/@fontsource/roboto/900.css",
+              "./node_modules/@fontsource/roboto/900-italic.css"
             ],
             "scripts": []
           }

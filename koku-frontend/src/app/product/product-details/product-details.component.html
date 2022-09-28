@@ -10,9 +10,9 @@
               mat-list-item
               class="product-details-form__manufacturer"
       >
-        <circle-with-letters [letters]="product.manufacturer?.name?.trim()?.substring(0, 1)"
+        <circle-with-letters [letters]="product.manufacturer.name?.trim()?.substring(0, 1)"
         ></circle-with-letters>
-        <h3 matLine>{{product.manufacturer?.name}}</h3>
+        <h3 matLine>{{product.manufacturer.name}}</h3>
         <mat-icon matListIcon matSuffix style="order: 10;">open_in_new</mat-icon>
       </button>
       <button (click)="selectProductManufacturer()"

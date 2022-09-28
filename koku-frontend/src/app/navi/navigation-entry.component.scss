@@ -12,7 +12,6 @@
   }
 
   &--leaf {
-
   }
 
   &--node {
@@ -20,18 +19,23 @@
     pointer-events: none;
   }
 
+  &--depth-0 {
+    padding-left: env(safe-area-inset-left);
+    max-width: calc(100% - env(safe-area-inset-left));
+  }
+
   &--depth-1 {
-    padding-left: 30px;
-    max-width: calc(100% - 30px);
+    padding-left: calc(30px + env(safe-area-inset-left));
+    max-width: calc(100% - 30px - env(safe-area-inset-left));
   }
 
   &--depth-2 {
-    padding-left: 60px;
-    max-width: calc(100% - 60px);
+    padding-left: calc(60px + env(safe-area-inset-left));
+    max-width: calc(100% - 60px - env(safe-area-inset-left));
   }
 
   &--depth-3 {
-    padding-left: 90px;
-    max-width: calc(100% - 90px);
+    padding-left: calc(90px + env(safe-area-inset-left));
+    max-width: calc(100% - 90px - env(safe-area-inset-left));
   }
 }

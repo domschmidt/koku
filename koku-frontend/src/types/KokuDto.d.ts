@@ -1,8 +1,69 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.36.1070 on 2022-06-14 20:56:03.
+// Generated using typescript-generator version 2.36.1070 on 2022-09-27 20:16:52.
 
 declare namespace KokuDto {
+
+    interface DataTableColumnDto<T, S> {
+        id: string;
+        name: string;
+        type: string;
+        isKey?: boolean;
+        canSort?: boolean;
+        canFilter?: boolean;
+        defaultSortDir?: DataQueryColumnSortDirDto;
+        defaultSortIdx?: number;
+        hidden?: boolean;
+        footerSummary?: T;
+        defaultSearchValue?: T;
+        typeSpecificSettings?: S;
+    }
+
+    interface DataTableDto {
+        columns?: DataTableColumnDto<any, any>[];
+        rows?: { [index: string]: any }[];
+        tableName?: string;
+        pageSize?: number;
+        page?: number;
+        total?: number;
+        totalPages?: number;
+    }
+
+    interface DataQueryAdvancedSearchDto {
+        search?: any;
+        customOp?: DataQueryColumnOPDto;
+    }
+
+    interface DataQueryColumnSpecDto {
+        search?: any;
+        advancedSearchSpec?: DataQueryAdvancedSearchDto[];
+        selectValues?: any[];
+        sortDir?: DataQueryColumnSortDirDto;
+        sortIdx?: number;
+    }
+
+    interface DataQuerySpecDto {
+        page?: number;
+        total?: number;
+        columnSpecByColumnId?: { [index: string]: DataQueryColumnSpecDto };
+        globalSearch?: string;
+    }
+
+    interface AlphaNumericSettingsDto {
+        maxCharacterLength?: number;
+        minCharacterLength?: number;
+    }
+
+    interface NumberSettingsDto {
+        min?: number;
+        max?: number;
+        integralDigits?: number;
+        fractionalDigits?: number;
+    }
+
+    interface SelectSettingsDto {
+        userPresentableValues?: { [index: string]: string };
+    }
 
     interface AppointmentGroupDto {
         date?: string;
@@ -56,9 +117,6 @@ declare namespace KokuDto {
         "@type": "ActivityStepDto";
         id?: number;
         description?: string;
-    }
-
-    interface ActivityStepDtoBuilderImpl {
     }
 
     interface LoginAttemptResponseDto {
@@ -152,9 +210,6 @@ declare namespace KokuDto {
         value?: string;
     }
 
-    interface ChartYearMonthFilterBuilderImpl {
-    }
-
     interface SegmentedData {
         backgroundColor?: KokuColor;
         borderColor?: KokuColor;
@@ -165,9 +220,6 @@ declare namespace KokuDto {
         id?: number;
         activity?: ActivityDto;
         sellPrice?: number;
-    }
-
-    interface CustomerAppointmentActivityDtoBuilderImpl {
     }
 
     interface CustomerAppointmentDto extends ICalendarContent {
@@ -191,9 +243,6 @@ declare namespace KokuDto {
         id?: number;
         product?: ProductDto;
         sellPrice?: number;
-    }
-
-    interface CustomerAppointmentSoldProductDtoBuilderImpl {
     }
 
     interface CustomerBirthdayDto extends ICalendarContent {
@@ -281,15 +330,9 @@ declare namespace KokuDto {
         value?: number;
     }
 
-    interface NumberTableRowCellBuilderImpl {
-    }
-
     interface StringTableRowCell extends TableRowCell<string> {
         "@type": "StringTableRowCell";
         value?: string;
-    }
-
-    interface StringTableRowCellBuilderImpl {
     }
 
     interface TableColumn {
@@ -318,21 +361,30 @@ declare namespace KokuDto {
         readOnly?: boolean;
         label?: string;
         context?: string;
-        fontSize?: FontSizeDto;
+        fontSize?: number;
     }
 
-    interface CheckboxFormularItemDtoBuilderImpl {
+    interface DateFormularItemDto extends FormularItemDto {
+        "@type": "DateFormularItemDto";
+        value?: string;
+        context?: string;
+        fontSize?: number;
+        readOnly?: boolean;
+        dayDiff?: number;
+        monthDiff?: number;
+        yearDiff?: number;
     }
 
     interface FormularDto {
         id?: number;
         description?: string;
+        tags?: { [index: string]: string };
         rows?: FormularRowDto[];
     }
 
     interface FormularItemDto {
-        "@type": "CheckboxFormularItemDto" | "SVGFormularItemDto" | "SignatureFormularItemDto" | "TextFormularItemDto";
-        id?: number;
+        "@type": "CheckboxFormularItemDto" | "DateFormularItemDto" | "QrCodeFormularItemDto" | "SVGFormularItemDto" | "SignatureFormularItemDto" | "TextFormularItemDto";
+        id: number;
         fieldDefinitionTypeId?: number;
         xs?: number;
         sm?: number;
@@ -350,6 +402,12 @@ declare namespace KokuDto {
     interface FormularRowDto {
         id?: number;
         items?: FormularItemDtoUnion[];
+        align?: FormularRowAlignDto;
+    }
+
+    interface QrCodeFormularItemDto extends FormularItemDto {
+        "@type": "QrCodeFormularItemDto";
+        value?: string;
     }
 
     interface SVGFormularItemDto extends FormularItemDto {
@@ -357,9 +415,7 @@ declare namespace KokuDto {
         svgContentBase64encoded?: string;
         widthPercentage?: number;
         maxWidthInPx?: number;
-    }
-
-    interface SVGFormularItemDtoBuilderImpl {
+        label?: string;
     }
 
     interface SignatureFormularItemDto extends FormularItemDto {
@@ -367,17 +423,11 @@ declare namespace KokuDto {
         dataUri?: string;
     }
 
-    interface SignatureFormularItemDtoBuilderImpl {
-    }
-
     interface TextFormularItemDto extends FormularItemDto {
         "@type": "TextFormularItemDto";
         text?: string;
         readOnly?: boolean;
-        fontSize?: FontSizeDto;
-    }
-
-    interface TextFormularItemDtoBuilderImpl {
+        fontSize?: number;
     }
 
     interface ChartPanelDto extends PanelDto {
@@ -386,14 +436,8 @@ declare namespace KokuDto {
         filters?: ChartFilterUnion[];
     }
 
-    interface ChartPanelDtoBuilderImpl {
-    }
-
     interface GaugePanelDto extends PanelDto {
         percentage?: number;
-    }
-
-    interface GaugePanelDtoBuilderImpl {
     }
 
     interface PanelDto {
@@ -404,14 +448,8 @@ declare namespace KokuDto {
         text?: string;
     }
 
-    interface TextPanelContentBuilderImpl {
-    }
-
     interface TextPanelDto extends PanelDto {
         texts?: TextPanelContent[];
-    }
-
-    interface TextPanelDtoBuilderImpl {
     }
 
     interface ProductCategoryDto {
@@ -432,9 +470,6 @@ declare namespace KokuDto {
         categories?: ProductCategoryDto[];
         currentPrice?: number;
         priceHistory?: PriceHistoryDto[];
-    }
-
-    interface ProductDtoBuilderImpl {
     }
 
     interface ProductManufacturerDto {
@@ -501,15 +536,19 @@ declare namespace KokuDto {
         description?: string;
     }
 
+    type DataQueryColumnOPDto = "EQ" | "LT" | "LOE" | "GT" | "GOE" | "LIKE" | "SW" | "EW";
+
+    type DataQueryColumnSortDirDto = "ASC" | "DESC";
+
     type KokuColor = "PRIMARY" | "SECONDARY" | "TERTIARY" | "TRANSPARENT";
 
     type ChartTypeEnum = "line" | "bar" | "radar" | "doughnut" | "polarArea" | "bubble" | "pie" | "scatter";
 
     type DataLabelsTextAlignEnum = "start" | "center" | "end" | "left" | "right";
 
-    type FontSizeDto = "SMALL" | "MEDIUM" | "LARGE";
-
     type FormularItemAlign = "LEFT" | "CENTER" | "RIGHT";
+
+    type FormularRowAlignDto = "TOP" | "CENTER" | "BOTTOM";
 
     type ICalendarContentUnion = CustomerAppointmentDto | CustomerBirthdayDto | PrivateAppointmentDto;
 
@@ -521,6 +560,6 @@ declare namespace KokuDto {
 
     type TableRowCellUnion<T> = StringTableRowCell | NumberTableRowCell;
 
-    type FormularItemDtoUnion = SVGFormularItemDto | SignatureFormularItemDto | TextFormularItemDto | CheckboxFormularItemDto;
+    type FormularItemDtoUnion = SVGFormularItemDto | SignatureFormularItemDto | TextFormularItemDto | CheckboxFormularItemDto | QrCodeFormularItemDto | DateFormularItemDto;
 
 }

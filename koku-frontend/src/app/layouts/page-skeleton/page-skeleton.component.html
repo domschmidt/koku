@@ -20,11 +20,11 @@
       </mat-toolbar>
 
       <mat-nav-list *ngIf="navi"
-                    style="overflow: auto; padding: 0;"
-                    id="navigation__top-section">
+                    class="nav-drawer__content__list">
         <ng-container *ngFor="let currentNaviEntry of navi">
-          <navigation-entry [naviEntry]="currentNaviEntry"></navigation-entry>
-          <mat-divider></mat-divider>
+          <navigation-entry [naviEntry]="currentNaviEntry"
+                            class="nav-drawer__content__list__item"></navigation-entry>
+          <mat-divider class="nav-drawer__content__list__item-divider"></mat-divider>
         </ng-container>
 
       </mat-nav-list>

@@ -8,6 +8,8 @@ import de.domschmidt.koku.service.impl.DocumentService;
 import de.domschmidt.koku.service.searchoptions.DocumentSearchOptions;
 import de.domschmidt.koku.transformer.DynamicDocumentToFormularDtoTransformer;
 import de.domschmidt.koku.utils.DocumentCheckboxReplacementToken;
+import de.domschmidt.koku.utils.DocumentDateReplacementToken;
+import de.domschmidt.koku.utils.DocumentQrCodeReplacementToken;
 import de.domschmidt.koku.utils.DocumentTextReplacementToken;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,11 +51,34 @@ public class DocumentController extends AbstractController<DynamicDocument, Form
         }
         return result;
     }
+    @GetMapping(value = "/replacementtoken/date")
+    public List<FormularReplacementTokenDto> getAllDateReplacementTokenPresets() {
+        final List<FormularReplacementTokenDto> result = new ArrayList<>();
+        for (final DocumentDateReplacementToken currentReplacementToken : DocumentDateReplacementToken.values()) {
+            result.add(FormularReplacementTokenDto.builder()
+                    .replacementToken(currentReplacementToken.getReplacementString())
+                    .tokenName(currentReplacementToken.getTokenName())
+                    .build());
+        }
+        return result;
+    }
 
     @GetMapping(value = "/replacementtoken/checkbox")
     public List<FormularReplacementTokenDto> getAllCheckboxReplacementTokenPresets() {
         final List<FormularReplacementTokenDto> result = new ArrayList<>();
         for (final DocumentCheckboxReplacementToken currentReplacementToken : DocumentCheckboxReplacementToken.values()) {
+            result.add(FormularReplacementTokenDto.builder()
+                    .replacementToken(currentReplacementToken.getReplacementString())
+                    .tokenName(currentReplacementToken.getTokenName())
+                    .build());
+        }
+        return result;
+    }
+
+    @GetMapping(value = "/replacementtoken/qrcode")
+    public List<FormularReplacementTokenDto> getAllQrCodeReplacementTokenPresets() {
+        final List<FormularReplacementTokenDto> result = new ArrayList<>();
+        for (final DocumentQrCodeReplacementToken currentReplacementToken : DocumentQrCodeReplacementToken.values()) {
             result.add(FormularReplacementTokenDto.builder()
                     .replacementToken(currentReplacementToken.getReplacementString())
                     .tokenName(currentReplacementToken.getTokenName())

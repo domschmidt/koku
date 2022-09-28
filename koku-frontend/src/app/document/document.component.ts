@@ -3,7 +3,7 @@ import {Observable, Subject} from "rxjs";
 import {MatDialog} from "@angular/material/dialog";
 import {debounceTime, distinctUntilChanged} from "rxjs/operators";
 import {DocumentService} from "./document.service";
-import {DocumentDetailsComponent, DocumentDetailsComponentData} from "./document-details/document-details.component";
+import {DocumentDetailsComponentData, DocumentDialogComponent} from "./document-dialog.component";
 
 @Component({
   selector: 'document',
@@ -30,7 +30,7 @@ export class DocumentComponent {
     const dialogData: DocumentDetailsComponentData = {
       documentId: document.id || 0
     };
-    this.dialog.open(DocumentDetailsComponent, {
+    this.dialog.open(DocumentDialogComponent, {
       data: dialogData,
       closeOnNavigation: false,
       width: '100%',
@@ -47,7 +47,7 @@ export class DocumentComponent {
 
   addNewDocument() {
     const dialogData: DocumentDetailsComponentData = {};
-    this.dialog.open(DocumentDetailsComponent, {
+    this.dialog.open(DocumentDialogComponent, {
       data: dialogData,
       closeOnNavigation: false,
       width: '100%',

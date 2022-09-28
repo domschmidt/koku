@@ -20,7 +20,9 @@ import {MatButtonModule} from "@angular/material/button";
 import {HTTP_INTERCEPTORS, HttpClientModule} from "@angular/common/http";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatMenuModule} from "@angular/material/menu";
-import {CustomerAppointmentDetailsComponent} from './customer/customer-appointment-details/customer-appointment-details.component';
+import {
+  CustomerAppointmentDetailsComponent
+} from './customer/customer-appointment-details/customer-appointment-details.component';
 import {CustomerSelectionComponent} from './customer/customer-selection/customer-selection.component';
 import {MomentModule} from "ngx-moment";
 import 'moment/locale/de';
@@ -31,7 +33,6 @@ import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {ActivityComponent} from './activity/activity.component';
 import {CustomerInfoDialogComponent} from './customer/customer-info-dialog/customer-info-dialog.component';
 import {PortalModule} from "@angular/cdk/portal";
-import {CommonModule} from "@angular/common";
 import {CustomerAppointmentsComponent} from './customer/customer-appointments/customer-appointments.component';
 import {DragDropModule} from "@angular/cdk/drag-drop";
 import {MatToolbarModule} from "@angular/material/toolbar";
@@ -47,11 +48,9 @@ import {MatCardModule} from "@angular/material/card";
 import {GaugeModule} from "angular-gauge";
 import {CustomerUploadsComponent} from "./customer/customer-uploads/customer-uploads.component";
 import {NgxFileDropModule} from "ngx-file-drop";
-import {CustomerDocumentCaptureDialogComponent} from "./customer/customer-document-capture-dialog/customer-document-capture-dialog.component";
-import {DateFieldComponent} from "./fields/date/date-field.component";
-import {SignatureFieldComponent} from "./fields/signature/signature-field.component";
-import {TextFieldComponent} from "./fields/text/text-field.component";
-import {SvgFieldComponent} from "./fields/svg/svg-field.component";
+import {
+  CustomerDocumentCaptureDialogComponent
+} from "./customer/customer-document-capture-dialog/customer-document-capture-dialog.component";
 import {ProductInfoDialogComponent} from "./product/product-info-dialog/product-info-dialog.component";
 import {ProductComponent} from "./product/product.component";
 import {LoginComponent} from "./login/login.component";
@@ -59,8 +58,12 @@ import {LogoutComponent} from "./logout/logout.component";
 import {UnauthorizedLoginInterceptorService} from "./unauthorized-login-interceptor.service";
 import {WelcomeComponent} from "./welcome/welcome.component";
 import {MyProfileComponent} from "./user/myprofile/my-profile.component";
-import {ProductManufacturerDetailsComponent} from "./product-manufacturer/product-manufacturer-details/product-manufacturer-details.component";
-import {ProductManufacturerSelectionComponent} from "./product-manufacturer/product-manufacturer-selection/product-manufacturer-selection.component";
+import {
+  ProductManufacturerDetailsComponent
+} from "./product-manufacturer/product-manufacturer-details/product-manufacturer-details.component";
+import {
+  ProductManufacturerSelectionComponent
+} from "./product-manufacturer/product-manufacturer-selection/product-manufacturer-selection.component";
 import {ProductManufacturerComponent} from "./product-manufacturer/product-manufacturer.component";
 import {AlertDialogComponent} from "./alert-dialog/alert-dialog.component";
 import {ActivityStepDetailsComponent} from "./activity-step/activity-step-details/activity-step-details.component";
@@ -72,8 +75,12 @@ import {UserComponent} from "./user/user.component";
 import {UserInfoComponent} from "./user/user-info/user-info.component";
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatCheckboxModule} from "@angular/material/checkbox";
-import {PrivateAppointmentDetailsComponent} from "./user/private-appointment-details/private-appointment-details.component";
-import {CustomerAppointmentInlineInfoComponent} from "./customer/customer-appointment-inline-info/customer-appointment-inline-info.component";
+import {
+  PrivateAppointmentDetailsComponent
+} from "./user/private-appointment-details/private-appointment-details.component";
+import {
+  CustomerAppointmentInlineInfoComponent
+} from "./customer/customer-appointment-inline-info/customer-appointment-inline-info.component";
 import {NavigationEntryComponent} from "./navi/navigation-entry.component";
 import {TabLayoutComponent} from "./layouts/tab-layout/tab-layout.component";
 import {PanelLayoutComponent} from "./layouts/panel-layout/panel-layout.component";
@@ -85,29 +92,41 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatDatepickerModule} from "@angular/material/datepicker";
-import {ChartYearMonthFieldComponent} from "./layouts/panel-layout/panels/chart/year-month-field/chart-year-month-field.component";
+import {
+  ChartYearMonthFieldComponent
+} from "./layouts/panel-layout/panels/chart/year-month-field/chart-year-month-field.component";
 import {DateAdapter, MAT_DATE_LOCALE} from "@angular/material/core";
 import {MAT_MOMENT_DATE_ADAPTER_OPTIONS, MomentDateAdapter} from "@angular/material-moment-adapter";
 import {GaugePanelComponent} from "./layouts/panel-layout/panels/gauge/gauge-panel.component";
 import {TextPanelComponent} from "./layouts/panel-layout/panels/texts/text-panel.component";
 import {MatSelectModule} from "@angular/material/select";
 import {DocumentComponent} from "./document/document.component";
-import {DocumentDetailsComponent} from "./document/document-details/document-details.component";
-import {DocumentTextFieldComponent} from "./document/document-details/document-text-field/document-text-field.component";
-import {DocumentSignatureFieldComponent} from "./document/document-details/document-signature-field/document-signature-field.component";
-import {DocumentSvgFieldComponent} from "./document/document-details/document-svg-field/document-svg-field.component";
+import {
+  DocumentTextConfigFieldComponent
+} from "./document-fields/document-text-field/config/document-text-config-field.component";
+import {
+  DocumentSignatureConfigFieldComponent
+} from "./document-fields/document-signature-field/config/document-signature-config-field.component";
+import {
+  DocumentSvgConfigFieldComponent
+} from "./document-fields/document-svg-field/config/document-svg-config-field.component";
 import {CustomerSalesComponent} from "./customer/customer-sales/customer-sales.component";
 import {UserSelectionComponent} from "./user/user-selection/user-selection.component";
 import {UserAvatarComponent} from "./user/user-avatar/user-avatar.component";
 import {CircleWithLettersComponent} from "./circle-with-letters/circle-with-letters.component";
 import {Chart, registerables} from 'chart.js';
-import {CustomerAppointmentSoldProductInfoDialogComponent} from "./customer/customer-appointment-sold-product-info-dialog/customer-appointment-sold-product-info-dialog.component";
+import {
+  CustomerAppointmentSoldProductInfoDialogComponent
+} from "./customer/customer-appointment-sold-product-info-dialog/customer-appointment-sold-product-info-dialog.component";
 import {PromotionComponent} from "./promotions/promotion.component";
 import {PromotionDetailsComponent} from "./promotions/promotion-details/promotion-details.component";
 import {PromotionSelectionComponent} from "./promotions/promotion-selection/promotion-selection.component";
-import {CustomerAppointmentActivityInfoDialogComponent} from "./customer/customer-appointment-activity-info-dialog/customer-appointment-activity-info-dialog.component";
-import {DocumentCheckboxFieldComponent} from "./document/document-details/document-checkbox-field/document-checkbox-field.component";
-import {CheckboxFieldComponent} from "./fields/checkbox/checkbox-field.component";
+import {
+  CustomerAppointmentActivityInfoDialogComponent
+} from "./customer/customer-appointment-activity-info-dialog/customer-appointment-activity-info-dialog.component";
+import {
+  DocumentCheckboxConfigFieldComponent
+} from "./document-fields/document-checkbox-field/config/document-checkbox-config-field.component";
 import {ServiceWorkerModule} from '@angular/service-worker';
 import {environment} from '../environments/environment';
 import {PageSkeletonComponent} from "./layouts/page-skeleton/page-skeleton.component";
@@ -119,6 +138,37 @@ import {TableDiagramPanelComponent} from "./dashboard/table/table-diagram-panel.
 import {MatTableModule} from "@angular/material/table";
 import {CalendarViewToggleComponent} from "./calendar-view-toggle/calendar-view-toggle.component";
 import {CalendarViewSettingsService} from "./calendar-view-toggle/calendar-view-settings.service";
+import {
+  DocumentQrcodeConfigFieldComponent
+} from "./document-fields/document-qrcode-field/config/document-qrcode-config-field.component";
+import {
+  DocumentDateConfigFieldComponent
+} from "./document-fields/document-date-field/config/document-date-config-field.component";
+import {
+  DocumentCheckboxFieldComponent
+} from "./document-fields/document-checkbox-field/document-checkbox-field.component";
+import {DocumentDateFieldComponent} from "./document-fields/document-date-field/document-date-field.component";
+import {DocumentQrcodeFieldComponent} from "./document-fields/document-qrcode-field/document-qrcode-field.component";
+import {
+  DocumentSignatureFieldComponent
+} from "./document-fields/document-signature-field/document-signature-field.component";
+import {DocumentTextFieldComponent} from "./document-fields/document-text-field/document-text-field.component";
+import {DocumentSvgFieldComponent} from "./document-fields/document-svg-field/document-svg-field.component";
+import {DocumentModule} from "./document-designer-module/document.module";
+import {DOCUMENT_CONFIG} from "./document-designer-module/document-field-config.injector";
+import {DocumentDialogComponent} from "./document/document-dialog.component";
+import {DataTableModule} from "./data-table-module/data-table.module";
+import {CustomerDocumentsComponent} from "./customer-documents/customer-documents.component";
+import {
+  AlphaNumericColumnFilterComponent
+} from "./data-table/alpha-numeric-columns/alpha-numeric-column-filter.component";
+import {DATA_TABLE_CONFIG} from "./data-table-module/data-table-config.injector";
+import {AlphaNumericColumnComponent} from "./data-table/alpha-numeric-columns/alpha-numeric-column.component";
+import {BooleanColumnComponent} from "./data-table/boolean-columns/boolean-column.component";
+import {BooleanColumnFilterComponent} from "./data-table/boolean-columns/boolean-column-filter.component";
+import {DateTimeColumnComponent} from "./data-table/date-time-columns/date-time-column.component";
+import {DateTimeColumnFilterComponent} from "./data-table/date-time-columns/date-time-column-filter.component";
+import {QRCodeCaptureDialogComponent} from "./qr-code-capture/qr-code-capture-dialog.component";
 
 FullCalendarModule.registerPlugins([ // register FullCalendar plugins
   dayGridPlugin,
@@ -162,11 +212,7 @@ Chart.register(...registerables);
     CustomerAppointmentInlineInfoComponent,
     CustomerAppointmentsComponent,
     CustomerUploadsComponent,
-    DateFieldComponent,
-    SignatureFieldComponent,
     CustomerCreateDialogComponent,
-    TextFieldComponent,
-    SvgFieldComponent,
     NavigationEntryComponent,
     TabLayoutComponent,
     PanelLayoutComponent,
@@ -178,10 +224,9 @@ Chart.register(...registerables);
     TextPanelComponent,
     GaugePanelComponent,
     DocumentComponent,
-    DocumentDetailsComponent,
-    DocumentSvgFieldComponent,
-    DocumentTextFieldComponent,
-    DocumentSignatureFieldComponent,
+    DocumentSvgConfigFieldComponent,
+    DocumentTextConfigFieldComponent,
+    DocumentSignatureConfigFieldComponent,
     CustomerSalesComponent,
     UserSelectionComponent,
     UserAvatarComponent,
@@ -190,20 +235,37 @@ Chart.register(...registerables);
     PromotionDetailsComponent,
     PromotionSelectionComponent,
     CustomerAppointmentActivityInfoDialogComponent,
-    DocumentCheckboxFieldComponent,
-    CheckboxFieldComponent,
+    DocumentCheckboxConfigFieldComponent,
     PageSkeletonComponent,
     CardDavComponent,
     DashboardComponent,
     DashboardDiagramPanelComponent,
     DashboardDeferredPanelComponent,
     TableDiagramPanelComponent,
-    CalendarViewToggleComponent
+    CalendarViewToggleComponent,
+    DocumentQrcodeConfigFieldComponent,
+    DocumentDateConfigFieldComponent,
+    DocumentCheckboxFieldComponent,
+    DocumentDateFieldComponent,
+    DocumentQrcodeFieldComponent,
+    DocumentSignatureFieldComponent,
+    DocumentTextFieldComponent,
+    DocumentSvgFieldComponent,
+    DocumentDialogComponent,
+    CustomerDocumentsComponent,
+    AlphaNumericColumnFilterComponent,
+    AlphaNumericColumnComponent,
+    BooleanColumnComponent,
+    BooleanColumnFilterComponent,
+    DateTimeColumnComponent,
+    DateTimeColumnFilterComponent,
+    QRCodeCaptureDialogComponent
   ],
   imports: [
+    DocumentModule,
+    DataTableModule,
     GaugeModule.forRoot(),
     FlexLayoutModule,
-    CommonModule,
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
@@ -258,6 +320,63 @@ Chart.register(...registerables);
       useClass: MomentDateAdapter,
       deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS]
     },
+    {
+      provide: DATA_TABLE_CONFIG,
+      useValue: {
+        columnTypes: {
+          'AlphaNumeric': {
+            cellComponent: AlphaNumericColumnComponent,
+            filterComponent: AlphaNumericColumnFilterComponent
+          },
+          'Boolean': {
+            cellComponent: BooleanColumnComponent,
+            filterComponent: BooleanColumnFilterComponent
+          },
+          'DateTime': {
+            cellComponent: DateTimeColumnComponent,
+            filterComponent: DateTimeColumnFilterComponent
+          }
+        }
+      }
+    },
+    {
+      provide: DOCUMENT_CONFIG,
+      useValue: {
+        fields: {
+          'CheckboxFormularItemDto': {
+            configComponent: DocumentCheckboxConfigFieldComponent,
+            renderComponent: DocumentCheckboxFieldComponent,
+            name: 'Checkbox'
+          },
+          'DateFormularItemDto': {
+            configComponent: DocumentDateConfigFieldComponent,
+            renderComponent: DocumentDateFieldComponent,
+            name: 'Datum'
+          },
+          'QrCodeFormularItemDto': {
+            configComponent: DocumentQrcodeConfigFieldComponent,
+            renderComponent: DocumentQrcodeFieldComponent,
+            name: 'QRCode'
+          },
+          'SignatureFormularItemDto': {
+            configComponent: DocumentSignatureConfigFieldComponent,
+            renderComponent: DocumentSignatureFieldComponent,
+            name: 'Unterschrift'
+          },
+          'SVGFormularItemDto': {
+            configComponent: DocumentSvgConfigFieldComponent,
+            renderComponent: DocumentSvgFieldComponent,
+            name: 'Vektorgrafik'
+          },
+          'TextFormularItemDto': {
+            configComponent: DocumentTextConfigFieldComponent,
+            renderComponent: DocumentTextFieldComponent,
+            name: 'Text'
+          }
+        },
+        gridSize: 12
+      },
+    }
   ],
   bootstrap: [AppComponent]
 })

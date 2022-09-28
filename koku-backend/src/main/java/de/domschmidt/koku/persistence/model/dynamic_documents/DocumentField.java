@@ -57,6 +57,10 @@ public class DocumentField extends DomainModel implements Serializable {
             this.fieldDefinitionType = new TextFieldDefinitionType((TextFieldDefinitionType) fieldDefintionTypeToBeCopied);
         } else if (fieldDefintionTypeToBeCopied instanceof CheckboxFieldDefinitionType) {
             this.fieldDefinitionType = new CheckboxFieldDefinitionType((CheckboxFieldDefinitionType) fieldDefintionTypeToBeCopied);
+        } else if (fieldDefintionTypeToBeCopied instanceof QRCodeFieldDefinitionType) {
+            this.fieldDefinitionType = new QRCodeFieldDefinitionType((QRCodeFieldDefinitionType) fieldDefintionTypeToBeCopied);
+        } else if (fieldDefintionTypeToBeCopied instanceof DateFieldDefinitionType) {
+            this.fieldDefinitionType = new DateFieldDefinitionType((DateFieldDefinitionType) fieldDefintionTypeToBeCopied);
         }
     }
 }
