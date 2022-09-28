@@ -44,6 +44,8 @@ import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -219,11 +221,21 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                         QRCodeWriter barcodeWriter = new QRCodeWriter();
                         final BitMatrix bitMatrix;
                         try {
+                            BigDecimal maxWidth = (BigDecimal.valueOf(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin()).divide(new BigDecimal(12), RoundingMode.DOWN)).multiply(new BigDecimal(colspan));
+                            if (castedField.getWidthPercentage() != null) {
+                                maxWidth = maxWidth.multiply(new BigDecimal(castedField.getWidthPercentage())).divide(new BigDecimal(100), RoundingMode.DOWN);
+                            }
+                            final BigDecimal calculatedWidthAndHeight;
+                            if (castedField.getMaxWidthInPx() != null && maxWidth.compareTo(new BigDecimal(castedField.getMaxWidthInPx())) > 0) {
+                                calculatedWidthAndHeight = new BigDecimal(castedField.getMaxWidthInPx());
+                            } else {
+                                calculatedWidthAndHeight = maxWidth;
+                            }
                             bitMatrix = barcodeWriter.encode(
                                     content,
                                     BarcodeFormat.QR_CODE,
-                                    2000,
-                                    2000,
+                                    calculatedWidthAndHeight.intValue(),
+                                    calculatedWidthAndHeight.intValue(),
                                     ImmutableMap.of(
                                             EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H
                                     )
@@ -235,17 +247,7 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                                     false
                             );
                             image.setAlignment(getHorizontalAlignment(formularItem));
-                            float maxWidth = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin()) / 12) * colspan;
-                            if (castedField.getWidthPercentage() != null) {
-                                maxWidth = maxWidth * castedField.getWidthPercentage() / 100;
-                            }
-                            final float calculatedWidthAndHeight;
-                            if (castedField.getMaxWidthInPx() != null && castedField.getMaxWidthInPx() < maxWidth) {
-                                calculatedWidthAndHeight = castedField.getMaxWidthInPx();
-                            } else {
-                                calculatedWidthAndHeight = maxWidth;
-                            }
-                            image.scaleToFit(calculatedWidthAndHeight, calculatedWidthAndHeight);
+                            image.scaleToFit(calculatedWidthAndHeight.intValue(), calculatedWidthAndHeight.intValue());
                             final PdfPCell currentCell = new PdfPCell(image);
                             currentCell.setColspan(colspan);
                             currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
@@ -255,10 +257,9 @@ public class CustomerDocumentsController extends AbstractController<DynamicDocum
                             currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
                             table.addCell(currentCell);
                         } catch (final WriterException we) {
-
+                            log.error("Unexpected Exception", we);
                         }
-                    } else if (formularItem instanceof DateFormularItemDto) {
-                        final DateFormularItemDto castedDateField = (DateFormularItemDto) formularItem;
+                    } else if (formularItem instanceof final DateFormularItemDto castedDateField) {
                         LocalDate value = castedDateField.getValue();
                         final Paragraph paragraph;
                         if (value != null) {
