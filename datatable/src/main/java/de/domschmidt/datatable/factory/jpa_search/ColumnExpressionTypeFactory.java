@@ -24,6 +24,7 @@ public class ColumnExpressionTypeFactory {
         newTypeMap.put(UUID.class, new UUIDPathExprBuilder());
         newTypeMap.put(Integer.class, new IntegerPathExprBuilder());
         newTypeMap.put(Long.class, new LongPathExprBuilder());
+        newTypeMap.put(Double.class, new DoublePathExprBuilder());
         newTypeMap.put(BigDecimal.class, new BigDecimalPathExprBuilder());
         newTypeMap.put(Enum.class, new EnumPathExprBuilder());
         newTypeMap.put(LocalDate.class, new LocalDatePathExprBuilder());

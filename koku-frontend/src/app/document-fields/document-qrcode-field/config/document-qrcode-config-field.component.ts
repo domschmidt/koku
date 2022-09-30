@@ -16,20 +16,23 @@ export class DocumentQrcodeConfigFieldComponent {
   createMode: boolean;
   replacementTokens: KokuDto.FormularReplacementTokenDto[] = [];
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: KokuDto.QrCodeFormularItemDto,
+  constructor(@Inject(MAT_DIALOG_DATA) public data: {
+                field?: KokuDto.QrCodeFormularItemDto
+                document: KokuDto.FormularDto
+              },
               public dialogRef: MatDialogRef<DocumentQrcodeConfigFieldComponent>,
               public dialog: MatDialog,
               public documentService: DocumentService) {
-    this.createMode = data === null;
-    if (this.createMode) {
+    this.createMode = data.field === undefined;
+    if (data.field === undefined) {
       this.qrCodeField = {
         id: 0,
         ['@type']: 'QrCodeFormularItemDto'
       };
     } else {
-      this.qrCodeField = {...data};
+      this.qrCodeField = {...data.field};
     }
-    this.documentService.getDocumentQrcodeReplacementToken().subscribe((tokens) => {
+    this.documentService.getDocumentQrcodeReplacementToken(data.document.context.value).subscribe((tokens) => {
       this.replacementTokens = tokens;
     });
   }

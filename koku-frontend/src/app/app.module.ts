@@ -158,7 +158,7 @@ import {DocumentModule} from "./document-designer-module/document.module";
 import {DOCUMENT_CONFIG} from "./document-designer-module/document-field-config.injector";
 import {DocumentDialogComponent} from "./document/document-dialog.component";
 import {DataTableModule} from "./data-table-module/data-table.module";
-import {CustomerDocumentsComponent} from "./customer-documents/customer-documents.component";
+import {FilesOverviewComponent} from "./files-overview/files-overview.component";
 import {
   AlphaNumericColumnFilterComponent
 } from "./data-table/alpha-numeric-columns/alpha-numeric-column-filter.component";
@@ -169,6 +169,14 @@ import {BooleanColumnFilterComponent} from "./data-table/boolean-columns/boolean
 import {DateTimeColumnComponent} from "./data-table/date-time-columns/date-time-column.component";
 import {DateTimeColumnFilterComponent} from "./data-table/date-time-columns/date-time-column-filter.component";
 import {QRCodeCaptureDialogComponent} from "./qr-code-capture/qr-code-capture-dialog.component";
+import {DocumentContextSelectionDialogComponent} from "./document/document-context-selection-dialog.component";
+import {FileUploadDialogComponent} from "./files-overview/file-upload-dialog.component";
+import {FileSizeColumnComponent} from "./data-table/file-size-columns/file-size-column.component";
+import {FileSizeColumnFilterComponent} from "./data-table/file-size-columns/file-size-column-filter.component";
+import {DocumentCaptureDialogComponent} from "./document/document-capture-dialog.component";
+import {NgxMaskModule} from 'ngx-mask'
+import {SelectColumnComponent} from "./data-table/select-columns/select-column.component";
+import {SelectColumnFilterComponent} from "./data-table/select-columns/select-column-filter.component";
 
 FullCalendarModule.registerPlugins([ // register FullCalendar plugins
   dayGridPlugin,
@@ -252,14 +260,21 @@ Chart.register(...registerables);
     DocumentTextFieldComponent,
     DocumentSvgFieldComponent,
     DocumentDialogComponent,
-    CustomerDocumentsComponent,
+    FilesOverviewComponent,
     AlphaNumericColumnFilterComponent,
     AlphaNumericColumnComponent,
     BooleanColumnComponent,
     BooleanColumnFilterComponent,
     DateTimeColumnComponent,
     DateTimeColumnFilterComponent,
-    QRCodeCaptureDialogComponent
+    QRCodeCaptureDialogComponent,
+    DocumentContextSelectionDialogComponent,
+    FileUploadDialogComponent,
+    FileSizeColumnComponent,
+    FileSizeColumnFilterComponent,
+    DocumentCaptureDialogComponent,
+    SelectColumnComponent,
+    SelectColumnFilterComponent
   ],
   imports: [
     DocumentModule,
@@ -305,7 +320,8 @@ Chart.register(...registerables);
       enabled: environment.production,
       registrationStrategy: 'registerImmediately'
     }),
-    MatTableModule
+    MatTableModule,
+    NgxMaskModule.forRoot(),
   ],
   providers: [
     NaviService,
@@ -330,11 +346,21 @@ Chart.register(...registerables);
           },
           'Boolean': {
             cellComponent: BooleanColumnComponent,
-            filterComponent: BooleanColumnFilterComponent
+            filterComponent: BooleanColumnFilterComponent,
+            disableAdvancedFiltering: true
           },
           'DateTime': {
             cellComponent: DateTimeColumnComponent,
             filterComponent: DateTimeColumnFilterComponent
+          },
+          'FileSize': {
+            cellComponent: FileSizeColumnComponent,
+            filterComponent: FileSizeColumnFilterComponent
+          },
+          'Select': {
+            cellComponent: SelectColumnComponent,
+            filterComponent: SelectColumnFilterComponent,
+            disableAdvancedFiltering: true
           }
         }
       }

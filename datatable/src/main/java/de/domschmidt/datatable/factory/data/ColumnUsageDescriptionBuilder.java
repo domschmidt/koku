@@ -18,6 +18,7 @@ public class ColumnUsageDescriptionBuilder<T> {
     private T summary;
     private Boolean hidden;
     private Set<T> possibleSelectValues;
+    private String customDtoType;
 
     public ColumnUsageDescriptionBuilder(
             final String id,
@@ -35,6 +36,13 @@ public class ColumnUsageDescriptionBuilder<T> {
     ) {
         this.defaultSortDir = defaultSortDir;
         this.defaultSortIdx = defaultSortIdx;
+        return this;
+    }
+
+    public ColumnUsageDescriptionBuilder<T> customDtoType(
+            final String customDtoType
+    ) {
+        this.customDtoType = customDtoType;
         return this;
     }
 

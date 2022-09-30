@@ -13,6 +13,7 @@ declare namespace DataTableDto {
     footerSummary?: T;
     defaultSearchValue?: T;
     typeSpecificSettings?: S;
+    possibleSelectValues: T[];
   }
 
   interface DataTableDto {
@@ -42,7 +43,7 @@ declare namespace DataTableDto {
 
   interface DataQueryAdvancedSearchDto {
     search?: any;
-    customOp?: string;
+    customOp?: DataQueryColumnOPDto;
   }
 
   type DataQueryColumnSortDirDto = "ASC" | "DESC";

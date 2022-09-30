@@ -7,6 +7,13 @@
   >
     <mat-icon>qr_code</mat-icon>
   </button>
+  <button (click)="$event.stopPropagation(); createFile()"
+          color="primary"
+          class="table-action"
+          mat-mini-fab
+          type="button">
+    <mat-icon svgIcon="file_document_edit_outline" class="custom-svg-icon"></mat-icon>
+  </button>
 </ng-template>
 
 <ng-template #tableRowActionsContainer let-element>
@@ -30,7 +37,7 @@
 </ng-template>
 
 <data-table
-  [endpoint]="'/api/customers/documents/table'"
+  [endpoint]="'/api/files/table'"
   [tableRowActionsContainer]="tableRowActionsContainer"
   [tableActionsContainer]="tableActionsContainer"
   [reloadSubject]="reloadTableSubject"

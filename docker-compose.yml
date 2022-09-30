@@ -2,7 +2,7 @@ version: '2'
 
 services:
   gateway:
-    container_name: koku-gatway
+    container_name: koku-gateway
     build:
       context: koku-gateway/
       dockerfile: Dockerfile
@@ -52,13 +52,13 @@ services:
       - db
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/koku
-      - SPRING_DATASOURCE_USERNAME=koku
-      - SPRING_DATASOURCE_PASSWORD=<DB_PW>
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=koku
       - SPRING_JPA_HIBERNATE_DDL_AUTO=none
       - UPLOADS_DIR=/data/uploads
-      - NEXTCLOUD_USER=<NEXTCLOUD_USER>
-      - NEXTCLOUD_PASSWORD=<NEXTCLOUD_PW>
-      - NEXTCLOUD_ENDPOINT=https://<NEXTCLOUD_HOST>/nextcloud
+      - NEXTCLOUD_USER=koku
+      - NEXTCLOUD_PASSWORD=hC>q*VJB,B99Aca@
+      - NEXTCLOUD_ENDPOINT=https://localhost:80/nextcloud
       # - SECURITY_JWT_SECRET=<JWT_SECRET_HS512> use your own jwt secret
     volumes:
       - ./uploads:/data/uploads

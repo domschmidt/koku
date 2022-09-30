@@ -7,16 +7,14 @@ import {DataTableFilter} from "../../data-table-module/filter.interface";
 @Component({
   selector: 'string-filter',
   template: `
-    <mat-form-field class="string-filter"
-                    floatLabel="always"
-    >
+    <mat-form-field class="string-filter">
       <input [(ngModel)]="columnQuery.search"
-             (blur)="publishSimpleSpecChanges(columnQuery.search)"
-             [readonly]="columnQuery.advancedSearchSpec !== undefined && columnQuery.advancedSearchSpec.length > 0"
+             (blur)="publishSimpleSpecChanges()"
+             [disabled]="columnQuery.advancedSearchSpec !== undefined && columnQuery.advancedSearchSpec.length > 0"
              [placeholder]="columnQuery.advancedSearchSpec !== undefined && columnQuery.advancedSearchSpec.length > 0 ? buildSearchSummary(columnQuery.advancedSearchSpec) : ''"
              matInput
       >
-      <button (click)="$event.stopPropagation(); publishSimpleSpecChanges('')"
+      <button (click)="$event.stopPropagation(); columnQuery.search = undefined; publishSimpleSpecChanges()"
               [disabled]="!columnQuery.search"
               mat-icon-button
               matSuffix
@@ -34,6 +32,9 @@ import {DataTableFilter} from "../../data-table-module/filter.interface";
     }`,
     `::ng-deep .mat-form-field-infix {
       width: auto;
+    }`,
+    `.string-filter {
+      min-width: 60px;
     }`
   ],
 })
@@ -48,22 +49,10 @@ export class AlphaNumericColumnFilterComponent implements DataTableFilter {
   ) {
   }
 
-  publishSimpleSpecChanges($event: string) {
-    let valueToBePublished: string | null;
-    if ($event) {
-      valueToBePublished = $event;
-    } else {
-      valueToBePublished = null;
-    }
-    this.columnQuery.search = valueToBePublished;
+  publishSimpleSpecChanges() {
     if (this.columnQuery.advancedSearchSpec) {
       this.columnQuery.advancedSearchSpec.splice(0, this.columnQuery.advancedSearchSpec.length);
     }
-    this.filterChanged.emit();
-  }
-
-  publishAdvancedChanges() {
-    delete this.columnQuery.search;
     this.filterChanged.emit();
   }
 

@@ -1,9 +1,13 @@
 import {Component, Inject} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {NgForm} from "@angular/forms";
-import {MatSnackBar} from "@angular/material/snack-bar";
 import {DocumentService} from "./document.service";
 import {AlertDialogButtonConfig, AlertDialogComponent, AlertDialogData} from "../alert-dialog/alert-dialog.component";
+import {
+  DocumentContextSelectionDialogComponent,
+  DocumentContextSelectionDialogComponentResponseData
+} from "./document-context-selection-dialog.component";
+import {SnackBarService} from "../snackbar/snack-bar.service";
 
 export interface DocumentDetailsComponentData {
   documentId?: number;
@@ -27,11 +31,13 @@ export class DocumentDialogComponent {
   createMode: boolean;
   private nextFieldId: number = 0;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: DocumentDetailsComponentData,
-              public dialogRef: MatDialogRef<DocumentDialogComponent>,
-              public dialog: MatDialog,
-              public matSnack: MatSnackBar,
-              public documentService: DocumentService) {
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: DocumentDetailsComponentData,
+    public dialogRef: MatDialogRef<DocumentDialogComponent>,
+    public dialog: MatDialog,
+    public snackBarService: SnackBarService,
+    public documentService: DocumentService
+  ) {
     this.createMode = data.documentId === undefined;
     if (data.documentId) {
       this.documentService.getDocument(data.documentId).subscribe((document) => {
@@ -48,10 +54,19 @@ export class DocumentDialogComponent {
         this.loading = false;
       });
     } else {
-      this.document = {
-        description: this.data.documentDescription
-      };
-      this.loading = false;
+      const contextSelectionDialogRef = this.dialog.open<DocumentContextSelectionDialogComponent, void, DocumentContextSelectionDialogComponentResponseData>(DocumentContextSelectionDialogComponent, {});
+      contextSelectionDialogRef.afterClosed().subscribe((result) => {
+        if (result && result.context) {
+          this.document = {
+            description: this.data.documentDescription || '',
+            context: result.context
+          };
+          this.loading = false;
+        } else {
+          this.snackBarService.openErrorSnack('Die Dokumentenerstellung wurde abgebrochen.');
+          this.dialogRef.close();
+        }
+      });
     }
   }
 
@@ -123,9 +138,7 @@ export class DocumentDialogComponent {
       };
       this.dialogRef.close(dialogResult);
       this.saving = false;
-      this.matSnack.open(`Dokument wurde kopiert. Neuer Name: ${result.description}`, 'ok', {
-        duration: 5000
-      });
+      this.snackBarService.openCommonSnack(`Dokument wurde kopiert. Neuer Name: ${result.description}`);
     }, () => {
       this.saving = false;
     });

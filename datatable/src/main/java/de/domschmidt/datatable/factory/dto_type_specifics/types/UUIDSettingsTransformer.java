@@ -12,7 +12,7 @@ public class UUIDSettingsTransformer implements ITypeSpecificSettingsTransformer
     }
 
     @Override
-    public String getDtoType(Path<?> qDslPath) {
+    public String getDtoType(final Class<?> expressionType) {
         return "AlphaNumeric";
     }
 

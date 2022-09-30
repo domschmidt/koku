@@ -24,7 +24,7 @@ import {PageSkeletonComponent} from "./layouts/page-skeleton/page-skeleton.compo
 import {CardDavComponent} from "./carddav/card-dav.component";
 import {DashboardComponent} from "./dashboard/dashboard.component";
 import {CalendarViewToggleComponent} from "./calendar-view-toggle/calendar-view-toggle.component";
-import {CustomerDocumentsComponent} from "./customer-documents/customer-documents.component";
+import {FilesOverviewComponent} from "./files-overview/files-overview.component";
 
 const routes: Routes = [
   {
@@ -71,11 +71,11 @@ const routes: Routes = [
         ]
       },
       {
-        path: 'customerdocuments',
+        path: 'files',
         data: {
-          name: 'Kundendokumente'
+          name: 'Dateiübersicht'
         },
-        component: CustomerDocumentsComponent
+        component: FilesOverviewComponent
       },
       {
         path: 'manage',

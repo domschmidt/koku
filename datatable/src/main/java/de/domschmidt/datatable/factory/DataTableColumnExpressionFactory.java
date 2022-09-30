@@ -77,7 +77,7 @@ public class DataTableColumnExpressionFactory {
                             if (advancedSearchSpecExpr == null) {
                                 advancedSearchSpecExpr = columnExpression;
                             } else {
-                                advancedSearchSpecExpr = advancedSearchSpecExpr.and(columnExpression);
+                                advancedSearchSpecExpr = advancedSearchSpecExpr.or(columnExpression);
                             }
                         } else {
                             throw new DataTableQueryException("Invalid search query");

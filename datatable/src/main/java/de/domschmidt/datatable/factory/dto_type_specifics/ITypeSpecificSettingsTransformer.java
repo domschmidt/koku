@@ -6,8 +6,8 @@ public interface ITypeSpecificSettingsTransformer<S> {
 
     S transformTypeSpecificSettingsByPath(Path<?> qDslPath);
 
-    default String getDtoType(final Path<?> qDslPath) {
-        return qDslPath.getType().getSimpleName();
+    default String getDtoType(final Class<?> expressionType) {
+        return expressionType.getSimpleName();
     }
 
 }

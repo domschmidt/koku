@@ -93,7 +93,10 @@ export class DocumentDesignerComponent implements OnInit {
     const componentType = this.documentConfig.fields[formField['@type']].configComponent;
     if (componentType !== undefined) {
       const creationDialog = this.dialog.open<typeof componentType>(componentType, {
-        data: formField,
+        data: {
+          field: formField,
+          document: {...this.document}
+        },
         closeOnNavigation: false,
         width: '100%',
         maxWidth: 500,
@@ -114,6 +117,9 @@ export class DocumentDesignerComponent implements OnInit {
     if (componentType !== undefined) {
       const fieldCreationDialog = this.dialog.open<typeof componentType>(componentType, {
         closeOnNavigation: false,
+        data: {
+          document: {...this.document}
+        },
         width: '100%',
         maxWidth: 500,
         position: {

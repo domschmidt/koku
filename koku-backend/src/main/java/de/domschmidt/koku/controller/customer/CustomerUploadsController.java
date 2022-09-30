@@ -8,23 +8,17 @@ import de.domschmidt.koku.persistence.model.uploads.FileUpload;
 import de.domschmidt.koku.service.ICustomerService;
 import de.domschmidt.koku.service.impl.StorageService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static org.apache.commons.io.FilenameUtils.getExtension;
 
 @RestController
 @RequestMapping("/customers/{customerId}/uploads")
@@ -98,42 +92,6 @@ public class CustomerUploadsController {
             }
         }
         return result;
-    }
-
-    @GetMapping(value = "/{uuid}")
-    public ResponseEntity<Resource> getFile(@PathVariable("customerId") final Long customerId,
-                                            @PathVariable("uuid") final UUID uuid) {
-        final Customer customer = this.customerService.findById(customerId);
-        final FileUpload uploadedFile = storageService.get(uuid);
-        if (!customer.getUploads().contains(uploadedFile)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-
-        File file = new File(this.uploadConfiguration.getUploadsDir() + File.separator + uploadedFile.getUuid() + "." + getExtension(uploadedFile.getFileName()));
-
-        final HttpHeaders header = new HttpHeaders();
-        header.setContentDisposition(
-                ContentDisposition.builder("attachment")
-                        .filename(uploadedFile.getFileName(), StandardCharsets.UTF_8)
-                        .build()
-        );
-        // Disable caching
-        header.add("Cache-Control", "no-cache, no-store, must-revalidate");
-        header.add("Pragma", "no-cache");
-        header.add("Expires", "0");
-
-        MediaType fileMediaType = MediaType.APPLICATION_OCTET_STREAM;
-        try {
-            fileMediaType = MediaType.parseMediaType(new Tika().detect(file));
-        } catch (final Exception e) {
-            // ignore errors
-        }
-
-        return ResponseEntity
-                .ok().headers(header)
-                .contentLength(file.length())
-                .contentType(fileMediaType)
-                .body(new FileSystemResource(file));
     }
 
 }

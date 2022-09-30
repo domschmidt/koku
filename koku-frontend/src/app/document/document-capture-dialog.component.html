@@ -1,0 +1,22 @@
+<form #form="ngForm"
+      (ngSubmit)="save(document, form)">
+  <div *ngIf="document">
+    <h2 mat-dialog-title>{{document.description}}</h2>
+
+    <mat-dialog-content>
+
+      <document-capture [document]="document"></document-capture>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Abbrechen</button>
+      <button mat-button
+              type="submit"
+              [class.button-spinner]="saving"
+              [disabled]="saving || form.invalid">
+        Speichern
+      </button>
+    </mat-dialog-actions>
+  </div>
+</form>

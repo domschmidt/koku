@@ -10,19 +10,26 @@ import {HttpClient} from "@angular/common/http";
 import {SnackBarService} from "../snackbar/snack-bar.service";
 import {AlertDialogButtonConfig, AlertDialogComponent, AlertDialogData} from "../alert-dialog/alert-dialog.component";
 import {Subject} from "rxjs";
+import {
+  FileUploadDialogComponent,
+  FileUploadDialogComponentData,
+  FileUploadDialogComponentResponseData
+} from "./file-upload-dialog.component";
+import {FileService} from "./file.service";
 
 @Component({
-  selector: 'table',
-  templateUrl: './customer-documents.component.html',
-  styleUrls: ['./customer-documents.component.scss']
+  selector: 'files-overview',
+  templateUrl: './files-overview.component.html',
+  styleUrls: ['./files-overview.component.scss']
 })
-export class CustomerDocumentsComponent {
+export class FilesOverviewComponent {
   reloadTableSubject: Subject<DataTableDto.DataQuerySpecDto | void> = new Subject<DataTableDto.DataQuerySpecDto | void>();
   prepareDeleteForElements: { [key: string]: boolean } = {};
 
   constructor(
     private readonly dialog: MatDialog,
     private readonly httpClient: HttpClient,
+    private readonly fileService: FileService,
     private readonly snackBarService: SnackBarService
   ) {
   }
@@ -46,8 +53,24 @@ export class CustomerDocumentsComponent {
     });
   }
 
+  createFile() {
+    const createFileDialogRef = this.dialog.open<FileUploadDialogComponent, FileUploadDialogComponentData, FileUploadDialogComponentResponseData>(FileUploadDialogComponent, {
+      data: {
+        dynamicDocumentContext: 'NONE'
+      },
+      closeOnNavigation: false,
+      minHeight: '500px',
+      position: {
+        top: '20px'
+      }
+    });
+    createFileDialogRef.afterClosed().subscribe(() => {
+      this.reloadTableSubject.next();
+    });
+  }
+
   openDocument(element: { [key: string]: any }) {
-    this.httpClient.get(`/api/customers/${element['customer.id']}/uploads/${element.uuid}`, {responseType: 'blob'}).subscribe((result) => {
+    this.fileService.downloadFile(element.uuid).subscribe((result) => {
       if (result.size > 0) {
         FileSaver.saveAs(result, element.fileName);
       } else {
@@ -56,12 +79,12 @@ export class CustomerDocumentsComponent {
     });
   }
 
-  deleteDocument(element: any) {
+  deleteDocument(element: { [key: string]: any }) {
     this.prepareDeleteForElements[element.uuid] = true;
     const deleteDialogRef = this.dialog.open<AlertDialogComponent, AlertDialogData>(AlertDialogComponent, {
       data: {
-        headline: 'Dokument Löschen',
-        message: `Wollen Sie das Dokument '${element.fileName}' wirklich löschen?`,
+        headline: 'Datei Löschen',
+        message: `Wollen Sie die Datei '${element.fileName}' wirklich löschen?`,
         buttons: [{
           text: 'Abbrechen',
           onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
@@ -71,9 +94,9 @@ export class CustomerDocumentsComponent {
           text: 'Bestätigen',
           onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
             button.loading = true;
-            this.httpClient.delete(`/api/customers/${element['customer.id']}/uploads/${element.uuid}`).subscribe(() => {
+            this.fileService.deleteFile(element.uuid).subscribe(() => {
               this.reloadTableSubject.next();
-              this.snackBarService.openCommonSnack(`Das Dokument '${element.fileName}' wurde erfolgreich gelöscht`);
+              this.snackBarService.openCommonSnack(`Die Datei '${element.fileName}' wurde erfolgreich gelöscht`);
               dialogRef.close();
             }, (error) => {
               this.snackBarService.openErrorSnack(error.error.message);
@@ -93,4 +116,5 @@ export class CustomerDocumentsComponent {
       delete this.prepareDeleteForElements[element.uuid];
     });
   }
+
 }

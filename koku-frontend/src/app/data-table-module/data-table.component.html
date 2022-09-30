@@ -1,7 +1,7 @@
 <h1 *ngIf="dataSource && !hideHeadline" class="headline">{{dataSource.tableName}}</h1>
 
 <div class="header">
-  <mat-form-field *ngIf="dataSource"
+  <mat-form-field *ngIf="dataSource && !hideGlobalSearch"
                   class="global-search-field"
                   fxFlex.lt-md="100%"
                   fxFlex.md="50%"
@@ -65,6 +65,14 @@
                          [columnQuery]="dataSourceConfiguration.columnSpecByColumnId[currentColumn.id]"
                          (filterChanged)="loadTable()"
             ></ng-template>
+
+            <advanced-filter [columnDef]="currentColumn"
+                             [advancedSearchSpec]="dataSourceConfiguration.columnSpecByColumnId[currentColumn.id].advancedSearchSpec || []"
+                             (afterChanged)="publishAdvancedFilterChanges(dataSourceConfiguration.columnSpecByColumnId[currentColumn.id])"
+                             [disabled]="disabled"
+                             *ngIf="dataTableConfig.columnTypes[currentColumn.type] && !dataTableConfig.columnTypes[currentColumn.type].disableAdvancedFiltering"
+            >
+            </advanced-filter>
 
           </div>
         </th>
@@ -155,6 +163,7 @@
       <tr *matHeaderRowDef="displayedColumns; sticky: true"
           class="table__header-row"
           mat-header-row
+          [hidden]="!dataSource"
       ></tr>
 
       <tr *matFooterRowDef="displayedColumns; sticky: true"

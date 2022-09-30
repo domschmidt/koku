@@ -156,7 +156,7 @@ public class LocalDateTimePathExprBuilder implements IExpressionSearch<DateTimeE
             case SW:
             case GOE:
                 if (castedTime != null) {
-                    result = castedExpression.hour().goe(castedTime.getHour())
+                    result = castedExpression.hour().gt(castedTime.getHour())
                             .or(castedExpression.hour().eq(castedTime.getHour())
                                     .and(castedExpression.minute().goe(castedTime.getMinute()))
                             );
@@ -165,12 +165,12 @@ public class LocalDateTimePathExprBuilder implements IExpressionSearch<DateTimeE
                     result = castedExpression.year().gt(castedDate.getYear())
                             .or(
                                     castedExpression.year().eq(castedDate.getYear())
-                                            .and(castedExpression.month().goe(castedDate.getMonthValue()))
+                                            .and(castedExpression.month().gt(castedDate.getMonthValue()))
                             )
                             .or(
                                     castedExpression.year().eq(castedDate.getYear())
                                             .and(castedExpression.month().eq(castedDate.getMonthValue()))
-                                            .and(castedExpression.dayOfMonth().goe(castedDate.getDayOfMonth()))
+                                            .and(castedExpression.dayOfMonth().gt(castedDate.getDayOfMonth()))
                             )
                             .or(
                                     ExpressionUtils.and(

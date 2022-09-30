@@ -26,6 +26,17 @@
       *ngIf="document !== undefined">
   <mat-dialog-content>
 
+    <mat-form-field class="document-context-field">
+      <mat-label>Kontext</mat-label>
+      <mat-select [(value)]="document.context">
+        <mat-option [value]="currentContext"
+                    *ngFor="let currentContext of [document.context]"
+                    [disabled]="true">
+          {{currentContext.description}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
     <mat-form-field class="document-name-field">
       <mat-label>Dokumentenname</mat-label>
       <input [(ngModel)]="document.description"

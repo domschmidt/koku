@@ -26,7 +26,7 @@ public class EnumSettingsTransformer implements ITypeSpecificSettingsTransformer
     }
 
     @Override
-    public String getDtoType(final Path<?> qDslPath) {
+    public String getDtoType(final Class<?> expressionType) {
         return "Select";
     }
 }

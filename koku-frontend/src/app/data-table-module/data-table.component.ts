@@ -37,6 +37,7 @@ export class DataTableComponent implements OnInit {
   @Input() tableRowSelectionHeaderContainer: TemplateRef<any> | undefined;
   @Input() reloadSubject: Subject<DataTableDto.DataQuerySpecDto | void> | undefined;
   @Input() hideHeadline!: boolean;
+  @Input() hideGlobalSearch!: boolean;
   @Input() exportSubject: Subject<string> | undefined;
   @Input() pageSizeOptions: number[] = [10, 50, 100, 250, 1000];
   @Input() defaultPageSize: number = 10;
@@ -177,5 +178,10 @@ export class DataTableComponent implements OnInit {
 
   trackByIndex(index: number, obj: any): any {
     return index;
+  }
+
+  publishAdvancedFilterChanges(columnQuery: DataTableDto.DataQueryColumnSpecDto) {
+    delete columnQuery.search;
+    this.loadTable();
   }
 }

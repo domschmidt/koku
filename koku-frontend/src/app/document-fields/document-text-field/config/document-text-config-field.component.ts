@@ -16,20 +16,25 @@ export class DocumentTextConfigFieldComponent {
   createMode: boolean;
   replacementTokens: KokuDto.FormularReplacementTokenDto[] = [];
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: KokuDto.TextFormularItemDto,
-              public dialogRef: MatDialogRef<DocumentTextConfigFieldComponent>,
-              public dialog: MatDialog,
-              public documentService: DocumentService) {
-    this.createMode = data === null;
-    if (this.createMode) {
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: {
+      field?: KokuDto.TextFormularItemDto
+      document: KokuDto.FormularDto
+    },
+    public dialogRef: MatDialogRef<DocumentTextConfigFieldComponent>,
+    public dialog: MatDialog,
+    public documentService: DocumentService
+  ) {
+    this.createMode = data.field === undefined;
+    if (data.field === undefined) {
       this.textField = {
         id: 0,
         ['@type']: 'TextFormularItemDto'
       };
     } else {
-      this.textField = {...data};
+      this.textField = {...data.field};
     }
-    this.documentService.getDocumentTextReplacementToken().subscribe((tokens) => {
+    this.documentService.getDocumentTextReplacementToken(data.document.context.value).subscribe((tokens) => {
       this.replacementTokens = tokens;
     });
   }

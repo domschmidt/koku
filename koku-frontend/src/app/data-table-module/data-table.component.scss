@@ -31,6 +31,7 @@ $data-table-row-hover-bg: #ccc !default;
 .table {
   width: 100%;
   height: 100%;
+  min-height: 4px;
 
   &__loading-row {
     height: 0;

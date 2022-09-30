@@ -1,6 +1,7 @@
 package de.domschmidt.koku.persistence.model.uploads;
 
 import de.domschmidt.koku.persistence.model.Customer;
+import de.domschmidt.koku.persistence.model.dynamic_documents.DynamicDocument;
 import lombok.*;
 import lombok.experimental.FieldNameConstants;
 
@@ -24,10 +25,13 @@ public class FileUpload implements Serializable {
     UUID uuid;
     String fileName;
     LocalDateTime creationDate;
+    Long size;
     boolean deleted;
 
     @ManyToOne
     Customer customer;
+    @ManyToOne
+    DynamicDocument dynamicDocument;
 
     @OneToMany(orphanRemoval = true, mappedBy = "fileUpload", cascade = CascadeType.ALL)
     @OrderBy("position asc")

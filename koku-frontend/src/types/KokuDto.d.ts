@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.36.1070 on 2022-09-28 21:06:17.
+// Generated using typescript-generator version 2.36.1070 on 2022-09-30 14:08:35.
 
 declare namespace KokuDto {
 
@@ -17,6 +17,7 @@ declare namespace KokuDto {
         footerSummary?: T;
         defaultSearchValue?: T;
         typeSpecificSettings?: S;
+        possibleSelectValues?: T[];
     }
 
     interface DataTableDto {
@@ -384,9 +385,15 @@ declare namespace KokuDto {
         yearDiff?: number;
     }
 
+    interface DocumentContextDto {
+        value: DocumentContextEnumDto;
+        description?: string;
+    }
+
     interface FormularDto {
         id?: number;
-        description?: string;
+        description: string;
+        context: DocumentContextDto;
         tags?: { [index: string]: string };
         rows?: FormularRowDto[];
     }
@@ -556,6 +563,8 @@ declare namespace KokuDto {
     type ChartTypeEnum = "line" | "bar" | "radar" | "doughnut" | "polarArea" | "bubble" | "pie" | "scatter";
 
     type DataLabelsTextAlignEnum = "start" | "center" | "end" | "left" | "right";
+
+    type DocumentContextEnumDto = "CUSTOMER" | "NONE";
 
     type FormularItemAlign = "LEFT" | "CENTER" | "RIGHT";
 

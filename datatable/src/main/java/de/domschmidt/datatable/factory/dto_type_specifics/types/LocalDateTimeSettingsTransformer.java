@@ -12,7 +12,7 @@ public class LocalDateTimeSettingsTransformer implements ITypeSpecificSettingsTr
     }
 
     @Override
-    public String getDtoType(final Path<?> qDslPath) {
+    public String getDtoType(final Class<?> expressionType) {
         return "DateTime";
     }
 

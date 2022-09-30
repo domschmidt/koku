@@ -46,9 +46,8 @@ export class DocumentComponent {
   }
 
   addNewDocument() {
-    const dialogData: DocumentDetailsComponentData = {};
-    this.dialog.open(DocumentDialogComponent, {
-      data: dialogData,
+    this.dialog.open<DocumentDialogComponent, DocumentDetailsComponentData>(DocumentDialogComponent, {
+      data: {},
       closeOnNavigation: false,
       width: '100%',
       maxWidth: 1280,

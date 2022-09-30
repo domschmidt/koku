@@ -16,6 +16,7 @@ import {
 } from "../../alert-dialog/alert-dialog.component";
 import {HttpClient} from "@angular/common/http";
 import * as FileSaver from "file-saver";
+import {FileService} from "../../files-overview/file.service";
 
 @Component({
   selector: 'customer-uploads',
@@ -27,10 +28,13 @@ export class CustomerUploadsComponent implements OnInit {
   uploads: UploadWithProgress[] | undefined;
   possibleFormulars: KokuDto.FormularDto[] | undefined;
 
-  constructor(public customerService: CustomerService,
+  constructor(
+    public customerService: CustomerService,
               public documentService: DocumentService,
               public httpClient: HttpClient,
-              public dialog: MatDialog) {
+              public dialog: MatDialog,
+    private readonly fileService: FileService
+  ) {
   }
 
   ngOnInit(): void {
@@ -98,9 +102,11 @@ export class CustomerUploadsComponent implements OnInit {
   }
 
   download(upload: KokuDto.UploadDto) {
-    this.httpClient.get('/api/customers/' + this.customerId + '/uploads/' + upload.uuid, {responseType: 'blob'}).subscribe((result) => {
-      FileSaver.saveAs(result, upload.fileName);
-    });
+    if (upload.uuid !== undefined) {
+      this.fileService.downloadFile(upload.uuid).subscribe((result) => {
+        FileSaver.saveAs(result, upload.fileName);
+      });
+    }
   }
 
   openFormularCapture(possibleFormular: KokuDto.FormularDto) {

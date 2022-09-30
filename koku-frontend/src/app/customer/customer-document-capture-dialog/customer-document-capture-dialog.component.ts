@@ -16,8 +16,7 @@ export interface CustomerDocumentCaptureDialogResponseData {
 
 @Component({
   selector: 'customer-document-capture-dialog',
-  templateUrl: './customer-document-capture-dialog.component.html',
-  styleUrls: ['./customer-document-capture-dialog.component.scss']
+  templateUrl: './customer-document-capture-dialog.component.html'
 })
 export class CustomerDocumentCaptureDialogComponent implements OnInit {
 

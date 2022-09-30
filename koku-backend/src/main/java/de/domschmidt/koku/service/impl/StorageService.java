@@ -47,6 +47,7 @@ public class StorageService {
             fileUpload.setFileName(originalFilename);
             fileUpload.setUuid(uuid);
             fileUpload.setCreationDate(LocalDateTime.now());
+            fileUpload.setSize(file.getSize());
             fileUploadRepository.save(fileUpload);
         } catch (final Exception e) {
             Files.delete(serverFile.toPath());
@@ -55,12 +56,13 @@ public class StorageService {
         return fileUpload;
     }
 
-    public FileUpload get(UUID uuid) {
+    public File get(final UUID uuid) {
         final Optional<FileUpload> fetchedFileUpload = this.fileUploadRepository.findById(uuid);
         if (fetchedFileUpload.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File Upload nicht gefunden");
         } else {
-            return fetchedFileUpload.get();
+            final FileUpload fileUpload = fetchedFileUpload.get();
+            return new File(this.uploadConfiguration.getUploadsDir() + File.separator + fileUpload.getUuid() + "." + getExtension(fileUpload.getFileName()));
         }
     }
 
@@ -76,6 +78,7 @@ public class StorageService {
             fileUpload.setFileName(fileName);
             fileUpload.setUuid(uuid);
             fileUpload.setCreationDate(LocalDateTime.now());
+            fileUpload.setSize(serverFile.length());
             fileUploadRepository.save(fileUpload);
         } catch (final Exception e) {
             Files.delete(serverFile.toPath());

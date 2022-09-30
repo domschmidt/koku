@@ -16,20 +16,23 @@ export class DocumentDateConfigFieldComponent {
   createMode: boolean;
   replacementTokens: KokuDto.FormularReplacementTokenDto[] = [];
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: KokuDto.DateFormularItemDto,
+  constructor(@Inject(MAT_DIALOG_DATA) public data: {
+                field?: KokuDto.DateFormularItemDto
+                document: KokuDto.FormularDto
+              },
               public dialogRef: MatDialogRef<DocumentDateConfigFieldComponent>,
               public dialog: MatDialog,
               public documentService: DocumentService) {
-    this.createMode = data === null;
-    if (this.createMode) {
+    this.createMode = data.field === undefined;
+    if (data.field === undefined) {
       this.dateField = {
         id: 0,
         ['@type']: 'DateFormularItemDto'
       };
     } else {
-      this.dateField = {...data};
+      this.dateField = {...data.field};
     }
-    this.documentService.getDocumentDateReplacementToken().subscribe((tokens) => {
+    this.documentService.getDocumentDateReplacementToken(data.document.context.value).subscribe((tokens) => {
       this.replacementTokens = tokens;
     });
   }

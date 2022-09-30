@@ -1,5 +1,6 @@
 package de.domschmidt.koku.dto.formular;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.List;
@@ -13,7 +14,10 @@ import java.util.Map;
 public class FormularDto {
 
     Long id;
+    @JsonProperty(required = true)
     String description;
+    @JsonProperty(required = true)
+    DocumentContextDto context;
     Map<String, String> tags;
     List<FormularRowDto> rows;
 

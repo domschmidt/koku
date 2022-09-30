@@ -2,6 +2,7 @@ package de.domschmidt.datatable.factory;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Operation;
 import com.querydsl.core.types.Path;
 import de.domschmidt.datatable.dto.DataTableColumnDto;
 import de.domschmidt.datatable.dto.DataTableDto;
@@ -106,8 +107,8 @@ public class DataTableFactory<T> {
         return result;
     }
 
-    private DataTableColumnDto<?, ?> buildColumnDto(
-            final ColumnUsageDescription<?> columnDescription
+    private <T> DataTableColumnDto<?, ?> buildColumnDto(
+            final ColumnUsageDescription<T> columnDescription
     ) {
         final Boolean isKey;
         final Boolean canSort;
@@ -132,7 +133,18 @@ public class DataTableFactory<T> {
             canFilter = true;
             if (typeSpecificSettingsTransformer != null) {
                 typeSpecificSettings = typeSpecificSettingsTransformer.transformTypeSpecificSettingsByPath(dslQPath);
-                dtoType = typeSpecificSettingsTransformer.getDtoType(dslQPath);
+                dtoType = typeSpecificSettingsTransformer.getDtoType(dslQPath.getType());
+            } else {
+                typeSpecificSettings = null;
+                dtoType = dslQPath.getType().getSimpleName();
+            }
+        } else if (columnDescription.getExpression() instanceof final Operation<?> dslQPath) {
+            isKey = null;
+            canSort = true;
+            canFilter = true;
+            if (typeSpecificSettingsTransformer != null) {
+                typeSpecificSettings = null;
+                dtoType = typeSpecificSettingsTransformer.getDtoType(dslQPath.getType());
             } else {
                 typeSpecificSettings = null;
                 dtoType = dslQPath.getType().getSimpleName();
@@ -147,7 +159,7 @@ public class DataTableFactory<T> {
         return new DataTableColumnDto<>(
                 columnDescription.getId(),
                 columnDescription.getColumnName(),
-                dtoType,
+                columnDescription.getCustomDtoType() != null ? columnDescription.getCustomDtoType() : dtoType,
                 isKey,
                 canSort,
                 canFilter,
@@ -156,7 +168,8 @@ public class DataTableFactory<T> {
                 columnDescription.getHidden(),
                 columnDescription.getSummary(),
                 columnDescription.getDefaultSearchValue(),
-                typeSpecificSettings
+                typeSpecificSettings,
+                columnDescription.getPossibleSelectValues() != null ? columnDescription.getPossibleSelectValues() : null
         );
     }
 }

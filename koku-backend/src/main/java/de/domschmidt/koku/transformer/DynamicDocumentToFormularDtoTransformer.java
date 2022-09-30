@@ -56,6 +56,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                 .id(document.getId())
                 .description(document.getDescription())
                 .tags(detailed ? transformContextToTags(guardedContext) : null)
+                .context(transformContext(document.getContext()))
                 .rows(detailed ? transformDocumentRowToFormularRowDto(document.getRows(), guardedContext, replaceValueByContext) : null)
                 .build();
     }
@@ -102,6 +103,42 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                     break;
                 case BOTTOM:
                     result = FormularRowAlignDto.BOTTOM;
+                    break;
+            }
+        }
+        return result;
+    }
+
+    public DocumentContextDto transformContext(final DocumentContext context) {
+        DocumentContextDto result = null;
+        if (context != null) {
+            switch (context) {
+                case CUSTOMER:
+                    result = DocumentContextDto.builder()
+                            .value(DocumentContextEnumDto.CUSTOMER)
+                            .description(DocumentContextEnumDto.CUSTOMER.getDescription())
+                            .build();
+                    break;
+                case NONE:
+                    result = DocumentContextDto.builder()
+                            .value(DocumentContextEnumDto.NONE)
+                            .description(DocumentContextEnumDto.NONE.getDescription())
+                            .build();
+                    break;
+            }
+        }
+        return result;
+    }
+
+    public DocumentContext transformContext(final DocumentContextEnumDto context) {
+        DocumentContext result = null;
+        if (context != null) {
+            switch (context) {
+                case CUSTOMER:
+                    result = DocumentContext.CUSTOMER;
+                    break;
+                case NONE:
+                    result = DocumentContext.NONE;
                     break;
             }
         }
@@ -332,7 +369,11 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
     }
 
     public DynamicDocument transformToEntity(final FormularDto dtoModel) {
-        final DynamicDocument result = DynamicDocument.builder().id(dtoModel.getId()).description(dtoModel.getDescription()).build();
+        final DynamicDocument result = DynamicDocument.builder()
+                .id(dtoModel.getId())
+                .description(dtoModel.getDescription())
+                .context(transformContext(dtoModel.getContext().getValue()))
+                .build();
 
         result.setRows(transformFormularRowDtoToDocumentRow(result, dtoModel.getRows()));
 

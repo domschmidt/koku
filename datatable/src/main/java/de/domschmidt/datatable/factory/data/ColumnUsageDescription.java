@@ -5,7 +5,7 @@ import com.querydsl.core.types.Expression;
 import de.domschmidt.datatable.dto.query.DataQueryColumnSortDirDto;
 import lombok.Getter;
 
-import java.util.Set;
+import java.util.Collection;
 
 @Getter
 public class ColumnUsageDescription<T> {
@@ -18,7 +18,8 @@ public class ColumnUsageDescription<T> {
     private final T defaultSearchValue;
     private final T summary;
     private final Boolean hidden;
-    private final Set<T> possibleSelectValues;
+    private final Collection<T> possibleSelectValues;
+    private final String customDtoType;
 
     ColumnUsageDescription(
             final ColumnUsageDescriptionBuilder<T> builder
@@ -31,6 +32,7 @@ public class ColumnUsageDescription<T> {
         this.defaultSearchValue = builder.getDefaultSearchValue();
         this.summary = builder.getSummary();
         this.hidden = builder.getHidden();
+        this.customDtoType = builder.getCustomDtoType();
         this.possibleSelectValues = builder.getPossibleSelectValues();
     }
 

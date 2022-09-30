@@ -12,12 +12,15 @@ import * as moment from "moment";
     <div class="wrapper">
       <mat-form-field class="date-field">
         <input [(ngModel)]="date"
+               (change)="writeValue()"
                (blur)="publishSimpleSpecChanges()"
+               [disabled]="columnQuery.advancedSearchSpec !== undefined && columnQuery.advancedSearchSpec.length > 0"
+               [placeholder]="columnQuery.advancedSearchSpec !== undefined && columnQuery.advancedSearchSpec.length > 0 ? buildDateSearchSummary(columnQuery.advancedSearchSpec) : ''"
                matInput
-               type="date"
+               [type]="columnQuery.advancedSearchSpec !== undefined && columnQuery.advancedSearchSpec.length > 0 ? '' : 'date'"
                max="9999-12-31"
         >
-        <button (click)="$event.stopPropagation(); date = undefined; publishSimpleSpecChanges()"
+        <button (click)="$event.stopPropagation(); date = undefined; writeValue(); publishSimpleSpecChanges()"
                 [disabled]="!date"
                 mat-icon-button
                 matSuffix
@@ -29,11 +32,14 @@ import * as moment from "moment";
       </mat-form-field>
       <mat-form-field class="time-field">
         <input [(ngModel)]="time"
+               (change)="writeValue()"
                (blur)="publishSimpleSpecChanges()"
+               [disabled]="columnQuery.advancedSearchSpec !== undefined && columnQuery.advancedSearchSpec.length > 0"
+               [placeholder]="columnQuery.advancedSearchSpec !== undefined && columnQuery.advancedSearchSpec.length > 0 ? buildTimeSearchSummary(columnQuery.advancedSearchSpec) : ''"
                matInput
-               type="time"
+               [type]="columnQuery.advancedSearchSpec !== undefined && columnQuery.advancedSearchSpec.length > 0 ? '' : 'time'"
         >
-        <button (click)="$event.stopPropagation(); time = undefined; publishSimpleSpecChanges()"
+        <button (click)="$event.stopPropagation(); time = undefined; writeValue(); publishSimpleSpecChanges()"
                 [disabled]="!time"
                 mat-icon-button
                 matSuffix
@@ -79,7 +85,7 @@ export class DateTimeColumnFilterComponent implements DataTableFilter {
   time: string | undefined;
 
   constructor(
-    private readonly summaryService: SummaryService,
+    public readonly summaryService: SummaryService,
     @Inject(TABLE_COLUMN_SPEC) public columnSpec: DataTableDto.DataTableColumnDto<Boolean, undefined>,
     @Inject(TABLE_COLUMN_QUERY) public columnQuery: DataTableDto.DataQueryColumnSpecDto,
   ) {
@@ -110,7 +116,7 @@ export class DateTimeColumnFilterComponent implements DataTableFilter {
     }
   }
 
-  publishSimpleSpecChanges() {
+  writeValue() {
     if (this.date && this.time) {
       this.columnQuery.search = this.date + 'T' + this.time;
     } else if (this.date) {
@@ -123,17 +129,51 @@ export class DateTimeColumnFilterComponent implements DataTableFilter {
     if (this.columnQuery.advancedSearchSpec) {
       this.columnQuery.advancedSearchSpec.splice(0, this.columnQuery.advancedSearchSpec.length);
     }
+  }
+
+  publishSimpleSpecChanges() {
     this.filterChanged.emit();
   }
 
-  publishAdvancedChanges() {
-    delete this.columnQuery.search;
-    this.filterChanged.emit();
-  }
-
-  buildSearchSummary(advancedSearchSpec: DataTableDto.DataQueryAdvancedSearchDto[]) {
+  buildTimeSearchSummary(advancedSearchSpec: DataTableDto.DataQueryAdvancedSearchDto[]) {
     return this.summaryService.printSummary(advancedSearchSpec, (value: any) => {
-      return value + '';
+      const date = moment(value, 'YYYY-MM-DD', true);
+      if (date.isValid()) {
+        return '';
+      } else {
+        const time = moment(value, 'HH:mm', true);
+        if (time.isValid()) {
+          return time.format('HH:mm');
+        } else {
+          const dateAndTime = moment(value, moment.ISO_8601, true);
+          if (dateAndTime.isValid()) {
+            return dateAndTime.format('HH:mm');
+          } else {
+            return '';
+          }
+        }
+      }
+    });
+  }
+
+  buildDateSearchSummary(advancedSearchSpec: DataTableDto.DataQueryAdvancedSearchDto[]) {
+    return this.summaryService.printSummary(advancedSearchSpec, (value: any) => {
+      const time = moment(value, 'HH:mm', true);
+      if (time.isValid()) {
+        return '';
+      } else {
+        const date = moment(value, 'YYYY-MM-DD', true);
+        if (date.isValid()) {
+          return date.format('YYYY-MM-DD');
+        } else {
+          const dateAndTime = moment(value, moment.ISO_8601, true);
+          if (dateAndTime.isValid()) {
+            return dateAndTime.format('YYYY-MM-DD');
+          } else {
+            return '';
+          }
+        }
+      }
     });
   }
 

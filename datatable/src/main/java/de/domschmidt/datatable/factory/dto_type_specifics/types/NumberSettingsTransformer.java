@@ -52,7 +52,7 @@ public class NumberSettingsTransformer implements ITypeSpecificSettingsTransform
     }
 
     @Override
-    public String getDtoType(final Path<?> qDslPath) {
+    public String getDtoType(final Class<?> expressionType) {
         return "Number";
     }
 }

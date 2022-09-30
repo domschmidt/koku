@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.domschmidt.datatable.dto.query.DataQueryColumnSortDirDto;
 import lombok.Getter;
 
+import java.util.Collection;
+
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DataTableColumnDto<T, S> {
@@ -23,6 +25,7 @@ public class DataTableColumnDto<T, S> {
     final T footerSummary;
     final T defaultSearchValue;
     final S typeSpecificSettings;
+    final Collection<T> possibleSelectValues;
 
     public DataTableColumnDto(
             final String id,
@@ -36,7 +39,8 @@ public class DataTableColumnDto<T, S> {
             final Boolean hidden,
             final T footerSummary,
             final T defaultSearchValue,
-            final S typeSpecificSettings
+            final S typeSpecificSettings,
+            final Collection<T> possibleSelectValues
     ) {
         this.id = id;
         this.name = name;
@@ -50,6 +54,7 @@ public class DataTableColumnDto<T, S> {
         this.footerSummary = footerSummary;
         this.defaultSearchValue = defaultSearchValue;
         this.typeSpecificSettings = typeSpecificSettings;
+        this.possibleSelectValues = possibleSelectValues;
     }
 
 }

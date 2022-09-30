@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import de.domschmidt.koku.persistence.model.common.DomainModel;
 import lombok.*;
+import lombok.experimental.FieldNameConstants;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -17,6 +18,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldNameConstants
 @Table(name = "document", schema = "koku")
 public class DynamicDocument extends DomainModel implements Serializable {
 
@@ -27,6 +29,10 @@ public class DynamicDocument extends DomainModel implements Serializable {
     Long id;
     @Expose
     String description;
+
+    @Expose
+    @Enumerated(EnumType.STRING)
+    DocumentContext context;
     boolean deleted;
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -45,6 +51,7 @@ public class DynamicDocument extends DomainModel implements Serializable {
             }
             this.rows = rows;
         }
+        this.context = documentToBeCopied.getContext();
     }
 
     @Override
@@ -53,4 +60,12 @@ public class DynamicDocument extends DomainModel implements Serializable {
                 .excludeFieldsWithoutExposeAnnotation()
                 .create().toJson(this);
     }
+
+    // minimum ref constructor
+    public DynamicDocument(
+            final Long id
+    ) {
+        this.id = id;
+    }
+
 }

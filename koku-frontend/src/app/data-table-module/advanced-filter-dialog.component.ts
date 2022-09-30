@@ -2,6 +2,7 @@ import {Component, ElementRef, Inject} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {NgForm} from "@angular/forms";
 import {cloneDeep} from "lodash";
+import {DATA_TABLE_CONFIG, DataTableConfig} from "./data-table-config.injector";
 
 export interface AdvancedFilterDialogData {
   advancedSearchSpec: DataTableDto.DataQueryAdvancedSearchDto[];
@@ -12,8 +13,7 @@ export interface AdvancedFilterDialogResponse {
   advancedSearchSpec: DataTableDto.DataQueryAdvancedSearchDto[]
 }
 
-const itemStub = {
-  search: '',
+const itemStub: DataTableDto.DataQueryAdvancedSearchDto = {
   customOp: 'LIKE'
 };
 
@@ -27,7 +27,7 @@ const itemStub = {
         tabindex="-1"
         (click)="dialogRef.close()"
       >
-        <mat-icon class="custom-svg-icon" svgIcon="clear"></mat-icon>
+        <mat-icon>clear</mat-icon>
       </button>
     </h1>
 
@@ -51,7 +51,7 @@ const itemStub = {
                   tabindex="-1"
                   class="advanced-filter-dialog-form__row__remove-btn"
                   type="button">
-            <mat-icon class="custom-svg-icon" svgIcon="remove"></mat-icon>
+            <mat-icon>delete</mat-icon>
           </button>
 
           <mat-form-field class="advanced-filter-dialog-form__row__item"
@@ -62,14 +62,22 @@ const itemStub = {
                         [name]="'advanced-filter-dialog-form' + idx + '_op_select'"
                         (keydown.enter)="$event.stopPropagation()"
             >
-              <mat-option *ngFor="let possibleValue of possibleOpFieldOptions | keyvalue" [value]="possibleValue.value">
-                {{possibleValue.key}}
+              <mat-option *ngFor="let possibleValue of possibleOpFieldOptions | keyvalue"
+                          [value]="possibleValue.key">
+                {{possibleValue.value}}
               </mat-option>
             </mat-select>
           </mat-form-field>
 
           <div class="advanced-filter-dialog-form__row__item">
-            <!-- todo -->
+
+            <ng-template columnHost
+                         *ngIf="dataTableConfig.columnTypes[data.columnDef.type] !== undefined"
+                         [componentType]="dataTableConfig.columnTypes[data.columnDef.type].filterComponent"
+                         [columnSpec]="data.columnDef"
+                         [columnQuery]="currentSpec"
+            ></ng-template>
+
           </div>
         </div>
         <button (click)="addNewRow()"
@@ -77,7 +85,7 @@ const itemStub = {
                 mat-raised-button
                 (keydown.enter)="$event.stopPropagation()"
                 type="button">
-          <mat-icon class="custom-svg-icon" svgIcon="add"></mat-icon>
+          <mat-icon>add</mat-icon>
           <span fxHide.lt-md style="margin-left: 4px;">Weiterer Filter</span>
         </button>
       </mat-dialog-content>
@@ -94,9 +102,27 @@ const itemStub = {
 })
 export class AdvancedFilterDialogComponent {
 
+  constructor(@Inject(MAT_DIALOG_DATA) public data: AdvancedFilterDialogData,
+              @Inject(DATA_TABLE_CONFIG) public readonly dataTableConfig: DataTableConfig,
+              public dialogRef: MatDialogRef<AdvancedFilterDialogComponent, AdvancedFilterDialogResponse>,
+              private readonly el: ElementRef,
+              // private readonly htmlService: HtmlService todo
+  ) {
+    let tempSpec: {
+      search?: any;
+      customOp?: DataTableDto.DataQueryColumnOPDto;
+    }[] = [];
+    if (!data.advancedSearchSpec.length) {
+      tempSpec.push(cloneDeep(itemStub));
+    } else {
+      tempSpec = cloneDeep(data.advancedSearchSpec);
+    }
+    this.tempAdvancedSearchSpec = tempSpec;
+  }
+
   tempAdvancedSearchSpec: {
     search?: any;
-    customOp?: string;
+    customOp?: DataTableDto.DataQueryColumnOPDto;
   }[];
 
   possibleOpFieldOptions: Record<Partial<DataTableDto.DataQueryColumnOPDto>, string> = {
@@ -109,23 +135,6 @@ export class AdvancedFilterDialogComponent {
     'LOE': 'Kleiner oder gleich',
     'LT': 'Kleiner als'
   };
-
-  constructor(@Inject(MAT_DIALOG_DATA) public data: AdvancedFilterDialogData,
-              public dialogRef: MatDialogRef<AdvancedFilterDialogComponent, AdvancedFilterDialogResponse>,
-              private readonly el: ElementRef,
-              // private readonly htmlService: HtmlService todo
-  ) {
-    let tempSpec: {
-      search?: any;
-      customOp?: string;
-    }[] = [];
-    if (!data.advancedSearchSpec.length) {
-      tempSpec.push(cloneDeep(itemStub));
-    } else {
-      tempSpec = cloneDeep(data.advancedSearchSpec);
-    }
-    this.tempAdvancedSearchSpec = tempSpec;
-  }
 
   applyChanges(advancedFilterForm: NgForm) {
     if (advancedFilterForm.valid) {

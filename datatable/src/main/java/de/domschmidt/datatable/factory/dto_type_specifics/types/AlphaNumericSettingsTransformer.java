@@ -12,25 +12,24 @@ public class AlphaNumericSettingsTransformer implements ITypeSpecificSettingsTra
     public AlphaNumericSettingsDto transformTypeSpecificSettingsByPath(
             final Path<?> qDslPath
     ) {
+        final AlphaNumericSettingsDto result;
         final Size sizeAnnotation = qDslPath.getAnnotatedElement().getDeclaredAnnotation(Size.class);
-        final Integer maxCharacterLength;
-        final Integer minCharacterLength;
         if (sizeAnnotation != null) {
-            maxCharacterLength = sizeAnnotation.max() != 0 ? sizeAnnotation.max() : null;
-            minCharacterLength = sizeAnnotation.min() != 0 ? sizeAnnotation.min() : null;
+            final Integer maxCharacterLength = sizeAnnotation.max() != 0 ? sizeAnnotation.max() : null;
+            final Integer minCharacterLength = sizeAnnotation.min() != 0 ? sizeAnnotation.min() : null;
+            result = new AlphaNumericSettingsDto(
+                    maxCharacterLength,
+                    minCharacterLength
+            );
         } else {
-            maxCharacterLength = null;
-            minCharacterLength = null;
+            result = null;
         }
 
-        return new AlphaNumericSettingsDto(
-                maxCharacterLength,
-                minCharacterLength
-        );
+        return result;
     }
 
     @Override
-    public String getDtoType(final Path<?> qDslPath) {
+    public String getDtoType(final Class<?> expressionType) {
         return "AlphaNumeric";
     }
 

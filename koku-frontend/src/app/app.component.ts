@@ -44,6 +44,10 @@ export class AppComponent {
       this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/deposit.svg')
     );
     this.matIconRegistry.addSvgIcon(
+      'file_document_edit_outline',
+      this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/file_document_edit_outline.svg')
+    );
+    this.matIconRegistry.addSvgIcon(
       'format_align_vertical_bottom',
       this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/format_align_vertical_bottom.svg')
     );

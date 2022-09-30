@@ -15,18 +15,21 @@ export class DocumentSignatureConfigFieldComponent {
   loading: boolean = true;
   createMode: boolean;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: KokuDto.SignatureFormularItemDto,
+  constructor(@Inject(MAT_DIALOG_DATA) public data: {
+                field?: KokuDto.SignatureFormularItemDto
+                document: KokuDto.FormularDto
+              },
               public dialogRef: MatDialogRef<DocumentSignatureConfigFieldComponent>,
               public dialog: MatDialog,
               public documentService: DocumentService) {
-    this.createMode = data === null;
-    if (this.createMode) {
+    this.createMode = data.field === undefined;
+    if (data.field === undefined) {
       this.signatureField = {
         id: 0,
         ['@type']: 'SignatureFormularItemDto'
       };
     } else {
-      this.signatureField = {...data};
+      this.signatureField = {...data.field};
     }
   }
 

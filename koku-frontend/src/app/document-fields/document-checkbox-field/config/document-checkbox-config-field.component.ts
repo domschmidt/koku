@@ -16,20 +16,23 @@ export class DocumentCheckboxConfigFieldComponent {
   createMode: boolean;
   replacementTokens: KokuDto.FormularReplacementTokenDto[] = [];
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: KokuDto.CheckboxFormularItemDto,
+  constructor(@Inject(MAT_DIALOG_DATA) public data: {
+                field?: KokuDto.CheckboxFormularItemDto
+                document: KokuDto.FormularDto
+              },
               public dialogRef: MatDialogRef<DocumentCheckboxConfigFieldComponent>,
               public dialog: MatDialog,
               public documentService: DocumentService) {
-    this.createMode = data === null;
-    if (this.createMode) {
+    this.createMode = data.field === undefined;
+    if (data.field === undefined) {
       this.checkboxField = {
         id: 0,
         ['@type']: 'CheckboxFormularItemDto'
       };
     } else {
-      this.checkboxField = {...data};
+      this.checkboxField = {...data.field};
     }
-    this.documentService.getDocumentCheckboxReplacementToken().subscribe((tokens) => {
+    this.documentService.getDocumentCheckboxReplacementToken(data.document.context.value).subscribe((tokens) => {
       this.replacementTokens = tokens;
     });
   }

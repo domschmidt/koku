@@ -6,6 +6,7 @@ export interface DataTableConfig {
     [key: string]: {
       cellComponent: ComponentType<any>;
       filterComponent: ComponentType<any>;
+      disableAdvancedFiltering?: Boolean;
     }
   }
 }

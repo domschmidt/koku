@@ -20,14 +20,17 @@ export class DocumentSvgConfigFieldComponent {
   trustedSVGContent: SafeHtml | undefined;
   acceptableMimeType: string = 'image/svg+xml';
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: KokuDto.SVGFormularItemDto,
+  constructor(@Inject(MAT_DIALOG_DATA) public data: {
+                field?: KokuDto.SVGFormularItemDto
+                document: KokuDto.FormularDto
+              },
               public dialogRef: MatDialogRef<DocumentSvgConfigFieldComponent>,
               public dialog: MatDialog,
               public domSanitizer: DomSanitizer,
               public matSnack: MatSnackBar,
               public documentService: DocumentService) {
-    this.createMode = data === null;
-    if (this.createMode) {
+    this.createMode = data.field === undefined;
+    if (data.field === undefined) {
       this.svgField = {
         id: 0,
         ['@type']: 'SVGFormularItemDto',
@@ -35,7 +38,7 @@ export class DocumentSvgConfigFieldComponent {
         maxWidthInPx: 500
       };
     } else {
-      this.svgField = {...data};
+      this.svgField = {...data.field};
       this.trustedSVGContent = this.getTrustedSvg(this.svgField);
     }
   }
