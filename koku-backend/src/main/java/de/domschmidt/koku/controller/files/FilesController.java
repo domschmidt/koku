@@ -70,7 +70,7 @@ public class FilesController {
     public ResponseEntity<Resource> getFile(
             @PathVariable("uuid") final UUID uuid
     ) {
-        final File uploadedFile = storageService.get(uuid);
+        final File uploadedFile = storageService.getById(uuid);
 
         final HttpHeaders header = new HttpHeaders();
         header.setContentDisposition(

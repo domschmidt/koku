@@ -55,6 +55,8 @@ public class ActivityToActivityDtoTransformer implements ITransformer<Activity, 
                 .description(model.getDescription())
                 .approximatelyDuration(model.getApproximatelyDuration())
                 .currentPrice(currentPrice)
+                .relevantForPriceList(model.isRelevantForPriceList())
+                .category(model.getCategory() != null ? new ActivityCategoryToActivityCategoryDtoTransformer().transformToDto(model.getCategory()) : null)
                 .priceHistory(detailed ? new ActivityPriceHistoryEntryToPriceHistoryDtoTransformer().transformToDtoList(priceHistory) : null)
                 .build();
     }
@@ -77,6 +79,8 @@ public class ActivityToActivityDtoTransformer implements ITransformer<Activity, 
                 .id(dtoModel.getId())
                 .description(dtoModel.getDescription())
                 .approximatelyDuration(dtoModel.getApproximatelyDuration())
+                .relevantForPriceList(Boolean.TRUE.equals(dtoModel.getRelevantForPriceList()))
+                .category(dtoModel.getCategory() != null ? new ActivityCategoryToActivityCategoryDtoTransformer().transformToEntity(dtoModel.getCategory()) : null)
                 .build();
     }
 

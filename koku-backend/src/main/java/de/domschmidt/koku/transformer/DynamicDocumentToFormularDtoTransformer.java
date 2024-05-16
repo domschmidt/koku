@@ -1,8 +1,11 @@
 package de.domschmidt.koku.transformer;
 
 import de.domschmidt.koku.dto.formular.*;
+import de.domschmidt.koku.persistence.model.Activity;
 import de.domschmidt.koku.persistence.model.dynamic_documents.*;
 import de.domschmidt.koku.persistence.model.enums.Alignment;
+import de.domschmidt.koku.service.IActivityService;
+import de.domschmidt.koku.service.searchoptions.ActivitySearchOptions;
 import de.domschmidt.koku.transformer.common.ITransformer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +27,14 @@ import java.util.*;
 @Component
 @Slf4j
 public class DynamicDocumentToFormularDtoTransformer implements ITransformer<DynamicDocument, FormularDto> {
+
+    private final IActivityService activityService;
+
+    public DynamicDocumentToFormularDtoTransformer(
+            final IActivityService activityService
+    ) {
+        this.activityService = activityService;
+    }
 
     public List<FormularDto> transformToDtoList(final List<DynamicDocument> documentList) {
         final List<FormularDto> result = new ArrayList<>();
@@ -74,18 +85,67 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
     }
 
     private List<FormularRowDto> transformDocumentRowToFormularRowDto(
-            final List<DocumentRow> rows,
+            final List<DocumentRowComposing> rows,
             final Map<String, Object> context,
             final Boolean replaceValueByContext
     ) {
         final List<FormularRowDto> result = new ArrayList<>();
 
         if (rows != null) {
-            for (final DocumentRow currentRow : rows) {
+            for (final DocumentRowComposing currentRow : rows) {
+                result.add(transformDocumentRow(currentRow.getRow(), context, replaceValueByContext));
+            }
+        }
+
+        return result;
+    }
+
+    private FormularRowDto transformDocumentRow(
+            final DocumentRow currentRow,
+            final Map<String, Object> context,
+            final Boolean replaceValueByContext
+    ) {
+        return FormularRowDto.builder()
+                .id(currentRow.getId())
+                .align(transformRowAlign(currentRow.getAlign()))
+                .items(transformDocumentFieldToFormularFieldDto(currentRow.getFields(), context, replaceValueByContext))
+                .build();
+    }
+
+    private List<FormularRowDto> transformDocumentActivityPriceListItemRowToFormularRowDto(
+            final List<ActivityPriceListItemRowComposing> rows,
+            final Map<String, Object> context,
+            final Boolean replaceValueByContext
+    ) {
+        final List<FormularRowDto> result = new ArrayList<>();
+
+        if (rows != null) {
+            for (final ActivityPriceListItemRowComposing currentRow : rows) {
                 result.add(FormularRowDto.builder()
                         .id(currentRow.getId())
-                        .align(transformRowAlign(currentRow.getAlign()))
-                        .items(transformDocumentFieldToFormularFieldDto(currentRow.getFields(), context, replaceValueByContext))
+                        .align(transformRowAlign(currentRow.getRow().getAlign()))
+                        .items(transformDocumentFieldToFormularFieldDto(currentRow.getRow().getFields(), context, replaceValueByContext))
+                        .build()
+                );
+            }
+        }
+
+        return result;
+    }
+
+    private List<FormularRowDto> transformDocumentActivityPriceListGroupRowToFormularRowDto(
+            final List<ActivityPriceListGroupRowComposing> rows,
+            final Map<String, Object> context,
+            final Boolean replaceValueByContext
+    ) {
+        final List<FormularRowDto> result = new ArrayList<>();
+
+        if (rows != null) {
+            for (final ActivityPriceListGroupRowComposing currentRow : rows) {
+                result.add(FormularRowDto.builder()
+                        .id(currentRow.getId())
+                        .align(transformRowAlign(currentRow.getRow().getAlign()))
+                        .items(transformDocumentFieldToFormularFieldDto(currentRow.getRow().getFields(), context, replaceValueByContext))
                         .build()
                 );
             }
@@ -179,6 +239,140 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .maxWidthInPx(((SVGFieldDefinitionType) fieldDefinitionType).getMaxWidthInPx())
                             .fieldDefinitionTypeId(fieldDefinitionType.getId())
                             .build());
+                } else if (fieldDefinitionType instanceof final ActivityPriceListFieldDefinitionType castedFieldDefinitionType) {
+                    final List<FormularRowDto> resultRows = new ArrayList<>();
+                    if (Boolean.TRUE.equals(replaceValueByContext)) {
+
+                        final List<Activity> priceListActivities = this.activityService.findAll(ActivitySearchOptions.builder()
+                                .havingRelevanceForPriceListOnly(true)
+                                .search("")
+                                .build()
+                        );
+
+                        try {
+                            if (ActivityPriceListGroupBy.CATEGORY.equals(castedFieldDefinitionType.getGroupBy())) {
+
+                                final Map<Long, List<Activity>> groupByMap = new HashMap<>();
+
+                                for (final Activity currentObj : priceListActivities) {
+                                    final Context tempCtx = new Context();
+                                    for (final String variableName : thymeleafCtx.getVariableNames()) {
+                                        tempCtx.setVariable(variableName, thymeleafCtx.getVariable(variableName));
+                                    }
+                                    tempCtx.setVariable("activity", currentObj);
+
+                                    long groupBy;
+                                    try {
+                                        groupBy = Long.parseLong(templateEngine.process(
+                                                ActivityPriceListGroupBy.CATEGORY.getGroupBySelector(),
+                                                tempCtx
+                                        ));
+                                    } catch (final NumberFormatException nfe) {
+                                        groupBy = 0L;
+                                    }
+
+                                    if (groupByMap.containsKey(groupBy)) {
+                                        groupByMap.get(groupBy).add(currentObj);
+                                    } else {
+                                        final List<Activity> objects = new ArrayList<>();
+                                        objects.add(currentObj);
+                                        groupByMap.put(groupBy, objects);
+                                    }
+                                }
+
+                                final List<Long> sortedIds = new ArrayList<>();
+                                final List<Long> sortedGroups = new ArrayList<>(groupByMap.keySet());
+                                if (castedFieldDefinitionType.getSortByIds() != null) {
+
+                                    for (final ActivityPriceListFieldSort sortById : castedFieldDefinitionType.getSortByIds()) {
+                                        sortedIds.add(sortById.getSortById());
+                                    }
+
+                                    sortedGroups.sort(Comparator.comparingInt(sortedIds::indexOf));
+                                }
+
+                                for (final Long currentGroupSortId : sortedGroups) {
+                                    List<Activity> currentGroupBy = groupByMap.get(currentGroupSortId);
+
+                                    for (final ActivityPriceListGroupRowComposing groupRow : castedFieldDefinitionType.getGroupRows()) {
+                                        // 1. build groupBy header
+                                        final Map<String, Object> tempContextForGroup = new HashMap<>(context);
+                                        tempContextForGroup.put("activity", currentGroupBy.get(0));
+                                        resultRows.add(transformDocumentRow(
+                                                groupRow.getRow(),
+                                                tempContextForGroup,
+                                                replaceValueByContext
+                                        ));
+
+                                        currentGroupBy.sort(Comparator.comparingInt(o -> sortedIds.indexOf(o.getId())));
+
+                                        // 2. for each group by header, build group items
+                                        for (final Activity currentObj : currentGroupBy) {
+
+                                            for (final ActivityPriceListItemRowComposing itemRow : castedFieldDefinitionType.getItemRows()) {
+                                                final Map<String, Object> tempContextForItem = new HashMap<>(context);
+                                                tempContextForItem.put("activity", currentObj);
+                                                resultRows.add(transformDocumentRow(
+                                                        itemRow.getRow(),
+                                                        tempContextForItem,
+                                                        replaceValueByContext
+                                                ));
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                // no groupby specified -> ignore group by
+                                for (final Object currentObj : priceListActivities) {
+
+                                    for (final ActivityPriceListItemRowComposing itemRow : castedFieldDefinitionType.getItemRows()) {
+                                        final Map<String, Object> tempContext = new HashMap<>(context);
+                                        tempContext.put("activity", currentObj);
+                                        resultRows.add(transformDocumentRow(
+                                                itemRow.getRow(),
+                                                tempContext,
+                                                replaceValueByContext
+                                        ));
+                                    }
+                                }
+                            }
+                        } catch (final Exception e) {
+                            log.error("Unable to parse priceListActivities", e);
+                        }
+                    }
+
+                    final List<Long> resultSortIds = new ArrayList<>();
+                    final List<ActivityPriceListFieldSort> sortInfo = castedFieldDefinitionType.getSortByIds();
+                    if (sortInfo != null) {
+                        for (final ActivityPriceListFieldSort currentActivityPriceListFieldSort : sortInfo) {
+                            resultSortIds.add(currentActivityPriceListFieldSort.getSortById());
+                        }
+                    }
+
+                    result.add(ActivityPriceListFormularItemDto.builder()
+                            .id(currentField.getId())
+                            .xs(currentField.getXs())
+                            .sm(currentField.getSm())
+                            .md(currentField.getMd())
+                            .lg(currentField.getLg())
+                            .xl(currentField.getXl())
+                            .align(transformDocumentFieldAlignToFormularItemAlign(currentField))
+                            .fieldDefinitionTypeId(fieldDefinitionType.getId())
+                            .itemRows(transformDocumentActivityPriceListItemRowToFormularRowDto(
+                                    castedFieldDefinitionType.getItemRows(),
+                                    context,
+                                    replaceValueByContext
+                            ))
+                            .groupRows(transformDocumentActivityPriceListGroupRowToFormularRowDto(
+                                    castedFieldDefinitionType.getGroupRows(),
+                                    context,
+                                    replaceValueByContext
+                            ))
+                            .groupBy(transformActivityPriceListGroupByToDto(castedFieldDefinitionType.getGroupBy()))
+                            .evaluatedData(!resultRows.isEmpty() ? resultRows : null)
+                            .sortByIds(resultSortIds)
+                            .build()
+                    );
                 } else if (fieldDefinitionType instanceof SignatureFieldDefinitionType) {
                     result.add(SignatureFormularItemDto.builder()
                             .id(currentField.getId())
@@ -204,7 +398,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             isCheckboxChecked = StringUtils.defaultString(replacedText).trim().equalsIgnoreCase(Boolean.TRUE.toString());
                         }
                     } else {
-                        isCheckboxChecked = ((CheckboxFieldDefinitionType) fieldDefinitionType).isValue();
+                        isCheckboxChecked = Boolean.TRUE.equals(((CheckboxFieldDefinitionType) fieldDefinitionType).getValue());
                     }
                     result.add(CheckboxFormularItemDto.builder()
                             .id(currentField.getId())
@@ -218,7 +412,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .context(fieldContext)
                             .fontSize(((CheckboxFieldDefinitionType) fieldDefinitionType).getFontSize())
                             .fieldDefinitionTypeId(fieldDefinitionType.getId())
-                            .readOnly(((CheckboxFieldDefinitionType) fieldDefinitionType).isReadOnly())
+                            .readOnly(Boolean.TRUE.equals(((CheckboxFieldDefinitionType) fieldDefinitionType).getReadOnly()))
                             .label(((CheckboxFieldDefinitionType) fieldDefinitionType).getLabel())
                             .build());
                 } else if (fieldDefinitionType instanceof final DateFieldDefinitionType castedField) {
@@ -257,7 +451,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .context(castedField.getContext())
                             .fontSize(castedField.getFontSize())
                             .fieldDefinitionTypeId(fieldDefinitionType.getId())
-                            .readOnly(castedField.isReadOnly())
+                            .readOnly(Boolean.TRUE.equals(castedField.getReadOnly()))
                             .dayDiff(castedField.getDayDiff())
                             .monthDiff(castedField.getMonthDiff())
                             .yearDiff(castedField.getYearDiff())
@@ -324,6 +518,34 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
         return result;
     }
 
+    private ActivityPriceListGroupByDto transformActivityPriceListGroupByToDto(ActivityPriceListGroupBy groupBy) {
+        ActivityPriceListGroupByDto result = null;
+
+        if (groupBy != null) {
+            switch (groupBy) {
+                case CATEGORY:
+                    result = ActivityPriceListGroupByDto.CATEGORY;
+                    break;
+            }
+        }
+
+        return result;
+    }
+
+    private ActivityPriceListGroupBy transformActivityPriceListGroupByFromDto(ActivityPriceListGroupByDto groupBy) {
+        ActivityPriceListGroupBy result = null;
+
+        if (groupBy != null) {
+            switch (groupBy) {
+                case CATEGORY:
+                    result = ActivityPriceListGroupBy.CATEGORY;
+                    break;
+            }
+        }
+
+        return result;
+    }
+
     private String transformSvgFieldValue(final SVGFieldDefinitionType svgFieldDefinitionType) {
         return svgFieldDefinitionType.getSvgContentBase64encoded();
     }
@@ -380,20 +602,72 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
         return result;
     }
 
-    private List<DocumentRow> transformFormularRowDtoToDocumentRow(final DynamicDocument document, final List<FormularRowDto> rows) {
-        final List<DocumentRow> result = new ArrayList<>();
+    private List<DocumentRowComposing> transformFormularRowDtoToDocumentRow(final DynamicDocument document, final List<FormularRowDto> rows) {
+        final List<DocumentRowComposing> result = new ArrayList<>();
 
         if (rows != null) {
             for (int rowIndex = 0; rowIndex < rows.size(); rowIndex++) {
                 FormularRowDto currentRow = rows.get(rowIndex);
                 final DocumentRow newRow = DocumentRow.builder()
-                        .document(document)
-                        .id(currentRow.getId())
-                        .positionIndex(rowIndex)
                         .align(transformRowAlign(currentRow.getAlign()))
                         .build();
                 newRow.setFields(transformFormularItemToDocumentField(newRow, currentRow.getItems()));
-                result.add(newRow);
+                result.add(DocumentRowComposing.builder()
+                        .document(document)
+                        .row(newRow)
+                        .positionIndex(rowIndex)
+                        .build()
+                );
+            }
+        }
+
+        return result;
+    }
+
+    private List<ActivityPriceListItemRowComposing> transformActivityPriceListItemRowComposing(
+            final ActivityPriceListFieldDefinitionType field,
+            final List<FormularRowDto> rows
+    ) {
+        final List<ActivityPriceListItemRowComposing> result = new ArrayList<>();
+
+        if (rows != null) {
+            for (int rowIndex = 0; rowIndex < rows.size(); rowIndex++) {
+                FormularRowDto currentRow = rows.get(rowIndex);
+                final DocumentRow newRow = DocumentRow.builder()
+                        .align(transformRowAlign(currentRow.getAlign()))
+                        .build();
+                newRow.setFields(transformFormularItemToDocumentField(newRow, currentRow.getItems()));
+                result.add(ActivityPriceListItemRowComposing.builder()
+                        .fieldDefinition(field)
+                        .row(newRow)
+                        .positionIndex(rowIndex)
+                        .build()
+                );
+            }
+        }
+
+        return result;
+    }
+
+    private List<ActivityPriceListGroupRowComposing> transformActivityPriceListGroupRowComposing(
+            final ActivityPriceListFieldDefinitionType field,
+            final List<FormularRowDto> rows
+    ) {
+        final List<ActivityPriceListGroupRowComposing> result = new ArrayList<>();
+
+        if (rows != null) {
+            for (int rowIndex = 0; rowIndex < rows.size(); rowIndex++) {
+                FormularRowDto currentRow = rows.get(rowIndex);
+                final DocumentRow newRow = DocumentRow.builder()
+                        .align(transformRowAlign(currentRow.getAlign()))
+                        .build();
+                newRow.setFields(transformFormularItemToDocumentField(newRow, currentRow.getItems()));
+                result.add(ActivityPriceListGroupRowComposing.builder()
+                        .fieldDefinition(field)
+                        .row(newRow)
+                        .positionIndex(rowIndex)
+                        .build()
+                );
             }
         }
 
@@ -423,7 +697,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
         if (items != null) {
             for (int fieldIndex = 0; fieldIndex < items.size(); fieldIndex++) {
                 FormularItemDto currentField = items.get(fieldIndex);
-                if (currentField instanceof SVGFormularItemDto) {
+                if (currentField instanceof final SVGFormularItemDto castedField) {
                     result.add(DocumentField.builder()
                             .row(newRow)
                             .xs(currentField.getXs())
@@ -433,11 +707,48 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .xl(currentField.getXl())
                             .positionIndex(fieldIndex)
                             .fieldDefinitionType(SVGFieldDefinitionType.builder()
-                                    .maxWidthInPx(((SVGFormularItemDto) currentField).getMaxWidthInPx())
-                                    .widthPercentage(((SVGFormularItemDto) currentField).getWidthPercentage())
-                                    .svgContentBase64encoded(((SVGFormularItemDto) currentField).getSvgContentBase64encoded())
-                                    .id(currentField.getFieldDefinitionTypeId())
+                                    .maxWidthInPx(castedField.getMaxWidthInPx())
+                                    .widthPercentage(castedField.getWidthPercentage())
+                                    .svgContentBase64encoded(castedField.getSvgContentBase64encoded())
                                     .build())
+                            .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
+                            .build());
+                } else if (currentField instanceof final ActivityPriceListFormularItemDto castedField) {
+                    final ActivityPriceListFieldDefinitionType newField = ActivityPriceListFieldDefinitionType.builder()
+                            .groupBy(transformActivityPriceListGroupByFromDto(castedField.getGroupBy()))
+                            .build();
+                    newField.setItemRows(transformActivityPriceListItemRowComposing(
+                            newField,
+                            castedField.getItemRows())
+                    );
+                    newField.setGroupRows(transformActivityPriceListGroupRowComposing(
+                            newField,
+                            castedField.getGroupRows())
+                    );
+                    final List<ActivityPriceListFieldSort> sortInfo = new ArrayList<>();
+                    if (castedField.getSortByIds() != null) {
+                        List<Long> sortByIds = castedField.getSortByIds();
+                        for (int sortByIdx = 0; sortByIdx < sortByIds.size(); sortByIdx++) {
+                            Long sortById = sortByIds.get(sortByIdx);
+                            sortInfo.add(ActivityPriceListFieldSort.builder()
+                                    .positionIndex(sortByIdx)
+                                    .sortById(sortById)
+                                    .fieldDefinition(newField)
+                                    .build()
+                            );
+                        }
+                    }
+                    newField.setSortByIds(sortInfo);
+
+                    result.add(DocumentField.builder()
+                            .row(newRow)
+                            .xs(currentField.getXs())
+                            .sm(currentField.getSm())
+                            .md(currentField.getMd())
+                            .lg(currentField.getLg())
+                            .xl(currentField.getXl())
+                            .positionIndex(fieldIndex)
+                            .fieldDefinitionType(newField)
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
                             .build());
                 } else if (currentField instanceof SignatureFormularItemDto) {
@@ -450,11 +761,10 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .xl(currentField.getXl())
                             .positionIndex(fieldIndex)
                             .fieldDefinitionType(SignatureFieldDefinitionType.builder()
-                                    .id(currentField.getFieldDefinitionTypeId())
                                     .build())
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
                             .build());
-                } else if (currentField instanceof TextFormularItemDto) {
+                } else if (currentField instanceof final TextFormularItemDto castedField) {
                     result.add(DocumentField.builder()
                             .row(newRow)
                             .xs(currentField.getXs())
@@ -464,10 +774,9 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .xl(currentField.getXl())
                             .positionIndex(fieldIndex)
                             .fieldDefinitionType(TextFieldDefinitionType.builder()
-                                    .id(currentField.getFieldDefinitionTypeId())
-                                    .text(((TextFormularItemDto) currentField).getText())
-                                    .readOnly(((TextFormularItemDto) currentField).isReadOnly())
-                                    .fontSize(((TextFormularItemDto) currentField).getFontSize())
+                                    .text(castedField.getText())
+                                    .readOnly(castedField.isReadOnly())
+                                    .fontSize(castedField.getFontSize())
                                     .build())
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
                             .build());
@@ -481,7 +790,6 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .xl(currentField.getXl())
                             .positionIndex(fieldIndex)
                             .fieldDefinitionType(QRCodeFieldDefinitionType.builder()
-                                    .id(currentField.getFieldDefinitionTypeId())
                                     .content(castedField.getValue())
                                     .maxWidthInPx(castedField.getMaxWidthInPx())
                                     .widthPercentage(castedField.getWidthPercentage())
@@ -489,7 +797,7 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             )
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
                             .build());
-                } else if (currentField instanceof DateFormularItemDto) {
+                } else if (currentField instanceof final DateFormularItemDto castedField) {
                     result.add(DocumentField.builder()
                             .row(newRow)
                             .xs(currentField.getXs())
@@ -499,18 +807,17 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .xl(currentField.getXl())
                             .positionIndex(fieldIndex)
                             .fieldDefinitionType(DateFieldDefinitionType.builder()
-                                    .id(currentField.getFieldDefinitionTypeId())
-                                    .value(((DateFormularItemDto) currentField).getValue())
-                                    .context(((DateFormularItemDto) currentField).getContext())
-                                    .fontSize(((DateFormularItemDto) currentField).getFontSize())
-                                    .dayDiff(((DateFormularItemDto) currentField).getDayDiff())
-                                    .monthDiff(((DateFormularItemDto) currentField).getMonthDiff())
-                                    .yearDiff(((DateFormularItemDto) currentField).getYearDiff())
+                                    .value(castedField.getValue())
+                                    .context(castedField.getContext())
+                                    .fontSize(castedField.getFontSize())
+                                    .dayDiff(castedField.getDayDiff())
+                                    .monthDiff(castedField.getMonthDiff())
+                                    .yearDiff(castedField.getYearDiff())
                                     .build()
                             )
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))
                             .build());
-                } else if (currentField instanceof CheckboxFormularItemDto) {
+                } else if (currentField instanceof final CheckboxFormularItemDto castedField) {
                     result.add(DocumentField.builder()
                             .row(newRow)
                             .xs(currentField.getXs())
@@ -520,12 +827,11 @@ public class DynamicDocumentToFormularDtoTransformer implements ITransformer<Dyn
                             .xl(currentField.getXl())
                             .positionIndex(fieldIndex)
                             .fieldDefinitionType(CheckboxFieldDefinitionType.builder()
-                                    .id(currentField.getFieldDefinitionTypeId())
-                                    .context(((CheckboxFormularItemDto) currentField).getContext())
-                                    .value(((CheckboxFormularItemDto) currentField).isValue())
-                                    .readOnly(((CheckboxFormularItemDto) currentField).isReadOnly())
-                                    .label(((CheckboxFormularItemDto) currentField).getLabel())
-                                    .fontSize(((CheckboxFormularItemDto) currentField).getFontSize())
+                                    .context(castedField.getContext())
+                                    .value(castedField.isValue())
+                                    .readOnly(castedField.isReadOnly())
+                                    .label(castedField.getLabel())
+                                    .fontSize(castedField.getFontSize())
                                     .build()
                             )
                             .alignment(transformFormularItemAlignToDocumentFieldAlign(currentField))

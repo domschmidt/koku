@@ -33,4 +33,8 @@ public class Activity extends DomainModel implements Serializable {
     @OneToMany(mappedBy = "activity", fetch = FetchType.LAZY)
     List<CustomerAppointmentActivity> usageInCustomerAppointments;
 
+    @ManyToOne
+    ActivityCategory category;
+    boolean relevantForPriceList;
+
 }

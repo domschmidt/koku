@@ -9,4 +9,6 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
 
     List<Activity> findAllByDescriptionContainingIgnoreCaseAndDeletedIsFalseOrderByDescriptionAsc(String description);
 
+    List<Activity> findAllByDescriptionContainingIgnoreCaseAndDeletedIsFalseAndRelevantForPriceListIsTrueOrderByDescriptionAsc(String description);
+
 }

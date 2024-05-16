@@ -32,8 +32,14 @@ public class ActivityService extends AbstractService<Activity, ActivitySearchOpt
 
     @Override
     @Transactional(readOnly = true)
-    public List<Activity> findAll(final ActivitySearchOptions customerSearchOptions) {
-        return this.activityRepository.findAllByDescriptionContainingIgnoreCaseAndDeletedIsFalseOrderByDescriptionAsc(customerSearchOptions.getSearch());
+    public List<Activity> findAll(final ActivitySearchOptions activitySearchOptions) {
+        final List<Activity> result;
+        if (activitySearchOptions.isHavingRelevanceForPriceListOnly()) {
+            result = this.activityRepository.findAllByDescriptionContainingIgnoreCaseAndDeletedIsFalseAndRelevantForPriceListIsTrueOrderByDescriptionAsc(activitySearchOptions.getSearch());
+        } else {
+            result = this.activityRepository.findAllByDescriptionContainingIgnoreCaseAndDeletedIsFalseOrderByDescriptionAsc(activitySearchOptions.getSearch());
+        }
+        return result;
     }
 
 }

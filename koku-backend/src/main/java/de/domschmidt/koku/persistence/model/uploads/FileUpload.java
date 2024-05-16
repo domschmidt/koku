@@ -27,13 +27,12 @@ public class FileUpload implements Serializable {
     LocalDateTime creationDate;
     Long size;
     boolean deleted;
-
-    @ManyToOne
+    String mediaType;
+    @ManyToOne(fetch = FetchType.LAZY)
     Customer customer;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     DynamicDocument dynamicDocument;
-
-    @OneToMany(orphanRemoval = true, mappedBy = "fileUpload", cascade = CascadeType.ALL)
+    @OneToMany(orphanRemoval = true, mappedBy = "fileUpload", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("position asc")
     List<FileUploadTag> tags;
 

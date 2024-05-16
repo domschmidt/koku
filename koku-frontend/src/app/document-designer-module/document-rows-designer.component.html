@@ -1,6 +1,5 @@
 <div class="document"
-     *ngIf="document !== undefined"
-     [sortablejs]="document.rows"
+     [sortablejs]="rows"
      [sortablejsOptions]="{
             fallbackTolerance: 5,
             group: 'document',
@@ -11,19 +10,19 @@
           }">
 
   <div class="document__row-info"
-       *ngIf="!document.rows || document.rows.length === 0">
+       *ngIf="!rows || rows.length === 0">
     <button class="document__row__contents__row-info__add-content-button"
             mat-button
             type="button"
-            (click)="addRow(document)"
+            (click)="addRow()"
     >
       Zeile hinzufügen
       <mat-icon prefix>add_circle_outline</mat-icon>
     </button>
   </div>
 
-  <ng-container *ngIf="document.rows !== undefined">
-    <div *ngFor="let row of document.rows"
+  <ng-container *ngIf="rows !== undefined">
+    <div *ngFor="let row of rows"
          class="document__row"
     >
       <div class="document__row__menu">
@@ -42,7 +41,7 @@
                 type="button"
                 color="accent"
                 title="neue Zeile vor dieser einfügen"
-                (click)="addRow(document, document.rows.indexOf(row))"
+                (click)="addRow(rows.indexOf(row))"
         >
           <mat-icon svgIcon="add_above" class="custom-svg-icon"></mat-icon>
         </button>
@@ -50,7 +49,7 @@
                 type="button"
                 color="accent"
                 title="neue Zeile hinter dieser einfügen"
-                (click)="addRow(document, document.rows.indexOf(row) + 1)"
+                (click)="addRow( rows.indexOf(row) + 1)"
         >
           <mat-icon svgIcon="add_below" class="custom-svg-icon"></mat-icon>
         </button>
@@ -69,7 +68,7 @@
                 type="button"
                 color="accent"
                 title="Zeile löschen"
-                (click)="deleteRow(row, document.rows)"
+                (click)="deleteRow(row)"
         >
           <mat-icon>delete</mat-icon>
         </button>
@@ -91,7 +90,7 @@
              *ngIf="!row.items || row.items.length === 0">
           <mat-menu #rowItemCreationMenu>
             <button (click)="createField(namePair.key, row)"
-                    *ngFor="let namePair of documentConfig.fields | keyvalue"
+                    *ngFor="let namePair of fieldConfig | keyvalue"
                     mat-menu-item>
               <span>{{namePair.value.name}}</span>
             </button>
@@ -130,7 +129,7 @@
             </button>
             <mat-menu #rowItemCreationMenuBefore>
               <button (click)="createField(namePair.key, row, (row.items || []).indexOf(formField))"
-                      *ngFor="let namePair of documentConfig.fields | keyvalue"
+                      *ngFor="let namePair of fieldConfig | keyvalue"
                       mat-menu-item>
                 <span>{{namePair.value.name}}</span>
               </button>
@@ -145,7 +144,7 @@
             </button>
             <mat-menu #rowItemCreationMenuAfter>
               <button (click)="createField(namePair.key, row,(row.items || []).indexOf(formField) + 1)"
-                      *ngFor="let namePair of documentConfig.fields | keyvalue"
+                      *ngFor="let namePair of fieldConfig | keyvalue"
                       mat-menu-item>
                 <span>{{namePair.value.name}}</span>
               </button>
@@ -181,10 +180,9 @@
 
           <div class="document__row__contents__item__inner">
             <ng-template fieldHost
-                         *ngIf="documentConfig.fields[formField['@type']] !== undefined"
-                         [componentType]="documentConfig.fields[formField['@type']].renderComponent"
+                         *ngIf="fieldConfig[formField['@type']] !== undefined"
+                         [componentType]="fieldConfig[formField['@type']].renderComponent"
                          [componentData]="formField"
-                         [viewMode]="'DESIGN'"
             ></ng-template>
           </div>
         </div>

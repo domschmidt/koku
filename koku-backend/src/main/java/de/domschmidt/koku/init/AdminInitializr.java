@@ -1,4 +1,4 @@
-package de.domschmidt.koku.demo;
+package de.domschmidt.koku.init;
 
 import de.domschmidt.koku.persistence.dao.KokuUserRepository;
 import de.domschmidt.koku.persistence.model.auth.KokuUser;

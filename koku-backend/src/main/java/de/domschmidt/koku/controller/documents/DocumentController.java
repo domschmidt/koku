@@ -75,7 +75,7 @@ public class DocumentController extends AbstractController<DynamicDocument, Form
     public List<DocumentContextDto> getAllDocumentContexts() {
         final List<DocumentContextDto> result = new ArrayList<>();
         for (final DocumentContext currentContext : DocumentContext.values()) {
-            result.add(new DynamicDocumentToFormularDtoTransformer().transformContext(currentContext));
+            result.add(this.dynamicDocumentToFormularDtoTransformer.transformContext(currentContext));
         }
         return result;
     }
@@ -130,14 +130,59 @@ public class DocumentController extends AbstractController<DynamicDocument, Form
     @GetMapping(value = "/contexts/{context}/replacementtoken/text")
     public List<FormularReplacementTokenDto> getAllTextReplacementTokenPresets(@PathVariable("context") DocumentContextEnumDto context) {
         final List<FormularReplacementTokenDto> result = new ArrayList<>();
-        if (context == DocumentContextEnumDto.CUSTOMER) {
-            for (final DocumentCustomerTextReplacementToken currentReplacementToken : DocumentCustomerTextReplacementToken.values()) {
-                result.add(FormularReplacementTokenDto.builder()
-                        .replacementToken(currentReplacementToken.getReplacementString())
-                        .tokenName(currentReplacementToken.getTokenName())
-                        .build());
-            }
+
+        switch (context) {
+            case CUSTOMER:
+                for (final DocumentCustomerTextReplacementToken currentReplacementToken : DocumentCustomerTextReplacementToken.values()) {
+                    result.add(FormularReplacementTokenDto.builder()
+                            .replacementToken(currentReplacementToken.getReplacementString())
+                            .tokenName(currentReplacementToken.getTokenName())
+                            .build());
+                }
+                break;
+            default:
+                break;
         }
+        for (final DocumentTextReplacementToken currentReplacementToken : DocumentTextReplacementToken.values()) {
+            result.add(FormularReplacementTokenDto.builder()
+                    .replacementToken(currentReplacementToken.getReplacementString())
+                    .tokenName(currentReplacementToken.getTokenName())
+                    .build());
+        }
+        return result;
+    }
+
+    @GetMapping(value = "/contexts/{context}/replacementtoken/activitypricelistitem/text")
+    public List<FormularReplacementTokenDto> getAllActivityPricelistitemTextReplacementTokenPresets(@PathVariable("context") DocumentContextEnumDto context) {
+        final List<FormularReplacementTokenDto> result = new ArrayList<>();
+
+        for (final DocumentActivityPriceListItemTextReplacementToken currentReplacementToken : DocumentActivityPriceListItemTextReplacementToken.values()) {
+            result.add(FormularReplacementTokenDto.builder()
+                    .replacementToken(currentReplacementToken.getReplacementString())
+                    .tokenName(currentReplacementToken.getTokenName())
+                    .build());
+        }
+
+        for (final DocumentTextReplacementToken currentReplacementToken : DocumentTextReplacementToken.values()) {
+            result.add(FormularReplacementTokenDto.builder()
+                    .replacementToken(currentReplacementToken.getReplacementString())
+                    .tokenName(currentReplacementToken.getTokenName())
+                    .build());
+        }
+        return result;
+    }
+
+    @GetMapping(value = "/contexts/{context}/replacementtoken/activitypricelistgroup/text")
+    public List<FormularReplacementTokenDto> getAllActivityPricelistgroupTextReplacementTokenPresets(@PathVariable("context") DocumentContextEnumDto context) {
+        final List<FormularReplacementTokenDto> result = new ArrayList<>();
+
+        for (final DocumentActivityPriceListGroupCategoriesTextReplacementToken currentReplacementToken : DocumentActivityPriceListGroupCategoriesTextReplacementToken.values()) {
+            result.add(FormularReplacementTokenDto.builder()
+                    .replacementToken(currentReplacementToken.getReplacementString())
+                    .tokenName(currentReplacementToken.getTokenName())
+                    .build());
+        }
+
         for (final DocumentTextReplacementToken currentReplacementToken : DocumentTextReplacementToken.values()) {
             result.add(FormularReplacementTokenDto.builder()
                     .replacementToken(currentReplacementToken.getReplacementString())

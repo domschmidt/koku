@@ -1,5 +1,5 @@
 <div fxLayout="row wrap"
-     *ngFor="let row of document.rows"
+     *ngFor="let row of rows"
      class="document__row">
 
   <div *ngFor="let formField of row.items"
@@ -14,9 +14,9 @@
        [class.document__row__item--align-bottom]="row.align === 'BOTTOM'"
   >
     <ng-template fieldHost
-                 [componentType]="documentConfig.fields[formField['@type']].renderComponent"
+                 [componentType]="fieldConfig[formField['@type']].component"
+                 [componentMeta]="fieldConfig[formField['@type']].meta"
                  [componentData]="formField"
-                 [viewMode]="'CAPTURE'"
     ></ng-template>
   </div>
 </div>

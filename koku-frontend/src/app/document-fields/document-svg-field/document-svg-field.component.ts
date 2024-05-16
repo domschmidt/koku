@@ -1,10 +1,6 @@
 import {Component, Inject} from '@angular/core';
-import {
-  DOCUMENT_FIELD_DATA,
-  DOCUMENT_FIELD_OPTIONS,
-  DocumentFieldOptions
-} from "../../document-designer-module/document-field-host.directive";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
+import {DOCUMENT_FIELD_DATA} from '../../document-designer-module/document-field-host.directive';
+import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
 import SVGFormularItemDto = KokuDto.SVGFormularItemDto;
 
 
@@ -16,16 +12,15 @@ import SVGFormularItemDto = KokuDto.SVGFormularItemDto;
 export class DocumentSvgFieldComponent {
 
   alignMap = {
-    'LEFT': 'start',
-    'CENTER': 'center',
-    'RIGHT': 'end'
+    LEFT: 'start',
+    CENTER: 'center',
+    RIGHT: 'end'
   };
   justifyContent: string | undefined;
   sanitizedValue: SafeHtml | undefined;
 
   constructor(
     @Inject(DOCUMENT_FIELD_DATA) public data: SVGFormularItemDto,
-    @Inject(DOCUMENT_FIELD_OPTIONS) public options: DocumentFieldOptions,
     private domSanitizer: DomSanitizer
   ) {
     if (data.align !== undefined) {

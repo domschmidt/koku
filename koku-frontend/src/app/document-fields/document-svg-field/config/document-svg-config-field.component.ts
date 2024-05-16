@@ -1,10 +1,11 @@
 import {Component, Inject} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {NgForm} from "@angular/forms";
-import {DocumentService} from "../../../document/document.service";
-import {FileSystemFileEntry, NgxFileDropEntry} from "ngx-file-drop";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {MatSnackBar} from "@angular/material/snack-bar";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {NgForm} from '@angular/forms';
+import {DocumentService} from '../../../document/document.service';
+import {FileSystemFileEntry, NgxFileDropEntry} from 'ngx-file-drop';
+import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {DocumentFieldMeta} from '../../../document-designer-module/document-field-config';
 
 @Component({
   selector: 'document-svg-field',
@@ -14,15 +15,15 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 export class DocumentSvgConfigFieldComponent {
 
   svgField: KokuDto.SVGFormularItemDto;
-  saving: boolean = false;
-  loading: boolean = true;
+  saving = false;
+  loading = true;
   createMode: boolean;
   trustedSVGContent: SafeHtml | undefined;
-  acceptableMimeType: string = 'image/svg+xml';
+  acceptableMimeType = 'image/svg+xml';
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: {
                 field?: KokuDto.SVGFormularItemDto
-                document: KokuDto.FormularDto
+                meta: DocumentFieldMeta
               },
               public dialogRef: MatDialogRef<DocumentSvgConfigFieldComponent>,
               public dialog: MatDialog,
@@ -43,24 +44,24 @@ export class DocumentSvgConfigFieldComponent {
     }
   }
 
-  save(form: NgForm) {
+  save(form: NgForm): void {
     if (form.valid) {
       this.dialogRef.close(this.svgField);
     }
   }
 
-  getTrustedSvg(formularItem: KokuDto.SVGFormularItemDto) {
+  getTrustedSvg(formularItem: KokuDto.SVGFormularItemDto): SafeHtml {
     return this.domSanitizer.bypassSecurityTrustHtml(atob(formularItem.svgContentBase64encoded || ''));
   }
 
-  dropped(droppedFiles: NgxFileDropEntry[]) {
+  dropped(droppedFiles: NgxFileDropEntry[]): void {
     if (!droppedFiles || droppedFiles.length > 1) {
       throw new Error('Unsupported number of file selections.');
     }
-    const newPicture = <FileSystemFileEntry>droppedFiles[0].fileEntry;
+    const newPicture = droppedFiles[0].fileEntry as FileSystemFileEntry;
     newPicture.file((file => {
       if (file.type !== this.acceptableMimeType) {
-        this.matSnack.open("Falsches Bildformat", 'ok', {
+        this.matSnack.open('Falsches Bildformat', 'ok', {
           duration: 5000
         });
       } else {
@@ -76,7 +77,7 @@ export class DocumentSvgConfigFieldComponent {
             this.trustedSVGContent = this.getTrustedSvg(this.svgField);
           }
         }, () => {
-          this.matSnack.open("Bild konnte nicht erfasst werden.", 'ok', {
+          this.matSnack.open('Bild konnte nicht erfasst werden.', 'ok', {
             duration: 5000
           });
         });
@@ -84,8 +85,8 @@ export class DocumentSvgConfigFieldComponent {
     }));
   }
 
-  getAlignStyle(align?: "LEFT" | "CENTER" | "RIGHT") {
-    let result = 'left'
+  getAlignStyle(align?: 'LEFT' | 'CENTER' | 'RIGHT'): string {
+    let result = 'left';
     switch (align) {
       case 'CENTER':
         result = 'center';

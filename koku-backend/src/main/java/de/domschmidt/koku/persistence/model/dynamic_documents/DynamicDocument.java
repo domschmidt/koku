@@ -37,7 +37,7 @@ public class DynamicDocument extends DomainModel implements Serializable {
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("positionIndex ASC")
-    List<DocumentRow> rows;
+    List<DocumentRowComposing> rows;
 
     // copy constructor
     public DynamicDocument(final DynamicDocument documentToBeCopied) {
@@ -45,9 +45,9 @@ public class DynamicDocument extends DomainModel implements Serializable {
         this.description = "Kopie von " + documentToBeCopied.getDescription();
         this.deleted = documentToBeCopied.isDeleted();
         if (documentToBeCopied.getRows() != null) {
-            final List<DocumentRow> rows = new ArrayList<>();
-            for (final DocumentRow currentRow : documentToBeCopied.getRows()) {
-                rows.add(new DocumentRow(this, currentRow));
+            final List<DocumentRowComposing> rows = new ArrayList<>();
+            for (final DocumentRowComposing currentRow : documentToBeCopied.getRows()) {
+                rows.add(new DocumentRowComposing(this, currentRow));
             }
             this.rows = rows;
         }

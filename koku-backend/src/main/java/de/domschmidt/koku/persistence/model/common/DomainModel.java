@@ -18,10 +18,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @MappedSuperclass
 public abstract class DomainModel {
+
     @CreationTimestamp
     LocalDateTime recorded;
     @UpdateTimestamp
     LocalDateTime updated;
+
     public abstract Long getId();
 
 }

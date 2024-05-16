@@ -1,12 +1,8 @@
 import {AfterViewInit, Component, ElementRef, Inject, ViewChild} from '@angular/core';
-import {
-  DOCUMENT_FIELD_DATA,
-  DOCUMENT_FIELD_OPTIONS,
-  DocumentFieldOptions
-} from "../../document-designer-module/document-field-host.directive";
-import SignaturePad from "signature_pad";
-import {throttle} from "lodash";
-import {ResizeSensor} from "css-element-queries";
+import {DOCUMENT_FIELD_DATA} from '../../document-designer-module/document-field-host.directive';
+import SignaturePad from 'signature_pad';
+import {throttle} from 'lodash';
+import {ResizeSensor} from 'css-element-queries';
 import SignatureFormularItemDto = KokuDto.SignatureFormularItemDto;
 
 
@@ -32,8 +28,7 @@ export class DocumentSignatureFieldComponent implements AfterViewInit {
   }, 300);
 
   constructor(
-    @Inject(DOCUMENT_FIELD_DATA) public data: SignatureFormularItemDto,
-    @Inject(DOCUMENT_FIELD_OPTIONS) public options: DocumentFieldOptions
+    @Inject(DOCUMENT_FIELD_DATA) public data: SignatureFormularItemDto
   ) {
   }
 
@@ -46,20 +41,16 @@ export class DocumentSignatureFieldComponent implements AfterViewInit {
     this.redrawCanvas();
   }
 
-  private redrawCanvas() {
+  private redrawCanvas(): void {
     if (this.canvas && this.canvasWrapper) {
       if (this.signaturePad) {
         this.signaturePad.clear();
         this.signaturePad.off();
       }
       const newSignaturePad = new SignaturePad(this.canvas.nativeElement, {});
-      if (this.options.viewMode === 'DESIGN') {
-        newSignaturePad.off();
-      } else {
-        newSignaturePad.addEventListener('endStroke', () => {
-          this.data.dataUri = this.signaturePad?.toDataURL('image/png');
-        });
-      }
+      newSignaturePad.addEventListener('endStroke', () => {
+        this.data.dataUri = this.signaturePad?.toDataURL('image/png');
+      });
 
       // apply size
       const width = this.canvasWrapper.nativeElement.clientWidth || 300;
@@ -76,7 +67,6 @@ export class DocumentSignatureFieldComponent implements AfterViewInit {
       alert('Signature pad not initialized properly!');
     }
   }
-
 
 
 }

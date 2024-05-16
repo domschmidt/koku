@@ -25,6 +25,7 @@ import {CardDavComponent} from "./carddav/card-dav.component";
 import {DashboardComponent} from "./dashboard/dashboard.component";
 import {CalendarViewToggleComponent} from "./calendar-view-toggle/calendar-view-toggle.component";
 import {FilesOverviewComponent} from "./files-overview/files-overview.component";
+import {ActivityCategoryComponent} from './activity-category/activity-category.component';
 
 const routes: Routes = [
   {
@@ -124,6 +125,14 @@ const routes: Routes = [
                 component: ActivityComponent,
                 data: {
                   name: 'Tätigkeiten'
+                },
+                canDeactivate: [PreventNavigationIfModalIsOpenService]
+              },
+              {
+                path: 'activitycategories',
+                component: ActivityCategoryComponent,
+                data: {
+                  name: 'Tätigkeitskategorien'
                 },
                 canDeactivate: [PreventNavigationIfModalIsOpenService]
               },

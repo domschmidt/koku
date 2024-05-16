@@ -1,4 +1,3 @@
-
 export interface DocumentBaseRowItem {
   '@type': string;
   id?: number;
@@ -10,10 +9,6 @@ export interface DocumentBaseRowItem {
 }
 
 export interface DocumentBaseRow {
-  align?: 'TOP' | 'CENTER' | 'BOTTOM',
-  items?: DocumentBaseRowItem[]
-}
-
-export interface DocumentBase {
-  rows?: DocumentBaseRow[]
+  align?: 'TOP' | 'CENTER' | 'BOTTOM';
+  items?: DocumentBaseRowItem[];
 }

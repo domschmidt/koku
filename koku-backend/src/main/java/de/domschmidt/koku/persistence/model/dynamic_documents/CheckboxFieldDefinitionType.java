@@ -25,8 +25,8 @@ public class CheckboxFieldDefinitionType extends FieldDefinitionType implements 
     @SequenceGenerator(schema = "koku", name = "koku_seq")
     Long id;
     String context;
-    boolean value;
-    boolean readOnly;
+    Boolean value;
+    Boolean readOnly;
     String label;
     Integer fontSize;
 
@@ -34,9 +34,9 @@ public class CheckboxFieldDefinitionType extends FieldDefinitionType implements 
     public CheckboxFieldDefinitionType(final CheckboxFieldDefinitionType fieldDefintionTypeToBeCopied) {
         this.id = null;
         this.context = fieldDefintionTypeToBeCopied.getContext();
-        this.value = fieldDefintionTypeToBeCopied.isValue();
+        this.value = Boolean.TRUE.equals(fieldDefintionTypeToBeCopied.getValue());
         this.fontSize = fieldDefintionTypeToBeCopied.getFontSize();
         this.label = fieldDefintionTypeToBeCopied.getLabel();
-        this.readOnly = fieldDefintionTypeToBeCopied.isReadOnly();
+        this.readOnly = Boolean.TRUE.equals(fieldDefintionTypeToBeCopied.getReadOnly());
     }
 }

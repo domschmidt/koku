@@ -65,6 +65,7 @@ public class DocumentTableController extends AbstractController<DynamicDocument,
                                 querySpec
                         ),
                         qDynamicDocument.context.eq(dynamicDocumentToFormularDtoTransformer.transformContext(context))
+                                .and(qDynamicDocument.deleted.ne(Boolean.TRUE))
                 ))
                 .from(qDynamicDocument)
                 .orderBy(new DataTableOrderByFactory().buildOrderBySpecifiers(

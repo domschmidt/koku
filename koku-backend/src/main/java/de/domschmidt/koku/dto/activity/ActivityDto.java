@@ -16,10 +16,12 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ActivityDto {
 
-    private Long id;
+    Long id;
     String description;
     Duration approximatelyDuration;
     BigDecimal currentPrice;
     List<PriceHistoryDto> priceHistory;
+    ActivityCategoryDto category;
+    Boolean relevantForPriceList;
 
 }

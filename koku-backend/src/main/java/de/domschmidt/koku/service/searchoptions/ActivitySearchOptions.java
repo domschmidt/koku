@@ -14,6 +14,7 @@ import java.time.LocalTime;
 public class ActivitySearchOptions {
 
     String search;
+    boolean havingRelevanceForPriceListOnly;
     private LocalDate priceDate;
     @JsonFormat(pattern = "HH:mm")
     private LocalTime priceTime;

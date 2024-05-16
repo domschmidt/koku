@@ -22,7 +22,6 @@ public class DocumentRow extends DomainModel implements Serializable {
     @GeneratedValue(generator = "koku_seq")
     @SequenceGenerator(schema = "koku", name = "koku_seq")
     Long id;
-    Integer positionIndex;
 
     @Enumerated(EnumType.STRING)
     DocumentRowAlign align;
@@ -31,13 +30,9 @@ public class DocumentRow extends DomainModel implements Serializable {
     @OrderBy("positionIndex ASC")
     List<DocumentField> fields;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
-    DynamicDocument document;
-
     // copy constructor
-    public DocumentRow(final DynamicDocument document, final DocumentRow rowToBeCopied) {
+    public DocumentRow(final DocumentRow rowToBeCopied) {
         this.id = null;
-        this.document = document;
         this.align = rowToBeCopied.getAlign();
         if (rowToBeCopied.getFields() != null) {
             final List<DocumentField> fields = new ArrayList<>();

@@ -29,7 +29,7 @@ public class DateFieldDefinitionType extends FieldDefinitionType implements Seri
 
     LocalDate value;
     Integer fontSize;
-    boolean readOnly;
+    Boolean readOnly;
 
     Integer dayDiff;
     Integer monthDiff;
@@ -41,7 +41,7 @@ public class DateFieldDefinitionType extends FieldDefinitionType implements Seri
         this.context = fieldDefintionTypeToBeCopied.getContext();
         this.value = fieldDefintionTypeToBeCopied.getValue();
         this.fontSize = fieldDefintionTypeToBeCopied.getFontSize();
-        this.readOnly = fieldDefintionTypeToBeCopied.isReadOnly();
+        this.readOnly = Boolean.TRUE.equals(fieldDefintionTypeToBeCopied.getReadOnly());
         this.dayDiff = fieldDefintionTypeToBeCopied.getDayDiff();
         this.monthDiff = fieldDefintionTypeToBeCopied.getMonthDiff();
         this.yearDiff = fieldDefintionTypeToBeCopied.getYearDiff();

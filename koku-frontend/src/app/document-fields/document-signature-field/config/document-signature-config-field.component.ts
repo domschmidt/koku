@@ -1,7 +1,8 @@
 import {Component, Inject} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {NgForm} from "@angular/forms";
-import {DocumentService} from "../../../document/document.service";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {NgForm} from '@angular/forms';
+import {DocumentService} from '../../../document/document.service';
+import {DocumentFieldMeta} from '../../../document-designer-module/document-field-config';
 
 @Component({
   selector: 'document-signature-field',
@@ -11,13 +12,13 @@ import {DocumentService} from "../../../document/document.service";
 export class DocumentSignatureConfigFieldComponent {
 
   signatureField: KokuDto.SignatureFormularItemDto | undefined;
-  saving: boolean = false;
-  loading: boolean = true;
+  saving = false;
+  loading = true;
   createMode: boolean;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: {
                 field?: KokuDto.SignatureFormularItemDto
-                document: KokuDto.FormularDto
+                meta: DocumentFieldMeta
               },
               public dialogRef: MatDialogRef<DocumentSignatureConfigFieldComponent>,
               public dialog: MatDialog,
@@ -33,7 +34,7 @@ export class DocumentSignatureConfigFieldComponent {
     }
   }
 
-  save(form: NgForm) {
+  save(form: NgForm): void {
     if (form.valid) {
       this.dialogRef.close(this.signatureField);
     }

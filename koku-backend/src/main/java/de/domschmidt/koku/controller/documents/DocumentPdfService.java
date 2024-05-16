@@ -34,6 +34,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -60,188 +61,8 @@ public class DocumentPdfService {
             // step 3: we open the document
             document.open();
 
-            for (final FormularRowDto formularRow : formularDto.getRows()) {
-                final PdfPTable table = new PdfPTable(COL_COUNT);
-                table.setWidthPercentage(100);
+            document.add(convertRows(document, pdfWriter, formularDto.getRows()));
 
-                for (final FormularItemDto formularItem : formularRow.getItems()) {
-
-                    final int colspan = getColspan(formularItem);
-
-                    if (formularItem instanceof final TextFormularItemDto castedFieldType) {
-                        final Paragraph paragraph = new Paragraph(StringUtils.defaultString(castedFieldType.getText(), ""));
-                        paragraph.setAlignment(getHorizontalAlignment(formularItem));
-                        if (castedFieldType.getFontSize() != null) {
-                            Integer fontSize = castedFieldType.getFontSize();
-                            if (fontSize == null) {
-                                fontSize = 12;
-                            }
-                            paragraph.getFont().setSize(fontSize);
-                        }
-                        final PdfPCell currentCell = new PdfPCell(paragraph);
-                        currentCell.setColspan(colspan);
-                        currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
-                        currentCell.setPadding(5);
-                        currentCell.setBorderWidth(0);
-                        currentCell.setUseAscender(true);
-                        currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
-                        table.addCell(currentCell);
-                    } else if (formularItem instanceof final SVGFormularItemDto castedFieldType) {
-                        final Image svgImage = createImageFromSvgBase64(pdfWriter, castedFieldType.getSvgContentBase64encoded());
-                        svgImage.setAlignment(getHorizontalAlignment(formularItem));
-                        svgImage.scaleToFit(castedFieldType.getMaxWidthInPx(), pageSize.getHeight());
-
-                        final PdfPCell currentCell = new PdfPCell(svgImage);
-                        currentCell.setColspan(colspan);
-                        currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
-                        currentCell.setPadding(5);
-                        currentCell.setBorderWidth(0);
-                        currentCell.setUseAscender(true);
-                        currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
-                        table.addCell(currentCell);
-                    } else if (formularItem instanceof SignatureFormularItemDto) {
-                        final String dataUriString = StringUtils.defaultString(((SignatureFormularItemDto) formularItem).getDataUri());
-                        final String base64ImageContent = dataUriString.substring(dataUriString.indexOf(",") + 1);
-                        final Image image;
-                        if (!dataUriString.trim().isEmpty()) {
-                            if (dataUriString.startsWith("data:image/svg+xml;")) {
-                                // svg detected;
-                                image = createImageFromSvgBase64(pdfWriter, base64ImageContent);
-                            } else {
-                                image = Image.getInstance(Base64.getDecoder().decode(base64ImageContent));
-                            }
-                        } else {
-                            // do nothing
-                            image = Image.getInstance("");
-                        }
-                        image.setAlignment(getHorizontalAlignment(formularItem));
-                        final float fieldWidth = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin()) / 12) * colspan;
-                        image.scaleToFit(fieldWidth, fieldWidth / 3);
-
-                        final PdfPCell currentCell = new PdfPCell(image);
-                        currentCell.setColspan(colspan);
-                        currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
-                        currentCell.setPadding(5);
-                        currentCell.setBorderWidth(0);
-                        currentCell.setUseAscender(true);
-                        currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
-                        table.addCell(currentCell);
-                    } else if (formularItem instanceof CheckboxFormularItemDto) {
-                        // build label
-                        Integer fontSize = ((CheckboxFormularItemDto) formularItem).getFontSize();
-                        if (fontSize == null) {
-                            fontSize = 12;
-                        }
-
-                        // build checkbox img
-                        final Image checkboxImage;
-                        if (((CheckboxFormularItemDto) formularItem).isValue()) {
-                            checkboxImage = createImageFromSvgBase64(pdfWriter, CHECKBOX_CHECKED_BASE64_SVG);
-                        } else {
-                            checkboxImage = createImageFromSvgBase64(pdfWriter, CHECKBOX_EMPTY_BASE64_SVG);
-                        }
-                        final PdfPCell imageCell = new PdfPCell(checkboxImage, true);
-                        imageCell.setVerticalAlignment(getVerticalAlignment(formularRow));
-                        imageCell.setBorderWidth(0);
-                        imageCell.setPaddingLeft(1);
-                        imageCell.setPaddingRight(1);
-
-                        final PdfPTable checkboxTable = new PdfPTable(1);
-                        checkboxTable.setHorizontalAlignment(getHorizontalAlignment(formularItem));
-                        checkboxTable.setWidths(new float[] {fontSize});
-                        checkboxTable.setTotalWidth(fontSize + 5);
-                        checkboxTable.setLockedWidth(true);
-
-                        // add checkbox image
-                        checkboxTable.addCell(imageCell);
-
-                        final PdfPCell currentCell = new PdfPCell(checkboxTable);
-                        currentCell.setColspan(colspan);
-                        currentCell.setPadding(5);
-                        currentCell.setBorderWidth(0);
-                        currentCell.setUseAscender(true);
-                        imageCell.setVerticalAlignment(getVerticalAlignment(formularRow));
-                        table.addCell(currentCell);
-                    } else if (formularItem instanceof final QrCodeFormularItemDto castedField) {
-                        final String content = castedField.getValue();
-
-                        QRCodeWriter barcodeWriter = new QRCodeWriter();
-                        final BitMatrix bitMatrix;
-                        try {
-                            BigDecimal maxWidth = (BigDecimal.valueOf(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin()).divide(new BigDecimal(12), RoundingMode.DOWN)).multiply(new BigDecimal(colspan));
-                            if (castedField.getWidthPercentage() != null) {
-                                maxWidth = maxWidth.multiply(new BigDecimal(castedField.getWidthPercentage())).divide(new BigDecimal(100), RoundingMode.DOWN);
-                            }
-                            final BigDecimal calculatedWidthAndHeight;
-                            if (castedField.getMaxWidthInPx() != null && maxWidth.compareTo(new BigDecimal(castedField.getMaxWidthInPx())) > 0) {
-                                calculatedWidthAndHeight = new BigDecimal(castedField.getMaxWidthInPx());
-                            } else {
-                                calculatedWidthAndHeight = maxWidth;
-                            }
-                            bitMatrix = barcodeWriter.encode(
-                                    content,
-                                    BarcodeFormat.QR_CODE,
-                                    calculatedWidthAndHeight.intValue(),
-                                    calculatedWidthAndHeight.intValue(),
-                                    ImmutableMap.of(
-                                            EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H
-                                    )
-                            );
-
-                            final Image image = Image.getInstance(
-                                    MatrixToImageWriter.toBufferedImage(bitMatrix),
-                                    null,
-                                    false
-                            );
-                            image.setAlignment(getHorizontalAlignment(formularItem));
-                            image.scaleToFit(calculatedWidthAndHeight.intValue(), calculatedWidthAndHeight.intValue());
-                            final PdfPCell currentCell = new PdfPCell(image);
-                            currentCell.setColspan(colspan);
-                            currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
-                            currentCell.setPadding(5);
-                            currentCell.setBorderWidth(0);
-                            currentCell.setUseAscender(true);
-                            currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
-                            table.addCell(currentCell);
-                        } catch (final WriterException we) {
-                            log.error("Unexpected Exception", we);
-                        }
-                    } else if (formularItem instanceof final DateFormularItemDto castedDateField) {
-                        LocalDate value = castedDateField.getValue();
-                        final Paragraph paragraph;
-                        if (value != null) {
-                            paragraph = new Paragraph(value.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-                        } else {
-                            paragraph = new Paragraph("");
-                        }
-                        paragraph.setAlignment(getHorizontalAlignment(formularItem));
-                        if (castedDateField.getFontSize() != null) {
-                            Integer fontSize = castedDateField.getFontSize();
-                            if (fontSize == null) {
-                                fontSize = 12;
-                            }
-                            paragraph.getFont().setSize(fontSize);
-                        }
-                        final PdfPCell currentCell = new PdfPCell(paragraph);
-                        currentCell.setColspan(colspan);
-                        currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
-                        currentCell.setPadding(5);
-                        currentCell.setBorderWidth(0);
-                        currentCell.setUseAscender(true);
-                        currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
-                        table.addCell(currentCell);
-                    } else {
-                        System.out.println("unknown type");
-                    }
-                }
-
-                // set border of default cell to be invisible
-                table.getDefaultCell().setBorder(0);
-                // fill the rest of the row using the default cell
-                table.completeRow();
-
-                document.add(table);
-            }
         } catch (final DocumentException de) {
             log.error("Unable to create PDF", de);
         } catch (final IOException ioe) {
@@ -250,6 +71,207 @@ public class DocumentPdfService {
         document.close();
 
         return outputStream;
+    }
+
+    private PdfPTable convertRows(
+            final Document outDocument,
+            final PdfWriter pdfWriter,
+            final List<FormularRowDto> rows
+    ) throws IOException {
+        final PdfPTable table = new PdfPTable(COL_COUNT);
+        table.setWidthPercentage(100);
+        for (final FormularRowDto formularRow : rows) {
+
+            for (final FormularItemDto formularItem : formularRow.getItems()) {
+
+                final int colspan = getColspan(formularItem);
+
+                if (formularItem instanceof final TextFormularItemDto castedFieldType) {
+                    final Paragraph paragraph = new Paragraph(StringUtils.defaultString(castedFieldType.getText(), ""));
+                    paragraph.setAlignment(getHorizontalAlignment(formularItem));
+                    if (castedFieldType.getFontSize() != null) {
+                        Integer fontSize = castedFieldType.getFontSize();
+                        if (fontSize == null) {
+                            fontSize = 12;
+                        }
+                        paragraph.getFont().setSize(fontSize);
+                    }
+                    final PdfPCell currentCell = new PdfPCell(paragraph);
+                    currentCell.setColspan(colspan);
+                    currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
+                    currentCell.setPadding(5);
+                    currentCell.setBorderWidth(0);
+                    currentCell.setUseAscender(true);
+                    currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
+                    table.addCell(currentCell);
+                } else if (formularItem instanceof final ActivityPriceListFormularItemDto castedFieldType) {
+                    final PdfPTable convertedInnerTable = convertRows(outDocument, pdfWriter, castedFieldType.getEvaluatedData());
+
+                    final PdfPCell currentCell = new PdfPCell(convertedInnerTable);
+                    currentCell.setColspan(colspan);
+                    currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
+                    currentCell.setPadding(0);
+                    currentCell.setBorderWidth(0);
+                    currentCell.setUseAscender(true);
+                    currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
+
+                    table.addCell(currentCell);
+                } else if (formularItem instanceof final SVGFormularItemDto castedFieldType) {
+                    final Image svgImage = createImageFromSvgBase64(pdfWriter, castedFieldType.getSvgContentBase64encoded());
+                    svgImage.setAlignment(getHorizontalAlignment(formularItem));
+                    svgImage.scaleToFit(castedFieldType.getMaxWidthInPx(), outDocument.getPageSize().getHeight());
+
+                    final PdfPCell currentCell = new PdfPCell(svgImage);
+                    currentCell.setColspan(colspan);
+                    currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
+                    currentCell.setPadding(5);
+                    currentCell.setBorderWidth(0);
+                    currentCell.setUseAscender(true);
+                    currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
+                    table.addCell(currentCell);
+                } else if (formularItem instanceof SignatureFormularItemDto) {
+                    final String dataUriString = StringUtils.defaultString(((SignatureFormularItemDto) formularItem).getDataUri());
+                    final String base64ImageContent = dataUriString.substring(dataUriString.indexOf(",") + 1);
+                    final Image image;
+                    if (!dataUriString.trim().isEmpty()) {
+                        if (dataUriString.startsWith("data:image/svg+xml;")) {
+                            // svg detected;
+                            image = createImageFromSvgBase64(pdfWriter, base64ImageContent);
+                        } else {
+                            image = Image.getInstance(Base64.getDecoder().decode(base64ImageContent));
+                        }
+                    } else {
+                        // do nothing
+                        image = Image.getInstance("");
+                    }
+                    image.setAlignment(getHorizontalAlignment(formularItem));
+                    final float fieldWidth = ((outDocument.getPageSize().getWidth() - outDocument.leftMargin() - outDocument.rightMargin()) / 12) * colspan;
+                    image.scaleToFit(fieldWidth, fieldWidth / 3);
+
+                    final PdfPCell currentCell = new PdfPCell(image);
+                    currentCell.setColspan(colspan);
+                    currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
+                    currentCell.setPadding(5);
+                    currentCell.setBorderWidth(0);
+                    currentCell.setUseAscender(true);
+                    currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
+                    table.addCell(currentCell);
+                } else if (formularItem instanceof CheckboxFormularItemDto) {
+                    // build label
+                    Integer fontSize = ((CheckboxFormularItemDto) formularItem).getFontSize();
+                    if (fontSize == null) {
+                        fontSize = 12;
+                    }
+
+                    // build checkbox img
+                    final Image checkboxImage;
+                    if (((CheckboxFormularItemDto) formularItem).isValue()) {
+                        checkboxImage = createImageFromSvgBase64(pdfWriter, CHECKBOX_CHECKED_BASE64_SVG);
+                    } else {
+                        checkboxImage = createImageFromSvgBase64(pdfWriter, CHECKBOX_EMPTY_BASE64_SVG);
+                    }
+                    final PdfPCell imageCell = new PdfPCell(checkboxImage, true);
+                    imageCell.setVerticalAlignment(getVerticalAlignment(formularRow));
+                    imageCell.setBorderWidth(0);
+                    imageCell.setPaddingLeft(1);
+                    imageCell.setPaddingRight(1);
+
+                    final PdfPTable checkboxTable = new PdfPTable(1);
+                    checkboxTable.setHorizontalAlignment(getHorizontalAlignment(formularItem));
+                    checkboxTable.setWidths(new float[] {fontSize});
+                    checkboxTable.setTotalWidth(fontSize + 5);
+                    checkboxTable.setLockedWidth(true);
+
+                    // add checkbox image
+                    checkboxTable.addCell(imageCell);
+
+                    final PdfPCell currentCell = new PdfPCell(checkboxTable);
+                    currentCell.setColspan(colspan);
+                    currentCell.setPadding(5);
+                    currentCell.setBorderWidth(0);
+                    currentCell.setUseAscender(true);
+                    imageCell.setVerticalAlignment(getVerticalAlignment(formularRow));
+                    table.addCell(currentCell);
+                } else if (formularItem instanceof final QrCodeFormularItemDto castedField) {
+                    final String content = castedField.getValue();
+
+                    QRCodeWriter barcodeWriter = new QRCodeWriter();
+                    final BitMatrix bitMatrix;
+                    try {
+                        BigDecimal maxWidth = (BigDecimal.valueOf(outDocument.getPageSize().getWidth() - outDocument.leftMargin() - outDocument.rightMargin()).divide(new BigDecimal(12), RoundingMode.DOWN)).multiply(new BigDecimal(colspan));
+                        if (castedField.getWidthPercentage() != null) {
+                            maxWidth = maxWidth.multiply(new BigDecimal(castedField.getWidthPercentage())).divide(new BigDecimal(100), RoundingMode.DOWN);
+                        }
+                        final BigDecimal calculatedWidthAndHeight;
+                        if (castedField.getMaxWidthInPx() != null && maxWidth.compareTo(new BigDecimal(castedField.getMaxWidthInPx())) > 0) {
+                            calculatedWidthAndHeight = new BigDecimal(castedField.getMaxWidthInPx());
+                        } else {
+                            calculatedWidthAndHeight = maxWidth;
+                        }
+                        bitMatrix = barcodeWriter.encode(
+                                content,
+                                BarcodeFormat.QR_CODE,
+                                calculatedWidthAndHeight.intValue(),
+                                calculatedWidthAndHeight.intValue(),
+                                ImmutableMap.of(
+                                        EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H
+                                )
+                        );
+
+                        final Image image = Image.getInstance(
+                                MatrixToImageWriter.toBufferedImage(bitMatrix),
+                                null,
+                                false
+                        );
+                        image.setAlignment(getHorizontalAlignment(formularItem));
+                        image.scaleToFit(calculatedWidthAndHeight.intValue(), calculatedWidthAndHeight.intValue());
+                        final PdfPCell currentCell = new PdfPCell(image);
+                        currentCell.setColspan(colspan);
+                        currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
+                        currentCell.setPadding(5);
+                        currentCell.setBorderWidth(0);
+                        currentCell.setUseAscender(true);
+                        currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
+                        table.addCell(currentCell);
+                    } catch (final WriterException we) {
+                        log.error("Unexpected Exception", we);
+                    }
+                } else if (formularItem instanceof final DateFormularItemDto castedDateField) {
+                    LocalDate value = castedDateField.getValue();
+                    final Paragraph paragraph;
+                    if (value != null) {
+                        paragraph = new Paragraph(value.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+                    } else {
+                        paragraph = new Paragraph("");
+                    }
+                    paragraph.setAlignment(getHorizontalAlignment(formularItem));
+                    if (castedDateField.getFontSize() != null) {
+                        Integer fontSize = castedDateField.getFontSize();
+                        if (fontSize == null) {
+                            fontSize = 12;
+                        }
+                        paragraph.getFont().setSize(fontSize);
+                    }
+                    final PdfPCell currentCell = new PdfPCell(paragraph);
+                    currentCell.setColspan(colspan);
+                    currentCell.setHorizontalAlignment(getHorizontalAlignment(formularItem));
+                    currentCell.setPadding(5);
+                    currentCell.setBorderWidth(0);
+                    currentCell.setUseAscender(true);
+                    currentCell.setVerticalAlignment(getVerticalAlignment(formularRow));
+                    table.addCell(currentCell);
+                } else {
+                    System.out.println("unknown type");
+                }
+            }
+        }
+
+        // set border of default cell to be invisible
+        table.getDefaultCell().setBorder(0);
+        // fill the rest of the row using the default cell
+        table.completeRow();
+
+        return table;
     }
 
     private int getVerticalAlignment(final FormularRowDto formularRow) {

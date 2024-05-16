@@ -1,0 +1,115 @@
+<form #form="ngForm"
+      (ngSubmit)="save(form)">
+  <mat-dialog-content>
+    <div style="padding: 12px 0;">
+      <div *ngIf="activityPriceListField">
+
+        <mat-form-field class="activity-details-field category-field">
+          <mat-label>Kategorie</mat-label>
+          <mat-select (selectionChange)="changeGroupBy($event)"
+                      [ngModel]="activityPriceListField.groupBy"
+                      name="groupBy">
+            <mat-option [value]="'CATEGORY'">
+              Tätigkeitskategorie
+            </mat-option>
+            <mat-option [value]="null"></mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div *ngIf="activityPriceListField.groupBy && activityPriceListGroupRowFieldConfig">
+          <h2>Zeilendesigner für Gruppierung</h2>
+
+          <document-rows-designer [rows]="activityPriceListField.groupRows"
+                                  [fieldConfig]="activityPriceListGroupRowFieldConfig"
+                                  [gridSize]="12"
+          ></document-rows-designer>
+        </div>
+
+
+        <div class="grouping-header">
+          <h2>Zeilendesigner für Tätigkeitspreislisten</h2>
+          <button (click)="openItemSort()"
+                  type="button"
+                  mat-button
+                  mat-icon-button
+          >
+            <mat-icon>preview</mat-icon>
+          </button>
+        </div>
+        <document-rows-designer [rows]="activityPriceListField.itemRows"
+                                [fieldConfig]="activityPriceListItemRowFieldConfig"
+                                [gridSize]="12"
+        ></document-rows-designer>
+
+        <mat-form-field class="activity-pricelist-configuration-field">
+          <mat-label>Feldgröße X-Large</mat-label>
+          <mat-select [(value)]="activityPriceListField.xl">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="activity-pricelist-configuration-field">
+          <mat-label>Feldgröße Large</mat-label>
+          <mat-select [(value)]="activityPriceListField.lg">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="activity-pricelist-configuration-field">
+          <mat-label>Feldgröße Medium</mat-label>
+          <mat-select [(value)]="activityPriceListField.md">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="activity-pricelist-configuration-field">
+          <mat-label>Feldgröße Small</mat-label>
+          <mat-select [(value)]="activityPriceListField.sm">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="activity-pricelist-configuration-field">
+          <mat-label>Feldgröße X-Small</mat-label>
+          <mat-select [(value)]="activityPriceListField.xs">
+            <mat-option [value]="null"></mat-option>
+            <mat-option [value]="3">ein Viertel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="4">ein Drittel der Verfügbaren Breite</mat-option>
+            <mat-option [value]="6">Hälfte der Verfügbaren Breite</mat-option>
+            <mat-option [value]="12">Gesamte Breite</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions *ngIf="activityPriceListField" align="end">
+    <button mat-button mat-dialog-close>Abbrechen</button>
+    <button *ngIf="!createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Speichern
+    </button>
+    <button *ngIf="createMode"
+            [class.button-spinner]="saving"
+            [disabled]="saving || form.invalid"
+            mat-button
+            type="submit">
+      Erstellen
+    </button>
+  </mat-dialog-actions>
+</form>

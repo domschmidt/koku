@@ -56,14 +56,20 @@ public class StorageService {
         return fileUpload;
     }
 
-    public File get(final UUID uuid) {
+    public File getById(final UUID uuid) {
         final Optional<FileUpload> fetchedFileUpload = this.fileUploadRepository.findById(uuid);
         if (fetchedFileUpload.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File Upload nicht gefunden");
         } else {
             final FileUpload fileUpload = fetchedFileUpload.get();
-            return new File(this.uploadConfiguration.getUploadsDir() + File.separator + fileUpload.getUuid() + "." + getExtension(fileUpload.getFileName()));
+            return getFileByFileUpload(fileUpload);
         }
+    }
+
+    public File getFileByFileUpload(
+            final FileUpload fileUpload
+    ) {
+        return new File(this.uploadConfiguration.getUploadsDir() + File.separator + fileUpload.getUuid() + "." + getExtension(fileUpload.getFileName()));
     }
 
     public FileUpload store(final ByteArrayInputStream byteArrayInputStream, final String fileName) throws IOException {

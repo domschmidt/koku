@@ -5,7 +5,7 @@
             class="text-field__inner"
             [style.font-size]="data.fontSize + 'px'"
             [style.text-align]="textAlign"
-            [disabled]="options.viewMode === 'DESIGN' || data.readOnly === true"
+            [disabled]="data.readOnly === true"
             cdkTextareaAutosize
   ></textarea>
 </mat-form-field>

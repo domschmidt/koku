@@ -23,7 +23,7 @@ public class DocumentField extends DomainModel implements Serializable {
     Long id;
     Integer positionIndex;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     public DocumentRow row;
 
     @ManyToOne(cascade = CascadeType.ALL)
@@ -61,6 +61,8 @@ public class DocumentField extends DomainModel implements Serializable {
             this.fieldDefinitionType = new QRCodeFieldDefinitionType((QRCodeFieldDefinitionType) fieldDefintionTypeToBeCopied);
         } else if (fieldDefintionTypeToBeCopied instanceof DateFieldDefinitionType) {
             this.fieldDefinitionType = new DateFieldDefinitionType((DateFieldDefinitionType) fieldDefintionTypeToBeCopied);
+        } else if (fieldDefintionTypeToBeCopied instanceof ActivityPriceListFieldDefinitionType) {
+            this.fieldDefinitionType = new ActivityPriceListFieldDefinitionType((ActivityPriceListFieldDefinitionType) fieldDefintionTypeToBeCopied);
         }
     }
 }

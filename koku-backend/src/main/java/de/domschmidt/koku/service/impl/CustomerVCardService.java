@@ -55,7 +55,7 @@ public class CustomerVCardService implements ICustomerVCardService {
                 props.add(new Fn(String.join(" ", nameList)));
                 final LocalDate customerBirthday = customer.getBirthday();
                 if (customerBirthday != null) {
-                    props.add(new BDay(new net.fortuna.ical4j.model.Date(Date.from(customerBirthday.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()))));
+                    props.add(new BDay(new net.fortuna.ical4j.model.Date(Date.from(customerBirthday.atStartOfDay().atZone(ZoneId.of("Europe/Berlin")).toInstant()))));
                 }
                 props.add(Version.VERSION_4_0);
                 props.add(new ProdId(PROD_ID));

@@ -1,7 +1,8 @@
 import {Component, Inject} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {NgForm} from "@angular/forms";
-import {DocumentService} from "../../../document/document.service";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {NgForm} from '@angular/forms';
+import {DocumentService} from '../../../document/document.service';
+import {DocumentFieldMeta} from '../../../document-designer-module/document-field-config';
 
 @Component({
   selector: 'document-qr-field',
@@ -11,18 +12,20 @@ import {DocumentService} from "../../../document/document.service";
 export class DocumentQrcodeConfigFieldComponent {
 
   qrCodeField: KokuDto.QrCodeFormularItemDto | undefined;
-  saving: boolean = false;
-  loading: boolean = true;
+  saving = false;
+  loading = true;
   createMode: boolean;
   replacementTokens: KokuDto.FormularReplacementTokenDto[] = [];
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: {
-                field?: KokuDto.QrCodeFormularItemDto
-                document: KokuDto.FormularDto
-              },
-              public dialogRef: MatDialogRef<DocumentQrcodeConfigFieldComponent>,
-              public dialog: MatDialog,
-              public documentService: DocumentService) {
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: {
+      field?: KokuDto.QrCodeFormularItemDto
+      meta: DocumentFieldMeta
+    },
+    public dialogRef: MatDialogRef<DocumentQrcodeConfigFieldComponent>,
+    public dialog: MatDialog,
+    public documentService: DocumentService
+  ) {
     this.createMode = data.field === undefined;
     if (data.field === undefined) {
       this.qrCodeField = {
@@ -32,18 +35,20 @@ export class DocumentQrcodeConfigFieldComponent {
     } else {
       this.qrCodeField = {...data.field};
     }
-    this.documentService.getDocumentQrcodeReplacementToken(data.document.context.value).subscribe((tokens) => {
-      this.replacementTokens = tokens;
-    });
+    this.replacementTokens = data.meta.replacementTokens;
   }
 
-  save(form: NgForm) {
+  save(form: NgForm): void {
     if (form.valid) {
       this.dialogRef.close(this.qrCodeField);
     }
   }
 
-  addReplacementToken(textArea: HTMLTextAreaElement, replacementToken: KokuDto.FormularReplacementTokenDto, formField: KokuDto.QrCodeFormularItemDto) {
+  addReplacementToken(
+    textArea: HTMLTextAreaElement,
+    replacementToken: KokuDto.FormularReplacementTokenDto,
+    formField: KokuDto.QrCodeFormularItemDto
+  ): void {
     const oldText = formField.value || '';
     formField.value = oldText.substring(0, textArea.selectionStart)
       + replacementToken.replacementToken

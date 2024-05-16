@@ -2,7 +2,7 @@
               [(ngModel)]="data.value"
               [name]="data.id + ''"
               [style.text-align]="textAlign"
-              [disabled]="options.viewMode === 'DESIGN' || data.readOnly === true">
+              [disabled]="data.readOnly === true">
   <span class="checkbox-field__label"
         [style.font-size]="data.fontSize + 'px'">{{data.label}}</span>
 </mat-checkbox>

@@ -1,9 +1,5 @@
 import {Component, Inject} from '@angular/core';
-import {
-  DOCUMENT_FIELD_DATA,
-  DOCUMENT_FIELD_OPTIONS,
-  DocumentFieldOptions
-} from "../../document-designer-module/document-field-host.directive";
+import {DOCUMENT_FIELD_DATA} from '../../document-designer-module/document-field-host.directive';
 import CheckboxFormularItemDto = KokuDto.CheckboxFormularItemDto;
 
 
@@ -15,15 +11,14 @@ import CheckboxFormularItemDto = KokuDto.CheckboxFormularItemDto;
 export class DocumentCheckboxFieldComponent {
 
   alignMap = {
-    'LEFT': 'left',
-    'CENTER': 'center',
-    'RIGHT': 'right'
+    LEFT: 'left',
+    CENTER: 'center',
+    RIGHT: 'right'
   };
   textAlign: string | undefined;
 
   constructor(
-    @Inject(DOCUMENT_FIELD_DATA) public data: CheckboxFormularItemDto,
-    @Inject(DOCUMENT_FIELD_OPTIONS) public options: DocumentFieldOptions
+    @Inject(DOCUMENT_FIELD_DATA) public data: CheckboxFormularItemDto
   ) {
     if (data.align !== undefined) {
       this.textAlign = this.alignMap[data.align];

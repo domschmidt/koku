@@ -1,18 +1,20 @@
 import {AfterViewInit, Component, ElementRef, Inject, ViewChild} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {ActivityService} from "../activity.service";
-import {FormControl, NgForm, Validators} from "@angular/forms";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {ActivityService} from '../activity.service';
+import {FormControl, NgForm, Validators} from '@angular/forms';
 import {Chart} from 'chart.js';
 import {padStart} from 'lodash';
 
-import * as moment from "moment";
-import {PreventLosingChangesService} from "../../prevent-losing-changes/prevent-losing-changes.service";
-import ActivityDto = KokuDto.ActivityDto;
+import * as moment from 'moment';
+import {PreventLosingChangesService} from '../../prevent-losing-changes/prevent-losing-changes.service';
 import {
   AlertDialogButtonConfig,
   AlertDialogComponent,
   AlertDialogData
-} from "../../alert-dialog/alert-dialog.component";
+} from '../../alert-dialog/alert-dialog.component';
+import {ActivityCategoryService} from '../../activity-category/activity-category.service';
+import ActivityDto = KokuDto.ActivityDto;
+import ActivityCategoryDto = KokuDto.ActivityCategoryDto;
 
 export interface ActivityDetailsComponentData {
   activityId?: number;
@@ -36,17 +38,24 @@ export class ActivityDetailsComponent implements AfterViewInit {
   saving: boolean = false;
   loading: boolean = true;
   createMode: boolean;
+  availableCategories: ActivityCategoryDto[] = [];
   priceCtl = new FormControl('', Validators.pattern('^\\d+(\\.\\d{0,2})?$'));
   @ViewChild('priceChart') priceCharts: ElementRef<HTMLCanvasElement> | undefined;
   @ViewChild('form') ngForm: NgForm | undefined;
   private dirty: boolean = false;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: ActivityDetailsComponentData,
-              public dialogRef: MatDialogRef<ActivityDetailsComponent>,
-              private readonly preventLosingChangesService: PreventLosingChangesService,
-              public dialog: MatDialog,
-              public activityService: ActivityService) {
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: ActivityDetailsComponentData,
+    public dialogRef: MatDialogRef<ActivityDetailsComponent>,
+    private readonly preventLosingChangesService: PreventLosingChangesService,
+    public dialog: MatDialog,
+    public activityService: ActivityService,
+    public activityCategoryService: ActivityCategoryService
+  ) {
     this.createMode = data.activityId === undefined;
+    activityCategoryService.getActivityCategories().subscribe((result) => {
+      this.availableCategories = result;
+    });
     if (data.activityId) {
       this.activityService.getActivity(data.activityId).subscribe((activity) => {
         this.activity = activity;
@@ -121,7 +130,7 @@ export class ActivityDetailsComponent implements AfterViewInit {
     });
     this.priceCtl.valueChanges.subscribe(() => {
       this.dirty = true;
-    })
+    });
   }
 
   save(activity: KokuDto.ActivityDto | undefined, form: NgForm) {
@@ -210,6 +219,13 @@ export class ActivityDetailsComponent implements AfterViewInit {
     this.ngForm?.statusChanges?.subscribe(() => {
       this.dirty = (this.ngForm || {}).dirty || false;
     });
+  }
+
+  compareActivityCategory(o1: ActivityCategoryDto, o2: ActivityCategoryDto): boolean {
+    if ((o1 || {}).id === (o2 || {}).id) {
+      return true;
+    }
+    return false;
   }
 
 }

@@ -19,6 +19,7 @@ public class FormularDto {
     @JsonProperty(required = true)
     DocumentContextDto context;
     Map<String, String> tags;
+    @JsonProperty(required = true)
     List<FormularRowDto> rows;
 
 }

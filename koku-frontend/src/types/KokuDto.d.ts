@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.36.1070 on 2022-09-30 14:08:35.
+// Generated using typescript-generator version 2.36.1070 on 2024-05-16 18:09:43.
 
 declare namespace KokuDto {
 
@@ -110,12 +110,19 @@ declare namespace KokuDto {
         creationDate?: string;
     }
 
+    interface ActivityCategoryDto {
+        id?: number;
+        description?: string;
+    }
+
     interface ActivityDto {
         id?: number;
         description?: string;
         approximatelyDuration?: string;
         currentPrice?: number;
         priceHistory?: PriceHistoryDto[];
+        category?: ActivityCategoryDto;
+        relevantForPriceList?: boolean;
     }
 
     interface ActivitySequenceItemDto {
@@ -365,6 +372,15 @@ declare namespace KokuDto {
         value?: T;
     }
 
+    interface ActivityPriceListFormularItemDto extends FormularItemDto {
+        "@type": "ActivityPriceListFormularItemDto";
+        itemRows: FormularRowDto[];
+        groupRows: FormularRowDto[];
+        groupBy?: ActivityPriceListGroupByDto;
+        evaluatedData?: FormularRowDto[];
+        sortByIds?: number[];
+    }
+
     interface CheckboxFormularItemDto extends FormularItemDto {
         "@type": "CheckboxFormularItemDto";
         value?: boolean;
@@ -395,11 +411,11 @@ declare namespace KokuDto {
         description: string;
         context: DocumentContextDto;
         tags?: { [index: string]: string };
-        rows?: FormularRowDto[];
+        rows: FormularRowDto[];
     }
 
     interface FormularItemDto {
-        "@type": "CheckboxFormularItemDto" | "DateFormularItemDto" | "QrCodeFormularItemDto" | "SVGFormularItemDto" | "SignatureFormularItemDto" | "TextFormularItemDto";
+        "@type": "ActivityPriceListFormularItemDto" | "CheckboxFormularItemDto" | "DateFormularItemDto" | "QrCodeFormularItemDto" | "SVGFormularItemDto" | "SignatureFormularItemDto" | "TextFormularItemDto";
         id: number;
         fieldDefinitionTypeId?: number;
         xs?: number;
@@ -564,6 +580,8 @@ declare namespace KokuDto {
 
     type DataLabelsTextAlignEnum = "start" | "center" | "end" | "left" | "right";
 
+    type ActivityPriceListGroupByDto = "CATEGORY";
+
     type DocumentContextEnumDto = "CUSTOMER" | "NONE";
 
     type FormularItemAlign = "LEFT" | "CENTER" | "RIGHT";
@@ -580,6 +598,6 @@ declare namespace KokuDto {
 
     type TableRowCellUnion<T> = StringTableRowCell | NumberTableRowCell;
 
-    type FormularItemDtoUnion = SVGFormularItemDto | SignatureFormularItemDto | TextFormularItemDto | CheckboxFormularItemDto | QrCodeFormularItemDto | DateFormularItemDto;
+    type FormularItemDtoUnion = SVGFormularItemDto | SignatureFormularItemDto | TextFormularItemDto | CheckboxFormularItemDto | QrCodeFormularItemDto | DateFormularItemDto | ActivityPriceListFormularItemDto;
 
 }

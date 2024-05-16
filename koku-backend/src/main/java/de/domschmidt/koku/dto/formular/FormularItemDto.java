@@ -22,7 +22,8 @@ import lombok.experimental.SuperBuilder;
                 @JsonSubTypes.Type(value = TextFormularItemDto.class, name = "TextFormularItemDto"),
                 @JsonSubTypes.Type(value = CheckboxFormularItemDto.class, name = "CheckboxFormularItemDto"),
                 @JsonSubTypes.Type(value = QrCodeFormularItemDto.class, name = "QrCodeFormularItemDto"),
-                @JsonSubTypes.Type(value = DateFormularItemDto.class, name = "DateFormularItemDto")
+                @JsonSubTypes.Type(value = DateFormularItemDto.class, name = "DateFormularItemDto"),
+                @JsonSubTypes.Type(value = ActivityPriceListFormularItemDto.class, name = "ActivityPriceListFormularItemDto")
         }
 )
 public abstract class FormularItemDto {

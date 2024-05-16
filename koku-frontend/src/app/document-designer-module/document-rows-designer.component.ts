@@ -1,44 +1,43 @@
-import {Component, Inject, Input, OnInit, ViewChild} from '@angular/core';
-import {MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {SortableEvent} from "sortablejs";
-import {AlertDialogButtonConfig, AlertDialogComponent, AlertDialogData} from "../alert-dialog/alert-dialog.component";
-import {DocumentFieldHostDirective} from "./document-field-host.directive";
-import {DOCUMENT_CONFIG, DocumentConfig} from "./document-field-config.injector";
-import {DocumentBase, DocumentBaseRow, DocumentBaseRowItem} from "./document.interface";
+import {Component, Input, OnInit, ViewChild} from '@angular/core';
+import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {SortableEvent} from 'sortablejs';
+import {AlertDialogButtonConfig, AlertDialogComponent, AlertDialogData} from '../alert-dialog/alert-dialog.component';
+import {DocumentFieldHostDirective} from './document-field-host.directive';
+import {DocumentBaseRow, DocumentBaseRowItem} from './document.interface';
+import {DocumentFieldConfigurationTypes} from './document-field-config';
 
 @Component({
-  selector: 'document-designer',
-  templateUrl: './document-designer.component.html',
-  styleUrls: ['./document-designer.component.scss']
+  selector: 'document-rows-designer',
+  templateUrl: './document-rows-designer.component.html',
+  styleUrls: ['./document-rows-designer.component.scss']
 })
-export class DocumentDesignerComponent implements OnInit {
+export class DocumentRowsDesignerComponent implements OnInit {
 
-  @Input() document!: DocumentBase;
+  @Input() rows!: DocumentBaseRow[];
+  @Input() fieldConfig!: DocumentFieldConfigurationTypes;
+  @Input() gridSize!: number;
   @ViewChild(DocumentFieldHostDirective, {static: true}) fieldHost!: DocumentFieldHostDirective;
 
-  private nextFieldId: number = 0;
+  private nextFieldId = 0;
 
   constructor(
-    @Inject(DOCUMENT_CONFIG) public readonly documentConfig: DocumentConfig,
     private readonly dialog: MatDialog
   ) {
   }
 
   ngOnInit(): void {
     let nextFieldId = 0;
-    if (this.document !== undefined) {
-      for (const currentRow of this.document.rows || []) {
-        for (const currentItem of currentRow.items || []) {
-          if (currentItem.id && currentItem.id > nextFieldId) {
-            nextFieldId = currentItem.id;
-          }
+    for (const currentRow of this.rows || []) {
+      for (const currentItem of currentRow.items || []) {
+        if (currentItem.id && currentItem.id > nextFieldId) {
+          nextFieldId = currentItem.id;
         }
       }
     }
     this.nextFieldId = nextFieldId;
   }
 
-  deleteItem(formField: DocumentBaseRowItem, row: DocumentBaseRow) {
+  deleteItem(formField: DocumentBaseRowItem, row: DocumentBaseRow): void {
     const dialogData: AlertDialogData = {
       headline: 'Feld Löschen',
       message: `Wollen Sie das Feld wirklich löschen?`,
@@ -69,33 +68,34 @@ export class DocumentDesignerComponent implements OnInit {
     });
   }
 
-  getFxFlex(size: number) {
-    return Math.round((size / this.documentConfig.gridSize) * 100) + '%';
+  getFxFlex(size: number): string {
+    return Math.round((size / this.gridSize) * 100) + '%';
   }
 
-  startDragging(event: SortableEvent) {
+  startDragging(event: SortableEvent): void {
     event.item.classList.add('document__row--handle-grabbed');
   }
 
-  endDragging(event: SortableEvent) {
+  endDragging(event: SortableEvent): void {
     event.item.classList.remove('document__row--handle-grabbed');
   }
 
-  startDraggingItem(event: SortableEvent) {
+  startDraggingItem(event: SortableEvent): void {
     event.item.classList.add('document__row__contents__item__menu__handle-btn--handle-grabbed');
   }
 
-  endDraggingItem(event: SortableEvent) {
+  endDraggingItem(event: SortableEvent): void {
     event.item.classList.remove('document__row__contents__item__menu__handle-btn--handle-grabbed');
   }
 
-  editFormField(formField: DocumentBaseRowItem, row: DocumentBaseRow) {
-    const componentType = this.documentConfig.fields[formField['@type']].configComponent;
+  editFormField(formField: DocumentBaseRowItem, row: DocumentBaseRow): void {
+    const componentType = this.fieldConfig[formField['@type']].component;
+    const meta = this.fieldConfig[formField['@type']].meta;
     if (componentType !== undefined) {
       const creationDialog = this.dialog.open<typeof componentType>(componentType, {
         data: {
           field: formField,
-          document: {...this.document}
+          meta
         },
         closeOnNavigation: false,
         width: '100%',
@@ -106,19 +106,20 @@ export class DocumentDesignerComponent implements OnInit {
       });
       creationDialog.afterClosed().subscribe((changedField) => {
         if (changedField && row && row.items) {
-          row.items[row.items.indexOf(formField)] = changedField
+          row.items[row.items.indexOf(formField)] = changedField;
         }
       });
     }
   }
 
-  createField(typeName: string, row: DocumentBaseRow, targetPosition?: number) {
-    const componentType = this.documentConfig.fields[typeName].configComponent;
+  createField(typeName: string, row: DocumentBaseRow, targetPosition?: number): void {
+    const componentType = this.fieldConfig[typeName].component;
+    const meta = this.fieldConfig[typeName].meta;
     if (componentType !== undefined) {
       const fieldCreationDialog = this.dialog.open<typeof componentType>(componentType, {
         closeOnNavigation: false,
         data: {
-          document: {...this.document}
+          meta
         },
         width: '100%',
         maxWidth: 500,
@@ -129,7 +130,7 @@ export class DocumentDesignerComponent implements OnInit {
       fieldCreationDialog.afterClosed().subscribe((createdField) => {
         if (createdField && row && row.items) {
           if (!row.items) {
-            row.items = []
+            row.items = [];
           }
           if (targetPosition === undefined) {
             row.items.push({
@@ -147,19 +148,16 @@ export class DocumentDesignerComponent implements OnInit {
     }
   }
 
-  addRow(document: DocumentBase, targetPosition?: number) {
+  addRow(targetPosition?: number): void {
     const newRowStub = {items: []};
-    if (!document.rows) {
-      document.rows = [];
-    }
     if (targetPosition === undefined) {
-      document.rows.push(newRowStub);
+      this.rows.push(newRowStub);
     } else {
-      document.rows.splice(targetPosition, 0, newRowStub);
+      this.rows.splice(targetPosition, 0, newRowStub);
     }
   }
 
-  deleteRow(row: DocumentBaseRow, rows: DocumentBaseRow[]) {
+  deleteRow(row: DocumentBaseRow): void {
     if (row && row.items && row.items.length > 0) {
       const dialogData: AlertDialogData = {
         headline: 'Feld Löschen',
@@ -173,7 +171,7 @@ export class DocumentDesignerComponent implements OnInit {
           text: 'Bestätigen',
           onClick: (mouseEvent: Event, button: AlertDialogButtonConfig, dialogRef: MatDialogRef<AlertDialogComponent>) => {
             if (row && row.items) {
-              rows.splice(rows.indexOf(row) || 0, 1);
+              this.rows.splice(this.rows.indexOf(row) || 0, 1);
             }
             dialogRef.close();
           }
@@ -190,7 +188,7 @@ export class DocumentDesignerComponent implements OnInit {
         }
       });
     } else {
-      rows.splice(rows.indexOf(row) || 0, 1);
+      this.rows.splice(this.rows.indexOf(row) || 0, 1);
     }
   }
 

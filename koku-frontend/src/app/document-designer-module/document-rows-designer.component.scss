@@ -36,7 +36,7 @@ $evenColor: rgb(229, 229, 229);
     &:hover {
       border-color: mat.get-color-from-palette($koku-accent, 400);
 
-      .document__row__menu{
+      .document__row__menu {
         display: flex;
       }
     }
@@ -86,9 +86,11 @@ $evenColor: rgb(229, 229, 229);
         &--align-top {
           align-items: start;
         }
+
         &--align-center {
           align-items: center;
         }
+
         &--align-bottom {
           align-items: end;
         }
@@ -123,6 +125,7 @@ $evenColor: rgb(229, 229, 229);
           .document__row__contents__item__menu {
             display: flex;
           }
+
           .document__row__contents__item__info {
             display: flex;
           }

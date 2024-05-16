@@ -1,7 +1,8 @@
 import {Component, Inject} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {NgForm} from "@angular/forms";
-import {DocumentService} from "../../../document/document.service";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {NgForm} from '@angular/forms';
+import {DocumentService} from '../../../document/document.service';
+import {DocumentFieldMeta} from '../../../document-designer-module/document-field-config';
 
 @Component({
   selector: 'document-checkbox-field',
@@ -11,14 +12,14 @@ import {DocumentService} from "../../../document/document.service";
 export class DocumentCheckboxConfigFieldComponent {
 
   checkboxField: KokuDto.CheckboxFormularItemDto | undefined;
-  saving: boolean = false;
-  loading: boolean = true;
+  saving = false;
+  loading = true;
   createMode: boolean;
   replacementTokens: KokuDto.FormularReplacementTokenDto[] = [];
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: {
                 field?: KokuDto.CheckboxFormularItemDto
-                document: KokuDto.FormularDto
+                meta: DocumentFieldMeta
               },
               public dialogRef: MatDialogRef<DocumentCheckboxConfigFieldComponent>,
               public dialog: MatDialog,
@@ -32,12 +33,10 @@ export class DocumentCheckboxConfigFieldComponent {
     } else {
       this.checkboxField = {...data.field};
     }
-    this.documentService.getDocumentCheckboxReplacementToken(data.document.context.value).subscribe((tokens) => {
-      this.replacementTokens = tokens;
-    });
+    this.replacementTokens = data.meta.replacementTokens;
   }
 
-  save(form: NgForm) {
+  save(form: NgForm): void {
     if (form.valid) {
       this.dialogRef.close(this.checkboxField);
     }

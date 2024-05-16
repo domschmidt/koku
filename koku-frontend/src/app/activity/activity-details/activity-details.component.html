@@ -37,6 +37,25 @@
              type="time"
       >
     </mat-form-field>
+
+    <mat-form-field class="activity-details-field category-field">
+      <mat-label>Kategorie</mat-label>
+      <mat-select [(value)]="activity.category"
+                  [compareWith]="compareActivityCategory"
+                  name="category">
+        <mat-option [value]="currentCategory"
+                    *ngFor="let currentCategory of availableCategories">
+          {{currentCategory.description}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-checkbox class="activity-details-field relevant-for-pricelist-field"
+                  [(ngModel)]="activity.relevantForPriceList"
+                  name="relevantForPriceList">
+      Relevant für Preisliste
+    </mat-checkbox>
+
     <mat-form-field class="activity-details-field estimated-revenue-field">
       <mat-label>Preis</mat-label>
       <input [(ngModel)]="activity.currentPrice"

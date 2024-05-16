@@ -50,7 +50,10 @@
       >
     </mat-form-field>
 
-    <document-designer [document]="document"></document-designer>
+    <document-rows-designer [rows]="document.rows"
+                            [fieldConfig]="documentFieldConfig"
+                            [gridSize]="12"
+    ></document-rows-designer>
 
   </mat-dialog-content>
   <mat-dialog-actions align="end">

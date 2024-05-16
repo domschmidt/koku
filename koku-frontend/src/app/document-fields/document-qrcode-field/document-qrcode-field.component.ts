@@ -1,10 +1,6 @@
 import {AfterViewInit, Component, ElementRef, Inject, ViewChild} from '@angular/core';
-import {
-  DOCUMENT_FIELD_DATA,
-  DOCUMENT_FIELD_OPTIONS,
-  DocumentFieldOptions
-} from "../../document-designer-module/document-field-host.directive";
-import {toCanvas} from "qrcode";
+import {DOCUMENT_FIELD_DATA} from '../../document-designer-module/document-field-host.directive';
+import {toCanvas} from 'qrcode';
 import QrCodeFormularItemDto = KokuDto.QrCodeFormularItemDto;
 
 
@@ -18,15 +14,14 @@ export class DocumentQrcodeFieldComponent implements AfterViewInit {
   @ViewChild('qrcode') canvasEl: ElementRef<HTMLCanvasElement> | undefined;
 
   alignMap = {
-    'LEFT': 'start',
-    'CENTER': 'center',
-    'RIGHT': 'end'
+    LEFT: 'start',
+    CENTER: 'center',
+    RIGHT: 'end'
   };
   justifyContent: string | undefined;
 
   constructor(
-    @Inject(DOCUMENT_FIELD_DATA) public data: QrCodeFormularItemDto,
-    @Inject(DOCUMENT_FIELD_OPTIONS) public options: DocumentFieldOptions
+    @Inject(DOCUMENT_FIELD_DATA) public data: QrCodeFormularItemDto
   ) {
     if (data.align !== undefined) {
       this.justifyContent = this.alignMap[data.align];

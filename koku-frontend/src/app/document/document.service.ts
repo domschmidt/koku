@@ -32,6 +32,14 @@ export class DocumentService {
     return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/contexts/${context}/replacementtoken/text`);
   }
 
+  getDocumentActivityPriceListGroupTextReplacementToken(context: KokuDto.DocumentContextEnumDto): Observable<KokuDto.FormularReplacementTokenDto[]> {
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/contexts/${context}/replacementtoken/activitypricelistitem/text`);
+  }
+
+  getDocumentActivityPriceListItemTextReplacementToken(context: KokuDto.DocumentContextEnumDto): Observable<KokuDto.FormularReplacementTokenDto[]> {
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/contexts/${context}/replacementtoken/activitypricelistgroup/text`);
+  }
+
   getDocumentDateReplacementToken(context: KokuDto.DocumentContextEnumDto) {
     return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/contexts/${context}/replacementtoken/date`);
   }
