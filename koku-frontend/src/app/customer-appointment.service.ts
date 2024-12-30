@@ -28,12 +28,12 @@ export class CustomerAppointmentService {
   }
 
   getCustomerAppointment(id: number) {
-    return this.httpClient.get<KokuDto.CustomerAppointmentDto>(`/api/customers/appointments/${id}`);
+    return this.httpClient.get<KokuDto.CustomerAppointmentDto>(`/backend/customers/appointments/${id}`);
   }
 
   updateCustomerAppointment(customerAppointment: KokuDto.CustomerAppointmentDto) {
     return new Observable((observer) => {
-      this.httpClient.put(`/api/customers/appointments/${customerAppointment.id}`, customerAppointment).subscribe(() => {
+      this.httpClient.put(`/backend/customers/appointments/${customerAppointment.id}`, customerAppointment).subscribe(() => {
         this.loadAppointmentGroups().subscribe((newResult) => {
           this._appointmentGroups.next(newResult);
           observer.next();
@@ -49,7 +49,7 @@ export class CustomerAppointmentService {
 
   createCustomerAppointment(customerAppointment: KokuDto.CustomerAppointmentDto) {
     return new Observable<KokuDto.CustomerAppointmentDto>((observer) => {
-      this.httpClient.post<KokuDto.CustomerAppointmentDto>(`/api/customers/appointments`, customerAppointment).subscribe((result: KokuDto.CustomerAppointmentDto) => {
+      this.httpClient.post<KokuDto.CustomerAppointmentDto>(`/backend/customers/appointments`, customerAppointment).subscribe((result: KokuDto.CustomerAppointmentDto) => {
         this.loadAppointmentGroups().subscribe((newResult) => {
           this._appointmentGroups.next(newResult);
           observer.next(result);
@@ -65,7 +65,7 @@ export class CustomerAppointmentService {
 
   deleteCustomerAppointment(appointment: KokuDto.CustomerAppointmentDto) {
     return new Observable((observer) => {
-      this.httpClient.delete(`/api/customers/appointments/${appointment.id}`).subscribe(() => {
+      this.httpClient.delete(`/backend/customers/appointments/${appointment.id}`).subscribe(() => {
         this.loadAppointmentGroups().subscribe((newResult) => {
           this._appointmentGroups.next(newResult);
           observer.next();
@@ -80,12 +80,12 @@ export class CustomerAppointmentService {
   }
 
   private loadAppointmentGroups() {
-    return this.httpClient.get<KokuDto.AppointmentGroupDto[]>('/api/users/@self/appointmentgroups');
+    return this.httpClient.get<KokuDto.AppointmentGroupDto[]>('/backend/users/@self/appointmentgroups');
   }
 
   updateCustomerAppointmentTiming(customerAppointment: KokuDto.CustomerAppointmentDto) {
     return new Observable((observer) => {
-      this.httpClient.put(`/api/customers/appointments/${customerAppointment.id}/timing`, customerAppointment).subscribe(() => {
+      this.httpClient.put(`/backend/customers/appointments/${customerAppointment.id}/timing`, customerAppointment).subscribe(() => {
         this.loadAppointmentGroups().subscribe((newResult) => {
           this._appointmentGroups.next(newResult);
           observer.next();

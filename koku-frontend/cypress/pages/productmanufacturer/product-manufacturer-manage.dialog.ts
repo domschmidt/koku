@@ -23,7 +23,7 @@ export class ProductManufacturerManageDialog implements KokuDialog {
 
   saveChanges(create: boolean) {
     cy.intercept({
-      url: create ? '/api/productmanufacturers' : '/api/productmanufacturers/**',
+      url: create ? '/backend/productmanufacturers' : '/backend/productmanufacturers/**',
       method: create ? 'POST' : 'PUT'
     }).as('modifyProductManufacturerCall')
       .get(this.SELECTOR_PRODUCT_MANUFACTURER_FORM).submit().wait('@modifyProductManufacturerCall')

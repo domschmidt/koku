@@ -9,6 +9,7 @@ import de.domschmidt.koku.dto.charts.ChartTypeEnum;
 import de.domschmidt.koku.dto.charts.ChartYearMonthFilter;
 import de.domschmidt.koku.dto.customer.CustomerDto;
 import de.domschmidt.koku.dto.panels.ChartPanelDto;
+import de.domschmidt.koku.kafka.customers.service.CustomerKafkaService;
 import de.domschmidt.koku.persistence.model.Customer;
 import de.domschmidt.koku.persistence.model.CustomerAppointment;
 import de.domschmidt.koku.persistence.model.CustomerAppointmentActivity;
@@ -30,15 +31,18 @@ import ezvcard.property.Address;
 import ezvcard.property.Birthday;
 import ezvcard.property.StructuredName;
 import ezvcard.property.Uid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.util.InMemoryResource;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -46,15 +50,21 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/customers")
+@Slf4j
 public class CustomerController extends AbstractController<Customer, CustomerDto, CustomerSearchOptions> {
 
     private final ICustomerAppointmentService appointmentService;
+    private final CustomerKafkaService customerKafkaService;
 
     @Autowired
-    public CustomerController(final ICustomerService customerService,
-                              final ICustomerAppointmentService appointmentService) {
+    public CustomerController(
+            final ICustomerService customerService,
+            final ICustomerAppointmentService appointmentService,
+            final CustomerKafkaService customerKafkaService
+    ) {
         super(customerService, new CustomerToCustomerDtoTransformer());
         this.appointmentService = appointmentService;
+        this.customerKafkaService = customerKafkaService;
     }
 
     @GetMapping
@@ -478,13 +488,16 @@ public class CustomerController extends AbstractController<Customer, CustomerDto
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CustomerDto create(@RequestBody CustomerDto newCustomer) {
-        return super.create(newCustomer);
+        final CustomerDto newCreatedCustomer = super.create(newCustomer);
+        sendCustomerUpdateDelayed(newCreatedCustomer.getId());
+        return newCreatedCustomer;
     }
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void update(@PathVariable("id") Long id, @RequestBody CustomerDto updatedDto) {
         super.update(id, updatedDto);
+        sendCustomerUpdateDelayed(id);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -493,5 +506,17 @@ public class CustomerController extends AbstractController<Customer, CustomerDto
         final Customer customer = super.findById(id);
         customer.setDeleted(true);
         this.service.update(customer);
+        sendCustomerUpdateDelayed(id);
+    }
+
+    @Async
+    public void sendCustomerUpdateDelayed(final Long customerId) {
+        try {
+            final Customer customer = findById(customerId);
+            this.customerKafkaService.sendCustomer(this.transformer.transformToDto(customer));
+            customer.setKafkaExported(LocalDateTime.now());
+        } catch (final Exception e) {
+            log.error("Unable to send customer thru kafka", e);
+        }
     }
 }

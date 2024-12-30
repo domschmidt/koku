@@ -26,7 +26,7 @@ export class ActivitySequenceService {
         search: searchValue || ''
       }
     });
-    return this.httpClient.get<KokuDto.ActivitySequenceItemDtoUnion[]>('/api/activitysequences', {params});
+    return this.httpClient.get<KokuDto.ActivitySequenceItemDtoUnion[]>('/backend/activitysequences', {params});
   }
 
 }

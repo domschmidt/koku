@@ -21,40 +21,40 @@ export class DocumentService {
   }
 
   getDocument(documentId: number) {
-    return this.httpClient.get<KokuDto.FormularDto>(`/api/documents/${documentId}`);
+    return this.httpClient.get<KokuDto.FormularDto>(`/backend/documents/${documentId}`);
   }
 
   getDocumentsByContext(context: KokuDto.DocumentContextEnumDto) {
-    return this.httpClient.get<KokuDto.FormularDto[]>(`/api/documents/context/${context}`);
+    return this.httpClient.get<KokuDto.FormularDto[]>(`/backend/documents/context/${context}`);
   }
 
   getDocumentTextReplacementToken(context: KokuDto.DocumentContextEnumDto) {
-    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/contexts/${context}/replacementtoken/text`);
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/backend/documents/contexts/${context}/replacementtoken/text`);
   }
 
   getDocumentActivityPriceListGroupTextReplacementToken(context: KokuDto.DocumentContextEnumDto): Observable<KokuDto.FormularReplacementTokenDto[]> {
-    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/contexts/${context}/replacementtoken/activitypricelistitem/text`);
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/backend/documents/contexts/${context}/replacementtoken/activitypricelistitem/text`);
   }
 
   getDocumentActivityPriceListItemTextReplacementToken(context: KokuDto.DocumentContextEnumDto): Observable<KokuDto.FormularReplacementTokenDto[]> {
-    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/contexts/${context}/replacementtoken/activitypricelistgroup/text`);
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/backend/documents/contexts/${context}/replacementtoken/activitypricelistgroup/text`);
   }
 
   getDocumentDateReplacementToken(context: KokuDto.DocumentContextEnumDto) {
-    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/contexts/${context}/replacementtoken/date`);
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/backend/documents/contexts/${context}/replacementtoken/date`);
   }
 
   getDocumentCheckboxReplacementToken(context: KokuDto.DocumentContextEnumDto) {
-    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/contexts/${context}/replacementtoken/checkbox`);
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/backend/documents/contexts/${context}/replacementtoken/checkbox`);
   }
 
   getDocumentQrcodeReplacementToken(context: KokuDto.DocumentContextEnumDto) {
-    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/api/documents/contexts/${context}/replacementtoken/qrcode`);
+    return this.httpClient.get<KokuDto.FormularReplacementTokenDto[]>(`/backend/documents/contexts/${context}/replacementtoken/qrcode`);
   }
 
   createDocument(document: KokuDto.FormularDto) {
     return new Observable<KokuDto.FormularDto>((observer) => {
-      return this.httpClient.post<KokuDto.FormularDto>(`/api/documents`, document).subscribe((result: KokuDto.FormularDto) => {
+      return this.httpClient.post<KokuDto.FormularDto>(`/backend/documents`, document).subscribe((result: KokuDto.FormularDto) => {
         this.loadDocuments().subscribe((newResult) => {
           this._documents.next(newResult);
           observer.next(result);
@@ -70,7 +70,7 @@ export class DocumentService {
 
   duplicateDocument(document: KokuDto.FormularDto) {
     return new Observable<KokuDto.FormularDto>((observer) => {
-      return this.httpClient.post<KokuDto.FormularDto>(`/api/documents/${document.id}`, document).subscribe((result: KokuDto.FormularDto) => {
+      return this.httpClient.post<KokuDto.FormularDto>(`/backend/documents/${document.id}`, document).subscribe((result: KokuDto.FormularDto) => {
         this.loadDocuments().subscribe((newResult) => {
           this._documents.next(newResult);
           observer.next(result);
@@ -86,7 +86,7 @@ export class DocumentService {
 
   updateDocument(document: KokuDto.FormularDto) {
     return new Observable((observer) => {
-      return this.httpClient.put(`/api/documents/${document.id}`, document).subscribe(() => {
+      return this.httpClient.put(`/backend/documents/${document.id}`, document).subscribe(() => {
         this.loadDocuments().subscribe((newResult) => {
           this._documents.next(newResult);
           observer.next();
@@ -102,7 +102,7 @@ export class DocumentService {
 
   deleteDocument(document: KokuDto.FormularDto) {
     return new Observable((observer) => {
-      return this.httpClient.delete(`/api/documents/${document.id}`).subscribe(() => {
+      return this.httpClient.delete(`/backend/documents/${document.id}`).subscribe(() => {
         this.loadDocuments().subscribe((newResult) => {
           this._documents.next(newResult);
           observer.next();
@@ -122,18 +122,18 @@ export class DocumentService {
         search: searchValue || ''
       }
     });
-    return this.httpClient.get<KokuDto.FormularDto[]>('/api/documents', {params});
+    return this.httpClient.get<KokuDto.FormularDto[]>('/backend/documents', {params});
   }
 
   getDocumentContexts() {
-    return this.httpClient.get<KokuDto.DocumentContextDto[]>('/api/documents/contexts');
+    return this.httpClient.get<KokuDto.DocumentContextDto[]>('/backend/documents/contexts');
   }
 
   getDocumentCapture(documentId: number) {
-    return this.httpClient.get<KokuDto.FormularDto>(`/api/documents/${documentId}/capture`);
+    return this.httpClient.get<KokuDto.FormularDto>(`/backend/documents/${documentId}/capture`);
   }
 
   saveCapturedDocument(document: KokuDto.FormularDto) {
-    return this.httpClient.post<KokuDto.UploadDto>(`/api/documents/capture`, document);
+    return this.httpClient.post<KokuDto.UploadDto>(`/backend/documents/capture`, document);
   }
 }

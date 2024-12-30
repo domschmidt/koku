@@ -21,7 +21,6 @@ import {
 import {DocumentComponent} from "./document/document.component";
 import {PromotionComponent} from "./promotions/promotion.component";
 import {PageSkeletonComponent} from "./layouts/page-skeleton/page-skeleton.component";
-import {CardDavComponent} from "./carddav/card-dav.component";
 import {DashboardComponent} from "./dashboard/dashboard.component";
 import {CalendarViewToggleComponent} from "./calendar-view-toggle/calendar-view-toggle.component";
 import {FilesOverviewComponent} from "./files-overview/files-overview.component";
@@ -176,14 +175,6 @@ const routes: Routes = [
                 component: DocumentComponent,
                 data: {
                   name: 'Dokumente'
-                },
-                canDeactivate: [PreventNavigationIfModalIsOpenService]
-              },
-              {
-                path: 'carddav',
-                component: CardDavComponent,
-                data: {
-                  name: 'CardDav'
                 },
                 canDeactivate: [PreventNavigationIfModalIsOpenService]
               },

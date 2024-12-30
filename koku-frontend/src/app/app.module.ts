@@ -130,7 +130,6 @@ import {
 import {ServiceWorkerModule} from '@angular/service-worker';
 import {environment} from '../environments/environment';
 import {PageSkeletonComponent} from './layouts/page-skeleton/page-skeleton.component';
-import {CardDavComponent} from './carddav/card-dav.component';
 import {DashboardComponent} from './dashboard/dashboard.component';
 import {DashboardDiagramPanelComponent} from './dashboard/diagram/dashboard-diagram-panel.component';
 import {DashboardDeferredPanelComponent} from './dashboard/deferred/dashboard-deferred-panel.component';
@@ -260,7 +259,6 @@ Chart.register(...registerables);
     CustomerAppointmentActivityInfoDialogComponent,
     DocumentCheckboxConfigFieldComponent,
     PageSkeletonComponent,
-    CardDavComponent,
     DashboardComponent,
     DashboardDiagramPanelComponent,
     DashboardDeferredPanelComponent,

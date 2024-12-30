@@ -31,8 +31,8 @@ export class UserAdministrationPage implements KokuSearchPage, KokuNavigatablePa
 
   getPageSearch(): KokuPageSearch {
     return new KokuPageSearch(
-      '/api/users',
-      '/api/users/**',
+      '/backend/users',
+      '/backend/users/**',
       this.SELECTOR_SEARCH_FIELD, this.SELECTOR_USER_RESULTS);
   }
 

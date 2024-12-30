@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.36.1070 on 2024-05-16 18:09:43.
+// Generated using typescript-generator version 2.36.1070 on 2024-12-30 23:49:19.
 
 declare namespace KokuDto {
 
@@ -146,12 +146,6 @@ declare namespace KokuDto {
         password?: string;
     }
 
-    interface CardDavInfoDto {
-        endpointUrl?: string;
-        user?: string;
-        password?: string;
-    }
-
     interface ChartData {
         labels?: string[];
         datasets?: ChartDataSet[];
@@ -272,6 +266,8 @@ declare namespace KokuDto {
 
     interface CustomerDto {
         id?: number;
+        deleted?: boolean;
+        lastUpdated?: string;
         firstName?: string;
         lastName?: string;
         email?: string;

@@ -9,7 +9,7 @@ export class TextService {
   }
 
   getText(sourceUrl: string) {
-    return this.httpClient.get<KokuDto.TextPanelDto>(`/api${sourceUrl}`);
+    return this.httpClient.get<KokuDto.TextPanelDto>(`/backend${sourceUrl}`);
   }
 
 }

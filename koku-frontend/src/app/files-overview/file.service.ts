@@ -19,7 +19,7 @@ export class FileService {
     fileEntry.file((file) => {
       const formData: FormData = new FormData();
       formData.append('file', file);
-      this.httpClient.post(`/api/files`, formData, {
+      this.httpClient.post(`/backend/files`, formData, {
         reportProgress: true,
         observe: 'events'
       }).subscribe((httpEvent: HttpEvent<any>) => {
@@ -53,11 +53,11 @@ export class FileService {
   }
 
   downloadFile(id: string) {
-    return this.httpClient.get('/api/files/' + id, {responseType: 'blob'});
+    return this.httpClient.get('/backend/files/' + id, {responseType: 'blob'});
   }
 
   deleteFile(id: string) {
-    return this.httpClient.delete('/api/files/' + id);
+    return this.httpClient.delete('/backend/files/' + id);
   }
 
 }

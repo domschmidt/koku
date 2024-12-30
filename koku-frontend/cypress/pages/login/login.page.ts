@@ -20,7 +20,7 @@ export class LoginPage implements KokuOpenablePublicPage {
 
   login(username: string, password: string) {
     cy.intercept({
-      url: '/api/auth/login',
+      url: '/backend/auth/login',
       method: 'POST'
     }).as('loginCall');
     cy.get(this.SELECTOR_USERNAME_FIELD).clear().type(username)

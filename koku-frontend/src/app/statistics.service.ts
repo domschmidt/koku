@@ -10,7 +10,7 @@ export class StatisticsService {
   }
 
   loadStatistics() {
-    return this.httpClient.get<KokuDto.StatisticsDto>('/api/statistics');
+    return this.httpClient.get<KokuDto.StatisticsDto>('/backend/statistics');
   }
 
 }

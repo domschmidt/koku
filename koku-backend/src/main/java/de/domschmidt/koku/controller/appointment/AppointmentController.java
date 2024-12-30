@@ -2,8 +2,8 @@ package de.domschmidt.koku.controller.appointment;
 
 import de.domschmidt.koku.controller.common.AbstractController;
 import de.domschmidt.koku.dto.CalendarLoadSettingsDto;
-import de.domschmidt.koku.dto.customer.CustomerAppointmentDto;
 import de.domschmidt.koku.dto.ICalendarContent;
+import de.domschmidt.koku.dto.customer.CustomerAppointmentDto;
 import de.domschmidt.koku.persistence.model.CustomerAppointment;
 import de.domschmidt.koku.service.ICustomerAppointmentService;
 import de.domschmidt.koku.service.ICustomerService;

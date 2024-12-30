@@ -10,12 +10,12 @@ export class PrivateAppointmentService {
   }
 
   getPrivateAppointment(id: number) {
-    return this.httpClient.get<KokuDto.PrivateAppointmentDto>(`/api/users/@self/privateappointments/${id}`)
+    return this.httpClient.get<KokuDto.PrivateAppointmentDto>(`/backend/users/@self/privateappointments/${id}`)
   }
 
   updatePrivateAppointment(privateAppointment: KokuDto.PrivateAppointmentDto) {
     return new Observable((observer) => {
-      this.httpClient.put(`/api/users/@self/privateappointments/${privateAppointment.id}`, privateAppointment).subscribe(() => {
+      this.httpClient.put(`/backend/users/@self/privateappointments/${privateAppointment.id}`, privateAppointment).subscribe(() => {
         observer.next();
         observer.complete();
       }, (error) => {
@@ -26,7 +26,7 @@ export class PrivateAppointmentService {
 
   createPrivateAppointment(customerAppointment: KokuDto.PrivateAppointmentDto) {
     return new Observable<KokuDto.PrivateAppointmentDto>((observer) => {
-      this.httpClient.post<KokuDto.PrivateAppointmentDto>(`/api/users/@self/privateappointments`, customerAppointment).subscribe((result: KokuDto.PrivateAppointmentDto) => {
+      this.httpClient.post<KokuDto.PrivateAppointmentDto>(`/backend/users/@self/privateappointments`, customerAppointment).subscribe((result: KokuDto.PrivateAppointmentDto) => {
         observer.next(result);
         observer.complete();
       }, (error) => {
@@ -37,7 +37,7 @@ export class PrivateAppointmentService {
 
   deletePrivateAppointment(appointment: KokuDto.PrivateAppointmentDto) {
     return new Observable((observer) => {
-      this.httpClient.delete(`/api/users/@self/privateappointments/${appointment.id}`).subscribe(() => {
+      this.httpClient.delete(`/backend/users/@self/privateappointments/${appointment.id}`).subscribe(() => {
         observer.next();
         observer.complete();
       }, (error) => {
@@ -48,7 +48,7 @@ export class PrivateAppointmentService {
 
   updatePrivateAppointmentTiming(appointment: KokuDto.PrivateAppointmentDto) {
     return new Observable((observer) => {
-      this.httpClient.put(`/api/users/@self/privateappointments/${appointment.id}/timing`, appointment).subscribe(() => {
+      this.httpClient.put(`/backend/users/@self/privateappointments/${appointment.id}/timing`, appointment).subscribe(() => {
         observer.next();
         observer.complete();
       }, (error) => {

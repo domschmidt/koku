@@ -1,0 +1,20 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: backend
+        uri: ${BACKEND_URL:http://localhost:8210}
+        predicates:
+          - Path=/backend/**
+        filters:
+          - StripPrefix=1
+      - id: carddav
+        uri: ${CARDDAV_URL:http://localhost:8220}
+        predicates:
+          - Path=/carddav/**
+        filters:
+          - StripPrefix=1
+      - id: frontend
+        uri: ${FRONTEND_URL:http://localhost:4200}
+        predicates:
+          - Path=/**

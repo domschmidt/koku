@@ -100,7 +100,7 @@ export class DocumentActivityPriceListConfigFieldComponent {
   }
 
   openItemSort(): void {
-    this.httpClient.get<KokuDto.ActivityDto[]>('/api/activities', {
+    this.httpClient.get<KokuDto.ActivityDto[]>('/backend/activities', {
       params: new HttpParams({
         fromObject: {
           search: '',

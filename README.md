@@ -56,6 +56,11 @@ https://docs.docker.com/compose/install
 
 [docker-compose-yml](docker-compose.yml?raw=true) in einem Ordner speichern
 
+Konfigurationsparameter | Erklärung | Beispiel
+--- | --- | ---
+SECURITY_JWT_SECRET | JWT Secret, BASE64 encoded | YhsO2nx4BtDN19ij42eB8YHZyYxYngfk4vAg8R8ziVswcEVcofhpiy2SD2Ingzi00VWxT5P6NE2mzdNkHVfaOg==
+SECURITY_JWT_SIGNATURE-ALGORITHM | JWT Signatur Algorithmus | HS512
+
 ## SSL Zertifikat erstellen
 
 ```

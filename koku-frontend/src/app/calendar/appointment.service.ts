@@ -28,7 +28,7 @@ export class AppointmentService {
       loadCustomerBirthdays: loadSettings.customerBirthdays,
       loadPrivateAppointments: loadSettings.privateAppointments,
     }
-    return this.httpClient.post<KokuDto.ICalendarContentUnion[]>(`/api/users/${loadSettings.userId || '@self'}/appointments`, request);
+    return this.httpClient.post<KokuDto.ICalendarContentUnion[]>(`/backend/users/${loadSettings.userId || '@self'}/appointments`, request);
   }
 
 }

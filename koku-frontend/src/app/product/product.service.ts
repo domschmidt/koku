@@ -21,12 +21,12 @@ export class ProductService {
   }
 
   getProduct(productId: number) {
-    return this.httpClient.get<KokuDto.ProductDto>(`/api/products/${productId}`);
+    return this.httpClient.get<KokuDto.ProductDto>(`/backend/products/${productId}`);
   }
 
   createProduct(product: KokuDto.ProductDto) {
     return new Observable<KokuDto.ProductDto>((observer) => {
-      return this.httpClient.post<KokuDto.ProductDto>(`/api/products`, product).subscribe((result: KokuDto.ProductDto) => {
+      return this.httpClient.post<KokuDto.ProductDto>(`/backend/products`, product).subscribe((result: KokuDto.ProductDto) => {
         this.loadProducts().subscribe((newResult) => {
           this._products.next(newResult);
           observer.next(result);
@@ -42,7 +42,7 @@ export class ProductService {
 
   updateProduct(product: KokuDto.ProductDto) {
     return new Observable((observer) => {
-      return this.httpClient.put(`/api/products/${product.id}`, product).subscribe(() => {
+      return this.httpClient.put(`/backend/products/${product.id}`, product).subscribe(() => {
         this.loadProducts().subscribe((newResult) => {
           this._products.next(newResult);
           observer.next();
@@ -58,7 +58,7 @@ export class ProductService {
 
   deleteProduct(product: KokuDto.ProductDto) {
     return new Observable((observer) => {
-      return this.httpClient.delete(`/api/products/${product.id}`).subscribe(() => {
+      return this.httpClient.delete(`/backend/products/${product.id}`).subscribe(() => {
         this.loadProducts().subscribe((newResult) => {
           this._products.next(newResult);
           observer.next();
@@ -78,7 +78,7 @@ export class ProductService {
         search: searchValue || ''
       }
     });
-    return this.httpClient.get<KokuDto.ProductDto[]>('/api/products', {params});
+    return this.httpClient.get<KokuDto.ProductDto[]>('/backend/products', {params});
   }
 
 }

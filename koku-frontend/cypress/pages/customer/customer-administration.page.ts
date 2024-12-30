@@ -35,8 +35,8 @@ export class CustomerAdministrationPage implements KokuTabPage, KokuNavigatableP
 
   getPageSearch(): KokuPageSearch {
     return new KokuPageSearch(
-      '/api/customers',
-      '/api/customers/**',
+      '/backend/customers',
+      '/backend/customers/**',
       this.SELECTOR_SEARCH_FIELD,
       this.SELECTOR_CUSTOMER_RESULTS
     );

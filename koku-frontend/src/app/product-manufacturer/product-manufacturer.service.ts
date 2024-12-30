@@ -26,16 +26,16 @@ export class ProductManufacturerService {
         search: searchValue || ''
       }
     });
-    return this.httpClient.get<KokuDto.ProductManufacturerDto[]>('/api/productmanufacturers', {params});
+    return this.httpClient.get<KokuDto.ProductManufacturerDto[]>('/backend/productmanufacturers', {params});
   }
 
   getProductManufacturer(productManufacturerId: number) {
-    return this.httpClient.get<KokuDto.ProductManufacturerDto>(`/api/productmanufacturers/${productManufacturerId}`);
+    return this.httpClient.get<KokuDto.ProductManufacturerDto>(`/backend/productmanufacturers/${productManufacturerId}`);
   }
 
   createProductManufacturer(productManufacturer: KokuDto.ProductManufacturerDto) {
     return new Observable<KokuDto.ProductManufacturerDto>((observer) => {
-      return this.httpClient.post<KokuDto.ProductManufacturerDto>(`/api/productmanufacturers`, productManufacturer).subscribe((result: KokuDto.ProductManufacturerDto) => {
+      return this.httpClient.post<KokuDto.ProductManufacturerDto>(`/backend/productmanufacturers`, productManufacturer).subscribe((result: KokuDto.ProductManufacturerDto) => {
         this.loadProductManufacturers().subscribe((newResult) => {
           this._productManufacturers.next(newResult);
           observer.next(result);
@@ -51,7 +51,7 @@ export class ProductManufacturerService {
 
   updateProductManufacturer(productManufacturer: KokuDto.ProductManufacturerDto) {
     return new Observable((observer) => {
-      return this.httpClient.put(`/api/productmanufacturers/${productManufacturer.id}`, productManufacturer).subscribe(() => {
+      return this.httpClient.put(`/backend/productmanufacturers/${productManufacturer.id}`, productManufacturer).subscribe(() => {
         this.loadProductManufacturers().subscribe((newResult) => {
           this._productManufacturers.next(newResult);
           observer.next();
@@ -67,7 +67,7 @@ export class ProductManufacturerService {
 
   deleteProductManufacturer(productManufacturer: KokuDto.ProductManufacturerDto) {
     return new Observable((observer) => {
-      return this.httpClient.delete(`/api/productmanufacturers/${productManufacturer.id}`).subscribe(() => {
+      return this.httpClient.delete(`/backend/productmanufacturers/${productManufacturer.id}`).subscribe(() => {
         this.loadProductManufacturers().subscribe((newResult) => {
           this._productManufacturers.next(newResult);
           observer.next();

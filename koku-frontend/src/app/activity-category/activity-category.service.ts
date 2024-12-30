@@ -23,12 +23,12 @@ export class ActivityCategoryService {
   }
 
   getActivityCategory(activityCategoryId: number): Observable<KokuDto.ActivityCategoryDto> {
-    return this.httpClient.get<KokuDto.ActivityCategoryDto>(`/api/activities/categories/${activityCategoryId}`);
+    return this.httpClient.get<KokuDto.ActivityCategoryDto>(`/backend/activities/categories/${activityCategoryId}`);
   }
 
   createActivityCategory(activityCategory: KokuDto.ActivityCategoryDto) {
     return new Observable<KokuDto.ActivityCategoryDto>((observer) => {
-      return this.httpClient.post<KokuDto.ActivityCategoryDto>(`/api/activities/categories`, activityCategory).subscribe((result: KokuDto.ActivityCategoryDto) => {
+      return this.httpClient.post<KokuDto.ActivityCategoryDto>(`/backend/activities/categories`, activityCategory).subscribe((result: KokuDto.ActivityCategoryDto) => {
           this.loadActivityCategories().subscribe((newResult) => {
             this._activityCategories.next(newResult);
             observer.next(result);
@@ -45,7 +45,7 @@ export class ActivityCategoryService {
 
   updateActivityCategory(activityCategory: KokuDto.ActivityCategoryDto): Observable<any> {
     return new Observable((observer) => {
-      return this.httpClient.put(`/api/activities/categories/${activityCategory.id}`, activityCategory).subscribe(() => {
+      return this.httpClient.put(`/backend/activities/categories/${activityCategory.id}`, activityCategory).subscribe(() => {
         this.loadActivityCategories().subscribe((newResult) => {
           this._activityCategories.next(newResult);
           observer.next();
@@ -61,7 +61,7 @@ export class ActivityCategoryService {
 
   deleteActivityCategory(activityCategory: KokuDto.ActivityCategoryDto): Observable<any> {
     return new Observable((observer) => {
-      return this.httpClient.delete(`/api/activities/categories/${activityCategory.id}`).subscribe(() => {
+      return this.httpClient.delete(`/backend/activities/categories/${activityCategory.id}`).subscribe(() => {
         this.loadActivityCategories().subscribe((newResult) => {
           this._activityCategories.next(newResult);
           observer.next();
@@ -81,7 +81,7 @@ export class ActivityCategoryService {
         search: searchValue || ''
       }
     });
-    return this.httpClient.get<KokuDto.ActivityCategoryDto[]>('/api/activities/categories', {params});
+    return this.httpClient.get<KokuDto.ActivityCategoryDto[]>('/backend/activities/categories', {params});
   }
 
 }

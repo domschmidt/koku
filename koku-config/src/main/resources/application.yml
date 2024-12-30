@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: @project.artifactId@
+  profiles:
+    active: native
+  cloud:
+    config:
+      server:
+        native:
+          search-locations:
+            - file:./../config
+server:
+  port: 8110

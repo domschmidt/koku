@@ -1,37 +1,38 @@
-version: '2'
-
 services:
+  config:
+    container_name: koku-config
+    image: domschmidt/koku-config:latest
+    restart: unless-stopped
+    environment:
+      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH-LOCATIONS=file:/config
+    expose:
+      - 8110
+    volumes:
+      - config-dir:/config
+
   gateway:
     container_name: koku-gateway
-    build:
-      context: koku-gateway/
-      dockerfile: Dockerfile
-    image: domschmidt/koku:koku-gateway
-    restart: always
-    ports:
-      - 443:4040
-      - 80:3030
+    image: domschmidt/koku-gateway:latest
+    restart: unless-stopped
     depends_on:
-      - backend
-      - frontend
+      - config
+    ports:
+      - 443:8200
     environment:
       - FRONTEND_URL=http://frontend:1338/
-      - BACKEND_URL=http://backend:1337/
-      - NEXTCLOUD_URL=http://nextcloud:80/
-      - NGINX_SECURE_PORT=4040
-      - NGINX_INSECURE_PORT=3030
-      - CLIENT_MAX_BODY_SIZE=30M
-      - SERVER_NAME=localhost
+      - BACKEND_URL=http://backend:8210/
+      - CARDDAV_URL=http://carddav:8220/
+      - CONFIG_IMPORT_SOURCE=configserver:http://config:8110
     volumes:
-      - ./ssl:/etc/nginx/certs
+      - ssl-dir:/ssl # containing ssl_certificate.crt and ssl_certificate.key
 
   frontend:
     container_name: koku-frontend
     build:
       context: koku-frontend/
       dockerfile: Dockerfile
-    image: domschmidt/koku:koku-frontend
-    restart: always
+    image: domschmidt/koku-frontend
+    restart: unless-stopped
     expose:
       - 1338
     depends_on:
@@ -41,47 +42,98 @@ services:
 
   backend:
     container_name: koku-backend
-    build:
-      context: koku-backend/
-      dockerfile: Dockerfile
-    image: domschmidt/koku:koku-backend
-    restart: always
+    image: domschmidt/koku-backend:latest
+    restart: unless-stopped
     expose:
-      - 1337
+      - 8210
     depends_on:
-      - db
+      - backend-db
+      - config
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/koku
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=koku
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
-      - UPLOADS_DIR=/data/uploads
-      - NEXTCLOUD_USER=koku
-      - NEXTCLOUD_PASSWORD=hC>q*VJB,B99Aca@
-      - NEXTCLOUD_ENDPOINT=https://localhost:80/nextcloud
-      # - SECURITY_JWT_SECRET=<JWT_SECRET_HS512> use your own jwt secret
+      - KAFKA_BOOTSTRAP-SERVER=kafka:9092
+      - SECURITY_JWT_SECRET=YhsO2nx4BtDN19ij42eB8YHZyYxYngfk4vAg8R8ziVswcEVcofhpiy2SD2Ingzi00VWxT5P6NE2mzdNkHVfaOg==
+      - SECURITY_JWT_SIGNATURE-ALGORITHM=HS512
+      - CONFIG_IMPORT_SOURCE=configserver:http://config:8110
     volumes:
-      - ./uploads:/data/uploads
+      - uploads-dir:/data/uploads
 
-  db:
-    container_name: db
-    image: 'postgres:13.3-alpine'
-    restart: always
+  backend-db:
+    container_name: koku-backend-db
+    image: 'postgres:17.2'
+    restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=koku
-    ports:
-      - 5432:5432
-
-  nextcloud:
-    container_name: nextcloud
-    image: 'nextcloud:latest'
-    restart: always
+      - POSTGRES_DB=koku
     expose:
-      - 80
+      - 5432
+
+  carddav:
+    container_name: koku-carddav
+    image: domschmidt/koku-carddav:latest
+    restart: unless-stopped
+    depends_on:
+      - config
+    expose:
+      - 1339
     environment:
-      - NEXTCLOUD_ADMIN_USER=<NEXTCLOUD_USER>
-      - NEXTCLOUD_ADMIN_PASSWORD=<NEXTCLOUD_PW>
-      - OVERWRITEWEBROOT=/nextcloud
-      - OVERWRITEHOST=<NEXTCLOUD_HOST>
-      - OVERWRITEPROTOCOL=https
+      - KAFKA_BOOTSTRAP-SERVER=kafka:9092
+      - CONFIG_IMPORT_SOURCE=configserver:http://config:8110
+
+  kafka:
+    image: apache/kafka:latest
+    container_name: kafka
+    expose:
+      - 9092
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller               # The node acts as both broker and controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093  # Ports for broker and controller
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092                  # External listener for clients
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER         # Listener name for inter-controller communication
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT  # Security protocol for listeners
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093    # Quorum voters for the controller in KRaft mode
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1           # Replication factor for the offsets topic
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1   # Replication factor for transaction logs
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1              # Minimum in-sync replicas for transactional logs
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0           # Initial delay before consumer group rebalancing
+      KAFKA_NUM_PARTITIONS: 3                             # Default number of partitions for new topics
+
+  init-kafka:
+    image: apache/kafka:latest
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list
+      echo -e 'Creating kafka topics'
+      ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic customers --config cleanup.policy=compact
+
+      echo -e 'Successfully created the following topics:'
+      ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list
+      "
+
+volumes:
+  config-dir:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: './config'
+  uploads-dir:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: './uploads'
+  ssl-dir:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: './ssl'

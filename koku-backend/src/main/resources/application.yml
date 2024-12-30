@@ -1,12 +1,12 @@
 spring:
   application:
-    name: "koku backend"
+    name: @project.artifactId@
   profiles:
     active:
       - logging
       - hibernate
       - security
-      - nextcloud
+      - kafka
   servlet:
     multipart:
       maxFileSize: 268435456  # Limit for a single file (256 MiB)
@@ -14,7 +14,7 @@ spring:
   mvc:
     async:
       request-timeout: 3600000 #1 hour request timeout
+  config:
+    import: ${CONFIG_IMPORT_SOURCE:configserver:http://localhost:8110}
 server:
-  port: 1337
-uploads:
-  dir: C:\\uploads
+  port: 8210

@@ -1,11 +1,11 @@
 {
-  "/api": {
-    "target": "http://localhost:1337",
+  "/backend": {
+    "target": "http://localhost:8210",
     "secure": false,
     "logLevel": "debug",
     "changeOrigin": true,
     "pathRewrite": {
-      "^/api": ""
+      "^/backend": ""
     }
   }
 }

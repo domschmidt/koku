@@ -30,9 +30,9 @@ export class CustomerUploadsComponent implements OnInit {
 
   constructor(
     public customerService: CustomerService,
-              public documentService: DocumentService,
-              public httpClient: HttpClient,
-              public dialog: MatDialog,
+    public documentService: DocumentService,
+    public httpClient: HttpClient,
+    public dialog: MatDialog,
     private readonly fileService: FileService
   ) {
   }
@@ -48,22 +48,22 @@ export class CustomerUploadsComponent implements OnInit {
     }
   }
 
-  trackByFn(index: number, item: KokuDto.UploadDto) {
+  trackByFn(index: number, item: KokuDto.UploadDto): string | undefined {
     return item.uuid;
   }
 
-  dropped(droppedFiles: NgxFileDropEntry[]) {
+  dropped(droppedFiles: NgxFileDropEntry[]): void {
     if (this.customerId) {
       for (const currentUpload of droppedFiles) {
         if (!this.uploads) {
           this.uploads = [];
         }
-        this.uploads.push(this.customerService.addCustomerUpload(this.customerId, <FileSystemFileEntry>currentUpload.fileEntry));
+        this.uploads.push(this.customerService.addCustomerUpload(this.customerId, currentUpload.fileEntry as FileSystemFileEntry));
       }
     }
   }
 
-  delete(item: KokuDto.UploadDto) {
+  delete(item: KokuDto.UploadDto): void {
     const dialogData: AlertDialogData = {
       headline: 'Anhang Löschen',
       message: `Wollen Sie den Anhang mit dem Namen ${item.fileName} wirklich löschen?`,
@@ -101,7 +101,7 @@ export class CustomerUploadsComponent implements OnInit {
     });
   }
 
-  download(upload: KokuDto.UploadDto) {
+  download(upload: KokuDto.UploadDto): void {
     if (upload.uuid !== undefined) {
       this.fileService.downloadFile(upload.uuid).subscribe((result) => {
         FileSaver.saveAs(result, upload.fileName);
@@ -109,7 +109,7 @@ export class CustomerUploadsComponent implements OnInit {
     }
   }
 
-  openFormularCapture(possibleFormular: KokuDto.FormularDto) {
+  openFormularCapture(possibleFormular: KokuDto.FormularDto): void {
     const dialogData: CustomerDocumentCaptureDialogData = {
       customerId: this.customerId || 0,
       documentId: possibleFormular.id || 0

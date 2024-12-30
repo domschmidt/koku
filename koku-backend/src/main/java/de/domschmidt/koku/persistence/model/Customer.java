@@ -10,6 +10,7 @@ import lombok.experimental.FieldNameConstants;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -69,6 +70,7 @@ public class Customer extends DomainModel implements Serializable {
     List<Sale> sales;
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     List<FileUpload> uploads;
+    LocalDateTime kafkaExported;
 
     @Override
     public String toString() {

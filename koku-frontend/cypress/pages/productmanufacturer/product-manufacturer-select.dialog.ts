@@ -24,8 +24,8 @@ export class ProductManufacturerSelectDialog implements KokuDialog, KokuSearchPa
 
   getPageSearch(): KokuPageSearch {
     return new KokuPageSearch(
-      '/api/productmanufacturers',
-      '/api/productmanufacturers/**',
+      '/backend/productmanufacturers',
+      '/backend/productmanufacturers/**',
       this.SELECTOR_SEARCH_FIELD,
       this.SELECTOR_PRODUCT_MANUFACTURER_RESULTS
     );

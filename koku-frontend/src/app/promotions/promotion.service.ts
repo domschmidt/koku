@@ -26,11 +26,11 @@ export class PromotionService {
         search: searchValue || ''
       }
     });
-    return this.httpClient.get<KokuDto.PromotionDto[]>('/api/promotions', {params});
+    return this.httpClient.get<KokuDto.PromotionDto[]>('/backend/promotions', {params});
   }
 
   getPromotion(PromotionId: number) {
-    return this.httpClient.get<KokuDto.PromotionDto>(`/api/promotions/${PromotionId}`);
+    return this.httpClient.get<KokuDto.PromotionDto>(`/backend/promotions/${PromotionId}`);
   }
 
   getActivePromotions() {
@@ -39,12 +39,12 @@ export class PromotionService {
         activeOnly: 'true'
       }
     });
-    return this.httpClient.get<KokuDto.PromotionDto[]>(`/api/promotions`, {params});
+    return this.httpClient.get<KokuDto.PromotionDto[]>(`/backend/promotions`, {params});
   }
 
   createPromotion(promotion: KokuDto.PromotionDto) {
     return new Observable<KokuDto.PromotionDto>((observer) => {
-      return this.httpClient.post<KokuDto.PromotionDto>(`/api/promotions`, promotion).subscribe((result: KokuDto.PromotionDto) => {
+      return this.httpClient.post<KokuDto.PromotionDto>(`/backend/promotions`, promotion).subscribe((result: KokuDto.PromotionDto) => {
         this.loadPromotions().subscribe((newResult) => {
           this._promotions.next(newResult);
           observer.next(result);
@@ -60,7 +60,7 @@ export class PromotionService {
 
   updatePromotion(promotion: KokuDto.PromotionDto) {
     return new Observable((observer) => {
-      return this.httpClient.put(`/api/promotions/${promotion.id}`, promotion).subscribe(() => {
+      return this.httpClient.put(`/backend/promotions/${promotion.id}`, promotion).subscribe(() => {
         this.loadPromotions().subscribe((newResult) => {
           this._promotions.next(newResult);
           observer.next();
@@ -76,7 +76,7 @@ export class PromotionService {
 
   deletePromotion(promotion: KokuDto.PromotionDto) {
     return new Observable((observer) => {
-      return this.httpClient.delete(`/api/promotions/${promotion.id}`).subscribe(() => {
+      return this.httpClient.delete(`/backend/promotions/${promotion.id}`).subscribe(() => {
         this.loadPromotions().subscribe((newResult) => {
           this._promotions.next(newResult);
           observer.next();

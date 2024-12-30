@@ -11,7 +11,7 @@ export class ChartService {
   getChart(sourceUrl: string, params?: {
     [param: string]: string | string[];
   }) {
-    return this.httpClient.get<KokuDto.ChartPanelDto>(`/api${sourceUrl}`, {
+    return this.httpClient.get<KokuDto.ChartPanelDto>(`/backend${sourceUrl}`, {
       params: params
     });
   }

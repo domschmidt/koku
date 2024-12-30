@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class UploadConfiguration {
 
-    @Value("${uploads.dir}")
+    @Value("${uploads.dir:/data/uploads}")
     private String uploadsDir;
 
 }

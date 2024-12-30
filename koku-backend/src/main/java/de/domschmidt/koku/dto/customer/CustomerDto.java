@@ -1,19 +1,22 @@
 package de.domschmidt.koku.dto.customer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@AllArgsConstructor
+@NoArgsConstructor
 public class CustomerDto {
 
     private Long id;
+    private Boolean deleted;
+    private LocalDateTime lastUpdated;
 
     private String firstName;
     private String lastName;
@@ -29,21 +32,21 @@ public class CustomerDto {
     private String additionalInfo;
     private LocalDate birthday;
     private Boolean onFirstNameBasis;
-    private boolean hayFever;
-    private boolean plasterAllergy;
-    private boolean cyanoacrylateAllergy;
-    private boolean asthma;
-    private boolean dryEyes;
-    private boolean circulationProblems;
-    private boolean epilepsy;
-    private boolean diabetes;
-    private boolean claustrophobia;
-    private boolean neurodermatitis;
-    private boolean contacts;
-    private boolean glasses;
+    private Boolean hayFever;
+    private Boolean plasterAllergy;
+    private Boolean cyanoacrylateAllergy;
+    private Boolean asthma;
+    private Boolean dryEyes;
+    private Boolean circulationProblems;
+    private Boolean epilepsy;
+    private Boolean diabetes;
+    private Boolean claustrophobia;
+    private Boolean neurodermatitis;
+    private Boolean contacts;
+    private Boolean glasses;
     private String eyeDisease;
     private String allergy;
-    boolean covid19vaccinated;
-    boolean covid19boostered;
+    private Boolean covid19vaccinated;
+    private Boolean covid19boostered;
 
 }

@@ -9,7 +9,7 @@ export class GaugeService {
   }
 
   getGauge(sourceUrl: string) {
-    return this.httpClient.get<KokuDto.GaugePanelDto>(`/api${sourceUrl}`);
+    return this.httpClient.get<KokuDto.GaugePanelDto>(`/backend${sourceUrl}`);
   }
 
 }

@@ -36,8 +36,8 @@ export class ProductAdministrationPage implements KokuTabPage, KokuNavigatablePa
 
   getPageSearch(): KokuPageSearch {
     return new KokuPageSearch(
-      '/api/products',
-      '/api/products/**',
+      '/backend/products',
+      '/backend/products/**',
       this.SELECTOR_SEARCH_FIELD,
       this.SELECTOR_PRODUCT_RESULTS
     );

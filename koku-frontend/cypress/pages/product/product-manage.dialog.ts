@@ -41,7 +41,7 @@ export class ProductManageDialog implements KokuDialog {
 
   saveChanges(create: boolean) {
     cy.intercept({
-      url: create ? '/api/products' : '/api/products/**',
+      url: create ? '/backend/products' : '/backend/products/**',
       method: create ? 'POST' : 'PUT'
     }).as('modifyProductCall')
       .get(this.SELECTOR_PRODUCT_FORM).submit().wait('@modifyProductCall')

@@ -25,12 +25,12 @@ export class MyUserDetailsService {
   }
 
   private loadDetails() {
-    return this.httpClient.get<KokuDto.KokuUserDetailsDto>('/api/users/@self');
+    return this.httpClient.get<KokuDto.KokuUserDetailsDto>('/backend/users/@self');
   }
 
   updateDetails(userDetails: KokuDto.KokuUserDetailsDto) {
     return new Observable((observer) => {
-      return this.httpClient.put('/api/users/@self', userDetails).subscribe(() => {
+      return this.httpClient.put('/backend/users/@self', userDetails).subscribe(() => {
         this.authService.refreshToken().subscribe(() => {
           this.loadDetails().subscribe((newResult) => {
             this._mydetails.next(newResult);

@@ -13,7 +13,7 @@ export class AuthService {
 
   createSession(username: string, password: string): Observable<undefined> {
     return new Observable<undefined>((observer) => {
-      const apiEndpoint = '/api/auth/login';
+      const apiEndpoint = '/backend/auth/login';
       const requestBody: KokuDto.LoginDto = {
         username,
         password
@@ -32,7 +32,7 @@ export class AuthService {
 
   refreshToken() {
     return new Observable<undefined>((observer) => {
-      const apiEndpoint = '/api/auth/refresh';
+      const apiEndpoint = '/backend/auth/refresh';
       this.httpClient.post<KokuDto.LoginAttemptResponseDto>(apiEndpoint, {}).subscribe(() => {
         observer.next();
         observer.complete();
@@ -43,7 +43,7 @@ export class AuthService {
   }
 
   destroySession() {
-    return this.httpClient.post('/api/auth/logout', {}).pipe(finalize(() => {
+    return this.httpClient.post('/backend/auth/logout', {}).pipe(finalize(() => {
       window.localStorage.clear();
     }));
   }

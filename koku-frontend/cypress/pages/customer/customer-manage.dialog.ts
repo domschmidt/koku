@@ -239,7 +239,7 @@ export class CustomerManageDialog implements KokuDialog {
 
   saveChanges(create: boolean) {
     cy.intercept({
-      url: create ? '/api/customers' : '/api/customers/**',
+      url: create ? '/backend/customers' : '/backend/customers/**',
       method: create ? 'POST' : 'PUT'
     }).as('modifyCustomerCall')
       .get(this.SELECTOR_CUSTOMER_FORM).submit().wait('@modifyCustomerCall');

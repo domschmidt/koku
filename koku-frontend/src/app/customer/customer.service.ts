@@ -28,20 +28,20 @@ export class CustomerService {
   }
 
   public getCustomer(id: number) {
-    return this.httpClient.get<KokuDto.CustomerDto>(`/api/customers/${id}`);
+    return this.httpClient.get<KokuDto.CustomerDto>(`/backend/customers/${id}`);
   }
 
   public getCustomerAppointments(id: number) {
-    return this.httpClient.get<KokuDto.CustomerAppointmentDto[]>(`/api/customers/${id}/appointments`);
+    return this.httpClient.get<KokuDto.CustomerAppointmentDto[]>(`/backend/customers/${id}/appointments`);
   }
 
   public getCustomerSales(id: number) {
-    return this.httpClient.get<KokuDto.CustomerSalesDto[]>(`/api/customers/${id}/sales`);
+    return this.httpClient.get<KokuDto.CustomerSalesDto[]>(`/backend/customers/${id}/sales`);
   }
 
   updateCustomer(customer: KokuDto.CustomerDto) {
     return new Observable((observer) => {
-      this.httpClient.put(`/api/customers/${customer.id}`, customer).subscribe(() => {
+      this.httpClient.put(`/backend/customers/${customer.id}`, customer).subscribe(() => {
         this.loadCustomers().subscribe((newResult) => {
           this._customers.next(newResult);
           observer.next();
@@ -57,7 +57,7 @@ export class CustomerService {
 
   createCustomer(customer: KokuDto.CustomerDto) {
     return new Observable<KokuDto.CustomerDto>((observer) => {
-      this.httpClient.post(`/api/customers`, customer).subscribe((result: KokuDto.CustomerDto) => {
+      this.httpClient.post(`/backend/customers`, customer).subscribe((result: KokuDto.CustomerDto) => {
         this.loadCustomers().subscribe((newResult) => {
           this._customers.next(newResult);
           observer.next(result);
@@ -73,7 +73,7 @@ export class CustomerService {
 
   deleteCustomer(customer: KokuDto.CustomerDto) {
     return new Observable((observer) => {
-      this.httpClient.delete(`/api/customers/${customer.id}`).subscribe(() => {
+      this.httpClient.delete(`/backend/customers/${customer.id}`).subscribe(() => {
         this.loadCustomers().subscribe((newResult) => {
           this._customers.next(newResult);
           observer.next();
@@ -88,11 +88,11 @@ export class CustomerService {
   }
 
   public getCustomerUploads(customerId: number) {
-    return this.httpClient.get<KokuDto.UploadDto[]>(`/api/customers/${customerId}/uploads`)
+    return this.httpClient.get<KokuDto.UploadDto[]>(`/backend/customers/${customerId}/uploads`)
   }
 
   deleteCustomerUpload(customerId: number, item: KokuDto.UploadDto) {
-    return this.httpClient.delete(`/api/customers/${customerId}/uploads/${item.uuid}`)
+    return this.httpClient.delete(`/backend/customers/${customerId}/uploads/${item.uuid}`)
   }
 
   addCustomerUpload(customerId: number, currentUpload: FileSystemFileEntry) {
@@ -103,7 +103,7 @@ export class CustomerService {
     currentUpload.file((file) => {
       const formData: FormData = new FormData();
       formData.append('file', file);
-      this.httpClient.post(`/api/customers/${customerId}/uploads`, formData, {
+      this.httpClient.post(`/backend/customers/${customerId}/uploads`, formData, {
         reportProgress: true,
         observe: 'events'
       }).subscribe((httpEvent: HttpEvent<any>) => {
@@ -137,11 +137,11 @@ export class CustomerService {
   }
 
   createCustomerDocument(customerId: number, document: KokuDto.FormularDto) {
-    return this.httpClient.post<KokuDto.UploadDto>(`/api/customers/${customerId}/documents`, document);
+    return this.httpClient.post<KokuDto.UploadDto>(`/backend/customers/${customerId}/documents`, document);
   }
 
   public getDocument(customerId: number, documentId: number) {
-    return this.httpClient.get<KokuDto.FormularDto>(`/api/customers/${customerId}/documents/${documentId}`)
+    return this.httpClient.get<KokuDto.FormularDto>(`/backend/customers/${customerId}/documents/${documentId}`)
   }
 
   private loadCustomers(searchValue?: string) {
@@ -150,11 +150,11 @@ export class CustomerService {
         search: searchValue || ''
       }
     });
-    return this.httpClient.get<KokuDto.CustomerDto[]>('/api/customers', {params});
+    return this.httpClient.get<KokuDto.CustomerDto[]>('/backend/customers', {params});
   }
 
   exportAllCustomers() {
-    this.httpClient.get(`/api/customers/export`, {responseType: 'blob'}).subscribe((result) => {
+    this.httpClient.get(`/backend/customers/export`, {responseType: 'blob'}).subscribe((result) => {
       FileSaver.saveAs(result, "koku-customers.vcf");
     });
   }

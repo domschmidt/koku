@@ -10,11 +10,11 @@ export class DashboardService {
   }
 
   getConfig() {
-    return this.httpClient.get<KokuDto.DashboardConfigDto>(`/api/dashboard/config`);
+    return this.httpClient.get<KokuDto.DashboardConfigDto>(`/backend/dashboard/config`);
   }
 
   getDeferredPanelContent(href: string) {
-    return this.httpClient.get<KokuDto.IDashboardColumnContent>(`/api${href}`);
+    return this.httpClient.get<KokuDto.IDashboardColumnContent>(`/backend${href}`);
   }
 
 }

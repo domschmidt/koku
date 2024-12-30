@@ -3,9 +3,9 @@ package de.domschmidt.koku.dto.customer;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.domschmidt.koku.dto.ICalendarContent;
-import de.domschmidt.koku.dto.user.KokuUserDetailsDto;
-import de.domschmidt.koku.dto.promotion.PromotionDto;
 import de.domschmidt.koku.dto.activity.ActivitySequenceItemDto;
+import de.domschmidt.koku.dto.promotion.PromotionDto;
+import de.domschmidt.koku.dto.user.KokuUserDetailsDto;
 import lombok.*;
 
 import java.math.BigDecimal;

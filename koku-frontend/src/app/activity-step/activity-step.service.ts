@@ -23,12 +23,12 @@ export class ActivityStepService {
   }
 
   getActivityStep(activityStepId: number) {
-    return this._httpClient.get<KokuDto.ActivityStepDto>(`/api/activitysteps/${activityStepId}`);
+    return this._httpClient.get<KokuDto.ActivityStepDto>(`/backend/activitysteps/${activityStepId}`);
   }
 
   createActivityStep(activityStep: KokuDto.ActivityStepDto) {
     return new Observable<KokuDto.ActivityStepDto>((observer) => {
-      return this._httpClient.post<KokuDto.ActivityStepDto>(`/api/activitysteps`, activityStep).subscribe((result: KokuDto.ActivityStepDto) => {
+      return this._httpClient.post<KokuDto.ActivityStepDto>(`/backend/activitysteps`, activityStep).subscribe((result: KokuDto.ActivityStepDto) => {
           this.loadActivitySteps().subscribe((newResult) => {
             this._activitySteps.next(newResult);
             observer.next(result);
@@ -45,7 +45,7 @@ export class ActivityStepService {
 
   updateActivityStep(activityStep: KokuDto.ActivityStepDto) {
     return new Observable((observer) => {
-      return this._httpClient.put(`/api/activitysteps/${activityStep.id}`, activityStep).subscribe(() => {
+      return this._httpClient.put(`/backend/activitysteps/${activityStep.id}`, activityStep).subscribe(() => {
         this.loadActivitySteps().subscribe((newResult) => {
           this._activitySteps.next(newResult);
           observer.next();
@@ -61,7 +61,7 @@ export class ActivityStepService {
 
   deleteActivityStep(activityStep: KokuDto.ActivityStepDto) {
     return new Observable((observer) => {
-      return this._httpClient.delete(`/api/activitysteps/${activityStep.id}`).subscribe(() => {
+      return this._httpClient.delete(`/backend/activitysteps/${activityStep.id}`).subscribe(() => {
         this.loadActivitySteps().subscribe((newResult) => {
           this._activitySteps.next(newResult);
           observer.next();
@@ -81,7 +81,7 @@ export class ActivityStepService {
         search: searchValue || ''
       }
     });
-    return this._httpClient.get<KokuDto.ActivityStepDto[]>('/api/activitysteps', {params});
+    return this._httpClient.get<KokuDto.ActivityStepDto[]>('/backend/activitysteps', {params});
   }
 
 }

@@ -25,12 +25,12 @@ export class ActivityService {
   }
 
   getActivity(activityId: number): Observable<KokuDto.ActivityDto> {
-    return this.httpClient.get<KokuDto.ActivityDto>(`/api/activities/${activityId}`);
+    return this.httpClient.get<KokuDto.ActivityDto>(`/backend/activities/${activityId}`);
   }
 
   createActivity(activity: KokuDto.ActivityDto): Observable<KokuDto.ActivityDto> {
     return new Observable<KokuDto.ActivityDto>((observer) => {
-      return this.httpClient.post(`/api/activities`, activity).subscribe((result: KokuDto.ActivityDto) => {
+      return this.httpClient.post(`/backend/activities`, activity).subscribe((result: KokuDto.ActivityDto) => {
         this.loadActivities().subscribe((newResult) => {
           this._activities.next(newResult);
           observer.next(result);
@@ -46,7 +46,7 @@ export class ActivityService {
 
   updateActivity(activity: KokuDto.ActivityDto): Observable<any> {
     return new Observable((observer) => {
-      return this.httpClient.put(`/api/activities/${activity.id}`, activity).subscribe(() => {
+      return this.httpClient.put(`/backend/activities/${activity.id}`, activity).subscribe(() => {
         this.loadActivities().subscribe((newResult) => {
           this._activities.next(newResult);
           observer.next();
@@ -62,7 +62,7 @@ export class ActivityService {
 
   deleteActivity(activity: KokuDto.ActivityDto): Observable<any> {
     return new Observable((observer) => {
-      return this.httpClient.delete(`/api/activities/${activity.id}`).subscribe(() => {
+      return this.httpClient.delete(`/backend/activities/${activity.id}`).subscribe(() => {
         this.loadActivities().subscribe((newResult) => {
           this._activities.next(newResult);
           observer.next();
@@ -84,7 +84,7 @@ export class ActivityService {
         search: searchValue || ''
       }
     });
-    return this.httpClient.get<KokuDto.ActivityDto[]>('/api/activities', {params});
+    return this.httpClient.get<KokuDto.ActivityDto[]>('/backend/activities', {params});
   }
 
 }

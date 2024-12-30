@@ -36,7 +36,7 @@ export class MyProfilePage {
 
   saveChanges() {
     cy.intercept({
-      url: '/api/users/@self',
+      url: '/backend/users/@self',
       method: 'PUT'
     }).as('updateMyProfileCall')
       .get(this.SELECTOR_MY_PROFILE_FORM).submit().wait('@updateMyProfileCall');

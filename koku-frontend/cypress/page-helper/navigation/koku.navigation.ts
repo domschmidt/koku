@@ -17,7 +17,7 @@ export class KokuNavigation {
   navigateToMyProfile() {
     this.openNavigation();
     cy.intercept({
-      url: '/api/users/@self',
+      url: '/backend/users/@self',
       method: 'GET'
     }).as('myProfileCall');
     cy.get('#page-skeleton__my-profile').click();
@@ -30,7 +30,7 @@ export class KokuNavigation {
   logout() {
     this.openNavigation();
     cy.intercept({
-      url: '/api/auth/logout',
+      url: '/backend/auth/logout',
       method: 'POST'
     }).as('logoutCall');
     this.navigateTo('Logout').wait('@logoutCall');

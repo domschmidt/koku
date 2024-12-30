@@ -21,12 +21,12 @@ export class UserService {
   }
 
   getUser(userId: number) {
-    return this.httpClient.get<KokuDto.KokuUserDetailsDto>(`/api/users/${userId}`);
+    return this.httpClient.get<KokuDto.KokuUserDetailsDto>(`/backend/users/${userId}`);
   }
 
   createUser(user: KokuDto.KokuUserDetailsDto) {
     return new Observable<KokuDto.KokuUserDetailsDto>((observer) => {
-      return this.httpClient.post<KokuDto.KokuUserDetailsDto>(`/api/users`, user).subscribe((result: KokuDto.KokuUserDetailsDto) => {
+      return this.httpClient.post<KokuDto.KokuUserDetailsDto>(`/backend/users`, user).subscribe((result: KokuDto.KokuUserDetailsDto) => {
         this.loadUsers().subscribe((newResult) => {
           this._users.next(newResult);
           observer.next(result);
@@ -42,7 +42,7 @@ export class UserService {
 
   updateUser(user: KokuDto.KokuUserDetailsDto) {
     return new Observable((observer) => {
-      return this.httpClient.put(`/api/users/${user.id}`, user).subscribe(() => {
+      return this.httpClient.put(`/backend/users/${user.id}`, user).subscribe(() => {
         this.loadUsers().subscribe((newResult) => {
           this._users.next(newResult);
           observer.next();
@@ -58,7 +58,7 @@ export class UserService {
 
   deleteUser(user: KokuDto.KokuUserDetailsDto) {
     return new Observable((observer) => {
-      return this.httpClient.delete(`/api/users/${user.id}`).subscribe(() => {
+      return this.httpClient.delete(`/backend/users/${user.id}`).subscribe(() => {
         this.loadUsers().subscribe((newResult) => {
           this._users.next(newResult);
           observer.next();
@@ -78,7 +78,7 @@ export class UserService {
         search: searchValue || ''
       }
     });
-    return this.httpClient.get<KokuDto.KokuUserDetailsDto[]>('/api/users', {params});
+    return this.httpClient.get<KokuDto.KokuUserDetailsDto[]>('/backend/users', {params});
   }
 
 }

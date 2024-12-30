@@ -1,8 +1,0 @@
-security:
-  jwt:
-    secret: NMYxw2Ux5Ran6hXOJwL67pXw3wWpIdBjKvsJklQ9uQxRielPQtRwaZ80GbpI/SWbthdfcryrh0fvdFi1/HJJXw==
-    signatureAlgorithm: HS512
-    token:
-      ttl: 900 #15 min
-    refreshToken:
-      ttl: 604800 #7 days
