@@ -60,6 +60,7 @@ import {
   AlertDialogComponent,
   AlertDialogData
 } from "../../alert-dialog/alert-dialog.component";
+import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
 
 export interface CustomerAppointmentDetailsData {
   customer?: KokuDto.CustomerDto;
@@ -796,4 +797,9 @@ export class CustomerAppointmentDetailsComponent implements AfterViewInit {
       }
     });
   }
+
+  moveItemInArray(array: any[], event: CdkDragDrop<any[]>): void {
+    moveItemInArray(array, event.previousIndex, event.currentIndex);
+  }
+
 }

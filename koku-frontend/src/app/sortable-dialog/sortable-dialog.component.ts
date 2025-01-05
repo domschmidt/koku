@@ -1,6 +1,7 @@
 import {Component, Inject} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {SortableEvent} from 'sortablejs';
+
+import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
 
 export interface SortableDialogButtonConfig {
   text: string;
@@ -31,11 +32,9 @@ export class SortableDialogComponent {
               public dialogRef: MatDialogRef<SortableDialogComponent>) {
   }
 
-  startDraggingItem(event: SortableEvent): void {
-    event.item.classList.add('sortable__item__handle-btn--handle-grabbed');
+  moveItemInArray(array: any[], event: CdkDragDrop<any[]>): void {
+    moveItemInArray(array, event.previousIndex, event.currentIndex);
   }
 
-  endDraggingItem(event: SortableEvent): void {
-    event.item.classList.remove('sortable__item__handle-btn--handle-grabbed');
-  }
+
 }

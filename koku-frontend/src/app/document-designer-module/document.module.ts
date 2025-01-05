@@ -7,7 +7,6 @@ import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {FormsModule} from '@angular/forms';
 import {MatDialogModule} from '@angular/material/dialog';
-import {SortablejsModule} from 'ngx-sortablejs';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {FlexLayoutModule} from '@angular/flex-layout';
@@ -15,6 +14,8 @@ import {DocumentFieldHostDirective} from './document-field-host.directive';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {DocumentRowsCaptureComponent} from './document-rows-capture.component';
+import {DragDropModule} from '@angular/cdk/drag-drop';
+import {MatChipsModule} from '@angular/material/chips';
 
 @NgModule({
   imports: [
@@ -25,12 +26,13 @@ import {DocumentRowsCaptureComponent} from './document-rows-capture.component';
     MatProgressSpinnerModule,
     FormsModule,
     MatDialogModule,
-    SortablejsModule,
     MatButtonToggleModule,
     KeyValuePipe,
     FlexLayoutModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    DragDropModule,
+    MatChipsModule
   ],
   declarations: [
     DocumentRowsDesignerComponent,

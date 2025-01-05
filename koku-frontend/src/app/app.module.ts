@@ -68,7 +68,6 @@ import {ProductManufacturerComponent} from './product-manufacturer/product-manuf
 import {AlertDialogComponent} from './alert-dialog/alert-dialog.component';
 import {ActivityStepDetailsComponent} from './activity-step/activity-step-details/activity-step-details.component';
 import {ActivityStepComponent} from './activity-step/activity-step.component';
-import {SortablejsModule} from 'ngx-sortablejs';
 import {CustomerCreateDialogComponent} from './customer/customer-create-dialog/customer-create-dialog.component';
 import {UserDetailsComponent} from './user/user-details/user-details.component';
 import {UserComponent} from './user/user.component';
@@ -329,7 +328,6 @@ Chart.register(...registerables);
     FullCalendarModule,
     MatSidenavModule,
     NgxFileDropModule,
-    SortablejsModule.forRoot({animation: 0}),
     MatDatepickerModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,

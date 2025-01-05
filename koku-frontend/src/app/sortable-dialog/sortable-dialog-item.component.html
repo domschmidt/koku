@@ -2,25 +2,18 @@
   {{ item.description }}
 </span>
 <div *ngIf="item.items"
-     [sortablejs]="item.items"
-     class="sortable"
-     [sortablejsOptions]="{
-               fallbackTolerance: 5,
-               group: 'sortable-items-' + item.id,
-               handle: '.sortable__item__handle-btn',
-               dragClass: 'sortable-drag',
-               onStart: startDraggingItem,
-               onEnd: endDraggingItem
-             }"
+     cdkDropList
+     cdkDropListOrientation="horizontal"
+     (cdkDropListDropped)="moveItemInArray(item.items, $event)"
 >
   <div *ngFor="let currentItem of item.items" class="sortable__item">
     <button mat-icon-button
             type="button"
             color="primary"
+            cdkDrag
     >
       <mat-icon class="sortable__item__handle-btn"
-                (mousedown)="$event.stopPropagation()"
-                (touchstart)="$event.stopPropagation()">
+                cdkDragHandle>
         drag_handle
       </mat-icon>
     </button>

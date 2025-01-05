@@ -2,25 +2,18 @@
 
 <mat-dialog-content>
   <div
-    [sortablejs]="data.items"
-    class="sortable"
-    [sortablejsOptions]="{
-               fallbackTolerance: 5,
-               group: 'sortable-items-root',
-               handle: '.sortable__item__handle-btn',
-               dragClass: 'sortable-drag',
-               onStart: startDraggingItem,
-               onEnd: endDraggingItem
-             }"
+    cdkDropList
+    cdkDropListOrientation="horizontal"
+    (cdkDropListDropped)="moveItemInArray(data.items, $event)"
   >
-    <div *ngFor="let currentItem of data.items" class="sortable__item">
+    <div *ngFor="let currentItem of data.items" class="sortable__item"
+    cdkDrag>
       <button mat-icon-button
               type="button"
               color="primary"
       >
         <mat-icon class="sortable__item__handle-btn"
-                  (mousedown)="$event.stopPropagation()"
-                  (touchstart)="$event.stopPropagation()">
+                  cdkDragHandle>
           drag_handle
         </mat-icon>
       </button>

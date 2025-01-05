@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {SortableDialogItem} from './sortable-dialog.component';
-import {SortableEvent} from 'sortablejs';
+import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'sortable-dialog-item',
@@ -13,11 +13,8 @@ export class SortableDialogItemComponent {
 
   constructor() {
   }
-  startDraggingItem(event: SortableEvent): void {
-    event.item.classList.add('sortable__item__handle-btn--handle-grabbed');
-  }
 
-  endDraggingItem(event: SortableEvent): void {
-    event.item.classList.remove('sortable__item__handle-btn--handle-grabbed');
+  moveItemInArray(array: any[], event: CdkDragDrop<any[]>): void {
+    moveItemInArray(array, event.previousIndex, event.currentIndex);
   }
 }

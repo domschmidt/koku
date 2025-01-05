@@ -1,10 +1,10 @@
 import {Component, Input, OnInit, ViewChild} from '@angular/core';
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
-import {SortableEvent} from 'sortablejs';
 import {AlertDialogButtonConfig, AlertDialogComponent, AlertDialogData} from '../alert-dialog/alert-dialog.component';
 import {DocumentFieldHostDirective} from './document-field-host.directive';
 import {DocumentBaseRow, DocumentBaseRowItem} from './document.interface';
 import {DocumentFieldConfigurationTypes} from './document-field-config';
+import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'document-rows-designer',
@@ -70,22 +70,6 @@ export class DocumentRowsDesignerComponent implements OnInit {
 
   getFxFlex(size: number): string {
     return Math.round((size / this.gridSize) * 100) + '%';
-  }
-
-  startDragging(event: SortableEvent): void {
-    event.item.classList.add('document__row--handle-grabbed');
-  }
-
-  endDragging(event: SortableEvent): void {
-    event.item.classList.remove('document__row--handle-grabbed');
-  }
-
-  startDraggingItem(event: SortableEvent): void {
-    event.item.classList.add('document__row__contents__item__menu__handle-btn--handle-grabbed');
-  }
-
-  endDraggingItem(event: SortableEvent): void {
-    event.item.classList.remove('document__row__contents__item__menu__handle-btn--handle-grabbed');
   }
 
   editFormField(formField: DocumentBaseRowItem, row: DocumentBaseRow): void {
@@ -190,6 +174,10 @@ export class DocumentRowsDesignerComponent implements OnInit {
     } else {
       this.rows.splice(this.rows.indexOf(row) || 0, 1);
     }
+  }
+
+  moveItemInArray(array: any[], event: CdkDragDrop<any[]>): void {
+    moveItemInArray(array, event.previousIndex, event.currentIndex);
   }
 
 }

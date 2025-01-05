@@ -1,13 +1,7 @@
 <div class="document"
-     [sortablejs]="rows"
-     [sortablejsOptions]="{
-            fallbackTolerance: 5,
-            group: 'document',
-            handle: '.document__row__handle-btn',
-            dragClass: 'sortable-drag',
-            onStart: startDragging,
-            onEnd: endDragging
-          }">
+     cdkDropList
+     cdkDropListOrientation="horizontal"
+     (cdkDropListDropped)="moveItemInArray(rows, $event)">
 
   <div class="document__row-info"
        *ngIf="!rows || rows.length === 0">
@@ -24,6 +18,7 @@
   <ng-container *ngIf="rows !== undefined">
     <div *ngFor="let row of rows"
          class="document__row"
+         cdkDrag
     >
       <div class="document__row__menu">
         <button mat-icon-button
@@ -31,8 +26,7 @@
                 color="accent"
         >
           <mat-icon class="document__row__handle-btn"
-                    (mousedown)="$event.stopPropagation()"
-                    (touchstart)="$event.stopPropagation()">
+                    cdkDragHandle>
             drag_handle
           </mat-icon>
         </button>
@@ -75,15 +69,9 @@
       </div>
 
       <div class="document__row__contents"
-           [sortablejs]="row.items"
-           [sortablejsOptions]="{
-               fallbackTolerance: 5,
-               group: 'items',
-               handle: '.document__row__contents__item__menu__handle-btn',
-               dragClass: 'sortable-drag',
-               onStart: startDraggingItem,
-               onEnd: endDraggingItem
-             }"
+           cdkDropList
+           cdkDropListOrientation="horizontal"
+           (cdkDropListDropped)="moveItemInArray(rows, $event)"
            fxLayout="row wrap">
 
         <div class="document__row__contents__row-info"
@@ -92,7 +80,7 @@
             <button (click)="createField(namePair.key, row)"
                     *ngFor="let namePair of fieldConfig | keyvalue"
                     mat-menu-item>
-              <span>{{namePair.value.name}}</span>
+              <span>{{ namePair.value.name }}</span>
             </button>
           </mat-menu>
           <button class="document__row__contents__row-info__add-content-button"
@@ -114,6 +102,7 @@
              [class.document__row__contents__item--align-top]="row.align === 'TOP'"
              [class.document__row__contents__item--align-center]="row.align === 'CENTER'"
              [class.document__row__contents__item--align-bottom]="row.align === 'BOTTOM'"
+             cdkDrag
              class="document__row__contents__item">
 
           <div class="document__row__contents__item__menu">
@@ -122,8 +111,7 @@
                     color="primary"
             >
               <mat-icon class="document__row__contents__item__menu__handle-btn"
-                        (mousedown)="$event.stopPropagation()"
-                        (touchstart)="$event.stopPropagation()">
+                        cdkDragHandle>
                 drag_handle
               </mat-icon>
             </button>
@@ -131,7 +119,7 @@
               <button (click)="createField(namePair.key, row, (row.items || []).indexOf(formField))"
                       *ngFor="let namePair of fieldConfig | keyvalue"
                       mat-menu-item>
-                <span>{{namePair.value.name}}</span>
+                <span>{{ namePair.value.name }}</span>
               </button>
             </mat-menu>
             <button mat-icon-button
@@ -146,7 +134,7 @@
               <button (click)="createField(namePair.key, row,(row.items || []).indexOf(formField) + 1)"
                       *ngFor="let namePair of fieldConfig | keyvalue"
                       mat-menu-item>
-                <span>{{namePair.value.name}}</span>
+                <span>{{ namePair.value.name }}</span>
               </button>
             </mat-menu>
             <button mat-icon-button

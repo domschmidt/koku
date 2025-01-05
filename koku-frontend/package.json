@@ -45,12 +45,10 @@
     "moment": "2.29.4",
     "ngx-file-drop": "14.0.0",
     "ngx-moment": "5.0.0",
-    "ngx-sortablejs": "npm:nxt-sortablejs@13.0.0",
     "rrule": "2.7.1",
     "rxjs": "7.5.6",
     "service": "0.1.4",
     "signature_pad": "4.0.8",
-    "sortablejs": "1.15.0",
     "tslib": "2.4.0",
     "zone.js": "0.11.8",
     "fitty": "2.3.6",
@@ -71,7 +69,6 @@
     "@types/jasminewd2": "2.0.10",
     "@types/lodash": "4.14.185",
     "@types/node": "18.7.18",
-    "@types/sortablejs": "1.13.0",
     "@types/uuid": "8.3.4",
     "@types/qrcode": "1.5.0",
     "codelyzer": "6.0.2",
@@ -98,10 +95,6 @@
       "@angular/platform-browser": "^14.2.0"
     },
     "@fullcalendar/angular": {
-      "@angular/common": "^14.2.0",
-      "@angular/core": "^14.2.0"
-    },
-    "ngx-sortablejs": {
       "@angular/common": "^14.2.0",
       "@angular/core": "^14.2.0"
     }

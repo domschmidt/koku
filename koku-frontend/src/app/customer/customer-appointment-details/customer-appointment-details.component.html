@@ -35,9 +35,9 @@
       <button (click)="selectCustomer()" *ngIf="customerAppointment.customer" mat-list-item>
         <circle-with-letters [letters]="customerAppointment.customer.initials"></circle-with-letters>
         <h3
-          matLine>{{customerAppointment.customer.firstName}} {{customerAppointment.customer.lastName}} {{customerAppointment.customer.onFirstNameBasis ? '*' : ''}}</h3>
-        <p matLine>{{customerAppointment.customer.address}}</p>
-        <p matLine>{{customerAppointment.customer.postalCode}} {{customerAppointment.customer.city}}</p>
+          matLine>{{ customerAppointment.customer.firstName }} {{ customerAppointment.customer.lastName }} {{ customerAppointment.customer.onFirstNameBasis ? '*' : '' }}</h3>
+        <p matLine>{{ customerAppointment.customer.address }}</p>
+        <p matLine>{{ customerAppointment.customer.postalCode }} {{ customerAppointment.customer.city }}</p>
         <mat-icon matListIcon matSuffix style="order: 10;">open_in_new</mat-icon>
       </button>
 
@@ -74,19 +74,17 @@
       <mat-chip-list #customerAppointmentActivityList
                      aria-label="Tätigkeiten Auswahl"
                      class="activity-selection-chip-list"
-                     [sortablejs]="customerAppointment.activities"
-                     [sortablejsOptions]="{
-                        fallbackTolerance: 5,
-                        draggable: '.activity-selection-chip-list__item'
-                     }"
-                     sortablejsContainer=".mat-chip-list-wrapper">
+                     cdkDropList
+                     cdkDropListOrientation="horizontal"
+                     (cdkDropListDropped)="moveItemInArray(customerAppointment.activities || [], $event)">
         <mat-chip (removed)="removeActivity(customerAppointmentActivity)"
                   *ngFor="let customerAppointmentActivity of customerAppointment.activities"
                   style="height: auto;"
                   class="activity-selection-chip-list__item"
-                  (click)="customerAppointmentActivityClicked(customerAppointmentActivity)">
-          {{customerAppointmentActivity.activity?.description}}
-          {{customerAppointmentActivity.sellPrice !== undefined ? ' / ' + ((customerAppointmentActivity.sellPrice === 0) ? 'kostenlos' : customerAppointmentActivity.sellPrice + ' €') : ''}}
+                  (click)="customerAppointmentActivityClicked(customerAppointmentActivity)"
+                  cdkDrag>
+          {{ customerAppointmentActivity.activity?.description }}
+          {{ customerAppointmentActivity.sellPrice !== undefined ? ' / ' + ((customerAppointmentActivity.sellPrice === 0) ? 'kostenlos' : customerAppointmentActivity.sellPrice + ' €') : '' }}
           <mat-icon matChipRemove>cancel</mat-icon>
         </mat-chip>
         <input
@@ -104,7 +102,7 @@
                         (optionSelected)="selectedActivity($event)"
                         autoActiveFirstOption>
         <mat-option *ngFor="let activity of filteredActivities$ | async" [value]="activity">
-          {{activity.description}}
+          {{ activity.description }}
         </mat-option>
       </mat-autocomplete>
       <button (click)="addNewActivity(this.customerAppointmentActivityInput.value)"
@@ -129,23 +127,21 @@
       <mat-label>Behandlungen</mat-label>
       <mat-chip-list #activitySequenceList
                      aria-label="Behandlung"
-                     [sortablejs]="customerAppointment.activitySequenceItems"
-                     [sortablejsOptions]="{
-                       fallbackTolerance: 5,
-                       draggable: '.activity-sequence-chip-list__item'
-                     }"
-                     sortablejsContainer=".mat-chip-list-wrapper"
+                     cdkDropList
+                     cdkDropListOrientation="horizontal"
+                     (cdkDropListDropped)="moveItemInArray(customerAppointment.activitySequenceItems || [], $event)"
       >
         <mat-chip (removed)="removeActivitySequenceItem(activitySequenceItem)"
                   *ngFor="let activitySequenceItem of customerAppointment.activitySequenceItems"
                   class="activity-sequence-chip-list__item"
                   [class.activity-sequence-chip-list__item--product]="activitySequenceItem['@type']==='ProductDto'"
                   [class.activity-sequence-chip-list__item--activity-step]="activitySequenceItem['@type']==='ActivityStepDto'"
-                  style="height: auto;">
+                  style="height: auto;"
+                  cdkDrag>
           <circle-with-letters *ngIf="activitySequenceItem['@type']==='ProductDto'"
                                [letters]="activitySequenceItem.manufacturer?.name?.trim()?.substring(0, 1)"
                                [small]="true"></circle-with-letters>
-          <span style="margin: 0 0 0 2px;">{{activitySequenceItem.description}}</span>
+          <span style="margin: 0 0 0 2px;">{{ activitySequenceItem.description }}</span>
           <mat-icon matChipRemove>cancel</mat-icon>
         </mat-chip>
 
@@ -169,7 +165,7 @@
                                [letters]="activitySequenceItem.manufacturer?.name?.trim()?.substring(0, 1)"
                                [small]="true"
           ></circle-with-letters>
-          <span style="margin: 0 0 0 2px;">{{activitySequenceItem.description}}</span>
+          <span style="margin: 0 0 0 2px;">{{ activitySequenceItem.description }}</span>
         </mat-option>
       </mat-autocomplete>
 
@@ -196,23 +192,21 @@
       <mat-chip-list #soldProductsList
                      aria-label="Verkaufte Produkte"
                      class="sold-products-chip-list"
-                     [sortablejs]="customerAppointment.soldProducts"
-                     [sortablejsOptions]="{
-                        fallbackTolerance: 5,
-                        draggable: '.sold-product-chip-list__item'
-                      }"
-                     sortablejsContainer=".mat-chip-list-wrapper">
+                     cdkDropList
+                     cdkDropListOrientation="horizontal"
+                     (cdkDropListDropped)="moveItemInArray(customerAppointment.soldProducts || [], $event)">
         <mat-chip (removed)="removeSoldProduct(customerAppointmentSoldProduct)"
                   *ngFor="let customerAppointmentSoldProduct of customerAppointment.soldProducts"
                   class="sold-product-chip-list__item"
                   (click)="customerAppointmentSoldProductClicked(customerAppointmentSoldProduct)"
-                  style="height: auto;">
+                  style="height: auto;"
+                  cdkDrag>
           <circle-with-letters
             [letters]="customerAppointmentSoldProduct.product?.manufacturer?.name?.trim()?.substring(0, 1)"
             [small]="true"></circle-with-letters>
           <span style="margin: 0 0 0 2px;">
-              {{customerAppointmentSoldProduct.product?.description}}
-            {{customerAppointmentSoldProduct.sellPrice !== undefined ? ' / ' + ((customerAppointmentSoldProduct.sellPrice === 0) ? 'kostenlos' : customerAppointmentSoldProduct.sellPrice + ' €') : ''}}
+              {{ customerAppointmentSoldProduct.product?.description }}
+            {{ customerAppointmentSoldProduct.sellPrice !== undefined ? ' / ' + ((customerAppointmentSoldProduct.sellPrice === 0) ? 'kostenlos' : customerAppointmentSoldProduct.sellPrice + ' €') : '' }}
             </span>
           <mat-icon matChipRemove>cancel</mat-icon>
         </mat-chip>
@@ -234,7 +228,7 @@
         <mat-option *ngFor="let product of filteredSoldProducts$ | async" [value]="product">
           <circle-with-letters [letters]="product.manufacturer?.name?.trim()?.substring(0, 1)"
                                [small]="true"></circle-with-letters>
-          <span style="margin: 0 0 0 2px;">{{product.description}}</span>
+          <span style="margin: 0 0 0 2px;">{{ product.description }}</span>
         </mat-option>
       </mat-autocomplete>
 
@@ -258,18 +252,16 @@
       <mat-chip-list #promotionsList
                      aria-label="Aktionen"
                      class="promotions-chip-list"
-                     [sortablejs]="customerAppointment.promotions"
-                     [sortablejsOptions]="{
-                        fallbackTolerance: 5,
-                        draggable: '.promotion-chip-list__item'
-                      }"
-                     sortablejsContainer=".mat-chip-list-wrapper">
+                     cdkDropList
+                     cdkDropListOrientation="horizontal"
+                     (cdkDropListDropped)="moveItemInArray(customerAppointment.soldProducts || [], $event)">
         <mat-chip (removed)="removePromotion(promotion)"
                   *ngFor="let promotion of customerAppointment.promotions"
                   class="promotion-chip-list__item"
-                  style="height: auto;">
+                  style="height: auto;"
+                  cdkDrag>
           <span style="margin: 0 0 0 2px;">
-              {{promotion.name}}
+              {{ promotion.name }}
             </span>
           <mat-icon matChipRemove>cancel</mat-icon>
         </mat-chip>
@@ -289,7 +281,7 @@
                         (optionSelected)="selectedPromotion($event)"
                         autoActiveFirstOption>
         <mat-option *ngFor="let promotion of filteredPromotions$ | async" [value]="promotion">
-          <span style="margin: 0 0 0 2px;">{{promotion.name}}</span>
+          <span style="margin: 0 0 0 2px;">{{ promotion.name }}</span>
         </mat-option>
       </mat-autocomplete>
 
@@ -308,7 +300,7 @@
       <mat-label>Bedienung</mat-label>
       <button (click)="selectUser()" *ngIf="customerAppointment.user" mat-list-item>
         <user-avatar [user]="customerAppointment.user"></user-avatar>
-        <h3 matLine>{{customerAppointment.user.firstname}} {{customerAppointment.user.lastname}}</h3>
+        <h3 matLine>{{ customerAppointment.user.firstname }} {{ customerAppointment.user.lastname }}</h3>
         <mat-icon matListIcon matSuffix style="order: 10;">open_in_new</mat-icon>
       </button>
 
