@@ -1,34 +1,14 @@
-<div *ngIf="dashboardConfig !== null"
-     class="dashboard"
-     fxLayout="row wrap">
-
-  <div *ngFor="let dashboardColumn of dashboardConfig.columns"
-       [fxFlex.lg]="(dashboardColumn.lgWidthPercentage || dashboardColumn.mdWidthPercentage || dashboardColumn.smWidthPercentage || dashboardColumn.xsWidthPercentage) + '%'"
-       [fxFlex.md]="(dashboardColumn.mdWidthPercentage || dashboardColumn.smWidthPercentage || dashboardColumn.xsWidthPercentage) + '%'"
-       [fxFlex.sm]="(dashboardColumn.smWidthPercentage || dashboardColumn.xsWidthPercentage) + '%'"
-       [fxFlex.xl]="(dashboardColumn.xlWidthPercentage || dashboardColumn.lgWidthPercentage || dashboardColumn.mdWidthPercentage || dashboardColumn.smWidthPercentage || dashboardColumn.xsWidthPercentage) + '%'"
-       [fxFlex.xs]="(dashboardColumn.xsWidthPercentage) + '%'"
-       class="dashboard__column"
-  >
-    <div class="dashboard__column__content">
-      <h2 class="dashboard__column__content__headline">{{dashboardColumn.label}}</h2>
-
-      <div *ngFor="let dashboardColumnContent of dashboardColumn.contents"
-           class="dashboard__column__content__panel">
-
-        <dashboard-diagram-panel *ngIf="dashboardColumnContent['@type'] === 'DiagramDashboardColumnContent'"
-                                 [config]="dashboardColumnContent"
-        ></dashboard-diagram-panel>
-
-        <dashboard-table-panel *ngIf="dashboardColumnContent['@type'] === 'TableDashboardColumnContent'"
-                               [config]="dashboardColumnContent"
-        ></dashboard-table-panel>
-
-        <dashboard-deferred-panel *ngIf="dashboardColumnContent['@type'] === 'DeferredDashboardColumnContent'"
-                                  [config]="dashboardColumnContent"
-        ></dashboard-deferred-panel>
+@if (dashboardData(); as dashboardData) {
+  <div>
+    @if (dashboardData.contentRoot; as contentRoot) {
+      <div class="px-4 pt-4 pb-2 w-full h-full overflow-auto">
+        <div
+          dashboard-container-renderer
+          [content]="$any(contentRoot)"
+          [contentSetup]="contentSetup()"
+          class="flex flex-col m-auto"
+        ></div>
       </div>
-    </div>
+    }
   </div>
-
-</div>
+}

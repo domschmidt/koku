@@ -1,1 +1,0 @@
-alter table koku.customer add column on_first_name_basis boolean;

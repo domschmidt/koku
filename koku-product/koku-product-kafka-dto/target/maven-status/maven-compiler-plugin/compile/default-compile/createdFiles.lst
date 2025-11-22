@@ -1,0 +1,8 @@
+de\domschmidt\koku\product\kafka\dto\ProductKafkaDto$ProductKafkaDtoBuilder.class
+de\domschmidt\koku\product\kafka\dto\ProductPriceHistoryKafkaDto.class
+de\domschmidt\koku\product\kafka\dto\ProductManufacturerKafkaDto$ProductManufacturerKafkaDtoBuilder.class
+de\domschmidt\koku\product\kafka\dto\ProductManufacturerKafkaDtoSerdes.class
+de\domschmidt\koku\product\kafka\dto\ProductKafkaDto.class
+de\domschmidt\koku\product\kafka\dto\ProductKafkaDtoSerdes.class
+de\domschmidt\koku\product\kafka\dto\ProductManufacturerKafkaDto.class
+de\domschmidt\koku\product\kafka\dto\ProductPriceHistoryKafkaDto$ProductPriceHistoryKafkaDtoBuilder.class

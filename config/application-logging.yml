@@ -1,5 +1,0 @@
-logging:
-  file:
-    name: ../log/${spring.application.name}.log
-  pattern:
-    console: '%d{YYYY-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'

@@ -1,0 +1,10 @@
+<input [name]="name()"
+       type="month"
+       [attr.disabled]="disabled() ? '' : null"
+       class="input w-full"
+       [attr.required]="required()"
+       [value]="value()"
+       (input)="onInputRaw($event)"
+       (blur)="onBlurRaw($event)"
+       (focus)="onFocus.emit()"
+/>

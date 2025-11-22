@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>de.domschmidt</groupId>
+        <artifactId>koku</artifactId>
+        <version>2.50.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>koku-user</artifactId>
+    <version>2.50.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>${project.artifactId}-${project.version}</name>
+
+    <properties>
+
+        <maven.compiler.release>${jdk.version}</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <modules>
+        <module>koku-user-kafka-dto</module>
+        <module>koku-user-service</module>
+    </modules>
+
+</project>

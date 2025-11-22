@@ -1,24 +1,27 @@
-import {Component} from '@angular/core';
-import {Router} from "@angular/router";
-import {AuthService} from "../auth.service";
+import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
+import {AuthService} from "../auth/auth.service";
+import {ToastService} from '../toast/toast.service';
+import {from} from 'rxjs';
 
 @Component({
-  selector: 'logout',
+  selector: 'koku-logout',
   templateUrl: './logout.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogoutComponent {
+  private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
+  loading = signal(false);
 
-  loading = false;
+  constructor() {
+    const authService = this.authService;
 
-  constructor(private readonly authService: AuthService,
-              private readonly router: Router) {
-    this.loading = true;
-    authService.destroySession().subscribe(() => {
-      router.navigate(['/login']);
-      this.loading = false;
+    this.loading.set(true);
+    from(authService.destroySession()).subscribe(() => {
+      this.loading.set(false);
+      this.toastService.add(`Erfolgreich abgemeldet`, 'success');
     }, () => {
-      router.navigate(['/login']);
-      this.loading = false;
+      this.loading.set(false);
     });
   }
 

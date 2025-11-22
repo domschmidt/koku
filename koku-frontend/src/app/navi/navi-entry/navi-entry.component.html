@@ -1,0 +1,22 @@
+@if (naviEntry(); as naviEntry) {
+  <a [routerLink]="naviEntry.path"
+     class="navigation-entry navigation-entry--depth-{{depth()}}"
+     routerLinkActive
+     [class.menu-active]="rla.isActive"
+     (click)="naviService.close()"
+     #rla="routerLinkActive"
+  >
+    @if (naviEntry.icon) {
+      <koku-icon [name]="naviEntry.icon"></koku-icon>
+    }
+    {{ naviEntry.text }}
+  </a>
+  <ul>
+    @for (currentNaviEntryChildren of naviEntry.children; track $index) {
+      <li koku-navi-entry
+          [depth]="depth() + 1"
+          [naviEntry]="currentNaviEntryChildren"
+      ></li>
+    }
+  </ul>
+}

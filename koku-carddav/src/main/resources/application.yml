@@ -1,11 +1,20 @@
+kafka:
+  bootstrap-servers: kafka:9094
+carddav:
+  username: ""
+  password: ""
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "http://localhost:8080/realms/master"
+  kafka:
+    bootstrap-servers: ${kafka.bootstrap-servers}
+    consumer:
+      auto-offset-reset: earliest
   application:
     name: @project.artifactId@
-  profiles:
-    active:
-      - logging
-      - kafka
-      - carddav
   servlet:
     multipart:
       maxFileSize: 268435456  # Limit for a single file (256 MiB)
@@ -13,7 +22,5 @@ spring:
   mvc:
     async:
       request-timeout: 3600000 #1 hour request timeout
-  config:
-    import: ${CONFIG_IMPORT_SOURCE:configserver:http://localhost:8110}
 server:
   port: 8220

@@ -5,205 +5,119 @@
   "projects": {
     "koku": {
       "projectType": "application",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss"
-        },
-        "@schematics/angular:application": {
-          "strict": true
-        }
-      },
+      "schematics": {},
       "root": "",
       "sourceRoot": "src",
-      "prefix": "app",
+      "prefix": "koku",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular/build:application",
           "options": {
             "outputPath": "dist/koku",
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              "src/favicon.ico",
-              "src/apple-touch-icon.png",
-              "src/assets",
-              "src/manifest.webmanifest"
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
             ],
             "styles": [
-              "src/styles.scss",
-              "./node_modules/@fullcalendar/common/main.css",
-              "./node_modules/@fullcalendar/daygrid/main.css",
-              "./node_modules/@fullcalendar/timegrid/main.css",
-              "./node_modules/@fontsource/material-icons/index.css",
-              "./node_modules/@fontsource/material-icons-outlined/index.css",
-              "./node_modules/@fontsource/roboto/100.css",
-              "./node_modules/@fontsource/roboto/100-italic.css",
-              "./node_modules/@fontsource/roboto/300.css",
-              "./node_modules/@fontsource/roboto/300-italic.css",
-              "./node_modules/@fontsource/roboto/400.css",
-              "./node_modules/@fontsource/roboto/400-italic.css",
-              "./node_modules/@fontsource/roboto/500.css",
-              "./node_modules/@fontsource/roboto/500-italic.css",
-              "./node_modules/@fontsource/roboto/700.css",
-              "./node_modules/@fontsource/roboto/700-italic.css",
-              "./node_modules/@fontsource/roboto/900.css",
-              "./node_modules/@fontsource/roboto/900-italic.css"
+              "src/styles.css"
             ],
-            "scripts": [],
-            "allowedCommonJsDependencies": [
-              "moment-timezone",
-              "moment/locale/de",
-              "css-element-queries",
-              "bignumber.js",
-              "image-conversion",
-              "jalaali-js",
-              "deepmerge"
-            ],
-            "serviceWorker": true,
-            "ngswConfigPath": "ngsw-config.json",
-            "sourceMap": true,
-            "optimization": false,
-            "vendorChunk": true,
-            "extractLicenses": false,
-            "buildOptimizer": false,
-            "namedChunks": true
+            "scripts": []
           },
           "configurations": {
             "production": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ],
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "6mb",
-                  "maximumError": "8mb"
+                  "maximumWarning": "11MB",
+                  "maximumError": "12MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "100kb",
-                  "maximumError": "120kb"
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
                 }
-              ]
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
             }
           },
-          "defaultConfiguration": ""
+          "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "browserTarget": "koku:build",
-            "proxyConfig": "proxy.conf.json",
-            "host": "0.0.0.0"
-          },
+          "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "koku:build:production"
+              "buildTarget": "koku:build:production"
+            },
+            "development": {
+              "buildTarget": "koku:build:development",
+              "proxyConfig": "proxy.conf.json",
+              "host": "0.0.0.0"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
-          "options": {
-            "browserTarget": "koku:build"
-          }
+          "builder": "@angular/build:extract-i18n"
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular/build:karma",
           "options": {
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
             "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
             "assets": [
-              "src/favicon.ico",
-              "src/apple-touch-icon.png",
-              "src/assets",
-              "src/manifest.webmanifest"
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
             ],
             "styles": [
-              "src/styles.scss",
-              "./node_modules/@fullcalendar/common/main.css",
-              "./node_modules/@fullcalendar/daygrid/main.css",
-              "./node_modules/@fullcalendar/timegrid/main.css",
-              "./node_modules/@fontsource/material-icons/index.css",
-              "./node_modules/@fontsource/material-icons-outlined/index.css",
-              "./node_modules/@fontsource/roboto/100.css",
-              "./node_modules/@fontsource/roboto/100-italic.css",
-              "./node_modules/@fontsource/roboto/300.css",
-              "./node_modules/@fontsource/roboto/300-italic.css",
-              "./node_modules/@fontsource/roboto/400.css",
-              "./node_modules/@fontsource/roboto/400-italic.css",
-              "./node_modules/@fontsource/roboto/500.css",
-              "./node_modules/@fontsource/roboto/500-italic.css",
-              "./node_modules/@fontsource/roboto/700.css",
-              "./node_modules/@fontsource/roboto/700-italic.css",
-              "./node_modules/@fontsource/roboto/900.css",
-              "./node_modules/@fontsource/roboto/900-italic.css"
+              "src/styles.css"
             ],
             "scripts": []
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "tsconfig.app.json",
-              "tsconfig.spec.json",
-              "cypress/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "koku:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "koku:serve:production"
-            }
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "koku:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "koku:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false
           }
         }
       }
     }
   },
-  "defaultProject": "koku",
+  "schematics": {
+    "@schematics/angular:component": {
+      "type": "component"
+    },
+    "@schematics/angular:directive": {
+      "type": "directive"
+    },
+    "@schematics/angular:service": {
+      "type": "service"
+    },
+    "@schematics/angular:guard": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:interceptor": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:module": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:pipe": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:resolver": {
+      "typeSeparator": "."
+    }
+  },
   "cli": {
     "analytics": false
   }

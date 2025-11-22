@@ -1,0 +1,52 @@
+import {Plugins} from '@pdfme/common';
+
+import {
+  barcodes,
+  checkbox,
+  date,
+  dateTime,
+  ellipse,
+  image,
+  line,
+  multiVariableText,
+  radioGroup,
+  rectangle,
+  select,
+  svg,
+  table,
+  text,
+  time
+} from '@pdfme/schemas';
+import {signature} from './signature';
+
+export const getPlugins = (): Plugins => (
+  {
+    Text: text,
+    'Multi-Variable Text': multiVariableText,
+    Table: table,
+    Line: line,
+    Rectangle: rectangle,
+    Ellipse: ellipse,
+    Image: image,
+    SVG: svg,
+    Signature: signature,
+    QR: barcodes.qrcode,
+    DateTime: dateTime,
+    Date: date,
+    Time: time,
+    Select: select,
+    Checkbox: checkbox,
+    RadioGroup: radioGroup,
+    // JAPANPOST: barcodes.japanpost,
+    // EAN13: barcodes.ean13,
+    // EAN8: barcodes.ean8,
+    // Code39: barcodes.code39,
+    // Code128: barcodes.code128,
+    // NW7: barcodes.nw7,
+    // ITF14: barcodes.itf14,
+    // UPCA: barcodes.upca,
+    // UPCE: barcodes.upce,
+    // GS1DataMatrix: barcodes.gs1datamatrix,
+    // PDF417: barcodes.pdf417,
+  }
+);

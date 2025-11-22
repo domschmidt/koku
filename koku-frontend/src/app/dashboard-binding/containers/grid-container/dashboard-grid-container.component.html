@@ -1,0 +1,44 @@
+<div class="@container">
+  @if (content(); as content) {
+
+    <div class="grid
+              grid-cols-{{content.cols}}
+              @sm:grid-cols-{{content.sm}}
+              @md:grid-cols-{{content.md}}
+              @lg:grid-cols-{{content.lg}}
+              @xl:grid-cols-{{content.xl}}
+              @2xl:grid-cols-{{content.xl2}}
+              @3xl:grid-cols-{{content.xl3}}
+              @4xl:grid-cols-{{content.xl4}}
+              @5xl:grid-cols-{{content.xl5}}
+              gap-2
+              m-auto
+"
+         [style.max-width.px]="content.maxWidthInPx"
+    >
+      @if (content.content; as contents) {
+        @for (content of contents; track content.id) {
+          @if (content.id) {
+
+            @if (contentSetup().panelRegistry[content['@type']]; ) {
+              <div dashboard-panel-renderer
+                   [contentSetup]="contentSetup()"
+                   [content]="$any(content)"
+              >
+              </div>
+            }
+
+            @if (contentSetup().containerRegistry[content['@type']]; ) {
+              <div dashboard-container-renderer
+                   [contentSetup]="contentSetup()"
+                   [content]="$any(content)"
+              >
+              </div>
+            }
+
+          }
+        }
+      }
+    </div>
+  }
+</div>

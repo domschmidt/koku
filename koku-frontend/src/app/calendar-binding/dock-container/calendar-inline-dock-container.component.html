@@ -1,0 +1,22 @@
+<div class="flex flex-col overflow-auto h-full">
+  <koku-dock [content]="dockConfig()"
+             (onActivate)="onDockContentActivated($event)"
+  >
+    <div class="flex-1"></div>
+    @if (activeContent(); as activeContent) {
+      @if (activeContent.content; as activeContentContent) {
+        <div calendar-inline-content
+             [content]="activeContentContent"
+             [contentSetup]="contentSetup()"
+             [urlSegments]="urlSegments()"
+             [buttonDockOutlet]="buttonDockOutlet()"
+             [parentRoutePath]="activeContent.parentRoutePath || ''"
+             (onClose)="closeInlineContent()"
+             (onOpenRoutedContent)="openRoutedContent($event)"
+             class="flex overflow-auto">
+        </div>
+      }
+    }
+
+  </koku-dock>
+</div>

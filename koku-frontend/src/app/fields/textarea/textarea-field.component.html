@@ -1,0 +1,37 @@
+@if (!valueOnly()) {
+  <label class="w-full" [attr.for]="id">
+    @if (label(); as label) {
+      <div class="label">
+        <span class="label-text">{{ label }}</span>
+      </div>
+    }
+  </label>
+  <div class="join w-full flex">
+    <ng-content select="prepend-outer"></ng-content>
+    <div class="flex w-full textarea join-item">
+      <ng-content select="prepend-inner"></ng-content>
+      <textarea [name]="name()"
+                [attr.disabled]="disabled() ? '' : null"
+                [attr.placeholder]="placeholder() || null"
+                [attr.readonly]="readonly() || null"
+                class="resize-none w-full field-sizing-content join-item rounded-none"
+                [class.skeleton]="loading()"
+                [attr.required]="required() ? true : null"
+                [value]="!loading() ? value() : defaultValue()"
+                (change)="onChangeRaw($event)"
+                (input)="onInputRaw($event)"
+                (blur)="onBlur.emit()"
+                (focus)="onFocus.emit()"
+                [attr.id]="id"
+      ></textarea>
+      <ng-content select="append-inner"></ng-content>
+    </div>
+    <ng-content select="append-outer"></ng-content>
+  </div>
+} @else {
+  @if (loading()) {
+    <div class="skeleton w-full bg-neutral content-center" style="--radius-box:0">&nbsp;</div>
+  } @else {
+    <div class="content-center">{{ value() }}</div>
+  }
+}

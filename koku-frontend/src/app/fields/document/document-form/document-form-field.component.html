@@ -1,0 +1,17 @@
+<div #formRoot style="width: 100%; max-width: 100%;"></div>
+
+@if (buttonDockOutlet()) {
+  <ng-template koku-portal [portalOutlet]="buttonDockOutlet()" [append]="true">
+    <button (click)="submit()"
+            [class.skeleton]="submitting()"
+            class="btn btn-circle">
+      <koku-icon name="SAVE"/>
+    </button>
+  </ng-template>
+} @else {
+  <button (click)="submit()"
+          [class.skeleton]="submitting()"
+          class="btn btn-circle">
+    <koku-icon name="SAVE"/>
+  </button>
+}

@@ -1,0 +1,10 @@
+:host {
+}
+
+calendar-month {
+
+  &::part(heading) {
+    display: none
+  }
+
+}

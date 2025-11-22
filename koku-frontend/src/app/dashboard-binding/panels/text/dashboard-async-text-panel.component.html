@@ -1,0 +1,6 @@
+@if (loadedContent(); as loadedContent) {
+  <dashboard-text-panel [content]="loadedContent"/>
+} @else {
+  <div class="h-24 card bg-neutral shadow-md p-4 rounded-2xl skeleton"></div>
+}
+

@@ -1,0 +1,31 @@
+<div class="flex flex-1 flex-col">
+@if (navi(); as navi) {
+  @for (currentNaviEntry of navi; track currentNaviEntry.path) {
+    @if (!currentNaviEntry.bottom) {
+      @if (currentNaviEntry.divider === 'before') {
+        <div class="divider divider-accent"></div>
+      }
+      <li koku-navi-entry [naviEntry]="currentNaviEntry" class="gap-2"></li>
+      @if (currentNaviEntry.divider === 'after') {
+        <div class="divider divider-accent"></div>
+      }
+    }
+  }
+
+  <div class="flex-1"></div>
+
+  @for (currentNaviEntry of navi; track currentNaviEntry.path) {
+    @if (currentNaviEntry.bottom) {
+      @if (currentNaviEntry.divider === 'before') {
+        <div class="divider divider-accent"></div>
+      }
+      <li koku-navi-entry [naviEntry]="currentNaviEntry" class="gap-2"></li>
+      @if (currentNaviEntry.divider === 'after') {
+        <div class="divider divider-accent"></div>
+      }
+    }
+  }
+
+
+}
+</div>

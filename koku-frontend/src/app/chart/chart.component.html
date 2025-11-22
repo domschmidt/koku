@@ -1,0 +1,12 @@
+<div class="flex gap-4">
+  @for (filter of chartData()?.filters; track $index) {
+    <div chart-filter-renderer
+         [content]="filter"
+         [loading]="loading()"
+         [contentSetup]="contentSetup()"
+         (filterValueChanged)="onFilterValueChanged(filter, $event)"
+    >
+    </div>
+  }
+</div>
+<div #chartRoot></div>

@@ -1,0 +1,12 @@
+@if (mappedContext() !== undefined) {
+  <list
+    [listUrl]="listUrl()"
+    [sourceUrl]="sourceUrl()"
+    [contentSetup]="contentSetup()"
+    [urlSegments]="urlSegments()"
+    [parentRoutePath]="parentRoutePath()"
+    [context]="mappedContext() || undefined"
+    class="grow"
+  >
+  </list>
+}

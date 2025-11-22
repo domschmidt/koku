@@ -1,143 +1,88 @@
-<div class="main">
-  <mat-drawer-container class="calendar-filter-drawer-container">
-    <mat-drawer #drawer [mode]="'over'" [position]="'end'">
-      <mat-toolbar color="primary">
-        <mat-toolbar-row>
-          <h1>Kalendereinstellungen</h1>
-        </mat-toolbar-row>
-      </mat-toolbar>
+<div class="flex h-full flex-col">
+  <progress class="progress w-full h-[1px] flex" [class.invisible]="!loading()"></progress>
 
-      <div class="visibility-control-card">
-        <h2 class="visibility-control-card__headline">Sichtbarkeit</h2>
-        <div class="visibility-control-card__item">
-          <mat-slide-toggle
-            color="primary"
-            [checked]="calendarSettings.privateAppointments"
-            (change)="toggleLoadPrivateAppointments()">
-            Privattermine
-          </mat-slide-toggle>
-        </div>
-        <div class="visibility-control-card__item">
-          <mat-slide-toggle
-            color="primary"
-            [checked]="calendarSettings.customerAppointments"
-            (change)="toggleLoadCustomerAppointments()">
-            Kundentermine
-          </mat-slide-toggle>
-        </div>
-        <div class="visibility-control-card__item">
-          <mat-slide-toggle
-            color="primary"
-            [checked]="calendarSettings.customerBirthdays"
-            (change)="toggleLoadCustomerBirthdays()">
-            Geburtstage
-          </mat-slide-toggle>
-        </div>
-        <div class="visibility-control-card__item">
-          <mat-slide-toggle
-            color="primary"
-            [checked]="calendarSettings.holidays"
-            (change)="toggleLoadHolidays()">
-            Feiertage
-          </mat-slide-toggle>
-        </div>
+  <div class="flex justify-between w-full left-0 right-0 m-auto p-2 bg-base-100">
+
+    <div class="join min-w-58">
+      <button class="btn join-item" (click)="calendarComponent()?.getApi()?.prev()">«</button>
+      @switch (viewMode()) {
+        @case ("DAY") {
+          <input class="input join-item"
+                 type="date"
+                 placeholder="Datum"
+                 (change)="dateChanged($event)"
+                 [value]="formatDate(currentStartDate(), viewMode())"
+          />
+        }
+        @case ("WEEK") {
+          <input class="input join-item"
+                 type="week"
+                 placeholder="Woche"
+                 (change)="dateChanged($event)"
+                 [value]="formatDate(currentStartDate(), viewMode())"
+          />
+        }
+        @case ("MONTH") {
+          <input class="input join-item"
+                 type="month"
+                 placeholder="Monat"
+                 (change)="dateChanged($event)"
+                 [value]="formatDate(currentStartDate(), viewMode())"
+          />
+        }
+      }
+      <button class="btn join-item" (click)="calendarComponent()?.getApi()?.next()">»</button>
+    </div>
+
+    <div class="flex gap-2 items-center">
+      <div class="join">
+        <button class="join-item btn"
+                (click)="changeViewMode('DAY')"
+                [class.btn-active]="viewMode() === 'DAY'"
+                [class.btn-neutral]="viewMode() !== 'DAY'"
+        >
+          <koku-icon name="CALENDAR_DAY"></koku-icon>
+        </button>
+        <button class="join-item btn"
+                (click)="changeViewMode('WEEK')"
+                [class.btn-active]="viewMode() === 'WEEK'"
+                [class.btn-neutral]="viewMode() !== 'WEEK'"
+        >
+          <koku-icon name="CALENDAR_WEEK"></koku-icon>
+        </button>
+        <button class="join-item btn"
+                (click)="changeViewMode('MONTH')"
+                [class.btn-active]="viewMode() === 'MONTH'"
+                [class.btn-neutral]="viewMode() !== 'MONTH'"
+        >
+          <koku-icon name="CALENDAR_DAYS"></koku-icon>
+        </button>
       </div>
-      <div class="visibility-control-card">
-        <h2 class="visibility-control-card__headline">Ländereinstellung</h2>
-        <div class="visibility-control-card__item">
-          <mat-form-field appearance="fill">
-            <mat-label>Landauswahl</mat-label>
-            <mat-select [value]="calendarSettings.holidayCountry"
-                        (selectionChange)="changeHolidayCountry($event)"
-                        [compareWith]="compareHolidayCountry"
-            >
-              <mat-option *ngFor="let holidayCountryAndState of holidayCountriesAndStates"
-                          [value]="holidayCountryAndState.holidayCountry">
-                {{holidayCountryAndState.countryAndStateString}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-      </div>
-    </mat-drawer>
-    <mat-drawer-content>
+    </div>
+  </div>
+  <div class="flex-1 overflow-auto pb-22">
+    <full-calendar [options]="fullCalendarOptions()"
+                   #calendar>
+    </full-calendar>
+  </div>
 
-      <div class="page-skeleton">
-        <mat-toolbar color="primary">
-          <mat-toolbar-row class="calendar-date-control">
-            <div>
-              <button mat-icon-button
-                      title="vorheriges Jahr"
-                      (click)="prevYear()">
-                <mat-icon>fast_rewind</mat-icon>
-              </button>
-              <button mat-icon-button
-                      title="vorheriger Monat"
-                      (click)="prev()">
-                <mat-icon>chevron_left</mat-icon>
-              </button>
-            </div>
-            <div *ngIf="humanReadableDateRange">
-              {{humanReadableDateRange}}
-            </div>
-            <div>
-              <button mat-icon-button
-                      title="nächster Monat"
-                      (click)="next()">
-                <mat-icon>chevron_right</mat-icon>
-              </button>
-              <button mat-icon-button
-                      title="nächstes Jahr"
-                      (click)="nextYear()">
-                <mat-icon>fast_forward</mat-icon>
-              </button>
-            </div>
-          </mat-toolbar-row>
-
-        </mat-toolbar>
-        <mat-progress-bar [mode]="loading ? 'indeterminate' : 'determinate'"></mat-progress-bar>
-        <div class="page-skeleton__scroll-area">
-          <div #pageWrapper>
-            <full-calendar [options]="calendarOptions" #fullCalendarComponent></full-calendar>
-            <div #menuTrigger="matMenuTrigger" [matMenuTriggerFor]="calendarContextMenu"
-                 id="calendar-context-menu-trigger"
-                 [style.left.px]="positionX" [style.top.px]="positionY" style="position: fixed;"></div>
-            <mat-menu #calendarContextMenu="matMenu">
-              <button mat-menu-item (click)="createNewCustomerAppointment()">Kundentermin</button>
-              <button mat-menu-item (click)="createNewPersonalAppointment()">Privattermin</button>
-            </mat-menu>
-            <div class="fab-button-container fab-button-container--left">
-              <button (click)="selectUser()"
-                      *ngIf="user"
-                      color="primary"
-                      mat-fab
-                      class="fab-button"
-                      title="Nutzer wählen">
-                <user-avatar [user]="user"></user-avatar>
-              </button>
-            </div>
-            <div class="fab-button-container">
-              <button (click)="askForCreationType($event.clientX, $event.clientY);"
-                      aria-label="Neuer Kundentermin hinzufügen"
-                      color="primary"
-                      mat-fab
-                      class="fab-button"
-              >
-                <mat-icon>add</mat-icon>
-              </button>
-              <button (click)="drawer.open()"
-                      aria-label="Filter ändern"
-                      color="primary"
-                      mat-fab
-                      class="fab-button"
-              >
-                <mat-icon>filter_list</mat-icon>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </mat-drawer-content>
-  </mat-drawer-container>
-
+  @if (calendarActions(); as calendarActions) {
+    <div class="join p-4 absolute bottom-0 right-0 z-1">
+      @for (actionEntry of calendarActions | keyvalue; track actionEntry.key) {
+        <button class="join-item btn btn-xl btn-circle btn-accent"
+                [title]="actionEntry.value.title"
+                [class.skeleton]="actionEntry.value.loading"
+                (click)="calendarActionClicked(actionEntry.value)"
+        >
+          @if (actionEntry.value.icon) {
+            <koku-icon [name]="actionEntry.value.icon"></koku-icon>
+          }
+          @if (actionEntry.value.imgBase64) {
+            <koku-avatar [value]="actionEntry.value.imgBase64"></koku-avatar>
+          }
+        </button>
+      }
+    </div>
+  }
 </div>
+

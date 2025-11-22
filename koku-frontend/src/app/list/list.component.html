@@ -1,0 +1,141 @@
+<div class="flex h-full overflow-auto @container/parent">
+  <div class="h-full w-full flex-col overflow-auto relative @min-[800px]/parent:flex @min-[800px]/parent:max-w-[350px]"
+       [class.flex]="inlineContent() === null"
+       [class.hidden]="inlineContent() !== null"
+  >
+    <div class="p-0 min-h-0 bg-neutral shadow-md">
+      <div class="px-4 py-2 flex gap-3">
+        <input-field
+          name="globalSearchTerm"
+          placeholder="Suche"
+          [value]="globalSearchTerm()"
+          (onChange)="setGlobalSearchTerm($event)"
+        >
+          <button class="btn join-item" (click)="setGlobalSearchTerm('')">
+            <koku-icon name="CLOSE" class="w-4"></koku-icon>
+          </button>
+        </input-field>
+
+        @for (currentListAction of (listData() || {}).actions || []; track $index) {
+          <button class="btn btn-accent btn-square" (click)="listAction($event, currentListAction)">
+            @if (currentListAction.icon) {
+              <koku-icon [name]="currentListAction.icon"></koku-icon>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-auto ">
+
+      <ul class="menu w-full pb-14">
+
+        @if (activeTempItem(); as activeTempItem) {
+          <li class="items-center m-1">
+            <button class="w-full menu-active min-h-13 content-center">
+              <div class="flex flex-col mx-2">
+                {{ activeTempItem.text }}
+              </div>
+            </button>
+
+          </li>
+        }
+
+        @if (!sourceLoading() && listRegister().length === 0) {
+          <div class="flex flex-col items-center justify-center text-center p-6">
+            <div class="animate-bounce">
+              <div class="relative">
+                <koku-icon name="MAGNIFYING_GLASS" class="h-16 w-16"></koku-icon>
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div class="text-xl -mt-2 -ml-2">:(</div>
+                </div>
+              </div>
+            </div>
+            <h2 class="text-lg font-bold">Nichts gefunden</h2>
+            <p class="text-sm">Versuch eine andere Sucheingabe oder überprüfe die Schreibweise.</p>
+          </div>
+        }
+
+        @if (sourceLoading()) {
+          @for (idx of [1, 2, 3]; track $index) {
+            <li class="items-center m-1">
+              <button class="w-full min-h-13 content-center menu-disabled flex">
+                @if (listData()?.itemPreview) {
+                  <div class="skeleton size-10 bg-neutral rounded-full shrink-0"></div>
+                }
+                <div class="skeleton w-full h-10 bg-neutral"></div>
+                @for (currentAction of listData()?.itemActions || []; track $index) {
+                  <div class="skeleton size-10 bg-neutral rounded-full shrink-0"></div>
+                }
+              </button>
+            </li>
+          }
+        } @else {
+          @for (result of listRegister(); track result.id) {
+            <li class="items-center m-1">
+              <button class="w-full min-h-13 content-center"
+                      [class.menu-active]="!sourceLoading() && result.id !== null && result.id === inlineContent()?.id"
+                      [class.menu-disabled]="sourceLoading()"
+                      (click)="itemClickAction($event, result, result.clickAction)"
+              >
+                <div list-item-preview
+                     [register]="result"
+                     [contentSetup]="contentSetup()"
+                >
+                </div>
+                <div list-item
+                     [register]="result"
+                     [contentSetup]="contentSetup()"
+                     class="flex flex-col {{getItemClasses(result.source(), listData()?.globalItemStyling).join(' ')}}"
+                >
+                </div>
+
+                <div list-item-action
+                     [register]="result"
+                     [listRegister]="listRegister()"
+                     [contentSetup]="contentSetup()"
+                     [urlSegments]="urlSegments()"
+                     (onOpenInlineContent)="openInlineContent($event)"
+                     (onOpenRoutedContent)="openRoutedContent($event)"
+                     (onReload)="loadListSource()"
+                >
+                </div>
+              </button>
+
+            </li>
+          }
+        }
+
+      </ul>
+    </div>
+
+    <div class="join py-2 absolute bottom-0 left-[50%] p-0 min-h-0 translate-x-[-50%]">
+      <button class="join-item btn" [disabled]="currentPage() == 0"
+              (click)="currentPage.set(currentPage() - 1); loadListSource({page: currentPage()})">«
+      </button>
+      <button class="join-item btn">Seite {{ currentPage() + 1 }}</button>
+      <button class="join-item btn" [disabled]="!sourceData()?.hasMore"
+              (click)="currentPage.set(currentPage() + 1); loadListSource({page: currentPage()})">»
+      </button>
+    </div>
+  </div>
+
+  @if (inlineContent(); as activeContent) {
+    @if (activeContent.content; as activeContentContent) {
+      <div class="flex flex-col w-full overflow-auto bg-base-100">
+        <div list-inline-content
+             [content]="activeContentContent"
+             [urlSegments]="activeContent.urlSegments"
+             [contentSetup]="contentSetup()"
+             [loading]="sourceLoading()"
+             [parentRoutePath]="activeContent.parentRoutePath || ''"
+             [context]="context()"
+             (onClose)="closeInlineContent().subscribe()"
+             (onOpenRoutedContent)="openRoutedContent($event)"
+             class="flex overflow-auto grow-1">
+        </div>
+      </div>
+    }
+  }
+
+</div>

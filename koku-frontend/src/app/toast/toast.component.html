@@ -1,0 +1,33 @@
+<div class="toast toast-bottom toast-center z-1000">
+  @for (toast of toastService.values(); track toast.uid) {
+    <div class="alert"
+         [class.alert-outline]="toast.type === 'outline'"
+         [class.alert-dash]="toast.type === 'dash'"
+         [class.alert-soft]="toast.type === 'soft'"
+         [class.alert-info]="toast.type === 'info'"
+         [class.alert-success]="toast.type === 'success'"
+         [class.alert-warning]="toast.type === 'warning'"
+         [class.alert-error]="toast.type === 'error'"
+    >
+      <span>{{ toast.message }}</span>
+      <div>
+        @for (button of toast.buttons; track button.uid) {
+          <button class="btn"
+                  [class.btn-sm]="button.size === 'sm'"
+                  [class.btn-primary]="button.type === 'primary'"
+                  [class.btn-secondary]="button.type === 'secondary'"
+                  [class.btn-accent]="button.type === 'accent'"
+                  [class.btn-info]="button.type === 'info'"
+                  [class.btn-success]="button.type === 'success'"
+                  [class.btn-warning]="button.type === 'warning'"
+                  [class.btn-error]="button.type === 'error'"
+                  (click)="button.onClick($event, toast, button)"
+                  [title]="button.title"
+                  [class.progress-button]="button.progressAnimationDurationMillis !== undefined"
+                  [style.animation-duration]="button.progressAnimationDurationMillis + 'ms'"
+          >{{ button.text }}</button>
+        }
+      </div>
+    </div>
+  }
+</div>

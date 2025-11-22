@@ -4,61 +4,68 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.domschmidt</groupId>
-    <artifactId>koku</artifactId>
-    <version>1.0</version>
-    <packaging>pom</packaging>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.5</version>
+        <relativePath/>
+    </parent>
 
     <name>Koku</name>
     <description>Ko(smetikstudio) Ku(nden)</description>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.4</version>
-        <relativePath/>
-    </parent>
+    <groupId>de.domschmidt</groupId>
+    <artifactId>koku</artifactId>
+    <version>2.50.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <properties>
-        <main.basedir>${project.basedir}</main.basedir>
-        <jdk.version>17</jdk.version>
-        <tika-core.version>2.4.0</tika-core.version>
-        <guava.version>31.1-jre</guava.version>
-        <p6spy-spring-boot-starter.version>1.8.0</p6spy-spring-boot-starter.version>
-        <postgresql.version>42.4.0</postgresql.version>
-        <thymeleaf-extras-java8time.version>3.0.4.RELEASE</thymeleaf-extras-java8time.version>
-        <lombok.version>1.18.36</lombok.version>
-        <springdoc-openapi-ui.version>1.6.9</springdoc-openapi-ui.version>
-        <openpdf.version>1.3.28</openpdf.version>
-        <batik-all.version>1.14</batik-all.version>
-        <flyway-core.version>7.9.1</flyway-core.version>
-        <jjwt-api.version>0.11.5</jjwt-api.version>
-        <jjwt-impl.version>0.11.5</jjwt-impl.version>
-        <jjwt-jackson.version>0.11.5</jjwt-jackson.version>
-        <ez-vcard.version>0.11.3</ez-vcard.version>
-        <ical4j.version>3.2.3</ical4j.version>
-        <ical4j-extensions.version>1.0.5</ical4j-extensions.version>
-        <ical4j-vcard.version>1.0.7</ical4j-vcard.version>
-        <commons-io.version>2.11.0</commons-io.version>
-        <commons-beanutils.version>1.9.4</commons-beanutils.version>
-        <jackrabbit-webdav.version>2.21.11</jackrabbit-webdav.version>
-        <jcr.version>2.0</jcr.version>
-        <jcrom.version>2.2.0</jcrom.version>
-        <zxing-core.version>3.3.0</zxing-core.version>
-        <zxing-javase.version>3.3.0</zxing-javase.version>
-        <gson.version>2.9.1</gson.version>
+        <jdk.version>21</jdk.version>
+
+        <maven.compiler.release>${jdk.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring-cloud.version>2021.0.3</spring-cloud.version>
-        <docker.baseimage>eclipse-temurin:17-jre</docker.baseimage>
+
+        <main.basedir>${project.basedir}</main.basedir>
+        <docker.jre.baseimage>eclipse-temurin:21-jre</docker.jre.baseimage>
+        <jib-maven-plugin.version>3.4.2</jib-maven-plugin.version>
+
+        <spring-boot-maven-plugin.version>3.2.8</spring-boot-maven-plugin.version>
+        <apt-maven-plugin.version>1.1.3</apt-maven-plugin.version>
+        <postgresql.version>42.7.5</postgresql.version>
+        <lombok.version>1.18.38</lombok.version>
+        <flyway-core.version>11.5.0</flyway-core.version>
+        <ez-vcard.version>0.12.1</ez-vcard.version>
+        <commons-io.version>2.18.0</commons-io.version>
+        <commons-text.version>1.12.0</commons-text.version>
+        <dom4j.version>2.1.4</dom4j.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <commons-beanutils.version>1.10.1</commons-beanutils.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <querydsl.version>5.1.0</querydsl.version>
+        <typescript-generator-maven-plugin.version>2.36.1070</typescript-generator-maven-plugin.version>
+        <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
     </properties>
 
     <modules>
-        <module>koku-config</module>
-        <module>koku-gateway</module>
-        <module>koku-backend</module>
+        <module>koku-frontend</module>
         <module>koku-carddav</module>
-        <module>datatable</module>
+        <module>koku-customer</module>
+        <module>koku-product</module>
+        <module>koku-activity</module>
+        <module>koku-promotion</module>
+        <module>koku-document</module>
+        <module>koku-user</module>
+        <module>koku-dto</module>
+        <module>koku-auth</module>
+        <module>koku-file</module>
+        <module>formular</module>
+        <module>business-logic</module>
+        <module>business-exception</module>
+        <module>list</module>
+        <module>list-query</module>
+        <module>calendar</module>
+        <module>chart</module>
+        <module>dashboard</module>
     </modules>
 
 

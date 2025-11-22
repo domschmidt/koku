@@ -1,0 +1,122 @@
+@if (!valueOnly()) {
+  <label class="w-full" tabindex="-1" [for]="name()">
+    @if (label(); as label) {
+      <div class="label">
+        <span class="label-text">{{ label }}</span>
+      </div>
+    }
+  </label>
+  <div class="join">
+    <ng-content select="prepend-outer"></ng-content>
+
+    <div class="select w-full flex-wrap h-auto join-item overflow-visible"
+         [class.skeleton]="loading()"
+         style="min-height: var(--size);"
+         [attr.disabled]="disabled() || readonly() ? '' : null">
+      <ng-content select="prepend-inner"></ng-content>
+      <div class="inline-flex relative grow">
+
+        <input
+          autocomplete="off"
+          type="text"
+          [name]="name()"
+          [id]="name()"
+          [attr.placeholder]="placeholder() || null"
+          class="outline-none grow"
+          [attr.disabled]="disabled() || readonly() ? '' : null"
+          [attr.required]="required() ? true : null"
+          [class.skeleton]="loading()"
+          [value]="!loading() ? searchTerm() : defaultValue()"
+          (input)="onInputRaw($event)"
+          (focus)="onFocusRaw($event)"
+          (blur)="onBlurRaw($event)"
+          (keydown)="onKeyDownRaw($event)"
+        />
+
+        @if (!loading()) {
+          @if (showDropdown(); as showDropdown) {
+            <ul
+              class="absolute left-0 right-0 w-full z-1 rounded-3xl menu bg-neutral max-h-[33vh] flex-nowrap overflow-y-auto"
+              [class.top-5]="showDropdown.direction === 'bottom'"
+              [class.bottom-7]="showDropdown.direction === 'top'"
+            >
+              @for (possibleSelectionGroup of filteredPossibleValuesGrouped() | keyvalue; track possibleSelectionGroup.key; ) {
+                @if ((filteredPossibleValuesGrouped() || {})[possibleSelectionGroup.key]; as currentSelectionCategoryList) {
+                  @if (possibleSelectionGroup.key.length > 0) {
+                    <li>
+                      <h2 class="menu-title">{{ possibleSelectionGroup.key }}</h2>
+                      <ul>
+                        @for (possibleSelection of currentSelectionCategoryList; track possibleSelection.id; ) {
+                          <li
+                            (pointerdown)="onOptionPointerDown()"
+                            (click)="selectOption(possibleSelection); $event.preventDefault();"
+                            [class.menu-disabled]="possibleSelection.disabled === true"
+                            [class.text-neutral]="possibleSelection.color === 'NEUTRAL'"
+                            [class.text-primary]="possibleSelection.color === undefined || possibleSelection.color === 'PRIMARY'"
+                            [class.text-secondary]="possibleSelection.color === 'SECONDARY'"
+                            [class.text-accent]="possibleSelection.color === 'ACCENT'"
+                            [class.text-info]="possibleSelection.color === 'INFO'"
+                            [class.text-success]="possibleSelection.color === 'SUCCESS'"
+                            [class.text-warning]="possibleSelection.color === 'WARNING'"
+                            [class.text-error]="possibleSelection.color === 'ERROR'"
+                          >
+                            <a [class.menu-active]="possibleSelection.id === selectedId()">
+                            <span
+                              [class.line-through]="possibleSelection.disabled === true">{{ possibleSelection.text }}</span>
+                              <span>{{ possibleSelection.disabled === true ? ' (deaktiviert)' : '' }}</span>
+                            </a>
+                          </li>
+                        }
+                      </ul>
+                    </li>
+                  } @else {
+                    @for (possibleSelection of currentSelectionCategoryList; track possibleSelection.id; ) {
+                      <li
+                        (pointerdown)="onOptionPointerDown()"
+                        (click)="selectOption(possibleSelection); $event.preventDefault();"
+                        [class.menu-disabled]="possibleSelection.disabled === true"
+                        [class.text-neutral]="possibleSelection.color === 'NEUTRAL'"
+                        [class.text-primary]="possibleSelection.color === undefined || possibleSelection.color === 'PRIMARY'"
+                        [class.text-secondary]="possibleSelection.color === 'SECONDARY'"
+                        [class.text-accent]="possibleSelection.color === 'ACCENT'"
+                        [class.text-info]="possibleSelection.color === 'INFO'"
+                        [class.text-success]="possibleSelection.color === 'SUCCESS'"
+                        [class.text-warning]="possibleSelection.color === 'WARNING'"
+                        [class.text-error]="possibleSelection.color === 'ERROR'"
+                      >
+                        <a [class.menu-active]="possibleSelection.id === selectedId()">
+                            <span
+                              [class.line-through]="possibleSelection.disabled === true">{{ possibleSelection.text }}</span>
+                          <span>{{ possibleSelection.disabled === true ? ' (deaktiviert)' : '' }}</span>
+                        </a>
+                      </li>
+                    }
+                  }
+                }
+              }
+
+              @if (filteredPossibleValues().length === 0) {
+                <li class="menu-disabled">
+                  <a>
+                    Nichts gefunden. Versuch eine andere Sucheingabe oder überprüfe die
+                    Schreibweise.
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        }
+      </div>
+      <ng-content select="append-inner"></ng-content>
+    </div>
+
+    <ng-content select="append-outer"></ng-content>
+
+  </div>
+} @else {
+  @if (loading()) {
+    <div class="skeleton w-full bg-neutral content-center" style="--radius-box:0">&nbsp;</div>
+  } @else {
+    <div class="content-center">{{ value() }}</div>
+  }
+}

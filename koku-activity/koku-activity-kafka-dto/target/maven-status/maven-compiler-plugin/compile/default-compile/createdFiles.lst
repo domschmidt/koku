@@ -1,0 +1,8 @@
+de\domschmidt\koku\activity\kafka\dto\ActivityKafkaDto.class
+de\domschmidt\koku\activity\kafka\dto\ActivityPriceHistoryKafkaDto.class
+de\domschmidt\koku\activity\kafka\dto\ActivityStepKafkaDtoSerdes.class
+de\domschmidt\koku\activity\kafka\dto\ActivityKafkaDtoSerdes.class
+de\domschmidt\koku\activity\kafka\dto\ActivityStepKafkaDto$ActivityStepKafkaDtoBuilder.class
+de\domschmidt\koku\activity\kafka\dto\ActivityPriceHistoryKafkaDto$ActivityPriceHistoryKafkaDtoBuilder.class
+de\domschmidt\koku\activity\kafka\dto\ActivityKafkaDto$ActivityKafkaDtoBuilder.class
+de\domschmidt\koku\activity\kafka\dto\ActivityStepKafkaDto.class

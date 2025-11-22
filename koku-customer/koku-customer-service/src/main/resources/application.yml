@@ -1,0 +1,53 @@
+kafka:
+  bootstrap-servers: kafka:9094
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "http://localhost:8080/realms/master"
+  kafka:
+    bootstrap-servers: ${kafka.bootstrap-servers}
+    consumer:
+      auto-offset-reset: earliest
+  application:
+    name: @project.artifactId@
+  servlet:
+    multipart:
+      maxFileSize: 268435456  # Limit for a single file (256 MiB)
+      maxRequestSize: 536870912  # Limit for all files in a single request (512 MiB)
+  mvc:
+    async:
+      request-timeout: 3600000 #1 hour request timeout
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/customers
+    username: 'postgres'
+    password: 'koku'
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+    default-schema: koku
+    schemas:
+      - koku
+  jpa:
+    generate-ddl: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl:
+        auto: none
+  sql:
+    init:
+      platform: postgres
+  batch:
+    jdbc:
+      initialize-schema: embedded
+  jackson:
+    default-property-inclusion: non_null
+
+
+server:
+  port: 8320
+  forward-headers-strategy: framework

@@ -7,5 +7,68 @@
     "pathRewrite": {
       "^/backend": ""
     }
+  },
+  "/services/users": {
+    "target": "http://localhost:8420",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/services/users": ""
+    }
+  },
+  "/services/customers": {
+    "target": "http://localhost:8320",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/services/customers": ""
+    }
+  },
+  "/services/activities": {
+    "target": "http://localhost:8620",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/services/activities": ""
+    }
+  },
+  "/services/promotions": {
+    "target": "http://localhost:8520",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/services/promotions": ""
+    }
+  },
+  "/services/products": {
+    "target": "http://localhost:9320",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/services/products": ""
+    }
+  },
+  "/services/documents": {
+    "target": "http://localhost:8720",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/services/documents": ""
+    }
+  },
+  "/services/files": {
+    "target": "http://localhost:8020",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/services/files": ""
+    }
   }
 }

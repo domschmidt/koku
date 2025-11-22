@@ -1,0 +1,72 @@
+<select-field [name]="name() + '-select'"
+              value=""
+              [label]="label()"
+              [placeholder]="placeholder()"
+              (onChange)="selectById($event);"
+              [possibleValues]="filteredPossibleValues()"
+              [clearOnSelect]="true"
+              [valueOnly]="valueOnly()"
+              [loading]="loading()"
+              (onBlur)="onBlur.emit($event)"
+              (onFocus)="onFocus.emit($event)"
+>
+  <ng-container ngProjectAs="prepend-outer">
+    <ng-content select="prepend-outer"></ng-content>
+  </ng-container>
+  <ng-container ngProjectAs="prepend-inner">
+    <ng-content select="prepend-inner"></ng-content>
+    @if (selectionIds().length && !loading()) {
+      <div cdkDropList cdkDropListOrientation="mixed" (cdkDropListDropped)="drop($event)"
+           class="flex gap-1 flex-wrap">
+        @for (currentSelectionId of selectionIds(); track $index; let currentSelectionIdx = $index) {
+          @if (possibleValuesIdx()[currentSelectionId]; as possibleValue) {
+
+            <button class="badge pr-0 cursor-grab"
+                    type="button"
+                    cdkDrag
+                    (click)="onSelectItemClick.emit({event: $event, id: currentSelectionId, pos: currentSelectionIdx})"
+                    (keydown)="onSelectItemKeyDownRaw($event, currentSelectionId)"
+                    tabindex="0"
+                    (blur)="onBlur.emit($event)"
+                    (focus)="onFocus.emit($event)"
+                    [class.badge-neutral]="possibleValue.color === 'NEUTRAL'"
+                    [class.badge-primary]="possibleValue.color === undefined || possibleValue.color === 'PRIMARY'"
+                    [class.badge-secondary]="possibleValue.color === 'SECONDARY'"
+                    [class.badge-accent]="possibleValue.color === 'ACCENT'"
+                    [class.badge-info]="possibleValue.color === 'INFO'"
+                    [class.badge-success]="possibleValue.color === 'SUCCESS'"
+                    [class.badge-warning]="possibleValue.color === 'WARNING'"
+                    [class.badge-error]="possibleValue.color === 'ERROR'"
+                    #badgeEl
+            >
+              @if (badgeContentTemplate(); as badgeContentTemplate) {
+                <ng-template
+                  [ngTemplateOutlet]="badgeContentTemplate"
+                  [ngTemplateOutletContext]="{ $implicit: {
+                  id: currentSelectionId,
+                  pos: currentSelectionIdx,
+                  text: possibleValue.text
+                } }"></ng-template>
+              } @else {
+                {{ possibleValue.text }}
+              }
+              <button class="btn btn-xs btn-circle btn-ghost text-neutral" type="button"
+                      (click)="onSelectionDelete($event, currentSelectionIdx)"
+                      (blur)="onBlur.emit($event)"
+                      (focus)="onFocus.emit($event)"
+                      tabindex="0">
+                ✕
+              </button>
+            </button>
+          }
+        }
+      </div>
+    }
+  </ng-container>
+  <ng-container ngProjectAs="append-inner">
+    <ng-content select="append-inner"></ng-content>
+  </ng-container>
+  <ng-container ngProjectAs="append-outer">
+    <ng-content select="append-outer"></ng-content>
+  </ng-container>
+</select-field>
