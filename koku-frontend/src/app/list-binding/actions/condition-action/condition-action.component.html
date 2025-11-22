@@ -1,0 +1,28 @@
+@if (value(); as value) {
+
+  @if (matchesPositively(value, register())) {
+    @if (parent().contentSetup().actionRegistry[value.positiveAction!['@type']]; as registeredAction) {
+      <ndc-dynamic [ndcDynamicComponent]="registeredAction.componentType"
+                   [ndcDynamicInputs]="{
+                       value: value.positiveAction,
+                       loading: loading(),
+                     }"
+                   [ngComponentOutletNdcDynamicInputs]="registeredAction.inputBindings ? registeredAction.inputBindings(parent(), value.positiveAction!) : {}"
+                   [ngComponentOutletNdcDynamicOutputs]="registeredAction.outputBindings ? registeredAction.outputBindings(parent(), value.positiveAction!) : {}"
+      ></ndc-dynamic>
+    }
+  } @else {
+    @if (parent().contentSetup().actionRegistry[value.negativeAction!['@type']]; as registeredAction) {
+      <ndc-dynamic [ndcDynamicComponent]="registeredAction.componentType"
+                   [ndcDynamicInputs]="{
+                       value: value.negativeAction,
+                       loading: loading(),
+                     }"
+                   [ngComponentOutletNdcDynamicInputs]="registeredAction.inputBindings ? registeredAction.inputBindings(parent(), value.negativeAction!) : {}"
+                   [ngComponentOutletNdcDynamicOutputs]="registeredAction.outputBindings ? registeredAction.outputBindings(parent(), value.negativeAction!) : {}"
+      ></ndc-dynamic>
+    }
+  }
+
+
+}

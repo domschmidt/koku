@@ -1,0 +1,11 @@
+@if (content(); as content) {
+  @if (contentSetup().filterRegistry[content['@type']]; as fieldComponent) {
+    <ndc-dynamic [ndcDynamicComponent]="fieldComponent.componentType"
+                 [ndcDynamicInputs]="{
+                     loading: loading()
+                   }"
+                 [ngComponentOutletNdcDynamicInputs]="inputBindings()"
+                 [ngComponentOutletNdcDynamicOutputs]="outputBindings()"
+    ></ndc-dynamic>
+  }
+}

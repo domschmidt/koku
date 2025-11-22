@@ -1,0 +1,8 @@
+C:\workspace\koku\dashboard\src\main\java\de\domschmidt\dashboard\dto\content\containers\AbstractDashboardContainer.java
+C:\workspace\koku\dashboard\src\main\java\de\domschmidt\dashboard\dto\content\IDashboardContent.java
+C:\workspace\koku\dashboard\src\main\java\de\domschmidt\dashboard\dto\content\panels\AbstractDashboardPanel.java
+C:\workspace\koku\dashboard\src\main\java\de\domschmidt\dashboard\dto\content\panels\DashboardAsyncChartPanelDto.java
+C:\workspace\koku\dashboard\src\main\java\de\domschmidt\dashboard\dto\DashboardViewDto.java
+C:\workspace\koku\dashboard\src\main\java\de\domschmidt\dashboard\factory\DashboardViewFactory.java
+C:\workspace\koku\dashboard\src\main\java\de\domschmidt\dashboard\factory\DefaultDashboardViewContentIdGenerator.java
+C:\workspace\koku\dashboard\src\main\java\de\domschmidt\dashboard\factory\IDashboardViewContentIdGenerator.java

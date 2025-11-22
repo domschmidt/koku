@@ -1,0 +1,29 @@
+@if (content(); as content) {
+  @if (contentSetup().buttonRegistry[content['@type']]; as buttonComponent) {
+    @if (content.id) {
+      @if (enableDockedOutput()) {
+        <ng-template koku-portal [portalOutlet]="buttonDockOutlet()" [append]="true">
+          <ng-container
+            [ngComponentOutlet]="buttonComponent.componentType"
+            [ndcDynamicInputs]="{
+              loading: (submitting() && buttonRegister()[content.id].config.buttonType === 'SUBMIT') || buttonRegister()[content.id].loadingCauses.size > 0 || loading(),
+              disabled: submitting() || buttonRegister()[content.id].disabledCauses.size > 0,
+            }"
+            [ngComponentOutletNdcDynamicInputs]="inputBindings()"
+            [ngComponentOutletNdcDynamicOutputs]="outputBindings()"
+          />
+        </ng-template>
+      } @else {
+        <ng-container
+          [ngComponentOutlet]="buttonComponent.componentType"
+          [ndcDynamicInputs]="{
+            loading: (submitting() && buttonRegister()[content.id].config.buttonType === 'SUBMIT') || buttonRegister()[content.id].loadingCauses.size > 0 || loading(),
+            disabled: submitting() || buttonRegister()[content.id].disabledCauses.size > 0,
+          }"
+          [ngComponentOutletNdcDynamicInputs]="inputBindings()"
+          [ngComponentOutletNdcDynamicOutputs]="outputBindings()"
+        />
+      }
+    }
+  }
+}

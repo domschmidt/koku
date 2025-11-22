@@ -1,0 +1,22 @@
+@if (fileBlobUrl(); as fileBlobUrl) {
+  @if (buttonDockOutlet()) {
+    <ng-template koku-portal [portalOutlet]="buttonDockOutlet()" [append]="true">
+      <a [href]="fileBlobUrl" target="_blank" title="Download">
+        <koku-icon name="DOWNLOAD"/>
+      </a>
+    </ng-template>
+  } @else {
+    <a [href]="fileBlobUrl" target="_blank" title="Download">
+      <koku-icon name="DOWNLOAD"/>
+    </a>
+  }
+
+  @if (mimeType() === 'application/pdf') {
+    <object
+      [data]="fileBlobUrl"
+      type="application/pdf"
+      width="100%"
+      height="100%">
+    </object>
+  }
+}

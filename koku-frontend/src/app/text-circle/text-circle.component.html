@@ -1,0 +1,9 @@
+<div class="avatar avatar-placeholder">
+  @if (loading()) {
+    <div class="skeleton w-full h-10 bg-neutral"></div>
+  } @else {
+    <div class="bg-neutral text-neutral-content size-10 rounded-full">
+      <span class="text-xs">{{ value() }}</span>
+    </div>
+  }
+</div>

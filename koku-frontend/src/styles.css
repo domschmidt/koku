@@ -1,0 +1,471 @@
+/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  exclude: rootscrollgutter;
+}
+@source inline("{sm:,md:,lg:,xl:,2xl:,}max-w-[{1..4000}px]");
+@source inline("{@sm:,@md:,@lg:,@xl:,@2xl:,@3xl:,@4xl:,@5xl:,@6xl:@7xl:,sm:,md:,lg:,xl:,2xl:,}grid-cols-{1..50}");
+@source inline("opacity-{0..100}");
+@source inline("whitespace-pre");
+
+@plugin "daisyui/theme" {
+  name: "koku-light";
+  default: true;
+  prefersdark: false;
+  color-scheme: "light";
+  --color-base-100: #FFFFFF;
+  --color-base-200: oklch(82% 0.119 306.383);
+  --color-base-300: #E0E0E0;
+  --color-base-content: #673AB7;
+  --color-primary: #673AB7;
+  --color-primary-content: oklch(0.876 0.049 309.735);
+  --color-secondary: #9575CD;
+  --color-secondary-content: oklch(28% 0.091 267.935);
+  --color-accent: #D1C4E9;
+  --color-accent-content: oklch(30% 0.056 229.695);
+  --color-neutral: #F5F5F5;
+  --color-neutral-content: oklch(60% 0.25 292.717);
+  --color-info: #42A5F5;
+  --color-info-content: oklch(97% 0.014 254.604);
+  --color-success: #66BB6A;
+  --color-success-content: oklch(97% 0.021 166.113);
+  --color-warning: #FFA726;
+  --color-warning-content: oklch(98% 0.026 102.212);
+  --color-error: #EF5350;
+  --color-error-content: oklch(96% 0.015 12.422);
+  --radius-selector: 2rem;
+  --radius-field: 2rem;
+  --radius-box: 2rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 0.5px;
+  --depth: 1;
+  --noise: 1;
+}
+
+
+@plugin "daisyui/theme" {
+  name: "koku-dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+  --color-base-100: oklch(20% 0 0);
+  --color-base-200: oklch(29% 0.149 302.717);
+  --color-base-300: oklch(49% 0.265 301.924);
+  --color-base-content: oklch(92% 0.003 48.717);
+  --color-primary: #B39DDB;
+  --color-primary-content: oklch(29% 0.149 302.717);
+  --color-secondary: #7E57C2;
+  --color-secondary-content: oklch(28% 0.091 267.935);
+  --color-accent: #CE93D8;
+  --color-accent-content: oklch(30% 0.056 229.695);
+  --color-neutral: #2C2C2C;
+  --color-neutral-content: oklch(98% 0 0);
+  --color-info: #42A5F5;
+  --color-info-content: oklch(97% 0.014 254.604);
+  --color-success: #66BB6A;
+  --color-success-content: oklch(97% 0.021 166.113);
+  --color-warning: #FFA726;
+  --color-warning-content: oklch(98% 0.026 102.212);
+  --color-error: #EF5350;
+  --color-error-content: oklch(96% 0.015 12.422);
+  --radius-selector: 2rem;
+  --radius-field: 2rem;
+  --radius-box: 2rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 0.5px;
+  --depth: 1;
+  --noise: 1;
+}
+@variant hover (&:hover);
+@variant focus (&:focus);
+
+@keyframes flash-scale {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@font-face {
+  font-family: 'Baloo2';
+  src: url("/Baloo2-VariableFont_wght.ttf") format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+koku-root {
+  font-family: 'Baloo2', sans-serif;
+}
+
+html, body {
+  margin: 0;
+}
+
+.fc {
+  --fc-page-bg-color: var(--color-neutral);
+  --fc-border-color: oklch(from var(--color-accent) l c h / calc(alpha - 0.6));
+  --fc-non-business-color: oklch(from var(--color-base-200) l c h / calc(alpha - 0.8));
+  --fc-event-bg-color: var(--color-neutral);
+  --fc-today-bg-color: var(--color-base-100);
+  --fc-event-border-color: var(--btn-border);
+
+  .fc-scrollgrid {
+    @apply border-0;
+  }
+
+  .fc-col-header-cell {
+    @apply text-primary;
+  }
+
+  .fc-daygrid-event {
+    @apply !m-0 !px-0;
+  }
+
+  .fc-daygrid-day-events {
+    @apply flex
+    flex-col
+    !my-0;
+  }
+
+  .fc-day-other {
+    @apply bg-neutral;
+
+    .fc-daygrid-day-number {
+      @apply text-neutral-content;
+    }
+
+    .fc-daygrid-day-frame {
+      .fc-daygrid-day-top {
+        @apply opacity-70
+      }
+    }
+  }
+
+  .fc-daygrid-day-top {
+    @apply justify-center;
+  }
+
+  .fc-day-today {
+    .fc-daygrid-day-number {
+      @apply rounded-full bg-primary text-primary-content;
+    }
+
+    .fc-col-header-cell-cushion {
+      @apply bg-primary text-primary-content w-full;
+    }
+  }
+
+  .calendar-item {
+    &.calendar-item--color-RED {
+      .fc-event-main:after {
+        @apply bg-red-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-red-300;
+      }
+    }
+
+    &.calendar-item--color-ORANGE {
+      .fc-event-main:after {
+        @apply bg-orange-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-orange-300;
+      }
+    }
+
+    &.calendar-item--color-AMBER {
+      .fc-event-main:after {
+        @apply bg-amber-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-amber-300;
+      }
+    }
+
+    &.calendar-item--color-YELLOW {
+      .fc-event-main:after {
+        @apply bg-yellow-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-yellow-300;
+      }
+    }
+
+    &.calendar-item--color-YELLOW {
+      .fc-event-main:after {
+        @apply bg-yellow-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-yellow-300;
+      }
+    }
+
+    &.calendar-item--color-LIME {
+      .fc-event-main:after {
+        @apply bg-lime-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-lime-300;
+      }
+    }
+
+    &.calendar-item--color-GREEN {
+      .fc-event-main:after {
+        @apply bg-green-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-green-300;
+      }
+    }
+
+    &.calendar-item--color-EMERALD {
+      .fc-event-main:after {
+        @apply bg-emerald-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-emerald-300;
+      }
+    }
+
+    &.calendar-item--color-TEAL {
+      .fc-event-main:after {
+        @apply bg-teal-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-teal-300;
+      }
+    }
+
+    &.calendar-item--color-CYAN {
+      .fc-event-main:after {
+        @apply bg-cyan-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-cyan-300;
+      }
+    }
+
+    &.calendar-item--color-SKY {
+      .fc-event-main:after {
+        @apply bg-sky-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-sky-300;
+      }
+    }
+
+    &.calendar-item--color-BLUE {
+      .fc-event-main:after {
+        @apply bg-blue-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-blue-300;
+      }
+    }
+
+    &.calendar-item--color-INDIGO {
+      .fc-event-main:after {
+        @apply bg-indigo-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-indigo-300;
+      }
+    }
+
+    &.calendar-item--color-VIOLET {
+      .fc-event-main:after {
+        @apply bg-violet-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-violet-300;
+      }
+    }
+
+    &.calendar-item--color-PURPLE {
+      .fc-event-main:after {
+        @apply bg-purple-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-purple-300;
+      }
+    }
+
+    &.calendar-item--color-FUCHSIA {
+      .fc-event-main:after {
+        @apply bg-fuchsia-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-fuchsia-300;
+      }
+    }
+
+    &.calendar-item--color-PINK {
+      .fc-event-main:after {
+        @apply bg-pink-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-pink-300;
+      }
+    }
+
+    &.calendar-item--color-ROSE {
+      .fc-event-main:after {
+        @apply bg-rose-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-rose-300;
+      }
+    }
+
+    &.calendar-item--color-SLATE {
+      .fc-event-main:after {
+        @apply bg-slate-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-slate-300;
+      }
+    }
+
+    &.calendar-item--color-GRAY {
+      .fc-event-main:after {
+        @apply bg-gray-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-gray-300;
+      }
+    }
+
+    &.calendar-item--color-ZINC {
+      .fc-event-main:after {
+        @apply bg-zinc-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-zinc-300;
+      }
+    }
+
+    &.calendar-item--color-NEUTRAL {
+      .fc-event-main:after {
+        @apply bg-neutral-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-neutral-300;
+      }
+    }
+
+    &.calendar-item--color-STONE {
+      .fc-event-main:after {
+        @apply bg-stone-600;
+      }
+
+      &.fc-bg-event {
+        @apply bg-stone-300;
+      }
+    }
+
+    &.calendar-item--loading {
+      @apply skeleton rounded-xl;
+    }
+
+    &.calendar-item--flash {
+      animation: flash-scale 1s ease-in-out forwards;
+    }
+  }
+
+  .fc-bg-event {
+    .fc-event-title {
+      @apply -top-1 absolute max-w-full text-neutral-content !font-normal;
+    }
+  }
+
+  .fc-event {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    &:not(.fc-bg-event):hover {
+      transform: scale(1.05); /* leicht vergrößert */
+      z-index: 10; /* damit es über anderen Events liegt */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    @apply btn w-full h-auto pl-0 pr-0 overflow-hidden rounded-xl;
+
+    &.fc-bg-event {
+      @apply rounded-none;
+    }
+
+    &.fc-timegrid-event {
+      .fc-event-time {
+        display: none;
+      }
+    }
+
+    .fc-event-main {
+      @apply w-full;
+
+
+      &:after {
+        content: '';
+        @apply absolute left-0 bottom-0 w-full h-[4px];
+      }
+
+      .fc-event-time {
+        @apply text-[10px] min-w-fit bg-accent/90 text-accent-content absolute transform rotate-45 pt-4 absolute right-[12px] top-[12px] translate-x-1/2 -translate-y-1/2 px-[100%] py-0 m-0 z-1 text-base/4 shadow-xl;
+      }
+
+      .fc-event-title {
+        @apply !whitespace-pre overflow-hidden line-clamp-2 text-left min-h-11 text-xs flex items-center ml-1 text-base-content;
+      }
+    }
+
+  }
+
+  .fc-daygrid-day-frame {
+    @apply text-neutral-content;
+
+    .fc-daygrid-day-number {
+      @apply flex items-center justify-center size-10 m-2;
+    }
+  }
+}
+
+.apexcharts-tooltip {
+  @apply !bg-base-100 text-base-content !border-neutral;
+}
+
+.apexcharts-tooltip-title {
+  @apply !bg-base-100 text-base-content !border-neutral-content/10;
+}
+
+.air-datepicker {
+  --adp-z-index: 999 !important;
+}

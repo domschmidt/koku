@@ -1,20 +1,19 @@
-import {Injectable} from "@angular/core";
-import {BehaviorSubject} from "rxjs";
+import {Injectable, signal} from "@angular/core";
 
-@Injectable()
+@Injectable({providedIn: 'root'})
 export class NaviService {
 
-  public openState: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  public openState = signal(false);
 
   constructor() {
   }
 
   public close(): void {
-    this.openState.next(false);
+    this.openState.set(false);
   }
 
   public open(): void {
-    this.openState.next(true);
+    this.openState.set(true);
   }
 
 }

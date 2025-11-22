@@ -1,0 +1,100 @@
+@if (content(); as content) {
+  @if (contentSetup().fieldRegistry[content['@type']]; as fieldComponent) {
+    @if (content.id) {
+
+      <template>
+        <div #prependOuter class="contents">
+          @if (content.prependOuter) {
+            <field-slot-renderer
+              class="contents"
+              [fieldRegister]="fieldRegister()"
+              [content]="content"
+              [contentSetup]="contentSetup()"
+              [contentSlot]="content.prependOuter"
+              focusEventName="onFocusPrependOuter"
+              blurEventName="onBlurPrependOuter"
+              clickEventName="onClickPrependOuter"
+              slotName="prependOuter"
+              field-slot-renderer
+            />
+          }
+        </div>
+      </template>
+      <template>
+        <div #prependInner class="contents">
+          @if (content.prependInner) {
+            <field-slot-renderer
+              class="contents"
+              [fieldRegister]="fieldRegister()"
+              [content]="content"
+              [contentSetup]="contentSetup()"
+              [contentSlot]="content.prependInner"
+              focusEventName="onFocusPrependInner"
+              blurEventName="onBlurPrependInner"
+              clickEventName="onClickPrependInner"
+              slotName="prependInner"
+              field-slot-renderer
+            />
+          }
+        </div>
+      </template>
+      <template>
+        <div #appendInner class="contents">
+          @if (content.appendInner) {
+            <field-slot-renderer
+              class="contents"
+              [fieldRegister]="fieldRegister()"
+              [content]="content"
+              [contentSetup]="contentSetup()"
+              [contentSlot]="content.appendInner"
+              focusEventName="onFocusAppendInner"
+              blurEventName="onBlurAppendInner"
+              clickEventName="onClickAppendInner"
+              slotName="appendInner"
+              field-slot-renderer
+            />
+          }
+        </div>
+      </template>
+      <template>
+        <div #appendOuter class="contents">
+          @if (content.appendOuter) {
+            <field-slot-renderer
+              class="contents"
+              [fieldRegister]="fieldRegister()"
+              [content]="content"
+              [contentSetup]="contentSetup()"
+              [contentSlot]="content.appendOuter"
+              focusEventName="onFocusAppendOuter"
+              blurEventName="onBlurAppendOuter"
+              clickEventName="onClickAppendOuter"
+              slotName="appendOuter"
+              field-slot-renderer
+            />
+          }
+        </div>
+      </template>
+      <ndc-dynamic [ndcDynamicComponent]="fieldComponent.componentType"
+                   [ndcDynamicInputs]="{
+                     name: content.id,
+                     value: fieldRegister()[content.id].value(),
+                     disabled: submitting() || fieldRegister()[content.id].disabledCauses().size > 0,
+                     required: fieldRegister()[content.id].requiredCauses().size > 0,
+                     readonly: fieldRegister()[content.id].readonlyCauses().size > 0,
+                     loading: loading() || fieldRegister()[content.id].loadingCauses().size > 0,
+                   }"
+                   (ndcDynamicCreated)="emitToFieldEventBus('onInit', $event)"
+                   [ngComponentOutletNdcDynamicInputs]="inputBindings()"
+                   [ngComponentOutletNdcDynamicOutputs]="outputBindings()"
+                   [ndcDynamicContent]="[
+                     prependOuter.children.length ? [prependOuter] : [],
+                     prependInner.children.length ? [prependInner] : [],
+                     appendInner.children.length ? [appendInner] : [],
+                     appendOuter.children.length ? [appendOuter] : []
+                   ]"
+      >
+
+      </ndc-dynamic>
+    }
+  }
+}

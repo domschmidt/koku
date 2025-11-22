@@ -3,16 +3,17 @@ package de.domschmidt.koku.carddav.controller;
 import de.domschmidt.koku.carddav.APIConstants;
 import de.domschmidt.koku.carddav.DAVConstants;
 import de.domschmidt.koku.carddav.helper.DavUtils;
-import de.domschmidt.koku.carddav.kafka.customers.dto.CustomerDto;
-import de.domschmidt.koku.carddav.kafka.service.CustomerStoreReaderService;
+import de.domschmidt.koku.carddav.kafka.customers.service.CustomerKTableProcessor;
+import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -32,16 +32,10 @@ import java.util.regex.Pattern;
 @RestController
 @RequestMapping(APIConstants.ADDRESSBOOK_PATH)
 @Slf4j
+@RequiredArgsConstructor
 public class AddressBookController {
 
-    private final CustomerStoreReaderService customerStoreReaderService;
-
-    @Autowired
-    public AddressBookController(
-            final CustomerStoreReaderService customerStoreReaderService
-    ) {
-        this.customerStoreReaderService = customerStoreReaderService;
-    }
+    private final CustomerKTableProcessor customerKTableProcessor;
 
     @Data
     @Builder
@@ -68,7 +62,10 @@ public class AddressBookController {
             )
     );
 
-    @RequestMapping(consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE, path = "/{userName}")
+    @RequestMapping(consumes = {
+            MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_XML_VALUE,
+    }, produces = MediaType.APPLICATION_XML_VALUE, path = "/{userName}")
     @ResponseStatus(HttpStatus.MULTI_STATUS)
     public String propfindOrReportRequest(final HttpServletRequest request, final @PathVariable String userName) {
         final Document result = DocumentHelper.createDocument();
@@ -101,15 +98,15 @@ public class AddressBookController {
                 }
 
                 if (NumberUtils.isCreatable(depthHeader) && Integer.parseInt(depthHeader) >= 1) {
-                    final Collection<CustomerDto> filteredContacts;
+                    final Collection<CustomerKafkaDto> filteredContacts;
                     final Set<Long> contactFilter = parseContactFilter(document);
                     if (contactFilter != null && !contactFilter.isEmpty()) {
-                        filteredContacts = customerStoreReaderService.getCustomerStore().values().stream().filter(customer -> contactFilter.contains(customer.getId())).toList();
+                        filteredContacts = this.customerKTableProcessor.getCustomers().values().stream().filter(customer -> contactFilter.contains(customer.getId())).toList();
                     } else {
-                        filteredContacts = customerStoreReaderService.getCustomerStore().values();
+                        filteredContacts = this.customerKTableProcessor.getCustomers().values();
                     }
 
-                    for (final CustomerDto currentContact : filteredContacts) {
+                    for (final CustomerKafkaDto currentContact : filteredContacts) {
                         buildAddressBookResponse(currentContact, requestedProps, multiStatusResponse, userName);
                     }
                 }
@@ -133,7 +130,7 @@ public class AddressBookController {
     @Builder
     private static class AddressBookContactsRequest {
 
-        CustomerDto contact;
+        CustomerKafkaDto contact;
 
     }
 
@@ -148,12 +145,12 @@ public class AddressBookController {
                     DAVConstants.CARD_PROP_ADDRESS_DATA, (addressBookItem, outputRoot) -> {
                         Element addressDataElement = outputRoot.addElement("card:" + DAVConstants.CARD_PROP_ADDRESS_DATA);
                         StringBuilder result = new StringBuilder();
-                        final CustomerDto currentContact = addressBookItem.getContact();
+                        final CustomerKafkaDto currentContact = addressBookItem.getContact();
                         result.append("BEGIN:VCARD&#13;\n");
                         result.append("VERSION:3.0&#13;\n");
                         result.append("PRODID:-//KoKu//KoKu Carddav//DE&#13;\n");
-                        result.append("N:").append(StringUtils.defaultString(currentContact.getLastName())).append(";").append(StringUtils.defaultString(currentContact.getFirstName())).append(";;;&#13;\n");
-                        result.append("FN:").append(StringUtils.defaultString(currentContact.getFirstName())).append(" ").append(StringUtils.defaultString(currentContact.getLastName())).append("&#13;\n");
+                        result.append("N:").append(StringUtils.defaultString(currentContact.getLastname())).append(";").append(StringUtils.defaultString(currentContact.getFirstname())).append(";;;&#13;\n");
+                        result.append("FN:").append(StringUtils.defaultString(currentContact.getFullname())).append("&#13;\n");
                         if (StringUtils.isNotBlank(currentContact.getBusinessTelephoneNo())) {
                             result.append("TEL;TYPE=work:").append(currentContact.getBusinessTelephoneNo()).append("&#13;\n");
                         }
@@ -167,7 +164,7 @@ public class AddressBookController {
                             result.append("EMAIL:").append(currentContact.getEmail()).append("&#13;\n");
                         }
                         result.append("UID:").append(currentContact.getId()).append("&#13;\n");
-                        result.append("REV:").append(currentContact.getLastUpdated().format(DateTimeFormatter.BASIC_ISO_DATE)).append("&#13;\n");
+                        result.append("REV:").append(currentContact.getUpdated().format(DateTimeFormatter.BASIC_ISO_DATE)).append("&#13;\n");
                         result.append("END:VCARD&#13;\n");
                         addressDataElement.setText(result.toString());
                     }
@@ -199,7 +196,7 @@ public class AddressBookController {
         return contactFilter;
     }
 
-    private static void buildAddressBookResponse(CustomerDto resolvedCustomer, List<Element> requestedProps, Element multiStatusResponse, final String userName) {
+    private static void buildAddressBookResponse(CustomerKafkaDto resolvedCustomer, List<Element> requestedProps, Element multiStatusResponse, final String userName) {
         final List<Element> notFoundProps = new ArrayList<>();
         final List<BiConsumer<AddressBookContactsRequest, Element>> resolvedPropGenerators = new ArrayList<>();
         for (final Element requestedPropElement : requestedProps) {

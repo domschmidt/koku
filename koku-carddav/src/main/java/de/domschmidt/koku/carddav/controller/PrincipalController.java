@@ -3,6 +3,7 @@ package de.domschmidt.koku.carddav.controller;
 import de.domschmidt.koku.carddav.APIConstants;
 import de.domschmidt.koku.carddav.DAVConstants;
 import de.domschmidt.koku.carddav.helper.DavUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +49,10 @@ public class PrincipalController {
             )
     );
 
-    @RequestMapping(consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE, path = "/{username}")
+    @RequestMapping(consumes = {
+            MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_XML_VALUE,
+    }, produces = MediaType.APPLICATION_XML_VALUE, path = "/{username}")
     @ResponseStatus(HttpStatus.MULTI_STATUS)
     public String principalRequest(final HttpServletRequest request, final @PathVariable String username) {
         final Document result = DocumentHelper.createDocument();

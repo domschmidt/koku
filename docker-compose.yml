@@ -1,139 +1,269 @@
 services:
-  config:
-    container_name: koku-config
-    image: domschmidt/koku-config:latest
-    restart: unless-stopped
-    environment:
-      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH-LOCATIONS=file:/config
-    expose:
-      - 8110
-    volumes:
-      - config-dir:/config
-
-  gateway:
-    container_name: koku-gateway
-    image: domschmidt/koku-gateway:latest
-    restart: unless-stopped
-    depends_on:
-      - config
-    ports:
-      - 443:8200
-    environment:
-      - FRONTEND_URL=http://frontend:1338/
-      - BACKEND_URL=http://backend:8210/
-      - CARDDAV_URL=http://carddav:8220/
-      - CONFIG_IMPORT_SOURCE=configserver:http://config:8110
-    volumes:
-      - ssl-dir:/ssl # containing ssl_certificate.crt and ssl_certificate.key
-
-  frontend:
+  koku-frontend:
     container_name: koku-frontend
     build:
       context: koku-frontend/
       dockerfile: Dockerfile
-    image: domschmidt/koku-frontend
+    image: docker.io/domschmidt/koku-frontend:latest
     restart: unless-stopped
-    expose:
-      - 1338
-    depends_on:
-      - backend
+    ports:
+      - "80:80"
     environment:
-      - NGINX_PORT=1338
+      - KEYCLOAK_URL=http://192.168.178.36:8080
+      - KEYCLOAK_REALM=master
+      - KEYCLOAK_CLIENT_ID=koku
 
-  backend:
-    container_name: koku-backend
-    image: domschmidt/koku-backend:latest
-    restart: unless-stopped
-    expose:
-      - 8210
-    depends_on:
-      - backend-db
-      - config
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/koku
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=koku
-      - KAFKA_BOOTSTRAP-SERVER=kafka:9092
-      - SECURITY_JWT_SECRET=YhsO2nx4BtDN19ij42eB8YHZyYxYngfk4vAg8R8ziVswcEVcofhpiy2SD2Ingzi00VWxT5P6NE2mzdNkHVfaOg==
-      - SECURITY_JWT_SIGNATURE-ALGORITHM=HS512
-      - CONFIG_IMPORT_SOURCE=configserver:http://config:8110
-    volumes:
-      - uploads-dir:/data/uploads
-
-  backend-db:
-    container_name: koku-backend-db
-    image: 'postgres:17.2'
+  koku-db:
+    image: 'postgres:17.6'
     restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=koku
-      - POSTGRES_DB=koku
+    ports:
+      - "5432:5432"
     expose:
       - 5432
 
-  carddav:
-    container_name: koku-carddav
-    image: domschmidt/koku-carddav:latest
-    restart: unless-stopped
+  db-init:
+    image: 'postgres:17.6'
     depends_on:
-      - config
-    expose:
-      - 1339
+      - koku-db
     environment:
-      - KAFKA_BOOTSTRAP-SERVER=kafka:9092
-      - CONFIG_IMPORT_SOURCE=configserver:http://config:8110
+      PGPASSWORD: koku
+    command:
+      - /bin/bash
+      - -c
+      - |
+        until pg_isready -h koku-db -U postgres -d postgres; do
+          echo "Waiting for Postgres..."
+          sleep 2
+        done
+  
+        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE users"
+        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE promotions"
+        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE activities"
+        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE customers"
+        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE products"
+        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE documents"
+        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE files"
+
+  koku-users:
+    container_name: koku-users
+    image: docker.io/domschmidt/koku-users:latest
+    restart: unless-stopped
+    healthcheck:
+      test: "curl --fail localhost:8420/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    expose:
+      - 8420
+    depends_on:
+      - koku-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/users
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=koku
+      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+
+  koku-customers:
+    container_name: koku-customers
+    image: docker.io/domschmidt/koku-customers:latest
+    restart: unless-stopped
+    healthcheck:
+      test: "curl --fail localhost:8320/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    expose:
+      - 8320
+    depends_on:
+      - koku-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/customers
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=koku
+      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+
+  koku-promotions:
+    container_name: koku-promotions
+    image: docker.io/domschmidt/koku-promotions:latest
+    restart: unless-stopped
+    healthcheck:
+      test: "curl --fail localhost:8520/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    expose:
+      - 8520
+    depends_on:
+      - koku-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/promotions
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=koku
+      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+
+  koku-documents:
+    container_name: koku-documents
+    image: docker.io/domschmidt/koku-documents:latest
+    restart: unless-stopped
+    healthcheck:
+      test: "curl --fail localhost:8720/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    expose:
+      - 8720
+    depends_on:
+      - koku-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/documents
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=koku
+      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+
+  koku-activities:
+    container_name: koku-activities
+    image: docker.io/domschmidt/koku-activities:latest
+    restart: unless-stopped
+    healthcheck:
+      test: "curl --fail localhost:8620/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    expose:
+      - 8620
+    depends_on:
+      - koku-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/activities
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=koku
+      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+
+  koku-products:
+    container_name: koku-products
+    image: docker.io/domschmidt/koku-products:latest
+    restart: unless-stopped
+    healthcheck:
+      test: "curl --fail localhost:9320/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    expose:
+      - 9320
+    depends_on:
+      - koku-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/products
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=koku
+      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+
+  koku-files:
+    container_name: koku-files
+    image: docker.io/domschmidt/koku-files:latest
+    restart: unless-stopped
+    healthcheck:
+      test: "curl --fail localhost:8020/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    expose:
+      - 8020
+    depends_on:
+      - koku-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/files
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=koku
+      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+
+  koku-carddav:
+    container_name: koku-carddav
+    image: docker.io/domschmidt/koku-carddav:latest
+    restart: unless-stopped
+    healthcheck:
+      test: "curl --fail localhost:8220/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    expose:
+      - 8220
+    environment:
+      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
+      - CARDDAV_USERNAME=koku
+      - CARDDAV_PASSWORD=koku
 
   kafka:
-    image: apache/kafka:latest
-    container_name: kafka
+    image: docker.io/bitnami/kafka:4.0.0
+    restart: unless-stopped
+    ports:
+      - "9094:9094"
     expose:
-      - 9092
+      - "9094"
     environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller               # The node acts as both broker and controller
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093  # Ports for broker and controller
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092                  # External listener for clients
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER         # Listener name for inter-controller communication
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT  # Security protocol for listeners
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093    # Quorum voters for the controller in KRaft mode
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1           # Replication factor for the offsets topic
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1   # Replication factor for transaction logs
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1              # Minimum in-sync replicas for transactional logs
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0           # Initial delay before consumer group rebalancing
-      KAFKA_NUM_PARTITIONS: 3                             # Default number of partitions for new topics
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092,EXTERNAL://kafka:9094
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@127.0.0.1:9093
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_NODE_ID=1
+      - BITNAMI_DEBUG=yes
+      - KAFKA_CFG_NUM_PARTITIONS=3
+    volumes:
+      - "../kafka_data:/bitnami"
 
   init-kafka:
-    image: apache/kafka:latest
+    image: docker.io/bitnami/kafka:4.0.0
     depends_on:
       - kafka
     entrypoint: [ '/bin/sh', '-c' ]
     command: |
       "
       # blocks until kafka is reachable
-      ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --list
       echo -e 'Creating kafka topics'
-      ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic customers --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic customers --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic promotions --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic products --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic productmanufacturers --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic customerappointments --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic users --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic activities --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic activitysteps --config cleanup.policy=compact
 
       echo -e 'Successfully created the following topics:'
-      ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --list
       "
 
+  idm:
+    image: quay.io/keycloak/keycloak:26.4
+    restart: unless-stopped
+    command:
+      - start-dev
+    environment:
+      - KEYCLOAK_ADMIN=keycloak
+      - KEYCLOAK_ADMIN_PASSWORD=koku
+    ports:
+      - "8080:8080"
+
 volumes:
-  config-dir:
+  kafka_data:
     driver: local
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: './config'
-  uploads-dir:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: './uploads'
-  ssl-dir:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: './ssl'
+      device: './kafka_data'

@@ -1,0 +1,15 @@
+
+@if (content(); as content) {
+  @if (contentSetup().layoutRegistry[content['@type']]; as layoutComponent) {
+    @if (content.id) {
+      <ng-template [ngComponentOutlet]="layoutComponent.componentType"
+                   [ndcDynamicInputs]="{
+                     loading: loading(),
+                     disabled: submitting()
+                   }"
+                   [ngComponentOutletNdcDynamicInputs]="inputBindings()"
+                   [ngComponentOutletNdcDynamicOutputs]="outputBindings()"
+      ></ng-template>
+    }
+  }
+}

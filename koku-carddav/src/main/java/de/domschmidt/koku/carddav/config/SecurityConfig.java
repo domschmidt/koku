@@ -1,5 +1,7 @@
 package de.domschmidt.koku.carddav.config;
 
+import de.domschmidt.koku.auth.config.KeycloakJwtAuthenticationConverter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -7,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -35,8 +39,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        return encoder;
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
     @Bean
@@ -58,14 +61,27 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(user);
     }
 
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http.csrf().disable()
-                .authorizeHttpRequests(request -> request.anyRequest()
-                        .authenticated())
-                .httpBasic(Customizer.withDefaults())
-                .build();
+        http.csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement((sessionMgmt) -> sessionMgmt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling((exceptionHandling) ->
+                        exceptionHandling.authenticationEntryPoint((req, rsp, e) ->
+                                rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                        )
+                )
+                .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers("/error", "/actuator/health").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2ResourceServer(httpSecurityOAuth2ResourceServerConfigurer ->
+                        httpSecurityOAuth2ResourceServerConfigurer.jwt(jwtConfigurer ->
+                                jwtConfigurer.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter())
+                        )
+                )
+                .httpBasic(Customizer.withDefaults());
+        return http.build();
     }
-
 
 }

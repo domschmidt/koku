@@ -1,8 +1,0 @@
-security:
-  jwt:
-    secret: 'you-have-to-generate-your-own-secret'
-    signatureAlgorithm: HS512
-    token:
-      ttl: 900 #15 min
-    refreshToken:
-      ttl: 604800 #7 days

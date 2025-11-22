@@ -1,0 +1,76 @@
+<ng-template #badgeContentTemplate let-contentInfo>
+  {{ contentInfo.text }}
+  @if (selectionValues()[contentInfo.pos][pricePathMapping()]; as price) {
+    / {{ price }} €
+  }
+</ng-template>
+
+<multi-select-field [name]="name() + '-select'"
+                    [value]="selectionValues()"
+                    [label]="label()"
+                    [placeholder]="placeholder()"
+                    (onDelete)="onSelectionDeleted($event)"
+                    (onMove)="onSelectionMoved($event)"
+                    (onSelect)="onSelectionAdded($event)"
+                    (onSelectItemClick)="onSelectItemClick($event)"
+                    [possibleValues]="possibleValues()"
+                    [valueOnly]="valueOnly()"
+                    [loading]="loading()"
+                    [badgeContentTemplate]="badgeContentTemplate"
+                    [idPathMapping]="idPathMapping()"
+                    [uniqueValues]="uniqueValues()"
+                    (onBlur)="onBlur.emit($event)"
+                    (onFocus)="onFocus.emit($event)"
+>
+  <ng-container ngProjectAs="prepend-outer">
+    <ng-content select="prepend-outer"></ng-content>
+  </ng-container>
+  <ng-container ngProjectAs="prepend-inner">
+    <ng-content select="prepend-inner"></ng-content>
+  </ng-container>
+  <ng-container ngProjectAs="append-inner">
+    <ng-content select="append-inner"></ng-content>
+  </ng-container>
+  <ng-container ngProjectAs="append-outer">
+    <ng-content select="append-outer"></ng-content>
+  </ng-container>
+</multi-select-field>
+
+@if (priceModal(); as priceModal) {
+  <dialog class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="text-lg font-bold">Preis anpassen</h3>
+      <label class="label">
+        <input type="checkbox" [checked]="priceModal.useDefaultPrice"
+               (change)="priceModal.useDefaultPrice = !priceModal.useDefaultPrice" class="checkbox"/>Normalpreis
+        verwenden
+      </label>
+      <input-field
+        name="price"
+        label="Preis"
+        [value]="String(priceModal.price)"
+        (onChange)="priceModal.price = Number($event)"
+        [disabled]="priceModal.useDefaultPrice"
+        type="NUMBER"
+        [min]="0"
+        [max]="9999.99"
+      >
+
+        <button class="btn join-item" (click)="priceModal.price = priceModal.price - 1" type="button">
+          <koku-icon name="MINUS" class="w-4"></koku-icon>
+        </button>
+        <button class="btn join-item" (click)="priceModal.price = priceModal.price + 1" type="button">
+          <koku-icon name="PLUS" class="w-4"></koku-icon>
+        </button>
+
+      </input-field>
+      <div class="modal-action">
+        <button class="btn btn-neutral" (click)="closePriceModal()" type="button">Abbrechen</button>
+        <button class="btn btn-primary" (click)="applyPrice()" type="button">Übernehmen</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button (click)="closePriceModal()">close</button>
+    </form>
+  </dialog>
+}

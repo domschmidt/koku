@@ -1,0 +1,20 @@
+@if (register(); as register) {
+  @for (fieldSelection of register.fieldSelection || []; track $index) {
+    <div class="overflow-hidden w-full">
+      @if (register.fields[fieldSelection]; as registeredField) {
+        @if (contentSetup().fieldRegistry[registeredField.config['@type']]; as fieldRegistration) {
+          <ndc-dynamic [ndcDynamicComponent]="fieldRegistration.componentType"
+                       [ndcDynamicInputs]="{
+                       name: fieldSelection,
+                       value: registeredField.value(),
+                     }"
+                       (ndcDynamicCreated)="fieldEventBus(fieldSelection, 'onInit', $event)"
+                       [ngComponentOutletNdcDynamicInputs]="fieldRegistration.inputBindings ? fieldRegistration.inputBindings(this, fieldSelection, registeredField.config) : {}"
+                       [ngComponentOutletNdcDynamicOutputs]="fieldRegistration.outputBindings ? fieldRegistration.outputBindings(this, fieldSelection, registeredField.config) : {}"
+          ></ndc-dynamic>
+        }
+      }
+    </div>
+
+  }
+}

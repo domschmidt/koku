@@ -1,7 +1,0 @@
-carddav:
-  username: 'koku'
-  password: 'koku'
-  kafka:
-    group-instance-id: 'koku-carddav'
-    streams:
-      application-id: 'koku-carddav-customers-streams'

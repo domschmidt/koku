@@ -1,0 +1,16 @@
+
+@keyframes progress-bottom-up {
+  from {
+    background-size: auto 0;
+  }
+  to {
+    background-size: auto 100%;
+  }
+}
+
+.progress-button {
+  animation-name: progress-bottom-up;
+  animation-timing-function: linear;
+  background-position: bottom;
+  background-repeat: no-repeat;
+}

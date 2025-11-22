@@ -1,0 +1,33 @@
+<div class="@container">
+  @if (content(); as content) {
+    <div class="grid
+              grid-cols-{{content.cols}}
+              @sm:grid-cols-{{content.sm}}
+              @md:grid-cols-{{content.md}}
+              @lg:grid-cols-{{content.lg}}
+              @xl:grid-cols-{{content.xl}}
+              @2xl:grid-cols-{{content.xl2}}
+              @3xl:grid-cols-{{content.xl3}}
+              @4xl:grid-cols-{{content.xl4}}
+              @5xl:grid-cols-{{content.xl5}}
+              @6xl:grid-cols-{{content.xl6}}
+              @7xl:grid-cols-{{content.xl7}}
+              gap-2
+              my-2
+              ">
+      @if (content.content; as contents) {
+        @for (content of contents; track $index) {
+          <div list-inline-content
+               [content]="content"
+               [contentSetup]="contentSetup()"
+               [urlSegments]="urlSegments()"
+               [parentRoutePath]="parentRoutePath()"
+               (onClose)="closeInlineContent()"
+               (onOpenRoutedContent)="openRoutedContent($event)"
+               class="flex overflow-auto">
+          </div>
+        }
+      }
+    </div>
+  }
+</div>

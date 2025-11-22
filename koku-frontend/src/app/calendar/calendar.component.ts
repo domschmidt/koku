@@ -1,667 +1,596 @@
-import {Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/core';
-import {CalendarOptions, FullCalendarComponent} from '@fullcalendar/angular';
+import {Component, DestroyRef, inject, InjectionToken, input, OnDestroy, signal, viewChild} from '@angular/core';
+import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
+import {FullCalendarComponent, FullCalendarModule} from '@fullcalendar/angular';
+
 import deLocale from '@fullcalendar/core/locales/de';
-import {EventInput} from '@fullcalendar/common';
+import {format, parseISO} from 'date-fns';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import rrulePlugin from '@fullcalendar/rrule';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import {IconComponent} from '../icon/icon.component';
+import "cally";
+import {NavigationEnd, Router} from '@angular/router';
+import {Observable, Subscription} from 'rxjs';
+import {ModalService} from '../modal/modal.service';
+import {ModalComponent} from '../modal/modal.component';
+import {
+  CalendarInlineContentComponent
+} from '../calendar-binding/calendar-inline-content/calendar-inline-content.component';
+import {RenderedModalType} from '../modal/modal.type';
+import {deepEqual} from '../utils/deepEqual';
+import {CalendarOptions, EventInput, EventSourceInput} from '@fullcalendar/core/index.js';
+import {GLOBAL_EVENT_BUS} from '../events/global-events';
+import {UNIQUE_REF_GENERATOR} from '../utils/uniqueRef';
+import {KeyValuePipe} from '@angular/common';
+import {AvatarComponent} from '../avatar/avatar.component';
 
-import * as moment from 'moment';
-import {MatDialog} from '@angular/material/dialog';
-import {
-  CustomerAppointmentDetailsComponent,
-  CustomerAppointmentDetailsData
-} from '../customer/customer-appointment-details/customer-appointment-details.component';
-import {
-  CustomerInfoDialogComponent,
-  CustomerInfoDialogData
-} from '../customer/customer-info-dialog/customer-info-dialog.component';
-import {AppointmentService} from './appointment.service';
-import {
-  PrivateAppointmentDetailsComponent,
-  PrivateAppointmentDetailsData
-} from '../user/private-appointment-details/private-appointment-details.component';
-import {MatMenu, MatMenuTrigger} from '@angular/material/menu';
-import {ResizeSensor} from 'css-element-queries';
-import Holidays, {HolidaysTypes} from 'date-holidays';
-import {MatSelectChange} from '@angular/material/select';
-import {
-  UserSelectionComponent,
-  UserSelectionComponentData,
-  UserSelectionComponentResponseData
-} from '../user/user-selection/user-selection.component';
-import {MyUserDetailsService} from '../user/my-user-details.service';
-import {PrivateAppointmentService} from '../user/private-appointment-details/private-appointment.service';
-import {CustomerAppointmentService} from '../customer-appointment.service';
-import {SnackBarService} from '../snackbar/snack-bar.service';
-import {CalendarViewSettingsService, ViewIdentifier} from '../calendar-view-toggle/calendar-view-settings.service';
-
-interface CalendarSettings {
-  privateAppointments: boolean;
-  customerAppointments: boolean;
-  customerBirthdays: boolean;
-  holidays: boolean;
-  holidayCountry: HolidaysTypes.Country;
+export interface CalendarContentSetup {
+  inlineContentRegistry: Partial<Record<KokuDto.AbstractCalendarInlineContentDto["@type"] | string, {
+    componentType: any;
+    inputBindings?(instance: CalendarInlineContentComponent, content: KokuDto.AbstractCalendarInlineContentDto): {
+      [key: string]: any
+    }
+    outputBindings?(instance: CalendarInlineContentComponent, content: KokuDto.AbstractCalendarInlineContentDto): {
+      [key: string]: any
+    }
+  }>>,
+  modalContentRegistry: Partial<Record<KokuDto.AbstractCalendarInlineContentDto["@type"] | string, {
+    componentType: any;
+    inputBindings?(instance: ModalComponent, modal: RenderedModalType, content: KokuDto.AbstractCalendarInlineContentDto): {
+      [key: string]: any
+    }
+    outputBindings?(instance: ModalComponent, modal: RenderedModalType, content: KokuDto.AbstractCalendarInlineContentDto): {
+      [key: string]: any
+    }
+  }>>,
 }
 
-interface ExtendedHolidays {
-  countryAndStateString: string;
-  holidayCountry: HolidaysTypes.Country;
+export interface CalendarInlineItem {
+  content: KokuDto.AbstractCalendarInlineContentDto;
+  id: string | null;
+  parentRoutePath?: string;
+  urlSegments: { [key: string]: string };
+}
+
+export interface RenderedCalendarInlineItem extends CalendarInlineItem {
+  modalRef: RenderedModalType;
+}
+
+export interface CalendarContext {
+  selectionStartDate: string,
+  selectionStartTime: string,
+  selectionStartDateTime: string,
+  selectionEndDate: string,
+  selectionEndTime: string,
+  selectionEndDateTime: string,
+}
+
+export interface DateSelection {
+  selectionStart: Date,
+  selectionEnd: Date,
+  allDay: Boolean,
+}
+
+
+export interface CalendarPluginInstanceDetails {
+  id: string;
+  api?: any;
+}
+
+export interface CalendarPlugin {
+
+  init(): CalendarPluginInstanceDetails;
+
+  destroy?(): void;
+
+  onDateSelect?(dateClickInfo: DateSelection): void;
+
+  onRoutedInlineContentOpened?(castedRouteContent: KokuDto.CalendarRoutedContentDto): void;
+
+  onRoutedInlineContentClose?(content: RenderedCalendarInlineItem | null): void;
+
+  afterConfigLoaded?(config: KokuDto.CalendarConfigDto): void;
+
+  provideEventSourceFactory?(currentSource: KokuDto.AbstractCalendarListSourceConfigDto): CalendarPluginEventSourceFactory | void;
+
+  initCalendarAction?(currentCalendarAction: KokuDto.AbstractCalendarActionDto, updateCb: (updatedAction: KokuDto.AbstractCalendarActionDto) => void): void;
+
+  onCalendarActionClicked?(action: KokuDto.AbstractCalendarActionDto): void;
+}
+
+export type CalendarPluginFactory = (instance: CalendarComponent) => CalendarPlugin;
+
+export const CALENDAR_PLUGIN = new InjectionToken<CalendarPluginFactory | CalendarPluginFactory[]>('Calendar Plugins');
+
+export interface CalendarPluginEventSourceFactory {
+
+  generateEventSource(): EventSourceInput
+
+  generateEventItem(item: {
+    [key: string]: any
+  }): EventInput
+
+  lookupEvent(eventPayload: any): any;
 }
 
 @Component({
   selector: 'calendar',
+  imports: [
+    FullCalendarModule,
+    IconComponent,
+    KeyValuePipe,
+    AvatarComponent
+  ],
   templateUrl: './calendar.component.html',
-  styleUrls: ['./calendar.component.scss']
+  styleUrl: './calendar.component.css',
+  standalone: true,
 })
-export class CalendarComponent implements OnInit {
+export class CalendarComponent implements OnDestroy {
 
-  private static readonly CALENDAR_LOCAL_STORAGE_KEY = 'lastCalendarView';
-  @ViewChild('fullCalendarComponent') fullCalendarComponent: FullCalendarComponent | undefined;
-  @ViewChild('calendarContextMenu') calendarContextMenu: MatMenu | undefined;
-  @ViewChild('menuTrigger') menuTrigger: MatMenuTrigger | undefined;
-  @ViewChild('pageWrapper', {
-    read: ElementRef,
-    static: true
-  }) pageWrapper: ElementRef<HTMLDivElement> | undefined;
-  positionX = 0;
-  positionY = 0;
-  loading = true;
-  user: KokuDto.KokuUserDetailsDto | undefined;
-  self: KokuDto.KokuUserDetailsDto | undefined;
-  holidayCountriesAndStates: ExtendedHolidays[] = (() => {
-    const result: ExtendedHolidays[] = [];
+  destroyRef = inject(DestroyRef);
+  router = inject(Router);
+  modalService = inject(ModalService);
 
-    const dateHoliday = new Holidays();
+  calendarPluginsConfig = inject(CALENDAR_PLUGIN, {
+    optional: true
+  });
 
-    const allCountries = dateHoliday.getCountries(); // e.g. {de: 'Deutschland', ...}
-    for (const currentCountryKey of Object.keys(allCountries)) { // e.g. 'de'
-      const currentCountryName = allCountries[currentCountryKey]; // e.g. 'Deutschland'
+  componentRef = UNIQUE_REF_GENERATOR.generate();
 
-      const allCountryStates = dateHoliday.getStates(currentCountryKey);
-      if (allCountryStates) {
-        for (const currentCountryStateKey of Object.keys(allCountryStates)) { // e.g. 'RP'
-          const currentCountryStateName = allCountryStates[currentCountryStateKey];
+  calendarComponent = viewChild<FullCalendarComponent>("calendar");
 
-          result.push({
-            countryAndStateString: currentCountryName + ' / ' + currentCountryStateName,
-            holidayCountry: {
-              country: currentCountryKey,
-              state: currentCountryStateKey
-            }
+  config = input.required<KokuDto.CalendarConfigDto>();
+  urlSegments = input<{ [key: string]: string } | null>(null);
+  contentSetup = input.required<CalendarContentSetup>();
+  parentRoutePath = input<string>('');
+
+  activeContent = signal<RenderedCalendarInlineItem | null>(null);
+  viewMode = signal<'WEEK' | 'DAY' | 'MONTH'>('MONTH');
+  currentStartDate = signal<Date>(new Date());
+  loading = signal(false);
+  private pluginInstances: { [key: string]: { instance: CalendarPlugin, api: any } } = {};
+
+  private routerUrlSubscription: Subscription | undefined;
+
+  calendarActions = signal<{ [key: string]: KokuDto.AbstractCalendarActionDto }>({});
+  fullCalendarOptions = signal<CalendarOptions>({
+    plugins: [
+      dayGridPlugin,
+      interactionPlugin,
+      timeGridPlugin,
+      rrulePlugin
+    ],
+    height: 'auto',
+    allDaySlot: true,
+    locale: deLocale,
+    headerToolbar: false,
+    eventResize: (args) => {
+      const handler = args.event.extendedProps['onResizeHandler'];
+      if (typeof handler === 'function') {
+        if (args.event.end) {
+          handler({
+            newEnd: args.event.end,
+            allDay: args.event.allDay,
+            revert: args.revert,
+            item: args.event.extendedProps['item'],
+            setLoading: (loading: boolean) => {
+              const classnameSnapshot = [...args.event.classNames];
+              if (loading) {
+                classnameSnapshot.push('calendar-item--loading');
+                args.event.setProp('classNames', classnameSnapshot);
+              } else {
+                classnameSnapshot.splice(classnameSnapshot.indexOf('calendar-item--loading'), 1);
+                args.event.setProp('classNames', classnameSnapshot);
+              }
+            },
           });
         }
-      } else {
-        result.push({
-          countryAndStateString: currentCountryName,
-          holidayCountry: {
-            country: currentCountryKey
-          }
+      }
+    },
+    editable: true,
+    eventClick: (args) => {
+      const handler = args.event.extendedProps['onClickHandler'];
+      if (typeof handler === 'function') {
+        handler({
+          item: args.event.extendedProps['item']
         });
       }
-    }
-
-    return result;
-  })();
-
-  calendarSettings: CalendarSettings = this.restoreViewSettings();
-
-  humanReadableDateRange = '';
-  calendarOptions: CalendarOptions;
-  private dateFrom: Date | undefined;
-  private dateTo: Date | undefined;
-
-  @HostListener('window:keyup', ['$event'])
-  keyEvent(event: KeyboardEvent): void {
-    if (!this.dialog.openDialogs.length) {
-      switch (event.key) {
-        case 'ArrowUp':
-          this.nextYear();
-          break;
-        case 'ArrowRight':
-          this.next();
-          break;
-        case 'ArrowDown':
-          this.prevYear();
-          break;
-        case 'ArrowLeft':
-          this.prev();
-          break;
+    },
+    eventDrop: (args) => {
+      const handler = args.event.extendedProps['onDropHandler'];
+      if (typeof handler === 'function') {
+        if (args.event.start) {
+          handler({
+            newStart: args.event.start,
+            newEnd: args.event.end,
+            allDay: args.event.allDay,
+            revert: args.revert,
+            item: args.event.extendedProps['item'],
+            setLoading: (loading: boolean) => {
+              const classnameSnapshot = [...args.event.classNames];
+              if (loading) {
+                classnameSnapshot.push('calendar-item--loading');
+                args.event.setProp('classNames', classnameSnapshot);
+              } else {
+                if (classnameSnapshot.indexOf('calendar-item--loading') >= 0) {
+                  classnameSnapshot.splice(classnameSnapshot.indexOf('calendar-item--loading'), 1);
+                  args.event.setProp('classNames', classnameSnapshot);
+                }
+              }
+            },
+          });
+        }
       }
+    },
+    datesSet: (args) => {
+      this.currentStartDate.set(args.view.currentStart);
+      switch (args.view.type) {
+        case 'dayGridMonth': {
+          this.viewMode.set('MONTH');
+          break;
+        }
+        case 'timeGridWeek': {
+          this.viewMode.set('WEEK');
+          break;
+        }
+        case 'timeGridDay': {
+          this.viewMode.set('DAY');
+          break;
+        }
+      }
+    },
+    nowIndicator: true,
+    businessHours: {
+      daysOfWeek: [1, 2, 3, 4, 5], // Monday - Thursday
+      startTime: '08:00:00', // a start time (10am in this example)
+      endTime: '20:00:00', // an end time (6pm in this example)
+    },
+    selectable: true,
+    loading: (isLoading) => {
+      this.loading.set(isLoading);
     }
-  }
+  });
 
-  constructor(private readonly dialog: MatDialog,
-              private readonly appointmentService: AppointmentService,
-              private readonly userDetailsService: MyUserDetailsService,
-              private readonly privateAppointmentService: PrivateAppointmentService,
-              private readonly customerAppointmentService: CustomerAppointmentService,
-              private readonly snackBarService: SnackBarService,
-              private readonly calendarViewSettingsService: CalendarViewSettingsService) {
-    this.userDetailsService.getDetails().subscribe((userDetails) => {
-      this.self = userDetails;
-      this.user = userDetails;
-    });
-    this.calendarViewSettingsService.activeViewIdentifier.subscribe((viewIdentificator: ViewIdentifier) => {
-      this.changeCalendarView(viewIdentificator);
-    });
-    this.calendarOptions = {
-      initialView: calendarViewSettingsService.activeViewIdentifier.value,
-      height: 'auto',
-      allDaySlot: true,
-      locale: deLocale,
-      headerToolbar: false,
-      dateClick: (event) => {
-        let clientX = 0;
-        let clientY = 0;
-        if (event.jsEvent) {
-          clientX = event.jsEvent.clientX;
-          clientY = event.jsEvent.clientY;
-          if ((event.jsEvent as any).changedTouches) {
-            const firstTouchEvent: Touch = (event.jsEvent as any).changedTouches[0];
-            clientX = firstTouchEvent.clientX;
-            clientY = firstTouchEvent.clientY;
+  registeredEventSourceFactories: { [sourceId: string]: CalendarPluginEventSourceFactory } = {};
+
+  constructor() {
+    toObservable(this.config).subscribe((config) => {
+      const eventSources: EventSourceInput[] = [];
+      for (const currentSource of config.listSources || []) {
+        for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+          const eventSourceFactory: CalendarPluginEventSourceFactory | void = currentPluginInstance.instance.provideEventSourceFactory?.(currentSource);
+          if (eventSourceFactory && currentSource.id) {
+            this.registeredEventSourceFactories[currentSource.id] = eventSourceFactory;
+            eventSources.push(eventSourceFactory.generateEventSource());
           }
         }
-        if (event.allDay) {
-          this.askForCreationType(clientX, clientY, event.date, moment(event.date).endOf('day').toDate());
+      }
+      this.fullCalendarOptions.set({
+        ...this.fullCalendarOptions(),
+        eventSources: eventSources,
+        dateClick: (dateClickInfo) => {
+          for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+            currentPluginInstance.instance.onDateSelect?.({
+              selectionStart: dateClickInfo.date,
+              selectionEnd: dateClickInfo.date,
+              allDay: dateClickInfo.allDay,
+            });
+          }
+        },
+        select: (dateSelectInfo) => {
+          for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+            currentPluginInstance.instance.onDateSelect?.({
+              selectionStart: dateSelectInfo.start,
+              selectionEnd: dateSelectInfo.end,
+              allDay: dateSelectInfo.allDay,
+            });
+          }
+        }
+      });
+
+      for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+        currentPluginInstance.instance.afterConfigLoaded?.(config);
+      }
+
+      const calendarActions: { [key: string]: KokuDto.AbstractCalendarActionDto } = {};
+      for (const currentCalendarAction of config.calendarActions || []) {
+        const currentCalendarActionId = currentCalendarAction.id;
+        if (currentCalendarActionId) {
+          if (calendarActions[currentCalendarActionId]) {
+            throw new Error(`Duplicated calendar action id ${currentCalendarActionId}`);
+          }
+          calendarActions[currentCalendarActionId] = currentCalendarAction;
         } else {
-          this.askForCreationType(clientX, clientY, event.date);
+          throw new Error('Missing calendar action id');
         }
-      },
-      editable: true,
-      eventDrop: (event) => {
-        const content: KokuDto.ICalendarContentUnion = event.event.extendedProps as KokuDto.ICalendarContentUnion;
-        if (content['@type'] === 'CustomerAppointment') {
-          this.loading = true;
-          this.customerAppointmentService.updateCustomerAppointmentTiming({
-            '@type': 'CustomerAppointment',
-            id: content.id,
-            startDate: moment(event.event.start).format('YYYY-MM-DD'),
-            startTime: moment(event.event.start).format('HH:mm')
-          }).subscribe(() => {
-            this.loading = false;
-          }, () => {
-            this.snackBarService.openCommonSnack('Speichern nicht möglich.');
-            this.loading = false;
-            event.revert();
-          });
-        } else if (content['@type'] === 'PrivateAppointment') {
-          this.loading = true;
-          this.privateAppointmentService.updatePrivateAppointmentTiming({
-            '@type': 'PrivateAppointment',
-            id: content.id,
-            startDate: moment(event.event.start).format('YYYY-MM-DD'),
-            startTime: moment(event.event.start).format('HH:mm'),
-            endDate: moment(event.event.end).format('YYYY-MM-DD'),
-            endTime: moment(event.event.end).format('HH:mm')
-          }).subscribe(() => {
-            this.loading = false;
-          }, () => {
-            this.snackBarService.openCommonSnack('Speichern nicht möglich.');
-            this.loading = false;
-            event.revert();
-          });
-        }
-      },
-      eventResize: (event) => {
-        const content: KokuDto.ICalendarContentUnion = event.event.extendedProps as KokuDto.ICalendarContentUnion;
-        if (content['@type'] === 'PrivateAppointment') {
-          this.loading = true;
-          this.privateAppointmentService.updatePrivateAppointmentTiming({
-            '@type': 'PrivateAppointment',
-            id: content.id,
-            startDate: moment(event.event.start).format('YYYY-MM-DD'),
-            startTime: moment(event.event.start).format('HH:mm'),
-            endDate: moment(event.event.end).format('YYYY-MM-DD'),
-            endTime: moment(event.event.end).format('HH:mm')
-          }).subscribe(() => {
-            this.loading = false;
-          }, () => {
-            this.snackBarService.openCommonSnack('Speichern nicht möglich.');
-            this.loading = false;
-            event.revert();
-          });
-        }
-      },
-      select: (event) => {
-        let clientX = 0;
-        let clientY = 0;
-        if (event.jsEvent) {
-          clientX = event.jsEvent.clientX;
-          clientY = event.jsEvent.clientY;
-          if ((event.jsEvent as any).changedTouches) {
-            const firstTouchEvent: Touch = (event.jsEvent as any).changedTouches[0];
-            clientX = firstTouchEvent.clientX;
-            clientY = firstTouchEvent.clientY;
+      }
+      this.calendarActions.set(calendarActions);
+      for (const currentCalendarAction of config.calendarActions || []) {
+        const currentCalendarActionId = currentCalendarAction.id;
+        if (currentCalendarActionId) {
+          for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+            currentPluginInstance.instance.initCalendarAction?.(currentCalendarAction, (updatedAction: KokuDto.AbstractCalendarActionDto) => {
+              this.calendarActions.set({
+                ...this.calendarActions(),
+                [currentCalendarActionId]: updatedAction,
+              })
+            });
           }
         }
-        this.askForCreationType(clientX, clientY, event.start, event.end);
-      },
-      viewDidMount: () => {
-        setTimeout(() => {
-          this.humanReadableDateRange = this.buildHumanReadableDateRange();
-          setTimeout(() => {
-              const scrollToNodeList = document.querySelectorAll('[data-time=\'07:00:00\']');
-              if (scrollToNodeList && scrollToNodeList.length > 0) {
-                scrollToNodeList[0].scrollIntoView();
+      }
+
+      if (this.routerUrlSubscription) {
+        this.routerUrlSubscription.unsubscribe();
+      }
+
+      const afterNavigationUrlChange = () => {
+        const segments = this.router.url.split('/').filter(value => value !== '').slice(this.parentRoutePath().split('/').filter(value => value !== '').length);
+        let routedContentFound = false;
+        for (const currentRoutedContent of (config.routedContents || [])) {
+          if (currentRoutedContent.route) {
+            let failedLookup = false;
+            let segmentIdx = 0;
+            let segmentMapping: { [key: string]: string } = {};
+            for (const currentRoutePathToMatch of currentRoutedContent.route.split("/")) {
+              const currentSegment = segments[segmentIdx++];
+              if (!currentSegment) {
+                failedLookup = true;
+                break;
+              }
+              const currentSegmentPath = currentSegment;
+              if (currentRoutePathToMatch.indexOf(":") === 0) {
+                segmentMapping[currentRoutePathToMatch] = currentSegmentPath;
+              } else if (currentRoutePathToMatch !== currentSegmentPath) {
+                failedLookup = true;
+                break;
               }
             }
-          );
-        });
-      },
-      eventMouseEnter: (args) => {
-        args.el.classList.add('calendar-event--hover');
-      },
-      eventMouseLeave: (args) => {
-        args.el.classList.remove('calendar-event--hover');
-      },
-      eventClick: (args) => {
-        const content: KokuDto.ICalendarContentUnion = args.event.extendedProps as KokuDto.ICalendarContentUnion;
-        if (content['@type'] === 'CustomerAppointment') {
-          const dialogData: CustomerAppointmentDetailsData = {
-            customerAppointmentId: content.id
-          };
-          const dialogRef = this.dialog.open(CustomerAppointmentDetailsComponent, {
-            data: dialogData,
-            autoFocus: false,
-            closeOnNavigation: false,
-            position: {
-              top: '20px'
+            if (!failedLookup) {
+              routedContentFound = true;
+              if (currentRoutedContent['@type'] === "routed-inline-content") {
+                const castedRouteContent = currentRoutedContent as KokuDto.CalendarRoutedContentDto;
+                if (castedRouteContent.inlineContent) {
+                  let itemId = castedRouteContent.itemId;
+                  if (itemId) {
+                    for (const [segment, value] of Object.entries(segmentMapping || {})) {
+                      itemId = itemId.replace(segment, value);
+                    }
+                  }
+
+                  if (
+                    (itemId !== undefined && this.activeContent()?.id !== itemId)
+                    || this.activeContent()?.content !== castedRouteContent.inlineContent
+                    || !deepEqual(this.activeContent()?.urlSegments, segmentMapping)
+                  ) {
+                    this.openInlineContent({
+                      content: castedRouteContent.inlineContent,
+                      id: itemId || null,
+                      parentRoutePath: [
+                        ...(this.parentRoutePath() + '/' + castedRouteContent.route).split('/').map(value => ({
+                          ...segmentMapping,
+                          ...this.urlSegments()
+                        })[value] || value),
+                      ].filter(value => value !== '').join('/'),
+                      urlSegments: segmentMapping
+                    });
+
+                    for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+                      currentPluginInstance.instance.onRoutedInlineContentOpened?.(castedRouteContent);
+                    }
+                  }
+                }
+                break;
+              }
             }
-          });
-          dialogRef.afterClosed().subscribe(() => {
-            this.refreshCalendarEvents();
-          });
-        } else if (content['@type'] === 'CustomerBirthday') {
-          const dialogData: CustomerInfoDialogData = {
-            customerId: content.id
-          };
-          const dialogRef = this.dialog.open(CustomerInfoDialogComponent, {
-            data: dialogData,
-            closeOnNavigation: false,
-            position: {
-              top: '20px'
-            }
-          });
-          dialogRef.afterClosed().subscribe(() => {
-            this.refreshCalendarEvents();
-          });
-        } else if (content['@type'] === 'PrivateAppointment') {
-          const dialogData: PrivateAppointmentDetailsData = {
-            privateAppointmentId: content.id
-          };
-          const dialogRef = this.dialog.open(PrivateAppointmentDetailsComponent, {
-            data: dialogData,
-            closeOnNavigation: false,
-            position: {
-              top: '20px'
-            }
-          });
-          dialogRef.afterClosed().subscribe(() => {
-            this.refreshCalendarEvents();
-          });
-        }
-      },
-      nowIndicator: true,
-      businessHours: {
-        daysOfWeek: [1, 2, 3, 4, 5], // Monday - Thursday
-        startTime: '08:00:00', // a start time (10am in this example)
-        endTime: '20:00:00', // an end time (6pm in this example)
-      },
-      selectable: true,
-      events: (
-        args,
-        successCallback,
-        failureCallback
-      ) => {
-        this.loading = true;
-        this.appointmentService.loadAppointments(
-          {
-            start: args.start,
-            end: args.end,
-            privateAppointments: this.calendarSettings.privateAppointments,
-            customerBirthdays: this.calendarSettings.customerBirthdays,
-            customerAppointments: this.calendarSettings.customerAppointments,
-            userId: (this.user && this.user.id && this.self && this.user.id !== this.self.id) ? this.user.id : undefined
           }
-        ).subscribe((result) => {
-          this.loading = false;
-          successCallback([
-            ...this.transformAppointmentsToCalendarEvents(result),
-            ...(this.calendarSettings.holidays ? this.defineHolidays(args.start, args.end) : [])
-          ]);
-        }, (error) => {
-          this.loading = false;
-          failureCallback(error);
-        });
-      },
-    };
+        }
+        if (!routedContentFound) {
+          this.closeInlineContent(true).subscribe();
+        }
+      }
+
+      this.routerUrlSubscription = this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evnt) => {
+        if (evnt instanceof NavigationEnd) {
+          afterNavigationUrlChange();
+        }
+      });
+      afterNavigationUrlChange();
+    });
+
+    const pluginInstances: { [key: string]: { instance: CalendarPlugin, api: any } } = {};
+    let pluginsConfig = this.calendarPluginsConfig;
+    if (pluginsConfig) {
+      if (!Array.isArray(pluginsConfig)) {
+        pluginsConfig = [pluginsConfig];
+      }
+      for (const currentPlugin of pluginsConfig || []) {
+        const newPluginInstance = currentPlugin(this);
+        const pluginInstanceDetails = newPluginInstance.init();
+        if (pluginInstances[pluginInstanceDetails.id]) {
+          throw new Error(`Duplicated calendar plugin id ${pluginInstanceDetails.id}`);
+        }
+        pluginInstances[pluginInstanceDetails.id] = {
+          instance: newPluginInstance,
+          api: pluginInstanceDetails.api
+        };
+      }
+    }
+    this.pluginInstances = pluginInstances;
   }
 
-
-  createNewCustomerAppointment(): void {
-    const dialogData: CustomerAppointmentDetailsData = {
-      startDate: this.dateFrom ? moment(this.dateFrom).format('YYYY-MM-DD') : undefined,
-      startTime: this.dateFrom ? moment(this.dateFrom).format('HH:mm') : undefined
-    };
-    const dialogRef = this.dialog.open(CustomerAppointmentDetailsComponent, {
-      data: dialogData,
-      autoFocus: false,
-      closeOnNavigation: false,
-      position: {
-        top: '20px'
-      }
-    });
-    dialogRef.afterClosed().subscribe(() => {
-      this.refreshCalendarEvents();
-    });
+  public generateEventItem(currentSource: KokuDto.AbstractCalendarListSourceConfigDto, item: {
+    [key: string]: any
+  }): EventInput {
+    if (!currentSource.id) {
+      throw new Error("Missing EventSource Id");
+    }
+    const eventSourceFactory = this.registeredEventSourceFactories[currentSource.id];
+    if (!eventSourceFactory) {
+      throw new Error(`EventSourceFactory: not found for type ${currentSource['@type']}`);
+    }
+    return eventSourceFactory.generateEventItem(item);
   }
 
-  createNewPersonalAppointment(): void {
-    const dialogData: PrivateAppointmentDetailsData = {
-      startDate: this.dateFrom ? moment(this.dateFrom).format('YYYY-MM-DD') : undefined,
-      startTime: this.dateFrom ? moment(this.dateFrom).format('HH:mm') : undefined,
-      endDate: this.dateTo
-        ? moment(this.dateTo).format('YYYY-MM-DD')
-        : this.dateFrom
-          ? moment(this.dateFrom).format('YYYY-MM-DD')
-          : undefined,
-      endTime: this.dateTo
-        ? moment(this.dateTo).format('HH:mm')
-        : this.dateFrom
-          ? moment(this.dateFrom).add(30, 'minutes').format('HH:mm')
-          : undefined,
-    };
-    const dialogRef = this.dialog.open(PrivateAppointmentDetailsComponent, {
-      data: dialogData,
-      closeOnNavigation: false,
-      position: {
-        top: '20px'
-      }
-    });
-    dialogRef.afterClosed().subscribe(() => {
-      this.refreshCalendarEvents();
-    });
-  }
-
-  askForCreationType(clientX: number, clientY: number, dateFrom?: Date, dateTo?: Date): void {
-    if (this.menuTrigger) {
-      this.positionX = clientX;
-      this.positionY = clientY;
-      this.menuTrigger.openMenu();
-      if (dateFrom) {
-        this.dateFrom = dateFrom;
-      } else {
-        delete this.dateFrom;
-      }
-      if (dateTo) {
-        this.dateTo = dateTo;
-      } else {
-        delete this.dateTo;
+  dateChanged($event: Event) {
+    if ($event.target) {
+      const value = ($event.target as HTMLInputElement).value;
+      if (value) {
+        this.calendarComponent()?.getApi().gotoDate(parseISO(value));
       }
     }
   }
 
-  ngOnInit(): void {
-    if (this.pageWrapper) {
-      new ResizeSensor(this.pageWrapper.nativeElement, () => {
-        this.menuTrigger?.closeMenu();
+  formatDate(date: Date, viewMode: 'WEEK' | 'DAY' | 'MONTH') {
+    switch (viewMode) {
+      case 'WEEK':
+        return format(date, "RRRR-'W'II");
+      case 'MONTH':
+        return format(date, 'yyyy-MM');
+      case 'DAY':
+        return format(date, 'yyyy-MM-dd');
+    }
+    return '';
+  }
+
+  changeViewMode(mode: 'WEEK' | 'DAY' | 'MONTH') {
+    switch (mode) {
+      case 'DAY': {
+        this.calendarComponent()?.getApi().changeView('timeGridDay');
+        break;
+      }
+      case 'WEEK': {
+        this.calendarComponent()?.getApi().changeView('timeGridWeek');
+        break;
+      }
+      case 'MONTH': {
+        this.calendarComponent()?.getApi().changeView('dayGridMonth');
+        break;
+      }
+    }
+  }
+
+  calendarActionClicked(action: KokuDto.AbstractCalendarActionDto) {
+    for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+      currentPluginInstance.instance.onCalendarActionClicked?.(action);
+    }
+  }
+
+  openInlineContent(item: CalendarInlineItem) {
+    const activeContentSnapshot = this.activeContent();
+    if (activeContentSnapshot && activeContentSnapshot.modalRef) {
+      this.modalService.update(activeContentSnapshot.modalRef, {
+        dynamicContent: item.content,
+        urlSegments: item.urlSegments,
+        dynamicContentSetup: this.contentSetup().modalContentRegistry,
+        fullscreen: true,
+        parentRoutePath: item.parentRoutePath,
+        clickOutside: (event) => {
+          this.closeInlineContent().subscribe((success) => {
+            if (success) {
+              activeContentSnapshot.modalRef.close();
+            }
+          });
+        },
+        onCloseRequested: () => {
+          this.closeInlineContent().subscribe((success) => {
+            if (success) {
+              activeContentSnapshot.modalRef.close();
+            }
+          });
+        }
+      });
+    } else {
+      const newModal = this.modalService.add({
+        dynamicContent: item.content,
+        urlSegments: item.urlSegments,
+        dynamicContentSetup: this.contentSetup().modalContentRegistry,
+        fullscreen: true,
+        parentRoutePath: item.parentRoutePath,
+        clickOutside: (event) => {
+          this.closeInlineContent().subscribe((success) => {
+            if (success) {
+              newModal.close();
+            }
+          });
+        },
+        onCloseRequested: () => {
+          this.closeInlineContent().subscribe((success) => {
+            if (success) {
+              newModal.close();
+            }
+          });
+        }
+      });
+      this.activeContent.set({
+        ...item,
+        modalRef: newModal
       });
     }
   }
 
-  private transformAppointmentsToCalendarEvents(apiResponse: KokuDto.ICalendarContentUnion[]): EventInput[] {
-    const result: EventInput[] = [];
+  openRoutedContent(routes: string[], context?: CalendarContext) {
+    this.router.navigate(
+      [
+        ...this.parentRoutePath().split('/'),
+        ...routes,
+      ].filter(value => value !== ''),
+      {
+        queryParams: context
+      }
+    )
+  }
 
-    for (const currentAppointment of apiResponse) {
-      if (currentAppointment['@type'] === 'CustomerAppointment') {
-        let approxEnd;
-        if (currentAppointment.approximatelyDuration) {
-          const currentDuration = moment.duration(currentAppointment.approximatelyDuration);
-          const approxEndMoment = moment(currentAppointment.startDate + 'T' + currentAppointment.startTime).add(currentDuration);
-          const approxEndDate = approxEndMoment.format('YYYY-MM-DD');
-          const approxEndTime = approxEndMoment.format('HH:mm:ss');
-          approxEnd = approxEndDate + 'T' + approxEndTime;
-        } else {
-          approxEnd = currentAppointment.startDate + 'T' + moment(currentAppointment.startTime, 'HH:mm').format('HH:mm:ss');
+  closeInlineContent(skipRouteChange = false) {
+    return new Observable<boolean>((observer) => {
+      if (!skipRouteChange) {
+        this.router.navigate(
+          [
+            ...this.parentRoutePath().split('/').map(value => (this.urlSegments() || {})[value] || value),
+          ]
+        ).then((success) => {
+          if (success) {
+            const activeContentSnapshot = this.activeContent();
+            for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+              currentPluginInstance.instance.onRoutedInlineContentClose?.(activeContentSnapshot);
+            }
+            if (activeContentSnapshot?.modalRef) {
+              this.modalService.close(activeContentSnapshot?.modalRef);
+            }
+            this.activeContent.set(null);
+          }
+          observer.next(success);
+          observer.complete();
+        })
+      } else {
+        const activeContentSnapshot = this.activeContent();
+        if (activeContentSnapshot?.modalRef) {
+          this.modalService.close(activeContentSnapshot?.modalRef);
         }
-
-        result.push({
-          title: (currentAppointment.customer?.firstName
-            ? currentAppointment.customer?.firstName
-            : ''
-            )
-            + ' '
-            + (currentAppointment.customer?.lastName
-              ? currentAppointment.customer?.lastName
-              : ''
-            ),
-          start: currentAppointment.startDate + 'T' + moment(currentAppointment.startTime, 'HH:mm').format('HH:mm:ss'),
-          end: approxEnd,
-          id: String(currentAppointment.id),
-          extendedProps: currentAppointment,
-          classNames: [
-            'calendar-event',
-            'calendar-event--clickable',
-            'customer-appointment',
-            'clickable-event'
-          ],
-          durationEditable: false
-        });
-      } else if (currentAppointment['@type'] === 'CustomerBirthday') {
-        result.push({
-          title: 'Geburtstag ' + currentAppointment.firstName + ' ' + currentAppointment.lastName,
-          id: String(currentAppointment.id),
-          allDay: true,
-          classNames: [
-            'calendar-event',
-            'calendar-event--clickable',
-            'customer-birthday',
-          ],
-          extendedProps: currentAppointment,
-          rrule: {
-            freq: 'yearly',
-            dtstart: moment.utc(currentAppointment.birthday).toDate()
-          },
-          editable: false
-        });
-      } else if (currentAppointment['@type'] === 'PrivateAppointment') {
-        result.push({
-          title: currentAppointment.description,
-          id: String(currentAppointment.id),
-          start: currentAppointment.startDate + 'T' + moment(currentAppointment.startTime, 'HH:mm').format('HH:mm:ss'),
-          end: currentAppointment.endDate && currentAppointment.endTime
-            ? currentAppointment.endDate + 'T' + moment(currentAppointment.endTime, 'HH:mm').format('HH:mm:ss')
-            : currentAppointment.startDate + 'T' + moment(currentAppointment.startTime, 'HH:mm').add(30, 'minutes').format('HH:mm:ss'),
-          classNames: [
-            'calendar-event',
-            'calendar-event--clickable',
-            'private-appointment',
-          ],
-          extendedProps: currentAppointment
-        });
+        this.activeContent.set(null);
+        observer.next(true);
+        observer.complete();
       }
-    }
-
-    return result;
+    })
   }
 
-  private restoreViewSettings(): CalendarSettings {
-    let result: CalendarSettings = {
-      privateAppointments: true,
-      customerAppointments: true,
-      customerBirthdays: true,
-      holidays: true,
-      holidayCountry: {
-        country: 'DE',
-        state: 'RP'
-      }
-    };
-    const savedValue = localStorage.getItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY);
-    if (savedValue !== null) {
-      try {
-        const castedInsecureVal = JSON.parse(savedValue) as CalendarSettings;
-        result = {
-          customerAppointments: castedInsecureVal.customerAppointments,
-          privateAppointments: castedInsecureVal.privateAppointments,
-          customerBirthdays: castedInsecureVal.customerBirthdays,
-          holidays: castedInsecureVal.holidays,
-          holidayCountry: castedInsecureVal.holidayCountry
-        };
-      } catch (e) {
-
-      }
-    }
-    return result;
-  }
-
-  refreshCalendarEvents(): void {
-    if (this.fullCalendarComponent) {
-      this.fullCalendarComponent.getApi().refetchEvents();
+  ngOnDestroy(): void {
+    this.clearGlobalEventListeners();
+    for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+      currentPluginInstance.instance.destroy?.();
     }
   }
 
-  changeCalendarView(viewIdentificator: ViewIdentifier): void {
-    if (this.fullCalendarComponent) {
-      this.fullCalendarComponent.getApi().changeView(viewIdentificator);
-      this.humanReadableDateRange = this.buildHumanReadableDateRange();
+  clearGlobalEventListeners() {
+    GLOBAL_EVENT_BUS.removeGlobalEventListener(this.componentRef);
+  }
+
+  getPluginApi(pluginId: string) {
+    const pluginInstance = this.pluginInstances[pluginId];
+    if (!pluginInstance) {
+      throw new Error(`Plugin id not found ${pluginId}`);
     }
+    return pluginInstance.api;
   }
 
-  buildHumanReadableDateRange(): string {
-    let result = '';
-    if (this.fullCalendarComponent) {
-      const viewType: ViewIdentifier = this.fullCalendarComponent.getApi().view.type as ViewIdentifier;
-      const startMoment = moment(this.fullCalendarComponent.getApi().view.currentStart);
-      const endMoment = moment(this.fullCalendarComponent.getApi().view.currentEnd).subtract(1, 'ms');
-      const startDay = startMoment.format('D');
-      const endDay = endMoment.format('D');
-      const currentMonth = endMoment.format('MMM');
-      const currentYear = startMoment.format('YYYY');
-      switch (viewType) {
-        case 'dayGridMonth':
-          result = `${startDay} - ${endDay}. ${currentMonth} ${currentYear}`;
-          break;
-        case 'timeGridWeek':
-          result = `${startDay} - ${endDay}. ${currentMonth} ${currentYear}`;
-          break;
-        case 'timeGridDay':
-          result = `${startDay} . ${currentMonth} ${currentYear}`;
-          break;
-        default:
-          break;
-      }
-    }
-    return result;
-  }
-
-  prevYear(): void {
-    if (this.fullCalendarComponent) {
-      this.fullCalendarComponent.getApi().prevYear();
-      this.humanReadableDateRange = this.buildHumanReadableDateRange();
-    }
-  }
-
-  prev(): void {
-    if (this.fullCalendarComponent) {
-      this.fullCalendarComponent.getApi().prev();
-      this.humanReadableDateRange = this.buildHumanReadableDateRange();
-    }
-  }
-
-  next(): void {
-    if (this.fullCalendarComponent) {
-      this.fullCalendarComponent.getApi().next();
-      this.humanReadableDateRange = this.buildHumanReadableDateRange();
-    }
-  }
-
-  nextYear(): void {
-    if (this.fullCalendarComponent) {
-      this.fullCalendarComponent.getApi().nextYear();
-      this.humanReadableDateRange = this.buildHumanReadableDateRange();
-    }
-  }
-
-  toggleLoadPrivateAppointments(): void {
-    this.calendarSettings.privateAppointments = !this.calendarSettings.privateAppointments;
-    this.refreshCalendarEvents();
-    localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
-  }
-
-  toggleLoadCustomerAppointments(): void {
-    this.calendarSettings.customerAppointments = !this.calendarSettings.customerAppointments;
-    this.refreshCalendarEvents();
-    localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
-  }
-
-  toggleLoadCustomerBirthdays(): void {
-    this.calendarSettings.customerBirthdays = !this.calendarSettings.customerBirthdays;
-    this.refreshCalendarEvents();
-    localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
-  }
-
-  toggleLoadHolidays(): void {
-    this.calendarSettings.holidays = !this.calendarSettings.holidays;
-    this.refreshCalendarEvents();
-    localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
-  }
-
-  private defineHolidays(start: Date, end: Date): EventInput[] {
-    const result: EventInput[] = [];
-    const holidays = new Holidays(this.calendarSettings.holidayCountry);
-
-    const rangeOfYears = (start: number, end: number) => {
-      return Array<number>(end - start + 1)
-        .fill(start)
-        .map((year, index) => year + index);
-    };
-    const years = rangeOfYears(start.getFullYear(), end.getFullYear());
-
-    for (const currentYear of years) {
-      for (const holiday of holidays.getHolidays(currentYear)) {
-        result.push({
-          title: holiday.name,
-          start: holiday.start,
-          end: holiday.end,
-          editable: false,
-          allDay: true
-        });
-      }
-    }
-    return result;
-  }
-
-  changeHolidayCountry($event: MatSelectChange): void {
-    this.calendarSettings.holidayCountry = $event.value;
-    this.refreshCalendarEvents();
-    localStorage.setItem(CalendarComponent.CALENDAR_LOCAL_STORAGE_KEY, JSON.stringify(this.calendarSettings));
-  }
-
-  compareHolidayCountry(o1: HolidaysTypes.Country, o2: HolidaysTypes.Country): boolean {
-    if (o1.country === o2.country) {
-      if (o1.state === null && o2.state == null) {
-        return true;
-      } else if (o1.state === o2.state) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  selectUser(): void {
-    const dialogData: UserSelectionComponentData = {};
-    const dialogRef = this.dialog.open(UserSelectionComponent, {
-      data: dialogData,
-      closeOnNavigation: false,
-      position: {
-        top: '20px'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe((result: UserSelectionComponentResponseData) => {
-      if (result && result.user) {
-        this.user = result.user;
-        this.refreshCalendarEvents();
-      }
-    });
-  }
 }
