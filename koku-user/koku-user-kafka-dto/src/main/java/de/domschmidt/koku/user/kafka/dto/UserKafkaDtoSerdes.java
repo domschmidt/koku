@@ -1,17 +1,17 @@
 package de.domschmidt.koku.user.kafka.dto;
 
 import org.apache.kafka.common.serialization.Serdes;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
+import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
 
 public class UserKafkaDtoSerdes extends Serdes.WrapperSerde<UserKafkaDto> {
 
     public UserKafkaDtoSerdes() {
-        super(new JsonSerializer<>(), getDeserializer());
+        super(new JacksonJsonSerializer<>(), getDeserializer());
     }
 
-    private static JsonDeserializer<UserKafkaDto> getDeserializer() {
-        final JsonDeserializer<UserKafkaDto> customerDtoJsonDeserializer = new JsonDeserializer<>(UserKafkaDto.class);
+    private static JacksonJsonDeserializer<UserKafkaDto> getDeserializer() {
+        final JacksonJsonDeserializer<UserKafkaDto> customerDtoJsonDeserializer = new JacksonJsonDeserializer<>(UserKafkaDto.class);
         customerDtoJsonDeserializer.setUseTypeHeaders(false);
         return customerDtoJsonDeserializer;
     }

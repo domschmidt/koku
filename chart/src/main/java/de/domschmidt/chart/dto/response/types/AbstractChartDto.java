@@ -1,6 +1,6 @@
 package de.domschmidt.chart.dto.response.types;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import de.domschmidt.chart.dto.response.filters.AbstractChartFilterDto;
@@ -17,7 +17,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = BarChartDto.class, name = "bar"),

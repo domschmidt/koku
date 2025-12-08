@@ -7,11 +7,11 @@
     <parent>
         <groupId>de.domschmidt</groupId>
         <artifactId>koku</artifactId>
-        <version>2.50.1-SNAPSHOT</version>
+        <version>0.0.0</version>
     </parent>
 
     <artifactId>koku-dto</artifactId>
-    <version>2.50.1-SNAPSHOT</version>
+    <version>0.0.0</version>
 
     <name>${project.artifactId}-${project.version}</name>
 
@@ -22,10 +22,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -38,12 +34,6 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>de.domschmidt</groupId>-->
-<!--            <artifactId>table</artifactId>-->
-<!--            <version>${project.version}</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>de.domschmidt</groupId>
             <artifactId>business-logic</artifactId>
@@ -59,6 +49,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
@@ -69,6 +60,7 @@
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
@@ -93,6 +85,16 @@
             <artifactId>chart</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

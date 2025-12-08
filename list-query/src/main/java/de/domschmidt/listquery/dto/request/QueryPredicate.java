@@ -13,5 +13,6 @@ public class QueryPredicate {
     EnumSearchOperator searchOperator;
     EnumSearchOperatorHint searchOperatorHint;
     Boolean negate;
+    String orGroupIdentifier;
 
 }

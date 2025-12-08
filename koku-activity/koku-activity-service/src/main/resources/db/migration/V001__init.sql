@@ -4,7 +4,7 @@ create table koku.activity
     recorded                timestamp,
     updated                 timestamp,
     deleted                 boolean not null default FALSE,
-    approximately_duration  int8    not null default 0 CHECK (version >= 0),
+    approximately_duration  int8    not null default 0 CHECK (approximately_duration >= 0),
     name                    varchar not null default '',
     version                 int8    not null default 1 CHECK (version >= 0)
 

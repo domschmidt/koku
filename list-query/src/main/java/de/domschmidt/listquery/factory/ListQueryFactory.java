@@ -97,17 +97,46 @@ public class ListQueryFactory<Entity> {
             }
 
             final IListFilter iListFilter = FilterResolver.resolveFilter(currentPath.getType());
-            if (iListFilter != null) {
-                if (predicateValue != null && predicateValue.getPredicates() != null) {
-                    for (final QueryPredicate currentFieldPredicate : predicateValue.getPredicates()) {
-                        final BooleanExpression filter = iListFilter.buildSearchExpression(pathQueryEntry.getValue(), currentFieldPredicate);
+            if (iListFilter != null && predicateValue != null && predicateValue.getPredicates() != null) {
+
+                BooleanExpression fieldFilters = null;
+
+                final Map<String, List<QueryPredicate>> orGroups = new HashMap<>();
+                final List<QueryPredicate> andGroup = new ArrayList<>();
+
+                for (final QueryPredicate currentPredicate : predicateValue.getPredicates()) {
+                    if (currentPredicate.getOrGroupIdentifier() != null) {
+                        orGroups.computeIfAbsent(currentPredicate.getOrGroupIdentifier(), k -> new ArrayList<>()).add(currentPredicate);
+                    } else {
+                        andGroup.add(currentPredicate);
+                    }
+                }
+
+                for (final List<QueryPredicate> group : orGroups.values()) {
+                    BooleanExpression orExpression = null;
+                    for (final QueryPredicate currentPredicate : group) {
+                        final BooleanExpression filter = iListFilter.buildSearchExpression(pathQueryEntry.getValue(), currentPredicate);
                         if (filter != null) {
-                            if (filters != null) {
-                                filters = filters.and(filter);
-                            } else {
-                                filters = filter;
-                            }
+                            orExpression = orExpression == null ? filter : orExpression.or(filter);
                         }
+                    }
+                    if (orExpression != null) {
+                        fieldFilters = fieldFilters == null ? orExpression : fieldFilters.and(orExpression);
+                    }
+                }
+
+                for (final QueryPredicate currentPredicate : andGroup) {
+                    final BooleanExpression filter = iListFilter.buildSearchExpression(pathQueryEntry.getValue(), currentPredicate);
+                    if (filter != null) {
+                        fieldFilters = fieldFilters == null ? filter : fieldFilters.and(filter);
+                    }
+                }
+
+                if (fieldFilters != null) {
+                    if (filters != null) {
+                        filters = filters.and(fieldFilters);
+                    } else {
+                        filters = fieldFilters;
                     }
                 }
             }

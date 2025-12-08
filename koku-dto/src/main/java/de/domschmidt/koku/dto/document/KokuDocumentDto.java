@@ -1,6 +1,5 @@
 package de.domschmidt.koku.dto.document;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldNameConstants;
 
@@ -10,7 +9,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldNameConstants

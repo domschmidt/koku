@@ -2,7 +2,6 @@ package de.domschmidt.koku.customer.transformer;
 
 import de.domschmidt.koku.activity.kafka.dto.ActivityKafkaDto;
 import de.domschmidt.koku.activity.kafka.dto.ActivityPriceHistoryKafkaDto;
-import de.domschmidt.koku.activity.kafka.dto.ActivityStepKafkaDto;
 import de.domschmidt.koku.customer.domain.KokuCustomerAppointmentActivityDomain;
 import de.domschmidt.koku.customer.domain.KokuCustomerAppointmentPromotionDomain;
 import de.domschmidt.koku.customer.domain.KokuCustomerAppointmentSoldProductDomain;
@@ -31,7 +30,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -86,10 +88,6 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     }
 
     public KokuCustomerAppointmentDto transformToDto(final CustomerAppointment model) {
-        final Map<Long, ActivityKafkaDto> allActivities = this.activityKTableProcessor.getActivities();
-        final Map<Long, ProductKafkaDto> allProducts = this.productKTableProcessor.getProducts();
-        final Map<Long, PromotionKafkaDto> allPromotions = this.promotionKTableProcessor.getPromotions();
-
         final List<KokuCustomerAppointmentActivityDto> activities = new ArrayList<>();
         if (model.getActivities() != null) {
             for (final CustomerAppointmentActivity currentActivity : model.getActivities()) {
@@ -137,7 +135,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         }
         final Duration approximatelyActivitySum = activities.stream().map(
                 kokuCustomerAppointmentActivityDto -> {
-                    final ActivityKafkaDto activity = allActivities.get(kokuCustomerAppointmentActivityDto.getActivityId());
+                    final ActivityKafkaDto activity = this.activityKTableProcessor.getActivities().get(kokuCustomerAppointmentActivityDto.getActivityId());
                     if (activity != null && activity.getApproximatelyDuration() != null) {
                         return activity.getApproximatelyDuration();
                     }
@@ -173,20 +171,15 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 .activityPriceSummary(this.calculateCustomerAppointmentActivityPriceSumFormatted(
                         model.getStart(),
                         activities.stream().map(KokuCustomerAppointmentActivityDomain::fromDto).toList(),
-                        promotions.stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList(),
-                        allActivities,
-                        allPromotions
+                        promotions.stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList()
                 ))
                 .activityDurationSummary(this.calculateCustomerAppointmentActivityDurationHumanReadable(
-                        activities.stream().map(KokuCustomerAppointmentActivityDto::getActivityId).collect(Collectors.toList()),
-                        allActivities
+                        activities.stream().map(KokuCustomerAppointmentActivityDto::getActivityId).collect(Collectors.toList())
                 ))
                 .activitySoldProductSummary(this.calculateCustomerAppointmentSoldProductPriceSumFormatted(
                         model.getStart(),
                         soldProducts.stream().map(KokuCustomerAppointmentSoldProductDomain::fromDto).toList(),
-                        promotions.stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList(),
-                        allProducts,
-                        allPromotions
+                        promotions.stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList()
                 ))
                 .build();
     }
@@ -195,11 +188,6 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
             final CustomerAppointment model,
             final KokuCustomerAppointmentDto updatedDto
     ) throws UserIdNotFoundException, ActivityIdNotFoundException, ActivityStepIdNotFoundException, ProductIdNotFoundException, PromotionIdNotFoundException {
-        final Map<Long, ActivityKafkaDto> allActivities = this.activityKTableProcessor.getActivities();
-        final Map<Long, ProductKafkaDto> allProducts = this.productKTableProcessor.getProducts();
-        final Map<Long, ActivityStepKafkaDto> allActivitySteps = this.activityStepKTableProcessor.getActivitySteps();
-        final Map<Long, PromotionKafkaDto> allPromotions = this.promotionKTableProcessor.getPromotions();
-
         if (updatedDto.getDate() != null && updatedDto.getTime() != null) {
             model.setStart(updatedDto.getDate().atTime(updatedDto.getTime()));
         }
@@ -226,7 +214,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
             newActivities.clear();
             int position = 0;
             for (final KokuCustomerAppointmentActivityDto currentActivity : updatedDto.getActivities()) {
-                if (!allActivities.containsKey(currentActivity.getActivityId())) {
+                if (this.activityKTableProcessor.getActivities().get(currentActivity.getActivityId()) == null) {
                     throw new ActivityIdNotFoundException(currentActivity.getActivityId());
                 }
 
@@ -236,14 +224,6 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                         currentActivity.getPrice(),
                         position++
                 );
-
-                newActivity.setFinalPriceSnapshot(this.calculateActivityPrice(
-                        model.getStart(),
-                        KokuCustomerAppointmentActivityDomain.fromEntity(newActivity),
-                        allActivities,
-                        model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList(),
-                        allPromotions
-                ));
 
                 newActivities.add(newActivity);
             }
@@ -256,7 +236,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
             for (final KokuCustomerAppointmentTreatmentDto currentTreatment : updatedDto.getTreatmentSequence()) {
                 switch (currentTreatment) {
                     case KokuCustomerAppointmentActivityStepTreatmentDto activityStep -> {
-                        if (!allActivitySteps.containsKey(activityStep.getActivityStepId())) {
+                        if (this.activityStepKTableProcessor.getActivitySteps().get(activityStep.getActivityStepId()) == null) {
                             throw new ActivityStepIdNotFoundException(activityStep.getActivityStepId());
                         }
                         newTreatments.add(new CustomerAppointmentTreatmentSequenceItem(
@@ -267,7 +247,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                         ));
                     }
                     case KokuCustomerAppointmentProductTreatmentDto product -> {
-                        if (!allProducts.containsKey(product.getProductId())) {
+                        if (this.productKTableProcessor.getProducts().get(product.getProductId()) == null) {
                             throw new ProductIdNotFoundException(product.getProductId());
                         }
                         newTreatments.add(new CustomerAppointmentTreatmentSequenceItem(
@@ -287,7 +267,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
             newSoldProducts.clear();
             int position = 0;
             for (final KokuCustomerAppointmentSoldProductDto currentSoldProduct : updatedDto.getSoldProducts()) {
-                if (!allProducts.containsKey(currentSoldProduct.getProductId())) {
+                if (this.productKTableProcessor.getProducts().get(currentSoldProduct.getProductId()) == null) {
                     throw new ProductIdNotFoundException(currentSoldProduct.getProductId());
                 }
 
@@ -297,13 +277,6 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                         currentSoldProduct.getPrice(),
                         position++
                 );
-                newSoldProduct.setFinalPriceSnapshot(this.calculateSoldProductPrice(
-                        model.getStart(),
-                        model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList(),
-                        KokuCustomerAppointmentSoldProductDomain.fromEntity(newSoldProduct),
-                        allProducts,
-                        allPromotions
-                ));
 
                 newSoldProducts.add(newSoldProduct);
             }
@@ -314,7 +287,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
             newPromotions.clear();
             int position = 0;
             for (final KokuCustomerAppointmentPromotionDto currentPromotion : updatedDto.getPromotions()) {
-                if (!allPromotions.containsKey(currentPromotion.getPromotionId())) {
+                if (this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId()) == null) {
                     throw new PromotionIdNotFoundException(currentPromotion.getPromotionId());
                 }
 
@@ -330,44 +303,54 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         model.setSoldProductsRevenueSnapshot(this.calculateCustomerAppointmentSoldProductPriceSum(
                 model.getStart(),
                 model.getSoldProducts().stream().map(KokuCustomerAppointmentSoldProductDomain::fromEntity).toList(),
-                model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList(),
-                allProducts,
-                allPromotions
+                model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
         ));
         model.setActivitiesRevenueSnapshot(this.calculateCustomerAppointmentActivityPriceSum(
                 model.getStart(),
                 model.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromEntity).toList(),
-                model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList(),
-                allActivities,
-                allPromotions
+                model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
         ));
+
+        for (CustomerAppointmentSoldProduct soldProduct : model.getSoldProducts()) {
+            soldProduct.setFinalPriceSnapshot(this.calculateSoldProductPrice(
+                    model.getStart(),
+                    KokuCustomerAppointmentSoldProductDomain.fromEntity(soldProduct),
+                    model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
+            ));
+        }
+
+        for (CustomerAppointmentActivity activity : model.getActivities()) {
+            activity.setFinalPriceSnapshot(this.calculateActivityPrice(
+                    model.getStart(),
+                    KokuCustomerAppointmentActivityDomain.fromEntity(activity),
+                    model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
+            ));
+        }
 
         return model;
     }
 
-    private BigDecimal calculateCustomerAppointmentActivityPriceSum(
+    public BigDecimal calculateCustomerAppointmentActivityPriceSum(
             final LocalDateTime date,
             final List<KokuCustomerAppointmentActivityDomain> activities,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions,
-            final Map<Long, ActivityKafkaDto> allActivities,
-            final Map<Long, PromotionKafkaDto> allPromotions
+            final List<KokuCustomerAppointmentPromotionDomain> promotions
     ) {
         BigDecimal sum = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         if (activities != null) {
             for (final KokuCustomerAppointmentActivityDomain currentActivity : activities) {
-                sum = sum.add(calculateActivityPrice(date, currentActivity, allActivities, promotions, allPromotions));
+                sum = sum.add(calculateActivityPrice(date, currentActivity, promotions));
             }
         }
 
         for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-            final PromotionKafkaDto currentKafkaPromotion = allPromotions.get(currentPromotion.getPromotionId());
+            final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
             if (currentKafkaPromotion.getActivityAbsoluteSavings() != null) {
                 sum = sum.subtract(currentKafkaPromotion.getActivityAbsoluteSavings());
             }
         }
 
         for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-            final PromotionKafkaDto currentKafkaPromotion = allPromotions.get(currentPromotion.getPromotionId());
+            final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
             if (currentKafkaPromotion.getActivityRelativeSavings() != null) {
                 sum = sum.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion.getActivityRelativeSavings().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
             }
@@ -380,25 +363,23 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         return sum;
     }
 
-    private BigDecimal calculateActivityPrice(
+    public BigDecimal calculateActivityPrice(
             final LocalDateTime date,
             final KokuCustomerAppointmentActivityDomain currentActivity,
-            final Map<Long, ActivityKafkaDto> allActivities,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions,
-            final Map<Long, PromotionKafkaDto> allPromotions
+            final List<KokuCustomerAppointmentPromotionDomain> promotions
     ) {
         BigDecimal sellPrice = currentActivity.getPrice();
         if (sellPrice == null) {
-            sellPrice = getActivityHistoryDefaultPrice(date, currentActivity.getActivityId(), allActivities);
+            sellPrice = getActivityHistoryDefaultPrice(date, currentActivity.getActivityId());
 
             for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-                final PromotionKafkaDto currentKafkaPromotion = allPromotions.get(currentPromotion.getPromotionId());
+                final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
                 if (currentKafkaPromotion.getActivityAbsoluteItemSavings() != null) {
                     sellPrice = sellPrice.subtract(currentKafkaPromotion.getActivityAbsoluteItemSavings());
                 }
             }
             for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-                final PromotionKafkaDto currentKafkaPromotion = allPromotions.get(currentPromotion.getPromotionId());
+                final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
                 if (currentKafkaPromotion.getActivityAbsoluteItemSavings() != null) {
                     sellPrice = sellPrice.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion.getActivityRelativeItemSavings().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
                 }
@@ -413,37 +394,33 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     private String calculateCustomerAppointmentActivityPriceSumFormatted(
             final LocalDateTime date,
             final List<KokuCustomerAppointmentActivityDomain> activities,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions,
-            final Map<Long, ActivityKafkaDto> allActivities,
-            final Map<Long, PromotionKafkaDto> allPromotions
+            final List<KokuCustomerAppointmentPromotionDomain> promotions
     ) {
-        return PRICE_FORMATTER.format(calculateCustomerAppointmentActivityPriceSum(date, activities, promotions, allActivities, allPromotions));
+        return PRICE_FORMATTER.format(calculateCustomerAppointmentActivityPriceSum(date, activities, promotions));
     }
 
-    private BigDecimal calculateCustomerAppointmentSoldProductPriceSum(
+    public BigDecimal calculateCustomerAppointmentSoldProductPriceSum(
             final LocalDateTime date,
             final List<KokuCustomerAppointmentSoldProductDomain> soldProducts,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions,
-            final Map<Long, ProductKafkaDto> allProducts,
-            final Map<Long, PromotionKafkaDto> allPromotions
+            final List<KokuCustomerAppointmentPromotionDomain> promotions
     ) {
         BigDecimal sum = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         if (soldProducts != null) {
             for (final KokuCustomerAppointmentSoldProductDomain currentSoldProduct : soldProducts) {
-                sum = sum.add(calculateSoldProductPrice(date, promotions, currentSoldProduct, allProducts, allPromotions));
+                sum = sum.add(calculateSoldProductPrice(date, currentSoldProduct, promotions));
             }
         }
 
 
         for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-            final PromotionKafkaDto currentKafkaPromotion = allPromotions.get(currentPromotion.getPromotionId());
+            final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
             if (currentKafkaPromotion.getProductAbsoluteSavings() != null) {
                 sum = sum.subtract(currentKafkaPromotion.getProductAbsoluteSavings());
             }
         }
 
         for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-            final PromotionKafkaDto currentKafkaPromotion = allPromotions.get(currentPromotion.getPromotionId());
+            final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
             if (currentKafkaPromotion.getProductRelativeSavings() != null) {
                 sum = sum.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion.getProductRelativeSavings().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
             }
@@ -454,23 +431,21 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
 
     public BigDecimal calculateSoldProductPrice(
             final LocalDateTime date,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions,
             final KokuCustomerAppointmentSoldProductDomain currentSoldProduct,
-            final Map<Long, ProductKafkaDto> allProducts,
-            final Map<Long, PromotionKafkaDto> allPromotions
+            final List<KokuCustomerAppointmentPromotionDomain> promotions
     ) {
         BigDecimal sellPrice = currentSoldProduct.getPrice();
         if (sellPrice == null) {
-            sellPrice = getProductHistoryDefaultPrice(date, allProducts.get(currentSoldProduct.getProductId()));
+            sellPrice = getProductHistoryDefaultPrice(date, this.productKTableProcessor.getProducts().get(currentSoldProduct.getProductId()));
 
             for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-                final PromotionKafkaDto currentKafkaPromotion = allPromotions.get(currentPromotion.getPromotionId());
+                final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
                 if (currentKafkaPromotion.getProductAbsoluteItemSavings() != null) {
                     sellPrice = sellPrice.subtract(currentKafkaPromotion.getProductAbsoluteItemSavings());
                 }
             }
             for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-                final PromotionKafkaDto currentKafkaPromotion = allPromotions.get(currentPromotion.getPromotionId());
+                final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
                 if (currentKafkaPromotion.getProductAbsoluteItemSavings() != null) {
                     sellPrice = sellPrice.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion.getProductRelativeItemSavings().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
                 }
@@ -485,18 +460,15 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     private String calculateCustomerAppointmentSoldProductPriceSumFormatted(
             final LocalDateTime date,
             final List<KokuCustomerAppointmentSoldProductDomain> soldProducts,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions,
-            final Map<Long, ProductKafkaDto> allProducts,
-            final Map<Long, PromotionKafkaDto> allPromotions
+            final List<KokuCustomerAppointmentPromotionDomain> promotions
     ) {
-        return PRICE_FORMATTER.format(calculateCustomerAppointmentSoldProductPriceSum(date, soldProducts, promotions, allProducts, allPromotions));
+        return PRICE_FORMATTER.format(calculateCustomerAppointmentSoldProductPriceSum(date, soldProducts, promotions));
     }
 
     public String calculateCustomerAppointmentActivityDurationHumanReadable(
-            final List<Long> activityIds,
-            final Map<Long, ActivityKafkaDto> allActivities
+            final List<Long> activityIds
     ) {
-        final Duration sum = calculateCustomerAppointmentActivityDuration(activityIds, allActivities);
+        final Duration sum = calculateCustomerAppointmentActivityDuration(activityIds);
         long minutes = sum.toMinutesPart();
         long hours = sum.toHoursPart();
         long days = sum.toDaysPart();
@@ -515,13 +487,12 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     }
 
     private Duration calculateCustomerAppointmentActivityDuration(
-            final List<Long> activityIds,
-            final Map<Long, ActivityKafkaDto> allActivities
+            final List<Long> activityIds
     ) {
         Duration sum = Duration.ZERO;
         if (activityIds != null) {
             for (final Long currentActivityId : activityIds) {
-                final ActivityKafkaDto kafkaActivity = allActivities.get(currentActivityId);
+                final ActivityKafkaDto kafkaActivity = this.activityKTableProcessor.getActivities().get(currentActivityId);
                 if (kafkaActivity.getApproximatelyDuration() != null) {
                     sum = sum.plus(kafkaActivity.getApproximatelyDuration());
                 }
@@ -532,10 +503,9 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
 
     private BigDecimal getActivityHistoryDefaultPrice(
             final LocalDateTime date,
-            final Long activityId,
-            final Map<Long, ActivityKafkaDto> allActivities
+            final Long activityId
     ) {
-        final ActivityKafkaDto kafkaActivity = allActivities.get(activityId);
+        final ActivityKafkaDto kafkaActivity = this.activityKTableProcessor.getActivities().get(activityId);
         BigDecimal result = null;
         if (kafkaActivity.getPriceHistory() != null) {
             kafkaActivity.getPriceHistory().sort(Comparator.comparing(ActivityPriceHistoryKafkaDto::getRecorded));
@@ -594,22 +564,17 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
             targetTimestamp = LocalDateTime.now();
         }
 
-        final Map<Long, ActivityKafkaDto> allActivities = activityKTableProcessor.getActivities();
-        final Map<Long, PromotionKafkaDto> allPromotions = promotionKTableProcessor.getPromotions();
         return KokuCustomerActivityPriceSummaryDto.builder()
                 .priceSum(
                         this.calculateCustomerAppointmentActivityPriceSumFormatted(
                                 targetTimestamp,
                                 request.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromDto).toList(),
-                                request.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList(),
-                                allActivities,
-                                allPromotions
+                                request.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList()
                         )
                 )
                 .durationSum(
                         this.calculateCustomerAppointmentActivityDurationHumanReadable(
-                                request.getActivities().stream().map(KokuCustomerAppointmentActivityDto::getActivityId).toList(),
-                                allActivities
+                                request.getActivities().stream().map(KokuCustomerAppointmentActivityDto::getActivityId).toList()
                         )
                 )
                 .build();
@@ -634,9 +599,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                         this.calculateCustomerAppointmentSoldProductPriceSumFormatted(
                                 targetTimestamp,
                                 request.getSoldProducts().stream().map(KokuCustomerAppointmentSoldProductDomain::fromDto).toList(),
-                                request.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList(),
-                                productKTableProcessor.getProducts(),
-                                promotionKTableProcessor.getPromotions()
+                                request.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList()
                         )
                 )
                 .build();

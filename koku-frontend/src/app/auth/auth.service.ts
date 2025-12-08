@@ -46,9 +46,9 @@ export class AuthService {
       () => {
         console.warn('Using default dev configuration');
         this.config = {
-          url: "http://localhost:8080",
+          url: "https://192.168.178.36:8443",
           realm: "master",
-          clientId: "koku",
+          clientId: "koku"
         };
         this.initKeycloak();
       });

@@ -7,11 +7,11 @@
     <parent>
         <groupId>de.domschmidt</groupId>
         <artifactId>koku-file</artifactId>
-        <version>2.50.1-SNAPSHOT</version>
+        <version>0.0.0</version>
     </parent>
 
     <artifactId>koku-file-service</artifactId>
-    <version>2.50.1-SNAPSHOT</version>
+    <version>0.0.0</version>
 
     <name>${project.artifactId}-${project.version}</name>
 
@@ -79,10 +79,6 @@
             <artifactId>kafka-clients</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
@@ -101,14 +97,12 @@
             <classifier>jakarta</classifier>
         </dependency>
         <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-            <version>${flyway-core.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
-            <version>${flyway-core.version}</version>
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
@@ -219,7 +213,7 @@
 
     <profiles>
         <profile>
-            <id>build-docker</id>
+            <id>jib-dockerBuild</id>
             <build>
                 <plugins>
                     <plugin>
@@ -248,11 +242,44 @@
                         <executions>
                             <execution>
                                 <id>jib-build-locally</id>
-                                <phase>compile</phase>
+                                <phase>install</phase>
                                 <goals>
                                     <goal>dockerBuild</goal>
                                 </goals>
                             </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>jib-build</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <version>${jib-maven-plugin.version}</version>
+                        <configuration>
+                            <from>
+                                <image>${docker.jre.baseimage}</image>
+                            </from>
+                            <to>
+                                <image>docker.io/domschmidt/koku-files</image>
+                                <tags>
+                                    <tag>${project.version}</tag>
+                                </tags>
+                            </to>
+                            <container>
+                                <mainClass>
+                                    de.domschmidt.koku.KokuFileServiceApplication
+                                </mainClass>
+                                <ports>
+                                    <port>8020</port>
+                                </ports>
+                            </container>
+                        </configuration>
+                        <executions>
                             <execution>
                                 <id>jib-build-remotely</id>
                                 <phase>install</phase>

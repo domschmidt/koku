@@ -48,8 +48,8 @@ import de.domschmidt.listquery.dto.request.ListQuery;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -63,24 +63,12 @@ import java.util.concurrent.TimeoutException;
 @RestController
 @RequestMapping()
 @Slf4j
+@RequiredArgsConstructor
 public class PromotionController {
     private final EntityManager entityManager;
     private final PromotionRepository promotionRepository;
     private final PromotionKafkaService promotionKafkaService;
     private final PromotionToPromotionDtoTransformer transformer;
-
-    @Autowired
-    public PromotionController(
-            final EntityManager entityManager,
-            final PromotionRepository promotionRepository,
-            final PromotionToPromotionDtoTransformer transformer,
-            final PromotionKafkaService promotionKafkaService
-    ) {
-        this.entityManager = entityManager;
-        this.promotionRepository = promotionRepository;
-        this.transformer = transformer;
-        this.promotionKafkaService = promotionKafkaService;
-    }
 
     @GetMapping("/promotions/form")
     public FormViewDto getFormularView() {

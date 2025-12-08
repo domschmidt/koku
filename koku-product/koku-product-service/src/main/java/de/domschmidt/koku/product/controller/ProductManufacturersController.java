@@ -58,8 +58,8 @@ import de.domschmidt.listquery.dto.request.ListQuery;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -73,24 +73,12 @@ import java.util.concurrent.TimeoutException;
 @RestController
 @RequestMapping()
 @Slf4j
+@RequiredArgsConstructor
 public class ProductManufacturersController {
     private final EntityManager entityManager;
     private final ProductManufacturerRepository productManufacturerRepository;
     private final ProductManufacturerKafkaService productManufacturerKafkaService;
     private final ProductManufacturerToProductManufacturerDtoTransformer transformer;
-
-    @Autowired
-    public ProductManufacturersController(
-            final EntityManager entityManager,
-            final ProductManufacturerRepository productManufacturerRepository,
-            final ProductManufacturerToProductManufacturerDtoTransformer transformer,
-            final ProductManufacturerKafkaService productManufacturerKafkaService
-    ) {
-        this.entityManager = entityManager;
-        this.productManufacturerRepository = productManufacturerRepository;
-        this.transformer = transformer;
-        this.productManufacturerKafkaService = productManufacturerKafkaService;
-    }
 
     @GetMapping("/productmanufacturers/form")
     public FormViewDto getFormularView() {

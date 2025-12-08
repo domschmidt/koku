@@ -75,8 +75,8 @@ import de.domschmidt.listquery.dto.request.ListQuery;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -95,24 +95,12 @@ import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 @RestController
 @RequestMapping()
 @Slf4j
+@RequiredArgsConstructor
 public class ProductController {
     private final EntityManager entityManager;
     private final ProductRepository productRepository;
     private final ProductKafkaService productKafkaService;
     private final ProductToProductDtoTransformer transformer;
-
-    @Autowired
-    public ProductController(
-            final EntityManager entityManager,
-            final ProductRepository productRepository,
-            final ProductToProductDtoTransformer transformer,
-            final ProductKafkaService productKafkaService
-    ) {
-        this.entityManager = entityManager;
-        this.productRepository = productRepository;
-        this.transformer = transformer;
-        this.productKafkaService = productKafkaService;
-    }
 
     @GetMapping("/products/form")
     public FormViewDto getFormularView() {

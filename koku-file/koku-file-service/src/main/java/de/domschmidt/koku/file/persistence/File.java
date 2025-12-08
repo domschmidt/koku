@@ -26,6 +26,8 @@ public class File implements Serializable {
     @Id
     UUID id;
     boolean deleted;
+    @Version
+    Long version;
 
     String filename;
     @Basic(fetch = LAZY)
@@ -33,9 +35,7 @@ public class File implements Serializable {
     String mimeType;
     long size;
 
-    @Enumerated(EnumType.STRING)
-    FileRef ref;
-    String refId;
+    Long customerId;
 
     @CreationTimestamp
     LocalDateTime recorded;
@@ -45,16 +45,14 @@ public class File implements Serializable {
     public File(
             final UUID id,
             final String filename,
-            final FileRef ref,
-            final String refId,
+            final Long customerId,
             final String mimeType,
             final byte[] content,
             final long size
     ) {
         this.id = id != null ? id : UUID.randomUUID();
         this.filename = filename;
-        this.ref = ref;
-        this.refId = refId;
+        this.customerId = customerId;
         this.mimeType = mimeType;
         this.content = content;
         this.size = size;

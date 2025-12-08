@@ -3,13 +3,11 @@ package de.domschmidt.koku.customer.kafka.activities.service;
 import de.domschmidt.koku.activity.kafka.dto.ActivityKafkaDto;
 import de.domschmidt.koku.activity.kafka.dto.ActivityKafkaDtoSerdes;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.apache.kafka.streams.state.Stores;
@@ -17,9 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 public class ActivityKTableProcessor {
@@ -43,20 +38,11 @@ public class ActivityKTableProcessor {
                         .withValueSerde(new ActivityKafkaDtoSerdes()));
     }
 
-    public Map<Long, ActivityKafkaDto> getActivities() {
-        ReadOnlyKeyValueStore<Long, ActivityKafkaDto> store = factoryBean.getKafkaStreams()
+    public ReadOnlyKeyValueStore<Long, ActivityKafkaDto> getActivities() {
+        return factoryBean.getKafkaStreams()
                 .store(StoreQueryParameters.fromNameAndType(
                         STORE_NAME,
-                        QueryableStoreTypes.keyValueStore()));
-
-        Map<Long, ActivityKafkaDto> result = new HashMap<>();
-        try (KeyValueIterator<Long, ActivityKafkaDto> all = store.all()) {
-            while (all.hasNext()) {
-                KeyValue<Long, ActivityKafkaDto> entry = all.next();
-                result.put(entry.key, entry.value);
-            }
-        }
-
-        return result;
+                        QueryableStoreTypes.keyValueStore())
+                );
     }
 }

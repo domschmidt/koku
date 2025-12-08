@@ -1,6 +1,5 @@
 package de.domschmidt.koku.dto.file;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldNameConstants;
 
@@ -10,7 +9,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldNameConstants
@@ -22,9 +20,7 @@ public class KokuFileDto {
     String filename;
     String mimeType;
     Long size;
-    KokuFileRefDto ref;
-    String refId;
-    String refName;
+    Long customerId;
 
     LocalDateTime updated;
     LocalDateTime recorded;

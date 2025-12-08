@@ -16,6 +16,7 @@ import {get} from './utils/get';
 import {UNIQUE_REF_GENERATOR} from './utils/uniqueRef';
 import {set} from './utils/set';
 import Holidays, {HolidaysTypes} from 'date-holidays';
+import {getDayOfYear} from 'date-fns';
 import {
   CALENDAR_PLUGIN,
   CalendarComponent,
@@ -1359,6 +1360,9 @@ class CalendarListSourcePlugin implements CalendarPlugin {
 
             const fieldSelection: Set<string> = new Set<string>();
             const fieldPredicates: { [index: string]: KokuDto.ListFieldQuery } = {};
+
+            let startAndEndDOYOrGroupIdentifier = getDayOfYear(arg.start) > getDayOfYear(arg.end) ? 'startGTend' : undefined;
+
             if (castedSource.startDateFieldSelectionPath) {
               fieldSelection.add(castedSource.startDateFieldSelectionPath);
               fieldPredicates[castedSource.startDateFieldSelectionPath] = {
@@ -1366,7 +1370,8 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                   {
                     searchExpression: formatISO(arg.start, {representation: 'date'}),
                     searchOperator: 'GREATER_OR_EQ',
-                    searchOperatorHint: castedSource.searchOperatorHint
+                    searchOperatorHint: castedSource.searchOperatorHint,
+                    orGroupIdentifier: startAndEndDOYOrGroupIdentifier
                   },
                   ...((fieldPredicates[castedSource.startDateFieldSelectionPath] || {}).predicates || [])
                 ]
@@ -1379,7 +1384,8 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                   {
                     searchExpression: formatISO(arg.endStr, {representation: 'date'}),
                     searchOperator: 'LESS_OR_EQ',
-                    searchOperatorHint: castedSource.searchOperatorHint
+                    searchOperatorHint: castedSource.searchOperatorHint,
+                    orGroupIdentifier: startAndEndDOYOrGroupIdentifier
                   },
                   ...((fieldPredicates[castedSource.endDateFieldSelectionPath] || {}).predicates || [])
                 ]

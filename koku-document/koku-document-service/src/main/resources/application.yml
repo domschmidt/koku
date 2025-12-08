@@ -5,7 +5,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: "http://localhost:8080/realms/master"
+          issuer-uri: "https://192.168.178.36:8443/realms/master"
   kafka:
     bootstrap-servers: ${kafka.bootstrap-servers}
     consumer:
@@ -46,6 +46,7 @@ spring:
       initialize-schema: embedded
   jackson:
     default-property-inclusion: non_null
+    date-format: 'yyyy-MM-dd'
 server:
   port: 8720
   forward-headers-strategy: framework

@@ -7,11 +7,11 @@
     <parent>
         <artifactId>koku</artifactId>
         <groupId>de.domschmidt</groupId>
-        <version>2.50.1-SNAPSHOT</version>
+        <version>0.0.0</version>
     </parent>
 
     <artifactId>business-logic</artifactId>
-    <version>2.50.1-SNAPSHOT</version>
+    <version>0.0.0</version>
 
     <name>${project.artifactId}-${project.version}</name>
 
@@ -31,6 +31,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

@@ -3,22 +3,18 @@ package de.domschmidt.koku.carddav.kafka.customers.service;
 import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
 import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDtoSerdes;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.apache.kafka.streams.state.Stores;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 public class CustomerKTableProcessor {
@@ -43,17 +39,11 @@ public class CustomerKTableProcessor {
         );
     }
 
-    public Map<Long, CustomerKafkaDto> getCustomers() {
-        final Map<Long, CustomerKafkaDto> result = new HashMap<>();
-        final KeyValueIterator<Long, CustomerKafkaDto> customerStore = factoryBean.getKafkaStreams().store(
+    public ReadOnlyKeyValueStore<Long, CustomerKafkaDto> getCustomers() {
+        return factoryBean.getKafkaStreams().store(
                 StoreQueryParameters.fromNameAndType(CustomerKTableProcessor.STORE_NAME,
                         QueryableStoreTypes.<Long, CustomerKafkaDto>keyValueStore())
-        ).all();
-        while (customerStore.hasNext()) {
-            final KeyValue<Long, CustomerKafkaDto> currentCustomer = customerStore.next();
-            result.put(currentCustomer.key, currentCustomer.value);
-        }
-        return result;
+        );
     }
 
 }
