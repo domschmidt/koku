@@ -7,11 +7,11 @@
     <parent>
         <groupId>de.domschmidt</groupId>
         <artifactId>koku</artifactId>
-        <version>2.50.1-SNAPSHOT</version>
+        <version>0.0.0</version>
     </parent>
 
     <artifactId>koku-promotion</artifactId>
-    <version>2.50.1-SNAPSHOT</version>
+    <version>0.0.0</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}-${project.version}</name>

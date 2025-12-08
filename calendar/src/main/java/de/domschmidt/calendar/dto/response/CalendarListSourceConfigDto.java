@@ -1,6 +1,6 @@
 package de.domschmidt.calendar.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.listquery.dto.request.EnumSearchOperatorHint;
 import lombok.Data;
@@ -13,7 +13,6 @@ import java.util.List;
 
 @Getter
 @Setter
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @FieldNameConstants
 @JsonTypeName("list")
 @SuperBuilder

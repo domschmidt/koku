@@ -26,9 +26,10 @@ COPY authconfig.template.json /usr/share/nginx/html/authconfig.template.json
 
 # Copy entrypoint script
 COPY entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r$//' entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-EXPOSE 80
+EXPOSE 80 443
 
 # Use entrypoint to generate authconfig.json dynamically
 CMD ["/entrypoint.sh"]

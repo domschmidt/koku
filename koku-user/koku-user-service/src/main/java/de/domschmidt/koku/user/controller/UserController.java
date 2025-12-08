@@ -61,8 +61,8 @@ import de.domschmidt.listquery.dto.request.ListQuery;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -72,30 +72,19 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
+@RequiredArgsConstructor
 public class UserController {
     private final EntityManager entityManager;
     private final UserRepository userRepository;
     private final UserToKokuUserDtoTransformer transformer;
     private final UserKafkaService userKafkaService;
-
-    @Autowired
-    public UserController(
-            final EntityManager entityManager,
-            final UserRepository userRepository,
-            final UserToKokuUserDtoTransformer transformer,
-            final UserKafkaService userKafkaService
-    ) {
-        this.entityManager = entityManager;
-        this.userRepository = userRepository;
-        this.transformer = transformer;
-        this.userKafkaService = userKafkaService;
-    }
 
     @GetMapping("/form")
     public FormViewDto getFormularView() {
@@ -428,8 +417,15 @@ public class UserController {
     public void syncMyDetails(
             @AuthenticationPrincipal Jwt jwt
     ) {
-        final User user = this.userRepository.findById(jwt.getSubject()).orElseGet(() -> this.userRepository.save(new User(jwt.getSubject())));
+        final Optional<User> userOptional = this.userRepository.findById(jwt.getSubject());
         boolean dirty = false;
+        final User user;
+        if (userOptional.isPresent()) {
+            user = userOptional.get();
+        } else {
+            user = this.userRepository.save(new User(jwt.getSubject()));
+            dirty = true;
+        }
         final String givenName = jwt.getClaimAsString("given_name");
         if (givenName != null && !user.getFirstname().equals(givenName)) {
             user.setFirstname(givenName);

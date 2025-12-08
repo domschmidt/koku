@@ -1,4 +1,20 @@
+version: "3.9"
+
+# ---------- SPRING SERVICE TEMPLATE ----------
+x-jib-service-keycloak-cacert-import-template: &jib_service_keycloak_cacert_import_template
+  volumes:
+    - "${SSL_CA_ROOT}:/certs/rootCA.pem:ro"
+  entrypoint: >
+    sh -c "echo 'Importing rootCA.pem...'; \
+    keytool -importcert -trustcacerts -noprompt -alias keycloak \
+    -file /certs/rootCA.pem \
+    -keystore /opt/java/openjdk/lib/security/cacerts \
+    -storepass changeit; \
+    echo 'Starting Jib app...'; \
+    java -cp @/app/jib-classpath-file @/app/jib-main-class-file"
+
 services:
+
   koku-frontend:
     container_name: koku-frontend
     build:
@@ -8,184 +24,210 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
     environment:
-      - KEYCLOAK_URL=http://192.168.178.36:8080
-      - KEYCLOAK_REALM=master
-      - KEYCLOAK_CLIENT_ID=koku
+      - KEYCLOAK_URL=${KEYCLOAK_BASE_URL}
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+    volumes:
+      - "${FRONTEND_SSL_CERT}:/etc/ssl/certs/koku.cert.pem"
+      - "${FRONTEND_SSL_KEY}:/etc/ssl/certs/koku.key.pem"
 
   koku-db:
-    image: 'postgres:17.6'
+    image: postgres:17.6
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=koku
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
-    expose:
-      - 5432
+      - "${DB_PORT}:${DB_PORT}"
 
   db-init:
-    image: 'postgres:17.6'
+    image: postgres:17.6
     depends_on:
-      - koku-db
+      koku-db:
+        condition: service_started
     environment:
-      PGPASSWORD: koku
-    command:
-      - /bin/bash
-      - -c
-      - |
-        until pg_isready -h koku-db -U postgres -d postgres; do
-          echo "Waiting for Postgres..."
-          sleep 2
-        done
-  
-        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE users"
-        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE promotions"
-        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE activities"
-        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE customers"
-        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE products"
-        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE documents"
-        psql -h koku-db -U postgres -d postgres -c "CREATE DATABASE files"
+      PGPASSWORD: ${DB_PASSWORD}
+    command: |
+      /bin/bash -c "
+      until pg_isready -h ${DB_HOST} -U ${DB_USER} -d postgres; do
+        echo 'Waiting for Postgres...'
+        sleep 2
+      done
+
+      for db in users promotions activities customers products documents files keycloak; do
+        psql -h ${DB_HOST} -U ${DB_USER} -d postgres -c \"CREATE DATABASE $$db\"
+      done
+      "
 
   koku-users:
     container_name: koku-users
     image: docker.io/domschmidt/koku-users:latest
-    restart: unless-stopped
     healthcheck:
       test: "curl --fail localhost:8420/actuator/health | grep UP || exit 1"
       interval: 10s
       timeout: 3s
       retries: 3
-    expose:
-      - 8420
+    expose: [ "8420" ]
+    restart: unless-stopped
     depends_on:
-      - koku-db
+      koku-db:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/users
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=koku
-      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/users
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - KAFKA_BOOTSTRAP_SERVER=${KAFKA_SERVER}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
+      - KOKU_MAINTENANCE=${KOKU_MAINTENANCE}
+    <<: *jib_service_keycloak_cacert_import_template
 
   koku-customers:
     container_name: koku-customers
     image: docker.io/domschmidt/koku-customers:latest
-    restart: unless-stopped
     healthcheck:
       test: "curl --fail localhost:8320/actuator/health | grep UP || exit 1"
       interval: 10s
       timeout: 3s
       retries: 3
-    expose:
-      - 8320
+    expose: [ "8320" ]
+    restart: unless-stopped
     depends_on:
-      - koku-db
+      koku-db:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/customers
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=koku
-      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/customers
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - KAFKA_BOOTSTRAP_SERVER=${KAFKA_SERVER}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
+      - KOKU_MAINTENANCE=${KOKU_MAINTENANCE}
+    <<: *jib_service_keycloak_cacert_import_template
 
   koku-promotions:
     container_name: koku-promotions
     image: docker.io/domschmidt/koku-promotions:latest
-    restart: unless-stopped
     healthcheck:
       test: "curl --fail localhost:8520/actuator/health | grep UP || exit 1"
       interval: 10s
       timeout: 3s
       retries: 3
-    expose:
-      - 8520
+    expose: [ "8520" ]
+    restart: unless-stopped
     depends_on:
-      - koku-db
+      koku-db:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/promotions
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=koku
-      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/promotions
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - KAFKA_BOOTSTRAP_SERVER=${KAFKA_SERVER}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
+      - KOKU_MAINTENANCE=${KOKU_MAINTENANCE}
+    <<: *jib_service_keycloak_cacert_import_template
 
   koku-documents:
     container_name: koku-documents
     image: docker.io/domschmidt/koku-documents:latest
-    restart: unless-stopped
     healthcheck:
       test: "curl --fail localhost:8720/actuator/health | grep UP || exit 1"
       interval: 10s
       timeout: 3s
       retries: 3
-    expose:
-      - 8720
+    expose: [ "8720" ]
+    restart: unless-stopped
     depends_on:
-      - koku-db
+      koku-db:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/documents
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=koku
-      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/documents
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - KAFKA_BOOTSTRAP_SERVER=${KAFKA_SERVER}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
+      - KOKU_MAINTENANCE=${KOKU_MAINTENANCE}
+    <<: *jib_service_keycloak_cacert_import_template
 
   koku-activities:
     container_name: koku-activities
     image: docker.io/domschmidt/koku-activities:latest
-    restart: unless-stopped
     healthcheck:
       test: "curl --fail localhost:8620/actuator/health | grep UP || exit 1"
       interval: 10s
       timeout: 3s
       retries: 3
-    expose:
-      - 8620
+    expose: [ "8620" ]
+    restart: unless-stopped
     depends_on:
-      - koku-db
+      koku-db:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/activities
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=koku
-      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/activities
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - KAFKA_BOOTSTRAP_SERVER=${KAFKA_SERVER}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
+      - KOKU_MAINTENANCE=${KOKU_MAINTENANCE}
+    <<: *jib_service_keycloak_cacert_import_template
 
   koku-products:
     container_name: koku-products
     image: docker.io/domschmidt/koku-products:latest
-    restart: unless-stopped
     healthcheck:
       test: "curl --fail localhost:9320/actuator/health | grep UP || exit 1"
       interval: 10s
       timeout: 3s
       retries: 3
-    expose:
-      - 9320
+    expose: [ "9320" ]
+    restart: unless-stopped
     depends_on:
-      - koku-db
+      koku-db:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/products
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=koku
-      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/products
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - KAFKA_BOOTSTRAP_SERVER=${KAFKA_SERVER}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
+      - KOKU_MAINTENANCE=${KOKU_MAINTENANCE}
+    <<: *jib_service_keycloak_cacert_import_template
 
   koku-files:
     container_name: koku-files
     image: docker.io/domschmidt/koku-files:latest
-    restart: unless-stopped
     healthcheck:
       test: "curl --fail localhost:8020/actuator/health | grep UP || exit 1"
       interval: 10s
       timeout: 3s
       retries: 3
-    expose:
-      - 8020
+    expose: [ "8020" ]
+    restart: unless-stopped
     depends_on:
-      - koku-db
+      koku-db:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://koku-db:5432/files
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=koku
-      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI=http://192.168.178.36:8080/realms/master
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/files
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - KAFKA_BOOTSTRAP_SERVER=${KAFKA_SERVER}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
+      - KOKU_MAINTENANCE=${KOKU_MAINTENANCE}
+    <<: *jib_service_keycloak_cacert_import_template
 
   koku-carddav:
     container_name: koku-carddav
@@ -197,19 +239,17 @@ services:
       timeout: 3s
       retries: 3
     expose:
-      - 8220
+      - "8220"
     environment:
-      - KAFKA_BOOTSTRAP-SERVER=kafka:9094
-      - CARDDAV_USERNAME=koku
-      - CARDDAV_PASSWORD=koku
+      - KAFKA_BOOTSTRAP_SERVER=${KAFKA_SERVER}
+      - CARDDAV_USERNAME=${CARDDAV_USER}
+      - CARDDAV_PASSWORD=${CARDDAV_PASSWORD}
 
   kafka:
     image: docker.io/bitnami/kafka:4.0.0
     restart: unless-stopped
     ports:
       - "9094:9094"
-    expose:
-      - "9094"
     environment:
       - KAFKA_ENABLE_KRAFT=yes
       - KAFKA_CFG_PROCESS_ROLES=broker,controller
@@ -221,49 +261,66 @@ services:
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@127.0.0.1:9093
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_NODE_ID=1
-      - BITNAMI_DEBUG=yes
       - KAFKA_CFG_NUM_PARTITIONS=3
-    volumes:
-      - "../kafka_data:/bitnami"
+    healthcheck:
+      test: ./opt/bitnami/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server ${KAFKA_SERVER} || exit 1
+      start_period: 60s
+      interval: 60s
+      timeout: 60s
+      retries: 10
 
   init-kafka:
     image: docker.io/bitnami/kafka:4.0.0
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     entrypoint: [ '/bin/sh', '-c' ]
     command: |
       "
       # blocks until kafka is reachable
-      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --list
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --list
       echo -e 'Creating kafka topics'
-      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic customers --config cleanup.policy=compact
-      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic promotions --config cleanup.policy=compact
-      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic products --config cleanup.policy=compact
-      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic productmanufacturers --config cleanup.policy=compact
-      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic customerappointments --config cleanup.policy=compact
-      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic users --config cleanup.policy=compact
-      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic activities --config cleanup.policy=compact
-      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic activitysteps --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic customers --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic promotions --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic products --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic productmanufacturers --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic customerappointments --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic users --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic activities --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic activitysteps --config cleanup.policy=compact
 
       echo -e 'Successfully created the following topics:'
-      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9094 --list
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --list
       "
 
   idm:
     image: quay.io/keycloak/keycloak:26.4
     restart: unless-stopped
-    command:
-      - start-dev
+    command: >
+      start
+      --hostname=${KEYCLOAK_HOST}
+      --https-certificate-file=/opt/keycloak/certs/koku.cert.pem
+      --https-certificate-key-file=/opt/keycloak/certs/koku.key.pem
     environment:
-      - KEYCLOAK_ADMIN=keycloak
-      - KEYCLOAK_ADMIN_PASSWORD=koku
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KEYCLOAK_INITIAL_ADMIN_USERNAME}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KEYCLOAK_INITIAL_ADMIN_PASSWORD}
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/keycloak
+      - KC_DB_USERNAME=${DB_USER}
+      - KC_DB_PASSWORD=${DB_PASSWORD}
     ports:
-      - "8080:8080"
+      - "${KEYCLOAK_PORT}:${KEYCLOAK_PORT}"
+    volumes:
+      - "${KEYCLOAK_SSL_CERT}:/opt/keycloak/certs/koku.cert.pem"
+      - "${KEYCLOAK_SSL_KEY}:/opt/keycloak/certs/koku.key.pem"
 
-volumes:
-  kafka_data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: './kafka_data'
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8181:8080
+    environment:
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    volumes:
+      - ../kui/:/etc/kafkaui/

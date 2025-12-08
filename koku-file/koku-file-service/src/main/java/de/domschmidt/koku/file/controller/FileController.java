@@ -4,15 +4,14 @@ import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.factory.DefaultViewContentIdGenerator;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.dto.file.KokuFileDto;
-import de.domschmidt.koku.dto.file.KokuFileRefDto;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularFieldPossibleValue;
 import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStylingDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
+import de.domschmidt.koku.file.kafka.customers.service.CustomerKTableProcessor;
 import de.domschmidt.koku.file.persistence.File;
-import de.domschmidt.koku.file.persistence.FileRef;
 import de.domschmidt.koku.file.persistence.FileRepository;
 import de.domschmidt.koku.file.persistence.QFile;
 import de.domschmidt.koku.file.transformer.FileToFileDtoTransformer;
@@ -51,8 +50,8 @@ import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -64,25 +63,19 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping()
 @Slf4j
+@RequiredArgsConstructor
 public class FileController {
     private final EntityManager entityManager;
     private final FileRepository fileRepository;
     private final FileToFileDtoTransformer transformer;
-
-    @Autowired
-    public FileController(
-            final EntityManager entityManager,
-            final FileRepository fileRepository,
-            final FileToFileDtoTransformer transformer
-    ) {
-        this.entityManager = entityManager;
-        this.fileRepository = fileRepository;
-        this.transformer = transformer;
-    }
+    private final CustomerKTableProcessor customerKTableProcessor;
 
     @GetMapping("/files/form")
     public FormViewDto getFormularView() {
@@ -100,18 +93,19 @@ public class FileController {
                 .build()
         );
         formFactory.addField(SelectFormularField.builder()
-                .valuePath(KokuFileDto.Fields.ref)
-                .label("Referenztyp")
-                .readonly(true)
-                .possibleValues(Arrays.stream(KokuFileRefDto.values()).map(ref -> SelectFormularFieldPossibleValue.builder()
-                        .id(ref.name())
-                        .text(ref.name())
+                .valuePath(KokuFileDto.Fields.customerId)
+                .label("Kunde")
+                .possibleValues(StreamSupport.stream(
+                        Spliterators.spliteratorUnknownSize(this.customerKTableProcessor.getCustomers().all(), Spliterator.DISTINCT),
+                        false
+                ).map(customer -> SelectFormularFieldPossibleValue.builder()
+                        .id(customer.key + "")
+                        .text(Stream.of(customer.value.getFirstname(), customer.value.getLastname())
+                                .filter(s -> s != null && !s.isEmpty())
+                                .collect(Collectors.joining(", ")))
+                        .disabled(customer.value.getDeleted())
                         .build()).toList())
-                .build()
-        );
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuFileDto.Fields.refId)
-                .label("Referenznummer")
+                .label("Kunde")
                 .readonly(true)
                 .build()
         );
@@ -121,8 +115,7 @@ public class FileController {
 
     @GetMapping("/files/list")
     public ListViewDto getListView(
-            @RequestParam(value = "refId", required = false) String refId,
-            @RequestParam(value = "ref", required = false) KokuFileRefDto ref,
+            @RequestParam(value = "customerId", required = false) Long customerId,
             @RequestParam(value = "contextEndpointUrl", required = false) String contextEndpointUrl,
             @RequestParam(value = "contextEndpointMethod", required = false) String contextEndpointMethod
     ) {
@@ -145,9 +138,8 @@ public class FileController {
                         .build()
         );
         final ListViewSourcePathReference idSourcePathFieldRef = listViewFactory.addSourcePath(KokuFileDto.Fields.id);
-        final ListViewSourcePathReference refIdSourcePathFieldRef = listViewFactory.addSourcePath(KokuFileDto.Fields.refId);
         final ListViewSourcePathReference deletedSourceRef = listViewFactory.addSourcePath(KokuFileDto.Fields.deleted);
-        listViewFactory.addSourcePath(KokuFileDto.Fields.ref);
+        listViewFactory.addSourcePath(KokuFileDto.Fields.customerId);
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("capture-barcode")
@@ -208,8 +200,8 @@ public class FileController {
         );
 
         Map<String, AbstractListViewListContentContextDto> context = new HashMap<>();
-        if (ref != null && contextEndpointUrl != null) {
-            context.put(ref.name(),
+        if (customerId != null && contextEndpointUrl != null) {
+            context.put("customer",
                     EndpointListViewListContentContextDto.builder()
                             .endpointMethod(contextEndpointMethod != null ? EndpointListViewContextMethodEnum.valueOf(contextEndpointMethod) : EndpointListViewContextMethodEnum.GET)
                             .endpointUrl(contextEndpointUrl)
@@ -217,11 +209,8 @@ public class FileController {
         }
 
         List<String> listUrlAppendix = new ArrayList<>();
-        if (ref != null) {
-            listUrlAppendix.add("ref=" + ref);
-        }
-        if (refId != null) {
-            listUrlAppendix.add("refId=" + refId);
+        if (customerId != null) {
+            listUrlAppendix.add("customerId=" + customerId);
         }
 
         listViewFactory.addRoutedContent(
@@ -397,8 +386,7 @@ public class FileController {
             "/files/query",
     })
     public ListPage findAll(
-            @RequestParam(value = "refId", required = false) String refId,
-            @RequestParam(value = "ref", required = false) KokuFileRefDto ref,
+            @RequestParam(value = "customerId", required = false) Long customerId,
             @RequestBody(required = false) final ListQuery predicate
     ) {
         final QFile qClazz = QFile.file;
@@ -410,11 +398,8 @@ public class FileController {
                 predicate
         );
 
-        if (refId != null) {
-            listQueryFactory.addDefaultFilter(qClazz.refId.eq(refId));
-        }
-        if (ref != null) {
-            listQueryFactory.addDefaultFilter(qClazz.ref.eq(this.transformer.transformRefToEntity(ref)));
+        if (customerId != null) {
+            listQueryFactory.addDefaultFilter(qClazz.customerId.eq(customerId));
         }
 
         listQueryFactory.setDefaultOrder(qClazz.recorded.desc());
@@ -440,12 +425,8 @@ public class FileController {
                 qClazz.size
         );
         listQueryFactory.addFetchExpr(
-                KokuFileDto.Fields.ref,
-                qClazz.ref
-        );
-        listQueryFactory.addFetchExpr(
-                KokuFileDto.Fields.refId,
-                qClazz.refId
+                KokuFileDto.Fields.customerId,
+                qClazz.customerId
         );
         listQueryFactory.addFetchExpr(
                 KokuFileDto.Fields.updated,
@@ -505,26 +486,12 @@ public class FileController {
     public KokuFileDto create(
             @RequestPart("file") final MultipartFile file,
             @RequestParam(value = "id", required = false) UUID id,
-            @RequestParam(value = "ref", required = false) KokuFileRefDto ref,
-            @RequestParam(value = "refId", required = false) String refId
+            @RequestParam(value = "customerId", required = false) Long customerId
     ) throws IOException {
-        FileRef fileRef = null;
-        String fileRefId = null;
-        if (ref != null) {
-            switch (ref) {
-                case CUSTOMER: {
-                    fileRef = FileRef.CUSTOMER;
-                    fileRefId = refId;
-                    break;
-                }
-            }
-        }
-
         final File savedFile = this.fileRepository.saveAndFlush(new File(
                 id,
                 file.getOriginalFilename(),
-                fileRef,
-                fileRefId,
+                customerId,
                 file.getContentType(),
                 file.getBytes(),
                 file.getSize()

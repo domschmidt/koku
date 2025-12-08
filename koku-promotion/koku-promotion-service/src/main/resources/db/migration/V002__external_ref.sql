@@ -1,0 +1,1 @@
+alter table koku.promotion ADD COLUMN external_ref varchar UNIQUE;

@@ -3,22 +3,18 @@ package de.domschmidt.koku.customer.kafka.productmanufacturers.service;
 import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
 import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDtoSerdes;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.apache.kafka.streams.state.Stores;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 public class ProductManufacturerKTableProcessor {
@@ -43,17 +39,11 @@ public class ProductManufacturerKTableProcessor {
         );
     }
 
-    public Map<Long, ProductManufacturerKafkaDto> getProductManufacturers() {
-        final Map<Long, ProductManufacturerKafkaDto> result = new HashMap<>();
-        final KeyValueIterator<Long, ProductManufacturerKafkaDto> productManufacturerStore = factoryBean.getKafkaStreams().store(
+    public ReadOnlyKeyValueStore<Long, ProductManufacturerKafkaDto> getProductManufacturers() {
+        return factoryBean.getKafkaStreams().store(
                 StoreQueryParameters.fromNameAndType(ProductManufacturerKTableProcessor.STORE_NAME,
                         QueryableStoreTypes.<Long, ProductManufacturerKafkaDto>keyValueStore())
-        ).all();
-        while (productManufacturerStore.hasNext()) {
-            final KeyValue<Long, ProductManufacturerKafkaDto> currentProductManufacturer = productManufacturerStore.next();
-            result.put(currentProductManufacturer.key, currentProductManufacturer.value);
-        }
-        return result;
+        );
     }
 
 }

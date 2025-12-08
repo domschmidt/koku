@@ -21,7 +21,6 @@ import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
 import de.domschmidt.formular.factory.DefaultViewContentIdGenerator;
 import de.domschmidt.formular.factory.FormViewFactory;
-import de.domschmidt.koku.activity.kafka.dto.ActivityKafkaDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
@@ -68,8 +67,6 @@ import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStyli
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.koku.dto.product.KokuProductDto;
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
-import de.domschmidt.koku.product.kafka.dto.ProductKafkaDto;
-import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
 import de.domschmidt.list.dto.response.ListViewDto;
 import de.domschmidt.list.dto.response.ListViewSourcePathReference;
 import de.domschmidt.list.dto.response.actions.ListViewOpenRoutedContentActionDto;
@@ -99,7 +96,6 @@ import de.domschmidt.listquery.dto.request.ListQuery;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -119,13 +115,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static de.domschmidt.koku.customer.persistence.QCustomer.customer;
 
 @RestController
 @RequestMapping()
 @Slf4j
-@RequiredArgsConstructor
 public class CustomerAppointmentController {
     public static final DateTimeFormatter YEAR_MONTH_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
     private final EntityManager entityManager;
@@ -138,6 +134,30 @@ public class CustomerAppointmentController {
     private final ProductManufacturerKTableProcessor productManufacturerKTableProcessor;
     private final PromotionKTableProcessor promotionKTableProcessor;
     private final UserKTableProcessor userKTableProcessor;
+
+    public CustomerAppointmentController(
+            final EntityManager entityManager,
+            final CustomerAppointmentRepository customerAppointmentRepository,
+            final CustomerAppointmentKafkaService customerAppointmentKafkaService,
+            final CustomerAppointmentToCustomerAppointmentDtoTransformer transformer,
+            final ActivityKTableProcessor activityKTableProcessor,
+            final ActivityStepKTableProcessor activityStepKTableProcessor,
+            final ProductKTableProcessor productKTableProcessor,
+            final ProductManufacturerKTableProcessor productManufacturerKTableProcessor,
+            final PromotionKTableProcessor promotionKTableProcessor,
+            final UserKTableProcessor userKTableProcessor
+    ) {
+        this.entityManager = entityManager;
+        this.customerAppointmentRepository = customerAppointmentRepository;
+        this.customerAppointmentKafkaService = customerAppointmentKafkaService;
+        this.transformer = transformer;
+        this.activityKTableProcessor = activityKTableProcessor;
+        this.activityStepKTableProcessor = activityStepKTableProcessor;
+        this.productKTableProcessor = productKTableProcessor;
+        this.productManufacturerKTableProcessor = productManufacturerKTableProcessor;
+        this.promotionKTableProcessor = promotionKTableProcessor;
+        this.userKTableProcessor = userKTableProcessor;
+    }
 
     @GetMapping("/customers/appointments/activitysummary")
     public KokuCustomerActivityPriceSummaryDto getActivitySum(
@@ -289,11 +309,18 @@ public class CustomerAppointmentController {
                 .idPathMapping(KokuCustomerAppointmentActivityDto.Fields.activityId)
                 .pricePathMapping(KokuCustomerAppointmentActivityDto.Fields.price)
                 .placeholder("Weitere Tätigkeiten...")
-                .possibleValues(this.activityKTableProcessor.getActivities().values().stream().map(activity -> MultiSelectWithPricingAdjustmentFormularFieldPossibleValue.builder()
-                        .id(activity.getId() + "")
-                        .text(activity.getName())
-                        .disabled(Boolean.TRUE.equals(activity.getDeleted()))
-                        .build()).toList()
+                .possibleValues(
+                        StreamSupport.stream(
+                                        Spliterators.spliteratorUnknownSize(this.activityKTableProcessor.getActivities().all(), Spliterator.DISTINCT),
+                                        false
+                                )
+                                .map(activity -> MultiSelectWithPricingAdjustmentFormularFieldPossibleValue.builder()
+                                        .id(activity.key + "")
+                                        .text(activity.value.getName())
+                                        .disabled(Boolean.TRUE.equals(activity.value.getDeleted()))
+                                        .build()
+                                )
+                                .toList()
                 )
                 .appendOuter(KokuFieldSlotButton.builder()
                         .icon("PLUS")
@@ -402,30 +429,36 @@ public class CustomerAppointmentController {
         formFactory.endContainer();
 
         final List<MultiSelectFormularFieldPossibleValue> activityStepAndProductPossibleValuesUnion = new ArrayList<>();
-        activityStepAndProductPossibleValuesUnion.addAll(this.activityStepKTableProcessor.getActivitySteps().values().stream().map(activityStep -> {
+        activityStepAndProductPossibleValuesUnion.addAll(
+                StreamSupport.stream(
+                        Spliterators.spliteratorUnknownSize(this.activityStepKTableProcessor.getActivitySteps().all(), Spliterator.DISTINCT),
+                        false
+                ).map(activityStep -> {
                     return MultiSelectFormularFieldPossibleValue.builder()
-                            .id("activity_step_" + activityStep.getId())
+                            .id("activity_step_" + activityStep.key)
                             .valueMapping(KokuCustomerAppointmentActivityStepTreatmentDto.builder()
-                                    .activityStepId(activityStep.getId())
+                                    .activityStepId(activityStep.key)
                                     .build()
                             )
-                            .text(activityStep.getName())
-                            .disabled(Boolean.TRUE.equals(activityStep.getDeleted()))
+                            .text(activityStep.value.getName())
+                            .disabled(Boolean.TRUE.equals(activityStep.value.getDeleted()))
                             .color(KokuColorEnum.PRIMARY)
                             .category("Behandlungsschritte")
                             .build();
                 }).toList()
         );
-        final Map<Long, ProductManufacturerKafkaDto> productManufacturers = this.productManufacturerKTableProcessor.getProductManufacturers();
-        activityStepAndProductPossibleValuesUnion.addAll(this.productKTableProcessor.getProducts().values().stream().sorted(Comparator.comparing(ProductKafkaDto::getManufacturerId)).map(product -> {
+        activityStepAndProductPossibleValuesUnion.addAll(StreamSupport.stream(
+                        Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
+                        false
+                ).map(product -> {
                     return MultiSelectFormularFieldPossibleValue.builder()
-                            .id("product_" + product.getId())
+                            .id("product_" + product.key)
                             .valueMapping(KokuCustomerAppointmentProductTreatmentDto.builder()
-                                    .productId(product.getId())
+                                    .productId(product.key)
                                     .build()
                             )
-                            .text(String.format("%s / %s", productManufacturers.get(product.getManufacturerId()).getName(), product.getName()))
-                            .disabled(Boolean.TRUE.equals(product.getDeleted()))
+                            .text(String.format("%s / %s", this.productManufacturerKTableProcessor.getProductManufacturers().get(product.value.getManufacturerId()).getName(), product.value.getName()))
+                            .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
                             .color(KokuColorEnum.SECONDARY)
                             .category("Produkte")
                             .build();
@@ -645,13 +678,18 @@ public class CustomerAppointmentController {
         String soldProductsFieldRef = formFactory.addField(MultiSelectWithPricingAdjustmentFormularField.builder()
                 .valuePath(KokuCustomerAppointmentDto.Fields.soldProducts)
                 .placeholder("Weitere Produkte...")
-                .possibleValues(this.productKTableProcessor.getProducts().values().stream().sorted(Comparator.comparing(ProductKafkaDto::getManufacturerId)).map(product -> {
-                    return MultiSelectWithPricingAdjustmentFormularFieldPossibleValue.builder()
-                            .id(product.getId() + "")
-                            .text(String.format("%s / %s", productManufacturers.get(product.getManufacturerId()).getName(), product.getName()))
-                            .disabled(Boolean.TRUE.equals(product.getDeleted()))
-                            .build();
-                }).toList())
+                .possibleValues(StreamSupport.stream(
+                                Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
+                                false
+                        )
+                        .sorted(Comparator.comparing(longProductKafkaDtoKeyValue -> longProductKafkaDtoKeyValue.value.getManufacturerId()))
+                        .map(product -> {
+                            return MultiSelectWithPricingAdjustmentFormularFieldPossibleValue.builder()
+                                    .id(product.key + "")
+                                    .text(String.format("%s / %s", this.productManufacturerKTableProcessor.getProductManufacturers().get(product.value.getManufacturerId()).getName(), product.value.getName()))
+                                    .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
+                                    .build();
+                        }).toList())
                 .idPathMapping(KokuCustomerAppointmentSoldProductDto.Fields.productId)
                 .pricePathMapping(KokuCustomerAppointmentSoldProductDto.Fields.price)
                 .appendOuter(KokuFieldSlotButton.builder()
@@ -757,11 +795,14 @@ public class CustomerAppointmentController {
                 .valuePath(KokuCustomerAppointmentDto.Fields.promotions)
                 .label("Aktionen")
                 .placeholder("Weitere Aktionen...")
-                .possibleValues(this.promotionKTableProcessor.getPromotions().values().stream().map(promotion -> {
+                .possibleValues(StreamSupport.stream(
+                        Spliterators.spliteratorUnknownSize(this.promotionKTableProcessor.getPromotions().all(), Spliterator.DISTINCT),
+                        false
+                ).map(promotion -> {
                     return MultiSelectFormularFieldPossibleValue.builder()
-                            .id(promotion.getId() + "")
-                            .text(promotion.getName())
-                            .disabled(Boolean.TRUE.equals(promotion.getDeleted()))
+                            .id(promotion.key + "")
+                            .text(promotion.value.getName())
+                            .disabled(Boolean.TRUE.equals(promotion.value.getDeleted()))
                             .build();
                 }).toList())
                 .idPathMapping(KokuCustomerAppointmentPromotionDto.Fields.promotionId)
@@ -1601,8 +1642,6 @@ public class CustomerAppointmentController {
 
         final Map<Long, Long> salesPerProduct = new HashMap<>();
         final Map<Long, BigDecimal> revenuePerProduct = new HashMap<>();
-        final Map<Long, ProductKafkaDto> allProducts = productKTableProcessor.getProducts();
-        final Map<Long, ProductManufacturerKafkaDto> allProductManufacturers = productManufacturerKTableProcessor.getProductManufacturers();
 
         for (final CustomerAppointment customerAppointment : allAppointments) {
             for (final CustomerAppointmentSoldProduct soldProduct : customerAppointment.getSoldProducts()) {
@@ -1632,7 +1671,11 @@ public class CustomerAppointmentController {
                 )
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
-                                .categories(allProducts.values().stream().map(product -> String.format("%s / %s", allProductManufacturers.get(product.getManufacturerId()).getName(), product.getName()).trim()).toList())
+                                .categories(StreamSupport.stream(
+                                                Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
+                                                false
+                                        )
+                                        .map(product -> String.format("%s / %s", this.productManufacturerKTableProcessor.getProductManufacturers().get(product.value.getManufacturerId()).getName(), product.value.getName()).trim()).toList())
                                 .build()
                         )
                         .y(YAxisDto.builder()
@@ -1649,15 +1692,22 @@ public class CustomerAppointmentController {
                 .series(List.of(
                         NumericSeriesDto.builder()
                                 .name("Umsatz (€)")
-                                .data(allProducts.values().stream().map(productKafkaDto -> {
-                                    return revenuePerProduct.getOrDefault(productKafkaDto.getId(), BigDecimal.ZERO);
+                                .data(StreamSupport.stream(
+                                        Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
+                                        false
+                                ).map(productKafkaDto -> {
+                                    return revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO);
                                 }).toList())
                                 .build(),
                         NumericSeriesDto.builder()
                                 .name("Verkäufe")
-                                .data(allProducts.values().stream().map(productKafkaDto -> {
-                                    return BigDecimal.valueOf(salesPerProduct.getOrDefault(productKafkaDto.getId(), 0L));
-                                }).toList())
+                                .data(StreamSupport.stream(
+                                                Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
+                                                false
+                                        )
+                                        .map(productKafkaDto -> {
+                                            return BigDecimal.valueOf(salesPerProduct.getOrDefault(productKafkaDto.key, 0L));
+                                        }).toList())
                                 .build()
                 ))
                 .stacked(true)
@@ -1686,7 +1736,6 @@ public class CustomerAppointmentController {
 
         final Map<Long, Long> applicationsPerActivity = new HashMap<>();
         final Map<Long, BigDecimal> revenuePerActivity = new HashMap<>();
-        final Map<Long, ActivityKafkaDto> allActivities = activityKTableProcessor.getActivities();
 
         for (final CustomerAppointment customerAppointment : allAppointments) {
             for (final CustomerAppointmentActivity activity : customerAppointment.getActivities()) {
@@ -1716,7 +1765,13 @@ public class CustomerAppointmentController {
                 )
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
-                                .categories(allActivities.values().stream().map(activity -> String.format("%s", allActivities.get(activity.getId()).getName())).toList())
+                                .categories(
+                                        StreamSupport.stream(
+                                                        Spliterators.spliteratorUnknownSize(this.activityKTableProcessor.getActivities().all(), Spliterator.DISTINCT),
+                                                        false
+                                                ).map(activity -> String.format("%s", activity.value.getName()))
+                                                .toList()
+                                )
                                 .build()
                         )
                         .y(YAxisDto.builder()
@@ -1733,15 +1788,17 @@ public class CustomerAppointmentController {
                 .series(List.of(
                         NumericSeriesDto.builder()
                                 .name("Umsatz (€)")
-                                .data(allActivities.values().stream().map(activity -> {
-                                    return revenuePerActivity.getOrDefault(activity.getId(), BigDecimal.ZERO);
-                                }).toList())
+                                .data(StreamSupport.stream(
+                                        Spliterators.spliteratorUnknownSize(this.activityKTableProcessor.getActivities().all(), Spliterator.DISTINCT),
+                                        false
+                                ).map(activity -> revenuePerActivity.getOrDefault(activity.key, BigDecimal.ZERO)).toList())
                                 .build(),
                         NumericSeriesDto.builder()
                                 .name("Anwendungen")
-                                .data(allActivities.values().stream().map(activity -> {
-                                    return BigDecimal.valueOf(applicationsPerActivity.getOrDefault(activity.getId(), 0L));
-                                }).toList())
+                                .data(StreamSupport.stream(
+                                        Spliterators.spliteratorUnknownSize(this.activityKTableProcessor.getActivities().all(), Spliterator.DISTINCT),
+                                        false
+                                ).map(activity -> BigDecimal.valueOf(applicationsPerActivity.getOrDefault(activity.key, 0L))).toList())
                                 .build()
                 ))
                 .stacked(true)
@@ -1918,7 +1975,7 @@ public class CustomerAppointmentController {
                 .color(KokuColorEnum.PURPLE)
                 .headline(String.valueOf(countAllAppointmentsThisMonth))
                 .subHeadline("Termine " + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN) + " " + currentMonth.getYear() + "  \uD83D\uDCC5")
-                .progress((short) (countAllAppointmentsThisMonth != 0L ? Math.round((float)countPassedAppointmentsThisMonth * 100 / countAllAppointmentsThisMonth) : 0))
+                .progress((short) (countAllAppointmentsThisMonth != 0L ? Math.round((float) countPassedAppointmentsThisMonth * 100 / countAllAppointmentsThisMonth) : 0))
                 .progressDetails(List.of(
                         DashboardTextPanelProgressDetailsDto.builder()
                                 .headline(String.valueOf(countPassedAppointmentsThisMonth))
@@ -2062,7 +2119,6 @@ public class CustomerAppointmentController {
         final LocalDateTime now = LocalDateTime.now();
         final YearMonth currentMonth = YearMonth.from(now);
 
-        final Map<Long, ProductKafkaDto> allProducts = productKTableProcessor.getProducts();
         final Map<Long, Integer> productUsages = getProductUsages(
                 currentMonth.atDay(1).atTime(LocalTime.MIN),
                 currentMonth.atEndOfMonth().atTime(LocalTime.MAX)
@@ -2075,7 +2131,7 @@ public class CustomerAppointmentController {
 
         String name = "?";
         if (maxEntry != null) {
-            name = allProducts.get(maxEntry.getKey()).getName();
+            name = this.productKTableProcessor.getProducts().get(maxEntry.getKey()).getName();
         }
 
         return DashboardTextPanelDto.builder()
@@ -2090,7 +2146,6 @@ public class CustomerAppointmentController {
         final LocalDateTime now = LocalDateTime.now();
         final YearMonth currentMonth = YearMonth.from(now);
 
-        final Map<Long, ActivityKafkaDto> allActivities = activityKTableProcessor.getActivities();
         final Map<Long, Integer> activityUsages = getActivityUsages(
                 currentMonth.atDay(1).atTime(LocalTime.MIN),
                 currentMonth.atEndOfMonth().atTime(LocalTime.MAX)
@@ -2103,7 +2158,7 @@ public class CustomerAppointmentController {
 
         String name = "?";
         if (maxEntry != null) {
-            name = allActivities.get(maxEntry.getKey()).getName();
+            name = this.activityKTableProcessor.getActivities().get(maxEntry.getKey()).getName();
         }
 
         return DashboardTextPanelDto.builder()

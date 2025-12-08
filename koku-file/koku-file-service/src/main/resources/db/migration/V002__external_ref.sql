@@ -1,0 +1,1 @@
+alter table koku.file ADD COLUMN external_ref varchar UNIQUE;

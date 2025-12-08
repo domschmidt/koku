@@ -11,7 +11,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 
 import java.util.Map;
 
@@ -38,7 +38,7 @@ public class KafkaCustomerAppointmentConfig {
     public ProducerFactory<Long, CustomerAppointmentKafkaDto> customerAppointmentProducerFactory() {
         return new DefaultKafkaProducerFactory<>(Map.of(
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class,
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class,
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JacksonJsonSerializer.class,
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.kafkaConfiguration.getBootstrapServers()
         ));
     }

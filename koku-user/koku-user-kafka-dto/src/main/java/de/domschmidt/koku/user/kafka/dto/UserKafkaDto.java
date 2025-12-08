@@ -1,6 +1,6 @@
 package de.domschmidt.koku.user.kafka.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserKafkaDto {

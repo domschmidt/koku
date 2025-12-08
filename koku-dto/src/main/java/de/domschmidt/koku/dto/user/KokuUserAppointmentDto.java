@@ -1,6 +1,5 @@
 package de.domschmidt.koku.dto.user;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldNameConstants;
 
@@ -13,7 +12,6 @@ import java.time.LocalTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @FieldNameConstants
 public class KokuUserAppointmentDto {
 

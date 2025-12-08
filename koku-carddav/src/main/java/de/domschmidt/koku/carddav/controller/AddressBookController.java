@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping(APIConstants.ADDRESSBOOK_PATH)
@@ -101,9 +102,17 @@ public class AddressBookController {
                     final Collection<CustomerKafkaDto> filteredContacts;
                     final Set<Long> contactFilter = parseContactFilter(document);
                     if (contactFilter != null && !contactFilter.isEmpty()) {
-                        filteredContacts = this.customerKTableProcessor.getCustomers().values().stream().filter(customer -> contactFilter.contains(customer.getId())).toList();
+                        filteredContacts = StreamSupport.stream(
+                                        Spliterators.spliteratorUnknownSize(this.customerKTableProcessor.getCustomers().all(), Spliterator.DISTINCT),
+                                        false
+                                ).filter(customer -> contactFilter.contains(customer.key))
+                                .map(entry -> entry.value).toList();
                     } else {
-                        filteredContacts = this.customerKTableProcessor.getCustomers().values();
+                        filteredContacts = StreamSupport.stream(
+                                        Spliterators.spliteratorUnknownSize(this.customerKTableProcessor.getCustomers().all(), Spliterator.DISTINCT),
+                                        false
+                                )
+                                .map(entry -> entry.value).toList();
                     }
 
                     for (final CustomerKafkaDto currentContact : filteredContacts) {

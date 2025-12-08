@@ -18,7 +18,6 @@ import de.domschmidt.koku.customer.transformer.CustomerToCustomerDtoTransformer;
 import de.domschmidt.koku.customer.transformer.CustomerToCustomerSummaryDtoTransformer;
 import de.domschmidt.koku.dto.customer.KokuCustomerDto;
 import de.domschmidt.koku.dto.customer.KokuCustomerSummaryDto;
-import de.domschmidt.koku.dto.file.KokuFileRefDto;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
 import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
@@ -84,10 +83,10 @@ import java.util.concurrent.TimeoutException;
 
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping()
 @Slf4j
-@RequiredArgsConstructor
 public class CustomerController {
     private final EntityManager entityManager;
     private final CustomerRepository customerRepository;
@@ -277,8 +276,8 @@ public class CustomerController {
                                                         .route("documents")
                                                         .icon("DOCUMENT")
                                                         .content(ListViewListContentDto.builder()
-                                                                .listUrl("services/files/files/list?ref=" + KokuFileRefDto.CUSTOMER + "&refId=:customerId&contextEndpointUrl=services/customers/customers/:customerId")
-                                                                .sourceUrl("services/files/files/query?ref=" + KokuFileRefDto.CUSTOMER + "&refId=:customerId")
+                                                                .listUrl("services/files/files/list?customerId=:customerId&contextEndpointUrl=services/customers/customers/:customerId")
+                                                                .sourceUrl("services/files/files/query?customerId=:customerId")
                                                                 .build()
                                                         )
                                                         .build(),
@@ -310,14 +309,14 @@ public class CustomerController {
         );
 
         listViewFactory.addGlobalItemStyling(ListViewConditionalItemValueStylingDto.builder()
-                        .compareValuePath(KokuCustomerDto.Fields.deleted)
-                        .expectedValue(Boolean.TRUE)
-                        .positiveStyling(ListViewItemStylingDto.builder()
-                                .lineThrough(true)
-                                .opacity((short) 50)
-                                .build()
-                        )
+                .compareValuePath(KokuCustomerDto.Fields.deleted)
+                .expectedValue(Boolean.TRUE)
+                .positiveStyling(ListViewItemStylingDto.builder()
+                        .lineThrough(true)
+                        .opacity((short) 50)
                         .build()
+                )
+                .build()
         );
         listViewFactory.addItemAction(ListViewConditionalItemValueActionDto.builder()
                 .compareValuePath(KokuCustomerDto.Fields.deleted)

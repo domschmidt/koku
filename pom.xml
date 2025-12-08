@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.5</version>
+        <version>4.0.0</version>
         <relativePath/>
     </parent>
 
@@ -16,7 +16,7 @@
 
     <groupId>de.domschmidt</groupId>
     <artifactId>koku</artifactId>
-    <version>2.50.1-SNAPSHOT</version>
+    <version>0.0.0</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -27,23 +27,19 @@
 
         <main.basedir>${project.basedir}</main.basedir>
         <docker.jre.baseimage>eclipse-temurin:21-jre</docker.jre.baseimage>
-        <jib-maven-plugin.version>3.4.2</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
 
-        <spring-boot-maven-plugin.version>3.2.8</spring-boot-maven-plugin.version>
         <apt-maven-plugin.version>1.1.3</apt-maven-plugin.version>
-        <postgresql.version>42.7.5</postgresql.version>
-        <lombok.version>1.18.38</lombok.version>
-        <flyway-core.version>11.5.0</flyway-core.version>
+        <postgresql.version>42.7.8</postgresql.version>
+        <lombok.version>1.18.42</lombok.version>
         <ez-vcard.version>0.12.1</ez-vcard.version>
-        <commons-io.version>2.18.0</commons-io.version>
-        <commons-text.version>1.12.0</commons-text.version>
-        <dom4j.version>2.1.4</dom4j.version>
-        <commons-lang3.version>3.14.0</commons-lang3.version>
-        <commons-beanutils.version>1.10.1</commons-beanutils.version>
-        <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <commons-io.version>2.21.0</commons-io.version>
+        <commons-text.version>1.14.0</commons-text.version>
+        <dom4j.version>2.2.0</dom4j.version>
+        <commons-lang3.version>3.20.0</commons-lang3.version>
+        <spring-cloud.version>2025.1.0</spring-cloud.version>
         <querydsl.version>5.1.0</querydsl.version>
-        <typescript-generator-maven-plugin.version>2.36.1070</typescript-generator-maven-plugin.version>
-        <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
+        <typescript-generator-maven-plugin.version>3.2.1263</typescript-generator-maven-plugin.version>
     </properties>
 
     <modules>
@@ -66,6 +62,7 @@
         <module>calendar</module>
         <module>chart</module>
         <module>dashboard</module>
+        <module>migrate</module>
     </modules>
 
 

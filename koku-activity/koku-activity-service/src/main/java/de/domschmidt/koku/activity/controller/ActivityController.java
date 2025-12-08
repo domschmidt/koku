@@ -68,8 +68,8 @@ import de.domschmidt.listquery.dto.request.ListQuery;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -86,24 +86,12 @@ import java.util.concurrent.TimeoutException;
 @RestController
 @RequestMapping()
 @Slf4j
+@RequiredArgsConstructor
 public class ActivityController {
     private final EntityManager entityManager;
     private final ActivityRepository activityRepository;
     private final ActivityKafkaService activityKafkaService;
     private final ActivityToActivityDtoTransformer transformer;
-
-    @Autowired
-    public ActivityController(
-            final EntityManager entityManager,
-            final ActivityRepository activityRepository,
-            final ActivityToActivityDtoTransformer transformer,
-            final ActivityKafkaService activityKafkaService
-    ) {
-        this.entityManager = entityManager;
-        this.activityRepository = activityRepository;
-        this.transformer = transformer;
-        this.activityKafkaService = activityKafkaService;
-    }
 
     @GetMapping("/activities/form")
     public FormViewDto getFormularView() {

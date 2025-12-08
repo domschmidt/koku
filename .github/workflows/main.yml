@@ -42,7 +42,7 @@ jobs:
 
       - name: Maven Build
         if: steps.semantic.outputs.new_release_published == 'true'
-        run: "mvn install -Djib.to.auth.username=${{ secrets.DH_USERNAME }} -Djib.to.auth.password=${{ secrets.DH_PASSWORD }} -P build-docker"
+        run: "mvn install -Djib.to.auth.username=${{ secrets.DH_USERNAME }} -Djib.to.auth.password=${{ secrets.DH_PASSWORD }} -P jib-build"
 
       - name: Build and push
         uses: docker/build-push-action@v6

@@ -21,7 +21,7 @@
         @for (currentSelectionId of selectionIds(); track $index; let currentSelectionIdx = $index) {
           @if (possibleValuesIdx()[currentSelectionId]; as possibleValue) {
 
-            <button class="badge pr-0 cursor-grab"
+            <button class="badge badge-lg pr-0 cursor-grab text-wrap h-auto"
                     type="button"
                     cdkDrag
                     (click)="onSelectItemClick.emit({event: $event, id: currentSelectionId, pos: currentSelectionIdx})"
