@@ -1,29 +1,33 @@
+import exec.*;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.HashMap;
 import java.util.Map;
 
-public class MigrateRunnerV2 {
+public class MigrateRunner {
 
     public static void main(String[] args) throws Exception {
 
         try (
-                Connection source = DriverManager.getConnection("jdbc:postgresql://localhost:5433/koku", "admin", "admin");
+                Connection source = DriverManager.getConnection(System.getenv("db.source"));
 
-                Connection products = DriverManager.getConnection("jdbc:postgresql://localhost:5432/products", "postgres", "koku");
-                Connection promotions = DriverManager.getConnection("jdbc:postgresql://localhost:5432/promotions", "postgres", "koku");
-                Connection activities = DriverManager.getConnection("jdbc:postgresql://localhost:5432/activities", "postgres", "koku");
-                Connection users = DriverManager.getConnection("jdbc:postgresql://localhost:5432/users", "postgres", "koku");
-                Connection customers = DriverManager.getConnection("jdbc:postgresql://localhost:5432/customers", "postgres", "koku");
-                Connection files = DriverManager.getConnection("jdbc:postgresql://localhost:5432/files", "postgres", "koku");
+                Connection products = DriverManager.getConnection(System.getenv("db.target.products"));
+                Connection promotions = DriverManager.getConnection(System.getenv("db.target.promotions"));
+                Connection activities = DriverManager.getConnection(System.getenv("db.target.activities"));
+                Connection users = DriverManager.getConnection(System.getenv("db.target.users"));
+                Connection customers = DriverManager.getConnection(System.getenv("db.target.customers"));
+                Connection files = DriverManager.getConnection(System.getenv("db.target.files"));
         ) {
-            String uploadsDir = "D:/kokubak/2025-11-27_12_00_01/uploads";
+            String uploadsDir = System.getenv("dir.source.uploads");
+
+            Map<String, String> userMapping = new HashMap<>();
+            for (String currentUserMapping : System.getenv("usermapping").split(",")) {
+                String[] currentUserMappingSplitted = currentUserMapping.split(":");
+                userMapping.put(currentUserMappingSplitted[0], currentUserMappingSplitted[1]);
+            }
 
             source.setAutoCommit(false);
-            Map<String, String> userMapping = Map.of(
-                    "852", "d15eac9a-eab4-49a1-b437-d2d6277f82b2",
-                    "1", "dbc777d8-e69d-4ffa-b13d-c1686f58599b"
-            );
-
             System.out.println("Starting migration...");
 
             new ProductManufacturerMigration(source, products).migrate();
