@@ -1,3 +1,5 @@
+package exec;
+
 import java.sql.Connection;
 
 public class CustomerMigration extends BaseMigration {
