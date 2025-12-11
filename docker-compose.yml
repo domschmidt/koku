@@ -1,5 +1,3 @@
-version: "3.9"
-
 # ---------- SPRING SERVICE TEMPLATE ----------
 x-jib-service-keycloak-cacert-import-template: &jib_service_keycloak_cacert_import_template
   volumes:
@@ -246,7 +244,7 @@ services:
       - CARDDAV_PASSWORD=${CARDDAV_PASSWORD}
 
   kafka:
-    image: docker.io/bitnami/kafka:4.0.0
+    image: docker.io/bitnamilegacy/kafka:4.0.0
     restart: unless-stopped
     ports:
       - "9094:9094"
@@ -270,7 +268,7 @@ services:
       retries: 10
 
   init-kafka:
-    image: docker.io/bitnami/kafka:4.0.0
+    image: docker.io/bitnamilegacy/kafka:4.0.0
     depends_on:
       kafka:
         condition: service_healthy

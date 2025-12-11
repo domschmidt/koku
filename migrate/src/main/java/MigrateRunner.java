@@ -10,16 +10,16 @@ public class MigrateRunner {
     public static void main(String[] args) throws Exception {
 
         try (
-                Connection source = DriverManager.getConnection(System.getenv("db.source"));
+                Connection source = DriverManager.getConnection(System.getenv("db_source"));
 
-                Connection products = DriverManager.getConnection(System.getenv("db.target.products"));
-                Connection promotions = DriverManager.getConnection(System.getenv("db.target.promotions"));
-                Connection activities = DriverManager.getConnection(System.getenv("db.target.activities"));
-                Connection users = DriverManager.getConnection(System.getenv("db.target.users"));
-                Connection customers = DriverManager.getConnection(System.getenv("db.target.customers"));
-                Connection files = DriverManager.getConnection(System.getenv("db.target.files"));
+                Connection products = DriverManager.getConnection(System.getenv("db_target_products"));
+                Connection promotions = DriverManager.getConnection(System.getenv("db_target_promotions"));
+                Connection activities = DriverManager.getConnection(System.getenv("db_target_activities"));
+                Connection users = DriverManager.getConnection(System.getenv("db_target_users"));
+                Connection customers = DriverManager.getConnection(System.getenv("db_target_customers"));
+                Connection files = DriverManager.getConnection(System.getenv("db_target_files"));
         ) {
-            String uploadsDir = System.getenv("dir.source.uploads");
+            String uploadsDir = System.getenv("dir_source_uploads");
 
             Map<String, String> userMapping = new HashMap<>();
             for (String currentUserMapping : System.getenv("usermapping").split(",")) {
