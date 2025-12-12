@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/domschmidt/koku/compare/v2.0.0...v2.0.1) (2025-12-12)
+
+
+### Bug Fixes
+
+* **keycloak:** minor keycloak refresh improvements ([d300dac](https://github.com/domschmidt/koku/commit/d300dac15d3eeb2d944597934a7ffc0ec2b5616e))
+
 # [2.0.0](https://github.com/domschmidt/koku/compare/v1.0.0...v2.0.0) (2025-12-08)
 
 
