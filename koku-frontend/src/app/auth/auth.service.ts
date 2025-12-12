@@ -1,6 +1,6 @@
 import {inject, Injectable} from '@angular/core';
-import Keycloak, {KeycloakInstance} from 'keycloak-js';
-import {from, map, mergeMap, ReplaySubject} from 'rxjs';
+import Keycloak from 'keycloak-js';
+import {from, mergeMap, ReplaySubject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../toast/toast.service';
 
@@ -18,12 +18,12 @@ export class AuthService {
   private httpClient = inject(HttpClient);
   private toastService = inject(ToastService);
 
-  private _keycloak: KeycloakInstance | undefined;
+  private _keycloak: Keycloak | undefined;
   tokenSubject: ReplaySubject<string> = new ReplaySubject(1);
 
   private config: AuthConfig | undefined;
 
-  get keycloak(): KeycloakInstance {
+  get keycloak(): Keycloak {
     if (!this._keycloak) {
       if (!this.config) {
         throw new Error('Keycloak config not loaded yet');
@@ -54,6 +54,14 @@ export class AuthService {
       });
   }
 
+  private registerResumeEvents() {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.refreshSession();
+      }
+    });
+  }
+
   private initKeycloak() {
     from(this.keycloak.init({
       onLoad: 'check-sso',
@@ -62,8 +70,9 @@ export class AuthService {
       if (authenticated) {
         if (this.keycloak.token) {
           this.tokenSubject.next(this.keycloak.token);
+          this.httpClient.post<void>('services/users/users/@self/sync', {}).subscribe();
+          this.registerResumeEvents();
         }
-        this.httpClient.post<void>('services/users/users/@self/sync', {}).subscribe();
       } else {
         this.keycloak.login();
       }
@@ -75,11 +84,16 @@ export class AuthService {
   }
 
   refreshSession() {
-    return from(this.keycloak.updateToken()).pipe(map(() => {
-      if (this.keycloak.token) {
-        this.tokenSubject.next(this.keycloak.token);
-      }
-    }));
+    return this.keycloak.updateToken(30)
+      .then(() => {
+        if (this.keycloak.token) {
+          this.tokenSubject.next(this.keycloak.token);
+        }
+      })
+      .catch(() => {
+        this.toastService.add("Fehler beim Erneuern der Nutzersitzung. Melde dich neu an!", 'error');
+        this.destroySession();
+      });
   }
 
 }

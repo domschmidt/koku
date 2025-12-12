@@ -1,7 +1,6 @@
 package de.domschmidt.koku.file.transformer;
 
 import de.domschmidt.koku.dto.file.KokuFileDto;
-import de.domschmidt.koku.file.kafka.customers.service.CustomerKTableProcessor;
 import de.domschmidt.koku.file.persistence.File;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
