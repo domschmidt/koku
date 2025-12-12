@@ -16,7 +16,7 @@ import {get} from './utils/get';
 import {UNIQUE_REF_GENERATOR} from './utils/uniqueRef';
 import {set} from './utils/set';
 import Holidays, {HolidaysTypes} from 'date-holidays';
-import {getDayOfYear} from 'date-fns';
+import {format, formatISO, getDayOfYear} from 'date-fns';
 import {
   CALENDAR_PLUGIN,
   CalendarComponent,
@@ -27,7 +27,6 @@ import {
   DateSelection,
   RenderedCalendarInlineItem
 } from './calendar/calendar.component';
-import {format, formatISO} from 'date-fns';
 import {ToastService} from './toast/toast.service';
 import {catchError} from 'rxjs/operators';
 import {EventInput, EventSourceInput} from '@fullcalendar/core';

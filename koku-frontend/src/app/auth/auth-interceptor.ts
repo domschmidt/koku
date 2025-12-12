@@ -1,5 +1,5 @@
 import {HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest} from '@angular/common/http';
-import {EMPTY, Observable, skipWhile, Subject, take} from 'rxjs';
+import {EMPTY, from, Observable, skipWhile, Subject, take} from 'rxjs';
 import {inject} from '@angular/core';
 import {AuthService} from './auth.service';
 import {ToastService, ToastTypeUnion} from '../toast/toast.service';
@@ -40,7 +40,7 @@ class AuthInterceptor {
         catchError((err: any) => {
           if (err instanceof HttpErrorResponse) {
             if (err.status === 401 && tryRefresh) {
-              return authService.refreshSession().pipe(mergeMap(() => {
+              return from(authService.refreshSession()).pipe(mergeMap(() => {
                 return processRequest(next, req, false);
               }), catchError((stillError) => {
                 if (stillError instanceof HttpErrorResponse) {
