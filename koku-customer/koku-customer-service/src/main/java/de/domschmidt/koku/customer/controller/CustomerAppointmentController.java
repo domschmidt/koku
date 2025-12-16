@@ -1674,6 +1674,9 @@ public class CustomerAppointmentController {
                                 .categories(StreamSupport.stream(
                                                 Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
                                                 false
+                                        ).filter(productKafkaDto ->
+                                                BigDecimal.ZERO.compareTo(revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO)) != 0
+                                                        || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L
                                         )
                                         .map(product -> String.format("%s / %s", this.productManufacturerKTableProcessor.getProductManufacturers().get(product.value.getManufacturerId()).getName(), product.value.getName()).trim()).toList())
                                 .build()
@@ -1695,6 +1698,9 @@ public class CustomerAppointmentController {
                                 .data(StreamSupport.stream(
                                         Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
                                         false
+                                ).filter(productKafkaDto ->
+                                        BigDecimal.ZERO.compareTo(revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO)) != 0
+                                                || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L
                                 ).map(productKafkaDto -> {
                                     return revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO);
                                 }).toList())
@@ -1704,6 +1710,9 @@ public class CustomerAppointmentController {
                                 .data(StreamSupport.stream(
                                                 Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
                                                 false
+                                        ).filter(productKafkaDto ->
+                                                BigDecimal.ZERO.compareTo(revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO)) != 0
+                                                        || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L
                                         )
                                         .map(productKafkaDto -> {
                                             return BigDecimal.valueOf(salesPerProduct.getOrDefault(productKafkaDto.key, 0L));
@@ -1769,6 +1778,9 @@ public class CustomerAppointmentController {
                                         StreamSupport.stream(
                                                         Spliterators.spliteratorUnknownSize(this.activityKTableProcessor.getActivities().all(), Spliterator.DISTINCT),
                                                         false
+                                                ).filter(activityKafkaDto ->
+                                                        BigDecimal.ZERO.compareTo(revenuePerActivity.getOrDefault(activityKafkaDto.key, BigDecimal.ZERO)) != 0
+                                                                || applicationsPerActivity.getOrDefault(activityKafkaDto.key, 0L) != 0L
                                                 ).map(activity -> String.format("%s", activity.value.getName()))
                                                 .toList()
                                 )
@@ -1791,6 +1803,9 @@ public class CustomerAppointmentController {
                                 .data(StreamSupport.stream(
                                         Spliterators.spliteratorUnknownSize(this.activityKTableProcessor.getActivities().all(), Spliterator.DISTINCT),
                                         false
+                                ).filter(activityKafkaDto ->
+                                        BigDecimal.ZERO.compareTo(revenuePerActivity.getOrDefault(activityKafkaDto.key, BigDecimal.ZERO)) != 0
+                                                || applicationsPerActivity.getOrDefault(activityKafkaDto.key, 0L) != 0L
                                 ).map(activity -> revenuePerActivity.getOrDefault(activity.key, BigDecimal.ZERO)).toList())
                                 .build(),
                         NumericSeriesDto.builder()
@@ -1798,6 +1813,9 @@ public class CustomerAppointmentController {
                                 .data(StreamSupport.stream(
                                         Spliterators.spliteratorUnknownSize(this.activityKTableProcessor.getActivities().all(), Spliterator.DISTINCT),
                                         false
+                                ).filter(activityKafkaDto ->
+                                        BigDecimal.ZERO.compareTo(revenuePerActivity.getOrDefault(activityKafkaDto.key, BigDecimal.ZERO)) != 0
+                                                || applicationsPerActivity.getOrDefault(activityKafkaDto.key, 0L) != 0L
                                 ).map(activity -> BigDecimal.valueOf(applicationsPerActivity.getOrDefault(activity.key, 0L))).toList())
                                 .build()
                 ))
