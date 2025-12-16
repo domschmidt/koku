@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/domschmidt/koku/compare/v2.0.1...v2.0.2) (2025-12-16)
+
+
+### Bug Fixes
+
+* **dashboard:** fix calendar selection issue and add revenue forecast ([abacb39](https://github.com/domschmidt/koku/commit/abacb3996be2779f9e0b5b5e4e9a8a1c65a838d6))
+
 ## [2.0.1](https://github.com/domschmidt/koku/compare/v2.0.0...v2.0.1) (2025-12-12)
 
 
