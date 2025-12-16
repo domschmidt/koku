@@ -45,6 +45,7 @@ import de.domschmidt.koku.dto.customer.*;
 import de.domschmidt.koku.dto.dashboard.containers.grid.DashboardGridContainerDto;
 import de.domschmidt.koku.dto.dashboard.panels.text.DashboardAsyncTextPanelDto;
 import de.domschmidt.koku.dto.dashboard.panels.text.DashboardTextPanelDto;
+import de.domschmidt.koku.dto.dashboard.panels.text.DashboardTextPanelExplanationItemDto;
 import de.domschmidt.koku.dto.dashboard.panels.text.DashboardTextPanelProgressDetailsDto;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
@@ -1586,7 +1587,6 @@ public class CustomerAppointmentController {
                 .build();
     }
 
-
     @GetMapping(value = "/customers/{id}/statistics/yearlyvisits")
     public BarChartDto getYearlyVisitsByCustomerId(@PathVariable("id") Long customerId) {
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
@@ -2070,8 +2070,8 @@ public class CustomerAppointmentController {
                 .build();
     }
 
-    @GetMapping("/customers/dashboard/revenues")
-    public DashboardTextPanelDto getRevenuesDashboardContent() {
+    @GetMapping("/customers/dashboard/revenues/current")
+    public DashboardTextPanelDto getRevenuesCurrentDashboardContent() {
         final LocalDateTime now = LocalDateTime.now();
         final YearMonth currentMonth = YearMonth.from(now);
 
@@ -2096,6 +2096,7 @@ public class CustomerAppointmentController {
 
         return DashboardTextPanelDto.builder()
                 .color(KokuColorEnum.BLUE)
+                .topHeadline("Monatsumsatz")
                 .headline(NumberFormat.getCurrencyInstance(Locale.GERMANY).format(overallRevenueThisMonth))
                 .subHeadline("Umsatz " + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN) + " " + currentMonth.getYear() + " \uD83D\uDCB0")
                 .progress(BigDecimal.ZERO.compareTo(overallRevenueThisMonth) != 0 ? achievedRevenueThisMonth.multiply(BigDecimal.valueOf(100)).divide(overallRevenueThisMonth, 0, RoundingMode.HALF_UP).shortValue() : 0)
@@ -2109,6 +2110,41 @@ public class CustomerAppointmentController {
                                 .headline(calculatedFormattedDifference(overallRevenueThisMonth, overallRevenueSameMonthLastYear))
                                 .subHeadline("vs. " + sameMonthLastYear.getMonth().getDisplayName(TextStyle.SHORT, Locale.GERMAN) + " " + currentMonth.getYear())
                                 .headlineColor(KokuColorEnum.YELLOW)
+                                .build()
+                ))
+                .build();
+    }
+
+    @GetMapping("/customers/dashboard/revenues/preview")
+    public DashboardTextPanelDto getRevenuesPreviewDashboardContent() {
+        final LocalDateTime now = LocalDateTime.now();
+        final YearMonth currentMonth = YearMonth.from(now);
+
+        final BigDecimal overallRevenuePlanned = getOverallRevenue(
+                currentMonth.plusMonths(1).atDay(1).atTime(LocalTime.MIN),
+                currentMonth.plusMonths(1).plusYears(1).atEndOfMonth().atTime(LocalTime.MAX)
+        );
+        final BigDecimal overallRevenueNextMonth = getOverallRevenue(
+                currentMonth.plusMonths(1).atDay(1).atTime(LocalTime.MIN),
+                currentMonth.plusMonths(1).atEndOfMonth().atTime(LocalTime.MAX)
+        );
+        final BigDecimal overallRevenueNextNextMonth = getOverallRevenue(
+                currentMonth.plusMonths(2).atDay(1).atTime(LocalTime.MIN),
+                currentMonth.plusMonths(2).atEndOfMonth().atTime(LocalTime.MAX)
+        );
+
+        return DashboardTextPanelDto.builder()
+                .topHeadline("Umsatzerwartungen")
+                .headline(NumberFormat.getCurrencyInstance(Locale.GERMANY).format(overallRevenuePlanned))
+                .color(KokuColorEnum.EMERALD)
+                .explanations(List.of(
+                        DashboardTextPanelExplanationItemDto.builder()
+                                .left("Nächster Monat")
+                                .right(NumberFormat.getCurrencyInstance(Locale.GERMANY).format(overallRevenueNextMonth))
+                                .build(),
+                        DashboardTextPanelExplanationItemDto.builder()
+                                .left("Übernächster Monat")
+                                .right(NumberFormat.getCurrencyInstance(Locale.GERMANY).format(overallRevenueNextNextMonth))
                                 .build()
                 ))
                 .build();
@@ -2245,19 +2281,26 @@ public class CustomerAppointmentController {
         dashboardFactory.addContainer(DashboardGridContainerDto.builder()
                 .cols(1)
                 .md(2)
+                .build()
+        );
+
+        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
+                .sourceUrl("services/customers/customers/dashboard/revenues/current")
+                .build()
+        );
+        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
+                .sourceUrl("services/customers/customers/dashboard/revenues/preview")
+                .build()
+        );
+        dashboardFactory.endContainer();
+
+        dashboardFactory.addContainer(DashboardGridContainerDto.builder()
+                .cols(1)
+                .md(2)
                 .xl2(3)
                 .build()
         );
 
-        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
-                .sourceUrl("services/customers/customers/dashboard/appointments")
-                .build()
-        );
-
-        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
-                .sourceUrl("services/customers/customers/dashboard/revenues")
-                .build()
-        );
         dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
                 .sourceUrl("services/customers/customers/dashboard/topproduct")
                 .build()
@@ -2268,6 +2311,18 @@ public class CustomerAppointmentController {
         );
         dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
                 .sourceUrl("services/customers/customers/dashboard/newcustomers")
+                .build()
+        );
+        dashboardFactory.endContainer();
+
+        dashboardFactory.addContainer(DashboardGridContainerDto.builder()
+                .cols(1)
+                .md(2)
+                .build()
+        );
+
+        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
+                .sourceUrl("services/customers/customers/dashboard/appointments")
                 .build()
         );
         dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()

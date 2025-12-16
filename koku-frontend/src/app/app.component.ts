@@ -569,11 +569,11 @@ class CalendarInteractionPlugin implements CalendarPlugin {
               if (dateClickInfo && dateClickInfo.selectionStart) {
                 context = {
                   selectionStartDate: format(dateClickInfo.selectionStart, 'yyyy-MM-dd'),
-                  selectionStartTime: format(dateClickInfo.selectionStart, 'hh:mm'),
-                  selectionStartDateTime: format(dateClickInfo.selectionStart, "yyyy-MM-dd'T'hh:mm"),
+                  selectionStartTime: format(dateClickInfo.selectionStart, 'HH:mm'),
+                  selectionStartDateTime: format(dateClickInfo.selectionStart, "yyyy-MM-dd'T'HH:mm"),
                   selectionEndDate: format(dateClickInfo.selectionEnd, 'yyyy-MM-dd'),
-                  selectionEndTime: format(dateClickInfo.selectionEnd, 'hh:mm'),
-                  selectionEndDateTime: format(dateClickInfo.selectionEnd, "yyyy-MM-dd'T'hh:mm"),
+                  selectionEndTime: format(dateClickInfo.selectionEnd, 'HH:mm'),
+                  selectionEndDateTime: format(dateClickInfo.selectionEnd, "yyyy-MM-dd'T'HH:mm"),
                 };
               }
               this.calendarInstance.openRoutedContent(castedClickAction.route.split('/'), context);

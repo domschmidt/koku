@@ -19,6 +19,7 @@ public class DashboardTextPanelDto extends AbstractDashboardPanel {
     String subHeadline;
 
     List<DashboardTextPanelProgressDetailsDto> progressDetails;
+    List<DashboardTextPanelExplanationItemDto> explanations;
     Short progress;
 
 }

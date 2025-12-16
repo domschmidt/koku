@@ -1,6 +1,6 @@
 @if (contentWithColors(); as content) {
   <div
-    class="h-full card shadow-md p-4 rounded-2xl flex flex-col items-center justify-center"
+    class="h-full card shadow-md p-4 rounded-2xl flex flex-col items-center justify-center gap-1"
     [class]="content._cardColor"
   >
     @if (content.topHeadline; as topHeadline) {
@@ -16,13 +16,13 @@
       </div>
     }
     @if (content.subHeadline; as subHeadline) {
-      <div class="text-sm mt-1"
+      <div class="text-sm"
            [class]="content._subHeadlineColor">{{ subHeadline }}
       </div>
     }
 
     @if (content.progressDetails) {
-      <div class="flex justify-between w-full mt-4 text-sm">
+      <div class="flex justify-between w-full text-sm">
         @for (progressDetail of content.progressDetails; track $index) {
           <div class="flex flex-col items-center">
           <span class="font-semibold"
@@ -33,9 +33,20 @@
       </div>
     }
 
+    @for (explanation of content.explanations; track $index) {
+      <div class="flex justify-between text-sm w-full">
+        @if (explanation.left) {
+          <span>{{ explanation.left }}</span>
+        }
+        @if (explanation.right) {
+          <span>{{ explanation.right }}</span>
+        }
+      </div>
+    }
+
     @if (content.progress !== undefined) {
       <div
-        class="w-full h-2 rounded-full mt-3"
+        class="w-full h-2 rounded-full"
         [class]="content._progressColor">
         <div
           class="h-2 rounded-full"
