@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/domschmidt/koku/compare/v2.0.2...v2.0.3) (2025-12-16)
+
+
+### Bug Fixes
+
+* **minors:** resolve issues in document designer, improve list action layout and remove irrelevant statistics ([d607419](https://github.com/domschmidt/koku/commit/d60741940b5e4ef9de3e1546b98c96091bff6ef7))
+
 ## [2.0.2](https://github.com/domschmidt/koku/compare/v2.0.1...v2.0.2) (2025-12-16)
 
 
