@@ -3,19 +3,12 @@ package de.domschmidt.koku.customer.kafka.customers.service;
 import de.domschmidt.koku.customer.domain.KokuCustomerAppointmentActivityDomain;
 import de.domschmidt.koku.customer.domain.KokuCustomerAppointmentPromotionDomain;
 import de.domschmidt.koku.customer.domain.KokuCustomerAppointmentSoldProductDomain;
-import de.domschmidt.koku.customer.kafka.KafkaStreamsRunningEvent;
-import de.domschmidt.koku.customer.kafka.activities.service.ActivityKTableProcessor;
-import de.domschmidt.koku.customer.kafka.activity_steps.service.ActivityStepKTableProcessor;
-import de.domschmidt.koku.customer.kafka.products.service.ProductKTableProcessor;
-import de.domschmidt.koku.customer.kafka.promotions.service.PromotionKTableProcessor;
 import de.domschmidt.koku.customer.persistence.CustomerAppointmentActivity;
 import de.domschmidt.koku.customer.persistence.CustomerAppointmentRepository;
 import de.domschmidt.koku.customer.persistence.CustomerAppointmentSoldProduct;
 import de.domschmidt.koku.customer.transformer.CustomerAppointmentToCustomerAppointmentDtoTransformer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,22 +18,16 @@ import java.util.concurrent.TimeoutException;
 
 @Service
 @Slf4j
-@ConditionalOnBooleanProperty("koku.maintenance")
 @RequiredArgsConstructor
-public class CustomerAppointmentKafkaMaintenanceService implements ApplicationListener<KafkaStreamsRunningEvent> {
+public class CustomerAppointmentKafkaMaintenanceService {
 
     final CustomerAppointmentRepository customerAppointmentRepository;
     final CustomerAppointmentKafkaService customerAppointmentKafkaService;
     final CustomerAppointmentToCustomerAppointmentDtoTransformer transformer;
 
-    final ActivityKTableProcessor activityKTableProcessor;
-    final ProductKTableProcessor productKTableProcessor;
-    final ActivityStepKTableProcessor activityStepKTableProcessor;
-    final PromotionKTableProcessor promotionKTableProcessor;
-
-    @Override
     @Transactional
-    public void onApplicationEvent(KafkaStreamsRunningEvent event) {
+    public void runMaintenance() {
+        log.warn("###### MAINTENANCE ###### SEND CUSTOMER APPOINTMENTS ######");
         this.customerAppointmentRepository.findAll().forEach(model -> {
             final List<KokuCustomerAppointmentPromotionDomain> allPromotions =
                     model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList();
@@ -54,6 +41,10 @@ public class CustomerAppointmentKafkaMaintenanceService implements ApplicationLi
                     model.getStart(),
                     model.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromEntity).toList(),
                     model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
+            ));
+            model.setCalculatedEndSnapshot(this.transformer.calculateCustomerAppointmentEnd(
+                    model.getStart(),
+                    model.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromEntity).toList()
             ));
 
             for (final CustomerAppointmentSoldProduct soldProduct : model.getSoldProducts()) {

@@ -133,26 +133,14 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 );
             }
         }
-        final Duration approximatelyActivitySum = activities.stream().map(
-                kokuCustomerAppointmentActivityDto -> {
-                    final ActivityKafkaDto activity = this.activityKTableProcessor.getActivities().get(kokuCustomerAppointmentActivityDto.getActivityId());
-                    if (activity != null && activity.getApproximatelyDuration() != null) {
-                        return activity.getApproximatelyDuration();
-                    }
-                    return Duration.ZERO;
-                }
-        ).reduce(Duration.ZERO, Duration::plus);
-
-
-        final LocalDateTime approximatelyEndDateTime = model.getStart() != null ? model.getStart().plusNanos(approximatelyActivitySum.toNanos()) : null;
         return KokuCustomerAppointmentDto.builder()
                 .id(model.getId())
                 .deleted(model.isDeleted())
                 .version(model.getVersion())
                 .date(model.getStart() != null ? model.getStart().toLocalDate() : null)
                 .time(model.getStart() != null ? model.getStart().toLocalTime() : null)
-                .approximatelyEndDate(approximatelyEndDateTime != null ? approximatelyEndDateTime.toLocalDate() : null)
-                .approximatelyEndTime(approximatelyEndDateTime != null ? approximatelyEndDateTime.toLocalTime() : null)
+                .approximatelyEndDate(model.getCalculatedEndSnapshot() != null ? model.getCalculatedEndSnapshot().toLocalDate() : null)
+                .approximatelyEndTime(model.getCalculatedEndSnapshot() != null ? model.getCalculatedEndSnapshot().toLocalTime() : null)
                 .description(model.getDescription())
                 .additionalInfo(model.getAdditionalInfo())
                 .userId(model.getUserId())
@@ -326,6 +314,11 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                     model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
             ));
         }
+
+        model.setCalculatedEndSnapshot(this.calculateCustomerAppointmentEnd(
+                model.getStart(),
+                model.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromEntity).toList()
+        ));
 
         return model;
     }
@@ -603,5 +596,17 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                         )
                 )
                 .build();
+    }
+
+    public LocalDateTime calculateCustomerAppointmentEnd(
+            final LocalDateTime start,
+            final List<KokuCustomerAppointmentActivityDomain> activities
+    ) {
+        Duration duration = Duration.ZERO;
+        for (final KokuCustomerAppointmentActivityDomain currentActivity : activities) {
+            final ActivityKafkaDto kafkaActivity = this.activityKTableProcessor.getActivities().get(currentActivity.getActivityId());
+            duration = duration.plus(kafkaActivity.getApproximatelyDuration());
+        }
+        return start.plus(duration);
     }
 }
