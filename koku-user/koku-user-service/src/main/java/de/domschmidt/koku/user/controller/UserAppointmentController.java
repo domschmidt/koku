@@ -487,7 +487,7 @@ public class UserAppointmentController {
                 KokuUserAppointmentDto.Fields.startDate,
                 Expressions.dateTemplate(
                         LocalDate.class,
-                        "cast({0} as date)",
+                        "DATE({0})",
                         qClazz.startTimestamp
                 )
         );
@@ -503,7 +503,7 @@ public class UserAppointmentController {
                 KokuUserAppointmentDto.Fields.endDate,
                 Expressions.dateTemplate(
                         LocalDate.class,
-                        "cast({0} as date)",
+                        "DATE({0})",
                         qClazz.endTimestamp
                 )
         );

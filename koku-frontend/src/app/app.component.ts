@@ -16,7 +16,7 @@ import {get} from './utils/get';
 import {UNIQUE_REF_GENERATOR} from './utils/uniqueRef';
 import {set} from './utils/set';
 import Holidays, {HolidaysTypes} from 'date-holidays';
-import {format, formatISO, getDayOfYear} from 'date-fns';
+import {addMinutes, differenceInMinutes, format, formatISO, getDayOfYear, parseISO} from 'date-fns';
 import {
   CALENDAR_PLUGIN,
   CalendarComponent,
@@ -878,14 +878,18 @@ class CalendarGlobalEventPlugin implements CalendarPlugin {
             if (!lookedUpEvent) {
               lookedUpEvent = this.calendarInstance.calendarComponent()?.getApi().addEvent(newEvent, eventSource);
             } else {
-              if (newEvent.start !== undefined) {
-                lookedUpEvent.setStart(newEvent.start);
-              }
-              if (newEvent.end !== undefined) {
-                lookedUpEvent.setEnd(newEvent.end);
-              }
-              if (newEvent.allDay !== undefined) {
+              if (newEvent.allDay !== undefined && newEvent.allDay !== !!lookedUpEvent.allDay) {
                 lookedUpEvent.setAllDay(newEvent.allDay);
+              }
+              if (newEvent.start !== undefined && newEvent.end !== undefined) {
+                lookedUpEvent.setDates(newEvent.start, newEvent.end);
+              } else {
+                if (newEvent.start !== undefined) {
+                  lookedUpEvent.setStart(newEvent.start, {maintainDuration: true});
+                }
+                if (newEvent.end !== undefined) {
+                  lookedUpEvent.setEnd(newEvent.end, {maintainDuration: true});
+                }
               }
               lookedUpEvent.setProp('title', newEvent.title);
               lookedUpEvent.setProp('display', newEvent.display);
@@ -1071,12 +1075,22 @@ class CalendarListSourcePlugin implements CalendarPlugin {
           end.push(get(item, castedSource.endTimeFieldSelectionPath));
         }
 
+        const date1 = parseISO(start.join('T'));
+        const date2 = parseISO(end.join('T'));
+        let calculatedEndDate
+        const diffMinutes = differenceInMinutes(date2, date1);
+        if (diffMinutes < 60) {
+          calculatedEndDate = addMinutes(date1, 60);
+        } else {
+          calculatedEndDate = date2;
+        }
+
         return {
           id: `${castedSource.id}/${get(item, castedSource.idPath || '')}`,
           title: text,
           display: text,
           start: start.join('T'),
-          end: end.join('T'),
+          end: calculatedEndDate,
           rrule: rrule,
           allDay: !(castedSource.startTimeFieldSelectionPath && castedSource.endTimeFieldSelectionPath),
           className: `calendar-item calendar-item--color-${castedSource.sourceItemColor}`,

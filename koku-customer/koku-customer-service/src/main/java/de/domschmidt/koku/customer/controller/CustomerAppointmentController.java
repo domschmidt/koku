@@ -1387,7 +1387,7 @@ public class CustomerAppointmentController {
                 KokuCustomerAppointmentDto.Fields.date,
                 Expressions.dateTemplate(
                         LocalDate.class,
-                        "cast({0} as date)",
+                        "DATE({0})",
                         qClazz.start
                 )
         );
@@ -1397,6 +1397,22 @@ public class CustomerAppointmentController {
                         LocalTime.class,
                         "cast({0} as time)",
                         qClazz.start
+                )
+        );
+        listQueryFactory.addFetchExpr(
+                KokuCustomerAppointmentDto.Fields.approximatelyEndDate,
+                Expressions.dateTemplate(
+                        LocalDate.class,
+                        "DATE({0})",
+                        qClazz.calculatedEndSnapshot.coalesce(qClazz.start)
+                )
+        );
+        listQueryFactory.addFetchExpr(
+                KokuCustomerAppointmentDto.Fields.approximatelyEndTime,
+                Expressions.timeTemplate(
+                        LocalTime.class,
+                        "cast({0} as time)",
+                        qClazz.calculatedEndSnapshot.coalesce(qClazz.start)
                 )
         );
         listQueryFactory.addFetchExpr(

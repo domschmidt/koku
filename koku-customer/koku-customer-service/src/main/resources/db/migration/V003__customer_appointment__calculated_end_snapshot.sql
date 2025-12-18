@@ -1,0 +1,1 @@
+alter table koku.customer_appointment ADD COLUMN calculated_end_snapshot timestamp;

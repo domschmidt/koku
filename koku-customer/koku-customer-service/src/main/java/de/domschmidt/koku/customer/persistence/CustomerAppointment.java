@@ -31,6 +31,7 @@ public class CustomerAppointment implements Serializable {
     Long version;
 
     LocalDateTime start;
+    LocalDateTime calculatedEndSnapshot;
 
     String description = "";
     String additionalInfo = "";
@@ -58,5 +59,4 @@ public class CustomerAppointment implements Serializable {
     LocalDateTime recorded;
     @UpdateTimestamp
     LocalDateTime updated;
-
 }
