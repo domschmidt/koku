@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/domschmidt/koku/compare/v2.0.3...v2.0.4) (2025-12-18)
+
+
+### Bug Fixes
+
+* **minors:** fix calendar timezone issue, add nightly maintenance for recalculating customer appointments, introduce delay for appointment maintenance, add pre-calculated end snapshot, enforce calendar minimum duration of 60 min ([1bb33f5](https://github.com/domschmidt/koku/commit/1bb33f5d921194f92ac7de701f3d6fbb4b22dd5e))
+
 ## [2.0.3](https://github.com/domschmidt/koku/compare/v2.0.2...v2.0.3) (2025-12-16)
 
 
