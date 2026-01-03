@@ -1,3 +1,11 @@
+## [2.0.5](https://github.com/domschmidt/koku/compare/v2.0.4...v2.0.5) (2026-01-03)
+
+
+### Bug Fixes
+
+* **dates:** fix date issues ([f48d657](https://github.com/domschmidt/koku/commit/f48d657fb1b62b2f9933745752795c3334b8df83))
+* **updates:** latest updates ([3b4067e](https://github.com/domschmidt/koku/commit/3b4067e9e89d52ce1be7186755376a9e77f79d99))
+
 ## [2.0.4](https://github.com/domschmidt/koku/compare/v2.0.3...v2.0.4) (2025-12-18)
 
 
