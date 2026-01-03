@@ -3,7 +3,6 @@ import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
 import {FullCalendarComponent, FullCalendarModule} from '@fullcalendar/angular';
 
 import deLocale from '@fullcalendar/core/locales/de';
-import {format, parseISO} from 'date-fns';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import rrulePlugin from '@fullcalendar/rrule';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -24,6 +23,11 @@ import {GLOBAL_EVENT_BUS} from '../events/global-events';
 import {UNIQUE_REF_GENERATOR} from '../utils/uniqueRef';
 import {KeyValuePipe} from '@angular/common';
 import {AvatarComponent} from '../avatar/avatar.component';
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
+dayjs.extend(isoWeek);
+dayjs.extend(advancedFormat);
 
 export interface CalendarContentSetup {
   inlineContentRegistry: Partial<Record<KokuDto.AbstractCalendarInlineContentDto["@type"] | string, {
@@ -436,19 +440,23 @@ export class CalendarComponent implements OnDestroy {
     if ($event.target) {
       const value = ($event.target as HTMLInputElement).value;
       if (value) {
-        this.calendarComponent()?.getApi().gotoDate(parseISO(value));
+        this.calendarComponent()?.getApi().gotoDate(dayjs(value).toDate());
       }
     }
   }
 
   formatDate(date: Date, viewMode: 'WEEK' | 'DAY' | 'MONTH') {
+    const d = dayjs(date);
     switch (viewMode) {
       case 'WEEK':
-        return format(date, "RRRR-'W'II");
+        const isoWeekNumber = d.isoWeek(); // Woche 1-53
+        const isoWeekYear = d.isoWeekYear(); // Jahr der ISO-Woche
+        return `${isoWeekYear}-W${String(isoWeekNumber).padStart(2, '0')}`;
+
       case 'MONTH':
-        return format(date, 'yyyy-MM');
+        return d.format('YYYY-MM'); // yyyy-MM
       case 'DAY':
-        return format(date, 'yyyy-MM-dd');
+        return d.format('YYYY-MM-DD'); // yyyy-MM-dd
     }
     return '';
   }

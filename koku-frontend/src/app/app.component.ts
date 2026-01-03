@@ -16,7 +16,9 @@ import {get} from './utils/get';
 import {UNIQUE_REF_GENERATOR} from './utils/uniqueRef';
 import {set} from './utils/set';
 import Holidays, {HolidaysTypes} from 'date-holidays';
-import {addMinutes, differenceInMinutes, format, formatISO, getDayOfYear, parseISO} from 'date-fns';
+import dayjs from 'dayjs';
+import dayOfYear from 'dayjs/plugin/dayOfYear';
+dayjs.extend(dayOfYear);
 import {
   CALENDAR_PLUGIN,
   CalendarComponent,
@@ -568,12 +570,12 @@ class CalendarInteractionPlugin implements CalendarPlugin {
               let context: CalendarContext | undefined = undefined;
               if (dateClickInfo && dateClickInfo.selectionStart) {
                 context = {
-                  selectionStartDate: format(dateClickInfo.selectionStart, 'yyyy-MM-dd'),
-                  selectionStartTime: format(dateClickInfo.selectionStart, 'HH:mm'),
-                  selectionStartDateTime: format(dateClickInfo.selectionStart, "yyyy-MM-dd'T'HH:mm"),
-                  selectionEndDate: format(dateClickInfo.selectionEnd, 'yyyy-MM-dd'),
-                  selectionEndTime: format(dateClickInfo.selectionEnd, 'HH:mm'),
-                  selectionEndDateTime: format(dateClickInfo.selectionEnd, "yyyy-MM-dd'T'HH:mm"),
+                  selectionStartDate: dayjs(dateClickInfo.selectionStart).format('YYYY-MM-DD'),
+                  selectionStartTime: dayjs(dateClickInfo.selectionStart).format('HH:mm'),
+                  selectionStartDateTime: dayjs(dateClickInfo.selectionStart).format("YYYY-MM-DD'T'HH:mm"),
+                  selectionEndDate: dayjs(dateClickInfo.selectionEnd).format('YYYY-MM-DD'),
+                  selectionEndTime: dayjs(dateClickInfo.selectionEnd).format('HH:mm'),
+                  selectionEndDateTime: dayjs(dateClickInfo.selectionEnd).format("YYYY-MM-DD'T'HH:mm"),
                 };
               }
               this.calendarInstance.openRoutedContent(castedClickAction.route.split('/'), context);
@@ -921,7 +923,7 @@ class CalendarGlobalEventPlugin implements CalendarPlugin {
 
 class CalendarListSourcePlugin implements CalendarPlugin {
 
-  private userDetailsSubscriptions: {[key: string]: Subscription} = {};
+  private userDetailsSubscriptions: { [key: string]: Subscription } = {};
 
   constructor(
     private calendarInstance: CalendarComponent,
@@ -1075,12 +1077,12 @@ class CalendarListSourcePlugin implements CalendarPlugin {
           end.push(get(item, castedSource.endTimeFieldSelectionPath));
         }
 
-        const date1 = parseISO(start.join('T'));
-        const date2 = parseISO(end.join('T'));
+        const date1 = dayjs(start.join('T'));
+        const date2 = dayjs(end.join('T'));
         let calculatedEndDate
-        const diffMinutes = differenceInMinutes(date2, date1);
+        const diffMinutes = date2.diff(date1, 'minute');
         if (diffMinutes < 60) {
-          calculatedEndDate = addMinutes(date1, 60);
+          calculatedEndDate = date1.add(60, 'minutes');
         } else {
           calculatedEndDate = date2;
         }
@@ -1090,7 +1092,7 @@ class CalendarListSourcePlugin implements CalendarPlugin {
           title: text,
           display: text,
           start: start.join('T'),
-          end: calculatedEndDate,
+          end: calculatedEndDate.toDate(),
           rrule: rrule,
           allDay: !(castedSource.startTimeFieldSelectionPath && castedSource.endTimeFieldSelectionPath),
           className: `calendar-item calendar-item--color-${castedSource.sourceItemColor}`,
@@ -1181,13 +1183,13 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                   }
 
                   const requestBody = {};
-                  set(requestBody, castedActionType.startDatePath, format(event.newStart, 'yyyy-MM-dd'));
-                  set(requestBody, castedActionType.startTimePath, format(event.newStart, 'HH:mm'));
+                  set(requestBody, castedActionType.startDatePath, dayjs(event.newStart).format('YYYY-MM-DD'));
+                  set(requestBody, castedActionType.startTimePath, dayjs(event.newStart).format('HH:mm'));
                   if (castedActionType.endDatePath) {
-                    set(requestBody, castedActionType.endDatePath, format(event.newEnd, 'yyyy-MM-dd'));
+                    set(requestBody, castedActionType.endDatePath, dayjs(event.newEnd).format('YYYY-MM-DD'));
                   }
                   if (castedActionType.endTimePath) {
-                    set(requestBody, castedActionType.endTimePath, format(event.newEnd, 'HH:mm'));
+                    set(requestBody, castedActionType.endTimePath, dayjs(event.newEnd).format('HH:mm'));
                   }
 
                   for (const [source, target] of Object.entries(castedActionType.valueMapping || {})) {
@@ -1283,8 +1285,8 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                   }
 
                   const requestBody = {};
-                  set(requestBody, castedActionType.endDatePath, format(event.newEnd, 'yyyy-MM-dd'));
-                  set(requestBody, castedActionType.endTimePath, format(event.newEnd, 'HH:mm'));
+                  set(requestBody, castedActionType.endDatePath, dayjs(event.newEnd).format('YYYY-MM-DD'));
+                  set(requestBody, castedActionType.endTimePath, dayjs(event.newEnd).format('HH:mm'));
 
                   for (const [source, target] of Object.entries(castedActionType.valueMapping || {})) {
                     set(requestBody, target, get(event.item, source, null));
@@ -1374,14 +1376,14 @@ class CalendarListSourcePlugin implements CalendarPlugin {
             const fieldSelection: Set<string> = new Set<string>();
             const fieldPredicates: { [index: string]: KokuDto.ListFieldQuery } = {};
 
-            let startAndEndDOYOrGroupIdentifier = getDayOfYear(arg.start) > getDayOfYear(arg.end) ? 'startGTend' : undefined;
+            let startAndEndDOYOrGroupIdentifier = dayjs(arg.start).dayOfYear() > dayjs(arg.end).dayOfYear() ? 'startGTend' : undefined;
 
             if (castedSource.startDateFieldSelectionPath) {
               fieldSelection.add(castedSource.startDateFieldSelectionPath);
               fieldPredicates[castedSource.startDateFieldSelectionPath] = {
                 predicates: [
                   {
-                    searchExpression: formatISO(arg.start, {representation: 'date'}),
+                    searchExpression: dayjs(arg.start).format('YYYY-MM-DD'),
                     searchOperator: 'GREATER_OR_EQ',
                     searchOperatorHint: castedSource.searchOperatorHint,
                     orGroupIdentifier: startAndEndDOYOrGroupIdentifier
@@ -1395,7 +1397,7 @@ class CalendarListSourcePlugin implements CalendarPlugin {
               fieldPredicates[castedSource.endDateFieldSelectionPath] = {
                 predicates: [
                   {
-                    searchExpression: formatISO(arg.endStr, {representation: 'date'}),
+                    searchExpression: dayjs(arg.end).format('YYYY-MM-DD'),
                     searchOperator: 'LESS_OR_EQ',
                     searchOperatorHint: castedSource.searchOperatorHint,
                     orGroupIdentifier: startAndEndDOYOrGroupIdentifier
