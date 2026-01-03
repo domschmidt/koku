@@ -23,7 +23,7 @@ import {PortalDirective} from '../../../portal/portal.directive';
 import {generate} from '@pdfme/generator';
 import {IconComponent} from '../../../icon/icon.component';
 import {ToastService} from '../../../toast/toast.service';
-import {addYears, formatISO} from 'date-fns';
+import dayjs from 'dayjs';
 
 @Component({
   selector: 'document-form-field',
@@ -81,8 +81,8 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges {
     const now = Date.now();
     const utils = {
       utils: {
-        today: formatISO(now),
-        'today+1y': formatISO(addYears(now, 1))
+        today: dayjs(now).format("YYYY-MM-DDTHH:mm:ss"),
+        'today+1y': dayjs(now).add(1, 'year').format("YYYY-MM-DDTHH:mm:ss")
       }
     };
     if (!this.document || !this.document.template) {

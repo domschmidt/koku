@@ -1,13 +1,13 @@
 import {Component, inject, input, signal} from '@angular/core';
 import {forkJoin, map, mergeMap, Observable} from 'rxjs';
 import {get} from '../../../utils/get';
-import {formatDate, formatISO, isBefore, parseISO} from 'date-fns';
 import {HttpClient} from '@angular/common/http';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {finalize, tap} from 'rxjs/operators';
 import {delayAtLeast} from '../../../rxjs/delay-at-least';
 import {MyUserDetailsService} from '../../../user/my-user-details.service';
 import {ToastService} from '../../../toast/toast.service';
+import dayjs from 'dayjs';
 
 type AppointmentItem = {
   id: string,
@@ -83,7 +83,7 @@ export class DashboardAppointmentsPanelComponent {
           fieldPredicates[currentListSource.startDateFieldSelectionPath] = {
             predicates: [
               {
-                searchExpression: formatISO(content.start, {representation: 'date'}),
+                searchExpression: dayjs(content.start).format('YYYY-MM-DD'),
                 searchOperator: 'GREATER_OR_EQ',
                 searchOperatorHint: currentListSource.searchOperatorHint
               },
@@ -96,7 +96,7 @@ export class DashboardAppointmentsPanelComponent {
           fieldPredicates[currentListSource.endDateFieldSelectionPath] = {
             predicates: [
               {
-                searchExpression: formatISO(content.end, {representation: 'date'}),
+                searchExpression: dayjs(content.end).format('YYYY-MM-DD'),
                 searchOperator: 'LESS_OR_EQ',
                 searchOperatorHint: currentListSource.searchOperatorHint
               },
@@ -193,16 +193,16 @@ export class DashboardAppointmentsPanelComponent {
                 throw new Error(`Missing textFieldSelectionPath for item ${currentListPageItem})`);
               }
 
-              let date = parseISO(get(currentListPageItem.values, listSource.startDateFieldSelectionPath));
+              let date = dayjs(get(currentListPageItem.values, listSource.startDateFieldSelectionPath));
               if (listSource.startTimeFieldSelectionPath) {
-                date = parseISO(get(currentListPageItem.values, listSource.startDateFieldSelectionPath) + 'T' + get(currentListPageItem.values, listSource.startTimeFieldSelectionPath))
+                date = dayjs(get(currentListPageItem.values, listSource.startDateFieldSelectionPath) + 'T' + get(currentListPageItem.values, listSource.startTimeFieldSelectionPath))
               }
 
               appointments.push({
                 id: currentListPageItem.id,
-                start: date,
-                time: formatDate(date, 'HH:mm'),
-                past: isBefore(date, Date.now()),
+                start: date.toDate(),
+                time: date.format('HH:mm'),
+                past: date.isBefore(Date.now()),
                 topHeadline: listSource.sourceItemText,
                 headline: get(currentListPageItem.values, listSource.textFieldSelectionPath),
                 subHeadline: listSource.notesTextFieldSelectionPath !== undefined ? get(currentListPageItem.values, listSource.notesTextFieldSelectionPath, '') : undefined,

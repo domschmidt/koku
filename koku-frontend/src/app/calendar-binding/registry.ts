@@ -11,8 +11,10 @@ import {RenderedModalType} from '../modal/modal.type';
 import {CalendarInlineListContainerComponent} from './list-container/calendar-inline-list-container.component';
 import {CalendarInlineHeaderContainerComponent} from './header-container/calendar-inline-header-container.component';
 import {LIST_CONTENT_SETUP} from '../list-binding/registry';
-import {add, format, parse} from 'date-fns';
 import {DASHBOARD_CONTENT_SETUP} from '../dashboard-binding/registry';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+dayjs.extend(customParseFormat);
 
 const MODAL_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractCalendarInlineContentDto["@type"] | string, {
   componentType: any;
@@ -211,39 +213,25 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractCalendarInlineCont
             if (offsetValue !== undefined && offsetUnit) {
               switch (offsetUnit) {
                 case "SECOND": {
-                  return add(date, {
-                    seconds: offsetValue
-                  });
+                  return dayjs(date).add(offsetValue, 'seconds').toDate();
                 }
                 case "MINUTE": {
-                  return add(date, {
-                    minutes: offsetValue
-                  });
+                  return dayjs(date).add(offsetValue, 'minutes').toDate();
                 }
                 case "HOUR": {
-                  return add(date, {
-                    hours: offsetValue
-                  });
+                  return dayjs(date).add(offsetValue, 'hours').toDate();
                 }
                 case "DAY": {
-                  return add(date, {
-                    days: offsetValue
-                  });
+                  return dayjs(date).add(offsetValue, 'days').toDate();
                 }
                 case "WEEK": {
-                  return add(date, {
-                    weeks: offsetValue
-                  });
+                  return dayjs(date).add(offsetValue, 'weeks').toDate();
                 }
                 case "MONTH": {
-                  return add(date, {
-                    months: offsetValue
-                  });
+                  return dayjs(date).add(offsetValue, 'months').toDate();
                 }
                 case "YEAR": {
-                  return add(date, {
-                    years: offsetValue
-                  });
+                  return dayjs(date).add(offsetValue, 'years').toDate();
                 }
                 default: {
                   throw new Error(`Unknown offset type ${offsetUnit}`)
@@ -259,9 +247,13 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractCalendarInlineCont
             case "SELECTION_START_DATE": {
               const rawValue = (queryParams as CalendarContext).selectionStartDate;
               if (rawValue) {
-                const parsedDate = parse(rawValue, 'yyyy-MM-dd', new Date());
+                let parsedDateTmp = dayjs(rawValue, 'YYYY-MM-DD');
+                if (!parsedDateTmp.isValid()) {
+                  parsedDateTmp = dayjs(Date.now());
+                }
+                const parsedDate = parsedDateTmp.toDate();
                 if (parsedDate) {
-                  newFieldValue = format(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue), 'yyyy-MM-dd');
+                  newFieldValue = dayjs(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue)).format('YYYY-MM-DD');
                 }
               }
               break;
@@ -269,9 +261,13 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractCalendarInlineCont
             case "SELECTION_END_DATE": {
               const rawValue = (queryParams as CalendarContext).selectionEndDate;
               if (rawValue) {
-                const parsedDate = parse(rawValue, 'yyyy-MM-dd', new Date());
+                let parsedDateTmp = dayjs(rawValue, 'YYYY-MM-DD');
+                if (!parsedDateTmp.isValid()) {
+                  parsedDateTmp = dayjs(Date.now());
+                }
+                const parsedDate = parsedDateTmp.toDate();
                 if (parsedDate) {
-                  newFieldValue = format(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue), 'yyyy-MM-dd');
+                  newFieldValue = dayjs(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue)).format('YYYY-MM-DD');
                 }
               }
               break;
@@ -279,9 +275,13 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractCalendarInlineCont
             case "SELECTION_START_TIME": {
               const rawValue = (queryParams as CalendarContext).selectionStartTime;
               if (rawValue) {
-                const parsedDate = parse(rawValue, 'HH:mm', new Date());
+                let parsedDateTmp = dayjs(rawValue, 'HH:mm');
+                if (!parsedDateTmp.isValid()) {
+                  parsedDateTmp = dayjs(Date.now());
+                }
+                const parsedDate = parsedDateTmp.toDate();
                 if (parsedDate) {
-                  newFieldValue = format(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue), 'HH:mm');
+                  newFieldValue = dayjs(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue)).format('HH:mm');
                 }
               }
               break;
@@ -289,9 +289,13 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractCalendarInlineCont
             case "SELECTION_END_TIME": {
               const rawValue = (queryParams as CalendarContext).selectionEndTime;
               if (rawValue) {
-                const parsedDate = parse(rawValue, 'HH:mm', new Date());
+                let parsedDateTmp = dayjs(rawValue, 'HH:mm');
+                if (!parsedDateTmp.isValid()) {
+                  parsedDateTmp = dayjs(Date.now());
+                }
+                const parsedDate = parsedDateTmp.toDate();
                 if (parsedDate) {
-                  newFieldValue = format(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue), 'HH:mm');
+                  newFieldValue = dayjs(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue)).format('HH:mm');
                 }
               }
               break;
@@ -299,9 +303,13 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractCalendarInlineCont
             case "SELECTION_START_DATETIME": {
               const rawValue = (queryParams as CalendarContext).selectionStartDateTime;
               if (rawValue) {
-                const parsedDate = parse(rawValue, 'yyyy-MM-dd\'T\'HH:mm', new Date());
+                let parsedDateTmp = dayjs(rawValue, 'YYYY-MM-DDTHH:mm');
+                if (!parsedDateTmp.isValid()) {
+                  parsedDateTmp = dayjs(Date.now());
+                }
+                const parsedDate = parsedDateTmp.toDate();
                 if (parsedDate) {
-                  newFieldValue = format(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue), 'yyyy-MM-dd\'T\'HH:mm');
+                  newFieldValue = dayjs(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue)).format('YYYY-MM-DDTHH:mm');
                 }
               }
               break;
@@ -309,9 +317,13 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractCalendarInlineCont
             case "SELECTION_END_DATETIME": {
               const rawValue = (queryParams as CalendarContext).selectionEndDateTime;
               if (rawValue) {
-                const parsedDate = parse(rawValue, 'yyyy-MM-dd\'T\'HH:mm', new Date());
+                let parsedDateTmp = dayjs(rawValue, 'YYYY-MM-DDTHH:mm');
+                if (!parsedDateTmp.isValid()) {
+                  parsedDateTmp = dayjs(Date.now());
+                }
+                const parsedDate = parsedDateTmp.toDate();
                 if (parsedDate) {
-                  newFieldValue = format(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue), 'yyyy-MM-dd\'T\'HH:mm');
+                  newFieldValue = dayjs(modifyOffset(parsedDate, currentSourceOverride.offsetUnit, currentSourceOverride.offsetValue)).format('yyyy-MM-dd\'T\'HH:mm');
                 }
               }
               break;
