@@ -899,6 +899,14 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                   instance.toastService.add(notificationText, serenity);
                   break;
                 }
+                case "propagate-global-event": {
+                  const castedEvent = currentEvent as KokuDto.ListViewPropagateGlobalEventActionEventDto;
+                  if (!castedEvent.eventName) {
+                    throw new Error('Missing eventName');
+                  }
+                  GLOBAL_EVENT_BUS.propagateGlobalEvent(castedEvent.eventName, eventPayload);
+                  break;
+                }
                 default: {
                   throw new Error(`Unknown event type ${currentEvent}`);
                 }
@@ -1000,7 +1008,7 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                 text: 'Abbrechen',
                 styles: ['OUTLINE'],
                 onClick: () => {
-                  instance.modalService.close(confirmationModal);
+                  confirmationModal.close();
                 }
               }, {
                 text: 'Bestätigen',
@@ -1013,17 +1021,18 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                       executeEvents(action.successEvents || [], rawValue);
                       button.loading = false;
                       button.disabled = false;
-                      instance.modalService.close(confirmationModal);
+                      confirmationModal.close();
                     }, error: () => {
                       executeEvents(action.failEvents || []);
                       button.loading = false;
                       button.disabled = false;
+                      confirmationModal.update(modal);
                     }
                   })
                 }
               }],
               clickOutside: () => {
-                instance.modalService.close(confirmationModal);
+                confirmationModal.close();
               }
             });
           } else {

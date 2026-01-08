@@ -18,6 +18,7 @@ import {set} from './utils/set';
 import Holidays, {HolidaysTypes} from 'date-holidays';
 import dayjs from 'dayjs';
 import dayOfYear from 'dayjs/plugin/dayOfYear';
+
 dayjs.extend(dayOfYear);
 import {
   CALENDAR_PLUGIN,
@@ -875,38 +876,48 @@ class CalendarGlobalEventPlugin implements CalendarPlugin {
             }
 
             let lookedUpEvent = calendarSourceFactory.lookupEvent(eventPayload);
-            const newEvent = calendarSourceFactory.generateEventItem(eventPayload);
-
-            if (!lookedUpEvent) {
-              lookedUpEvent = this.calendarInstance.calendarComponent()?.getApi().addEvent(newEvent, eventSource);
-            } else {
-              if (newEvent.allDay !== undefined && newEvent.allDay !== !!lookedUpEvent.allDay) {
-                lookedUpEvent.setAllDay(newEvent.allDay);
-              }
-              if (newEvent.start !== undefined && newEvent.end !== undefined) {
-                lookedUpEvent.setDates(newEvent.start, newEvent.end);
-              } else {
-                if (newEvent.start !== undefined) {
-                  lookedUpEvent.setStart(newEvent.start, {maintainDuration: true});
-                }
-                if (newEvent.end !== undefined) {
-                  lookedUpEvent.setEnd(newEvent.end, {maintainDuration: true});
-                }
-              }
-              lookedUpEvent.setProp('title', newEvent.title);
-              lookedUpEvent.setProp('display', newEvent.display);
-              lookedUpEvent.setProp('rrule', newEvent.rrule);
-              lookedUpEvent.setProp('className', newEvent.className);
-              lookedUpEvent.setExtendedProp('item', eventPayload);
+            let toBeDeleted = false;
+            if (castedEventListener.deletedPath && castedEventListener.deletedExpression !== undefined) {
+              toBeDeleted = get(eventPayload, castedEventListener.deletedPath) === castedEventListener.deletedExpression;
             }
-            if (lookedUpEvent) {
-              const classnameSnapshot = [...lookedUpEvent.classNames];
-              setTimeout(() => {
-                classnameSnapshot.splice(classnameSnapshot.indexOf('calendar-item--flash'), 1);
+            if (toBeDeleted) {
+              if (lookedUpEvent) {
+                lookedUpEvent.remove();
+              }
+            } else {
+              const newEvent = calendarSourceFactory.generateEventItem(eventPayload);
+
+              if (!lookedUpEvent) {
+                lookedUpEvent = this.calendarInstance.calendarComponent()?.getApi().addEvent(newEvent, eventSource);
+              } else {
+                if (newEvent.allDay !== undefined && newEvent.allDay !== !!lookedUpEvent.allDay) {
+                  lookedUpEvent.setAllDay(newEvent.allDay);
+                }
+                if (newEvent.start !== undefined && newEvent.end !== undefined) {
+                  lookedUpEvent.setDates(newEvent.start, newEvent.end);
+                } else {
+                  if (newEvent.start !== undefined) {
+                    lookedUpEvent.setStart(newEvent.start, {maintainDuration: true});
+                  }
+                  if (newEvent.end !== undefined) {
+                    lookedUpEvent.setEnd(newEvent.end, {maintainDuration: true});
+                  }
+                }
+                lookedUpEvent.setProp('title', newEvent.title);
+                lookedUpEvent.setProp('display', newEvent.display);
+                lookedUpEvent.setProp('rrule', newEvent.rrule);
+                lookedUpEvent.setProp('className', newEvent.className);
+                lookedUpEvent.setExtendedProp('item', eventPayload);
+              }
+              if (lookedUpEvent) {
+                const classnameSnapshot = [...lookedUpEvent.classNames];
+                setTimeout(() => {
+                  classnameSnapshot.splice(classnameSnapshot.indexOf('calendar-item--flash'), 1);
+                  lookedUpEvent.setProp('classNames', classnameSnapshot);
+                }, 1000);
+                classnameSnapshot.push('calendar-item--flash');
                 lookedUpEvent.setProp('classNames', classnameSnapshot);
-              }, 1000);
-              classnameSnapshot.push('calendar-item--flash');
-              lookedUpEvent.setProp('classNames', classnameSnapshot);
+              }
             }
 
             break;

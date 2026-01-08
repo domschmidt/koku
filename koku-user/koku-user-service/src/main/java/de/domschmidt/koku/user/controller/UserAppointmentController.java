@@ -30,6 +30,7 @@ import de.domschmidt.koku.user.transformer.UserAppointmentToUserAppointmentSumma
 import de.domschmidt.list.dto.response.ListViewDto;
 import de.domschmidt.list.dto.response.ListViewSourcePathReference;
 import de.domschmidt.list.dto.response.actions.ListViewOpenRoutedContentActionDto;
+import de.domschmidt.list.dto.response.actions.ListViewPropagateGlobalEventActionEventDto;
 import de.domschmidt.list.dto.response.actions.ListViewUserConfirmationDto;
 import de.domschmidt.list.dto.response.actions.ListViewUserConfirmationValueParamDto;
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadAddItemGlobalEventListenerDto;
@@ -52,10 +53,7 @@ import de.domschmidt.list.dto.response.items.actions.call_http.ListViewCallHttpL
 import de.domschmidt.list.dto.response.items.actions.call_http.ListViewCallHttpListValueActionParamDto;
 import de.domschmidt.list.dto.response.items.actions.inline_content.ListViewItemClickOpenRoutedContentActionDto;
 import de.domschmidt.list.dto.response.items.actions.inline_content.ListViewItemClickOpenRoutedContentActionItemValueParamDto;
-import de.domschmidt.list.dto.response.notifications.ListViewEventPayloadUpdateActionEventDto;
-import de.domschmidt.list.dto.response.notifications.ListViewNotificationEvent;
-import de.domschmidt.list.dto.response.notifications.ListViewNotificationEventSerenityEnumDto;
-import de.domschmidt.list.dto.response.notifications.ListViewNotificationEventValueParamDto;
+import de.domschmidt.list.dto.response.notifications.*;
 import de.domschmidt.list.factory.DefaultListViewContentIdGenerator;
 import de.domschmidt.list.factory.ListViewFactory;
 import de.domschmidt.listquery.dto.request.ListQuery;
@@ -363,6 +361,9 @@ public class UserAppointmentController {
                                         .valueMapping(Map.of(
                                                 KokuUserAppointmentDto.Fields.deleted, deletedSourceRef
                                         ))
+                                        .build(),
+                                ListViewPropagateGlobalEventActionEventDto.builder()
+                                        .eventName("user-appointment-updated")
                                         .build()
                         ))
                         .failEvents(Arrays.asList(
@@ -416,6 +417,9 @@ public class UserAppointmentController {
                                                 .valueMapping(Map.of(
                                                         KokuUserAppointmentDto.Fields.deleted, deletedSourceRef
                                                 ))
+                                                .build(),
+                                        ListViewPropagateGlobalEventActionEventDto.builder()
+                                                .eventName("user-appointment-updated")
                                                 .build()
                                 ))
                                 .failEvents(Arrays.asList(

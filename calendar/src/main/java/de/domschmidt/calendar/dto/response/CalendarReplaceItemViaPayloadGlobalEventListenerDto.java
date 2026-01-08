@@ -10,5 +10,7 @@ import lombok.experimental.SuperBuilder;
 public class CalendarReplaceItemViaPayloadGlobalEventListenerDto extends AbstractCalendarGlobalEventListenerDto {
 
     String sourceId;
+    String deletedPath;
+    Object deletedExpression;
 
 }

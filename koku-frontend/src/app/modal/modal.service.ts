@@ -1,5 +1,5 @@
 import {Injectable, signal} from '@angular/core';
-import {ModalButtonType, ModalType, RenderedModalType} from './modal.type';
+import {ModalType, RenderedModalType} from './modal.type';
 
 @Injectable({
   providedIn: 'root'
@@ -7,55 +7,43 @@ import {ModalButtonType, ModalType, RenderedModalType} from './modal.type';
 export class ModalService {
 
   private modalUid = 0;
-  private buttonUid = 0;
-  renderedModals = signal<RenderedModalType[]>([]);
+  renderedModals = signal<{ [key: number]: RenderedModalType }>({});
 
   add(modal: ModalType) {
-    const newModal: RenderedModalType = {
+    const renderedModal: RenderedModalType = {
       ...modal,
       uid: this.modalUid++,
       close: () => {
-        this.close(newModal);
+        const oldModalInst = this.renderedModals()[renderedModal.uid];
+        if (!oldModalInst) return;
+
+        this.close(oldModalInst)
       },
-      buttons: (modal.buttons || []).map((button: ModalButtonType) => {
-        return {
-          ...button,
-          'uid': this.buttonUid++
-        };
-      })
+      buttons: modal.buttons,
+      update: (updatedModal) => {
+        const oldModalInst = this.renderedModals()[renderedModal.uid];
+        if (!oldModalInst) return;
+
+        this.update(oldModalInst, updatedModal)
+      },
     };
-    this.renderedModals.set([...this.renderedModals(), newModal]);
-    return newModal;
+    this.renderedModals.set({...this.renderedModals(), [renderedModal.uid]: renderedModal});
+    return renderedModal;
   }
 
   close(modal: RenderedModalType) {
-    const modalsSnapshot = this.renderedModals();
-    const idx = modalsSnapshot.indexOf(modal);
-    if (idx >= 0) {
-      modalsSnapshot.splice(idx, 1);
-      this.renderedModals.set([...modalsSnapshot]);
-    }
+    const modalsSnapshot = {...this.renderedModals()};
+    delete modalsSnapshot[modal.uid];
+    this.renderedModals.set({...modalsSnapshot});
   }
 
   update(oldModal: RenderedModalType, newModal: ModalType) {
-    const modalsSnapshot = this.renderedModals();
-    const idx = modalsSnapshot.indexOf(oldModal);
-    if (idx >= 0) {
-      modalsSnapshot[idx] = {
-        ...newModal,
-        uid: oldModal.uid,
-        close: () => {
-          this.close(oldModal);
-        },
-        buttons: (newModal.buttons || []).map((button: ModalButtonType) => {
-          return {
-            ...button,
-            'uid': this.buttonUid++
-          };
-        })
-      }
-      this.renderedModals.set([...modalsSnapshot]);
-    }
+    const modalsSnapshot = {...this.renderedModals()};
+    modalsSnapshot[oldModal.uid] = {
+      ...oldModal,
+      ...newModal
+    };
+    this.renderedModals.set(modalsSnapshot);
   }
 
 }
