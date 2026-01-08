@@ -1,3 +1,10 @@
+## [2.0.6](https://github.com/domschmidt/koku/compare/v2.0.5...v2.0.6) (2026-01-08)
+
+
+### Bug Fixes
+
+* **calendar, revenue, modal:** multiple bug fixes ([4796c15](https://github.com/domschmidt/koku/commit/4796c1558537a0f158ae6db845d41ba4e04c9e4a))
+
 ## [2.0.5](https://github.com/domschmidt/koku/compare/v2.0.4...v2.0.5) (2026-01-03)
 
 
