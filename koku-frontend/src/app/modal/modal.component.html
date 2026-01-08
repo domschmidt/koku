@@ -1,51 +1,52 @@
-@for (modal of modalService.renderedModals(); track modal.uid) {
-
-  <dialog class="modal modal-open" (click)="modal.clickOutside ? modal.clickOutside($event) : null">
-    <div class="modal-box"
-         (click)="$event.stopPropagation()"
-         [class.h-full]="modal.fullscreen"
-         [class.w-full]="modal.fullscreen"
-         [class.max-md:rounded-none]="modal.fullscreen"
-         [class.max-md:max-w-none]="modal.fullscreen"
-         [class.max-md:max-h-screen]="modal.fullscreen"
-         [class.min-md:max-h-[calc(100vh-96px)]]="modal.fullscreen"
-         [class.min-md:max-w-[calc(100vw-96px)]]="modal.fullscreen"
-         [class.p-0]="modal.fullscreen"
-         [style.max-width.px]="modal.maxWidthInPx"
-    >
-      @if (modal.headline) {
-        <h3 class="text-lg font-bold">{{ modal.headline }}</h3>
-      }
-      @if (modal.dynamicContent; as dynamicContent) {
-        @if ((modal.dynamicContentSetup || {})[dynamicContent['@type']]; as contentRegistry) {
-          <ndc-dynamic [ndcDynamicComponent]="contentRegistry.componentType"
-                       [ndcDynamicInputs]="{}"
-                       [ngComponentOutletNdcDynamicInputs]="contentRegistry.inputBindings ? contentRegistry.inputBindings(this, modal, dynamicContent) : {}"
-                       [ngComponentOutletNdcDynamicOutputs]="contentRegistry.outputBindings ? contentRegistry.outputBindings(this, modal, dynamicContent) : {}"
-          ></ndc-dynamic>
+@for (entry of modalService.renderedModals() | keyvalue; track entry.key) {
+  @if (entry.value; as modal) {
+    <dialog class="modal modal-open" (click)="modal.clickOutside ? modal.clickOutside($event) : null">
+      <div class="modal-box"
+           (click)="$event.stopPropagation()"
+           [class.h-full]="modal.fullscreen"
+           [class.w-full]="modal.fullscreen"
+           [class.max-md:rounded-none]="modal.fullscreen"
+           [class.max-md:max-w-none]="modal.fullscreen"
+           [class.max-md:max-h-screen]="modal.fullscreen"
+           [class.min-md:max-h-[calc(100vh-96px)]]="modal.fullscreen"
+           [class.min-md:max-w-[calc(100vw-96px)]]="modal.fullscreen"
+           [class.p-0]="modal.fullscreen"
+           [style.max-width.px]="modal.maxWidthInPx"
+      >
+        @if (modal.headline) {
+          <h3 class="text-lg font-bold">{{ modal.headline }}</h3>
         }
-      } @else if (modal.content) {
-        <p class="py-4">{{ modal.content }}</p>
-      }
-      @if (modal.buttons?.length) {
-        <div class="modal-action">
-          @for (button of modal.buttons; track button.uid) {
-            <koku-button
-              [loading]="button.loading"
-              [disabled]="button.disabled"
-              [href]="button.href"
-              [hrefTarget]="button.hrefTarget"
-              [buttonType]="button.buttonType"
-              [title]="button.title"
-              [icon]="button.icon"
-              [text]="button.text"
-              [styles]="button.styles || []"
-              [size]="button.size || null"
-              (onClick)="button.onClick($event, modal, button)"
-            ></koku-button>
+        @if (modal.dynamicContent; as dynamicContent) {
+          @if ((modal.dynamicContentSetup || {})[dynamicContent['@type']]; as contentRegistry) {
+            <ndc-dynamic [ndcDynamicComponent]="contentRegistry.componentType"
+                         [ndcDynamicInputs]="{}"
+                         [ngComponentOutletNdcDynamicInputs]="contentRegistry.inputBindings ? contentRegistry.inputBindings(this, modal, dynamicContent) : {}"
+                         [ngComponentOutletNdcDynamicOutputs]="contentRegistry.outputBindings ? contentRegistry.outputBindings(this, modal, dynamicContent) : {}"
+            ></ndc-dynamic>
           }
-        </div>
-      }
-    </div>
-  </dialog>
+        } @else if (modal.content) {
+          <p class="py-4">{{ modal.content }}</p>
+        }
+        @if (modal.buttons?.length) {
+          <div class="modal-action">
+            @for (button of modal.buttons; track $index) {
+              <koku-button
+                [loading]="button.loading"
+                [disabled]="button.disabled"
+                [href]="button.href"
+                [hrefTarget]="button.hrefTarget"
+                [buttonType]="button.buttonType"
+                [title]="button.title"
+                [icon]="button.icon"
+                [text]="button.text"
+                [styles]="button.styles || []"
+                [size]="button.size || null"
+                (onClick)="button.onClick($event, modal, button)"
+              ></koku-button>
+            }
+          </div>
+        }
+      </div>
+    </dialog>
+  }
 }

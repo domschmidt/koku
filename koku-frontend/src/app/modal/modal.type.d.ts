@@ -11,10 +11,10 @@ export interface ModalButtonType {
   text?: string;
   styles?: ("NEUTRAL" | "PRIMARY" | "SECONDARY" | "ACCENT" | "INFO" | "SUCCESS" | "WARNING" | "ERROR" | "OUTLINE" | "DASH" | "SOFT" | "GHOST" | "LINK" | "ACTIVE" | "DISABLED" | "WIDE" | "BLOCK" | "SQUARE" | "CIRCLE")[];
   size?: "XS" | "SM" | "MD" | "LG" | "XL";
-  onClick: (event: Event, modal: ModalType, button: ModalButtonType) => void;
+  onClick: (event: Event, modal: RenderedModalType, button: ModalButtonType) => void;
 }
 
-export interface InternalModalButtonType extends ModalButtonType {
+export interface RenderedModalButtonType extends ModalButtonType {
   uid: number;
 }
 
@@ -53,5 +53,5 @@ export interface ModalType {
 export interface RenderedModalType extends ModalType {
   uid: number;
   close: () => void;
-  buttons?: InternalModalButtonType[];
+  update: (modal: ModalType) => void;
 }

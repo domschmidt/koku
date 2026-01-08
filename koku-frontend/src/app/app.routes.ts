@@ -46,6 +46,8 @@ export const routes: Routes = [
                   '@type': 'replace-via-payload',
                   eventName: 'customer-appointment-updated',
                   sourceId: 'customer-appointments',
+                  deletedPath: 'deleted',
+                  deletedExpression: true
                 } as KokuDto.CalendarReplaceItemViaPayloadGlobalEventListenerDto,
                 {
                   '@type': 'replace-via-payload',
@@ -56,6 +58,8 @@ export const routes: Routes = [
                   '@type': 'replace-via-payload',
                   eventName: 'user-appointment-updated',
                   sourceId: 'user-appointments',
+                  deletedPath: 'deleted',
+                  deletedExpression: true,
                 } as KokuDto.CalendarReplaceItemViaPayloadGlobalEventListenerDto,
               ] as KokuDto.AbstractCalendarGlobalEventListenerDto[],
               calendarClickAction: {

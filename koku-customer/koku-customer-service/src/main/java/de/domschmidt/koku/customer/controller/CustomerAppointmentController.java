@@ -70,10 +70,7 @@ import de.domschmidt.koku.dto.product.KokuProductDto;
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
 import de.domschmidt.list.dto.response.ListViewDto;
 import de.domschmidt.list.dto.response.ListViewSourcePathReference;
-import de.domschmidt.list.dto.response.actions.ListViewOpenRoutedContentActionDto;
-import de.domschmidt.list.dto.response.actions.ListViewUserConfirmationDateValueParamDto;
-import de.domschmidt.list.dto.response.actions.ListViewUserConfirmationDto;
-import de.domschmidt.list.dto.response.actions.ListViewUserConfirmationValueParamDto;
+import de.domschmidt.list.dto.response.actions.*;
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadAddItemGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadItemUpdateGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.fields.ListViewFieldReference;
@@ -1211,6 +1208,9 @@ public class CustomerAppointmentController {
                                         .valueMapping(Map.of(
                                                 KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef
                                         ))
+                                        .build(),
+                                ListViewPropagateGlobalEventActionEventDto.builder()
+                                        .eventName("customer-appointment-updated")
                                         .build()
                         ))
                         .failEvents(Arrays.asList(
@@ -1275,6 +1275,9 @@ public class CustomerAppointmentController {
                                         .valueMapping(Map.of(
                                                 KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef
                                         ))
+                                        .build(),
+                                ListViewPropagateGlobalEventActionEventDto.builder()
+                                        .eventName("customer-appointment-updated")
                                         .build()
                         ))
                         .failEvents(Arrays.asList(
@@ -2142,7 +2145,7 @@ public class CustomerAppointmentController {
                                 .build(),
                         DashboardTextPanelProgressDetailsDto.builder()
                                 .headline(calculatedFormattedDifference(overallRevenueThisMonth, overallRevenueSameMonthLastYear))
-                                .subHeadline("vs. " + sameMonthLastYear.getMonth().getDisplayName(TextStyle.SHORT, Locale.GERMAN) + " " + currentMonth.getYear())
+                                .subHeadline("vs. " + sameMonthLastYear.getMonth().getDisplayName(TextStyle.SHORT, Locale.GERMAN) + " " + sameMonthLastYear.getYear())
                                 .headlineColor(KokuColorEnum.YELLOW)
                                 .build()
                 ))

@@ -1,4 +1,14 @@
-import {booleanAttribute, Component, computed, ElementRef, inject, input, output, signal} from '@angular/core';
+import {
+  booleanAttribute,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  output,
+  signal,
+  ViewChild
+} from '@angular/core';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {ToastService} from '../../toast/toast.service';
 import {KeyValuePipe} from '@angular/common';
@@ -16,6 +26,7 @@ let uniqueId = 0;
 })
 export class SelectFieldComponent {
 
+  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
   value = input.required<string, string | number>({
     transform: (v: any) => {
       if (typeof v === 'string') {
@@ -31,6 +42,7 @@ export class SelectFieldComponent {
   placeholder = input<string>();
   possibleValues = input<KokuDto.SelectFormularFieldPossibleValue[]>([]);
   loading = input(false, {transform: booleanAttribute});
+  keepOpenOnSelect = input(false, {transform: booleanAttribute});
   readonly = input(false, {transform: booleanAttribute});
   required = input(false, {transform: booleanAttribute});
   disabled = input(false, {transform: booleanAttribute});
@@ -47,14 +59,16 @@ export class SelectFieldComponent {
   selectedId = signal<string | null>(null);
   searchTerm = signal("");
   filteredPossibleValues = computed(() =>
-    this.possibleValues().filter(option =>
-      (option.text || "").toLowerCase().includes(this.searchTerm().toLowerCase())
-    )
+    this.possibleValues().filter(option => {
+      const text = (option.text || "").toLowerCase();
+      const terms = this.searchTerm().toLowerCase().split(/\s+/).filter(t => t);
+      return terms.every(term => text.includes(term));
+    })
   );
   filteredPossibleValuesGrouped = computed(() =>
     Object.groupBy(this.filteredPossibleValues(), ({category}) => category || '')
   );
-  showDropdown = signal<{direction: 'top' | 'bottom'} | null>(null);
+  showDropdown = signal<{ direction: 'top' | 'bottom' } | null>(null);
   elementRef = inject(ElementRef);
   toastService = inject(ToastService);
   id = `select-field-${uniqueId++}`;
@@ -155,7 +169,11 @@ export class SelectFieldComponent {
       } else {
         this.searchTerm.set(option.text || "");
       }
-      this.showDropdown.set(null);
+      if (this.keepOpenOnSelect()) {
+        this.searchInput.nativeElement.focus();
+      } else {
+        this.showDropdown.set(null);
+      }
     } else {
       this.toastService.add("Option deaktiviert! Bitte wähle eine andere Option aus. ", 'error')
     }
