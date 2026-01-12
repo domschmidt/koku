@@ -26,6 +26,7 @@ import {AvatarComponent} from '../avatar/avatar.component';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
+
 dayjs.extend(isoWeek);
 dayjs.extend(advancedFormat);
 
@@ -118,6 +119,11 @@ export interface CalendarPluginEventSourceFactory {
   lookupEvent(eventPayload: any): any;
 }
 
+interface CalendarPersistedSettings {
+  hiddenSources?: string[];
+  viewMode?: 'WEEK' | 'DAY' | 'MONTH';
+}
+
 @Component({
   selector: 'calendar',
   imports: [
@@ -153,6 +159,7 @@ export class CalendarComponent implements OnDestroy {
   viewMode = signal<'WEEK' | 'DAY' | 'MONTH'>('MONTH');
   currentStartDate = signal<Date>(new Date());
   loading = signal(false);
+  hiddenSources = signal<Set<string>>(new Set<string>());
   private pluginInstances: { [key: string]: { instance: CalendarPlugin, api: any } } = {};
 
   private routerUrlSubscription: Subscription | undefined;
@@ -260,19 +267,30 @@ export class CalendarComponent implements OnDestroy {
 
   constructor() {
     toObservable(this.config).subscribe((config) => {
+      let persistedCalendarSettings: CalendarPersistedSettings = {};
+      try {
+        persistedCalendarSettings = JSON.parse(localStorage.getItem(`calendar-settings-${this.config().id}`) || '{}') as CalendarPersistedSettings;
+      } catch (e) {
+      }
+      this.hiddenSources.set(new Set(persistedCalendarSettings.hiddenSources || []));
+      this.viewMode.set(persistedCalendarSettings.viewMode || 'MONTH');
+
       const eventSources: EventSourceInput[] = [];
       for (const currentSource of config.listSources || []) {
         for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
           const eventSourceFactory: CalendarPluginEventSourceFactory | void = currentPluginInstance.instance.provideEventSourceFactory?.(currentSource);
           if (eventSourceFactory && currentSource.id) {
             this.registeredEventSourceFactories[currentSource.id] = eventSourceFactory;
-            eventSources.push(eventSourceFactory.generateEventSource());
+            if (!this.hiddenSources().has(currentSource.id)) {
+              eventSources.push(eventSourceFactory.generateEventSource());
+            }
           }
         }
       }
       this.fullCalendarOptions.set({
         ...this.fullCalendarOptions(),
         eventSources: eventSources,
+        initialView: this.getView(this.viewMode()),
         dateClick: (dateClickInfo) => {
           for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
             currentPluginInstance.instance.onDateSelect?.({
@@ -423,19 +441,6 @@ export class CalendarComponent implements OnDestroy {
     this.pluginInstances = pluginInstances;
   }
 
-  public generateEventItem(currentSource: KokuDto.AbstractCalendarListSourceConfigDto, item: {
-    [key: string]: any
-  }): EventInput {
-    if (!currentSource.id) {
-      throw new Error("Missing EventSource Id");
-    }
-    const eventSourceFactory = this.registeredEventSourceFactories[currentSource.id];
-    if (!eventSourceFactory) {
-      throw new Error(`EventSourceFactory: not found for type ${currentSource['@type']}`);
-    }
-    return eventSourceFactory.generateEventItem(item);
-  }
-
   dateChanged($event: Event) {
     if ($event.target) {
       const value = ($event.target as HTMLInputElement).value;
@@ -462,18 +467,20 @@ export class CalendarComponent implements OnDestroy {
   }
 
   changeViewMode(mode: 'WEEK' | 'DAY' | 'MONTH') {
+    this.calendarComponent()?.getApi().changeView(this.getView(mode));
+    this.persistCalendarSettings();
+  }
+
+  getView(mode: 'WEEK' | 'DAY' | 'MONTH') {
     switch (mode) {
       case 'DAY': {
-        this.calendarComponent()?.getApi().changeView('timeGridDay');
-        break;
+        return 'timeGridDay';
       }
       case 'WEEK': {
-        this.calendarComponent()?.getApi().changeView('timeGridWeek');
-        break;
+        return 'timeGridWeek';
       }
-      case 'MONTH': {
-        this.calendarComponent()?.getApi().changeView('dayGridMonth');
-        break;
+      default: {
+        return 'dayGridMonth';
       }
     }
   }
@@ -601,4 +608,26 @@ export class CalendarComponent implements OnDestroy {
     return pluginInstance.api;
   }
 
+  sourceToggled(id: string) {
+    this.hiddenSources.update(setInst => {
+      if (setInst.has(id)) {
+        setInst.delete(id);
+        this.calendarComponent()?.getApi().addEventSource(this.registeredEventSourceFactories[id].generateEventSource());
+      } else {
+        setInst.add(id);
+        this.calendarComponent()?.getApi().getEventSourceById(id)?.remove()
+      }
+      return setInst;
+    })
+    this.persistCalendarSettings();
+  }
+
+  private persistCalendarSettings() {
+    if (this.config().id) {
+      localStorage.setItem(`calendar-settings-${this.config().id}`, JSON.stringify({
+        hiddenSources: Array.from(this.hiddenSources()),
+        viewMode: this.viewMode()
+      } as CalendarPersistedSettings));
+    }
+  }
 }

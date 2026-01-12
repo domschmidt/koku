@@ -11,6 +11,7 @@ public abstract class AbstractCalendarListSourceConfigDto {
 
     String id;
     String name;
+    String activateToggleIcon;
     CalendarListSourceColorEnumDto sourceItemColor;
     AbstractCalendarItemClickAction clickAction;
     AbstractCalendarItemMoveAction dropAction;

@@ -36,6 +36,7 @@ export const routes: Routes = [
                 title: 'Bedienung auswählen',
                 id: 'select-user',
               }],
+              id: 'calendar',
               globalEventListeners: [
                 {
                   '@type': 'replace-via-payload',
@@ -225,6 +226,7 @@ export const routes: Routes = [
                   '@type': 'list',
                   id: 'customer-birthday',
                   name: 'Geburtstage',
+                  activateToggleIcon: 'CAKE',
                   sourceUrl: '/services/customers/customers/query',
                   idPath: 'id',
                   startDateFieldSelectionPath: 'birthday',
@@ -250,6 +252,7 @@ export const routes: Routes = [
                   '@type': 'list',
                   id: 'customer-appointments',
                   name: 'Kundentermine',
+                  activateToggleIcon: 'BRIEFCASE',
                   sourceUrl: '/services/customers/customers/appointments/query',
                   idPath: 'id',
                   startDateFieldSelectionPath: 'date',
@@ -301,6 +304,7 @@ export const routes: Routes = [
                   '@type': 'list',
                   id: 'user-appointments',
                   name: 'Private Termine',
+                  activateToggleIcon: 'USER',
                   sourceUrl: '/services/users/users/appointments/query',
                   idPath: 'id',
                   startDateFieldSelectionPath: 'startDate',
