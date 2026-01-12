@@ -15,6 +15,7 @@ import java.util.List;
 @FieldNameConstants
 public class CalendarConfigDto {
 
+    String id;
     List<AbstractCalendarListSourceConfigDto> listSources = new ArrayList<>();
     List<AbstractCalendarActionDto> calendarActions = new ArrayList<>();
     AbstractCalendarClickActionDto calendarClickAction;

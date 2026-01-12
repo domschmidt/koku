@@ -84,5 +84,26 @@
       }
     </div>
   }
+
+  <div class="p-4 absolute bottom-0 left-0 z-1">
+    <div class="join">
+      @if (config(); as config) {
+        @for (listSource of config.listSources; track listSource.id) {
+          @if (listSource.id; as listSourceId) {
+            @if (listSource.activateToggleIcon; as toggleIcon) {
+              <button class="join-item btn btn-accent btn-xl"
+                      [class.btn-active]="!hiddenSources().has(listSourceId)"
+                      [class.btn-neutral]="hiddenSources().has(listSourceId)"
+                      [title]="listSource.name + (hiddenSources().has(listSourceId) ? ' anzeigen' : ' ausblenden')"
+                      (click)="sourceToggled(listSourceId)"
+              >
+                <koku-icon [name]="toggleIcon"></koku-icon>
+              </button>
+            }
+          }
+        }
+      }
+    </div>
+  </div>
 </div>
 
