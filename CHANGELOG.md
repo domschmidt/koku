@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/domschmidt/koku/compare/v2.0.7...v2.1.0) (2026-01-12)
+
+
+### Features
+
+* **calendar:** toggleable sources, persisted settings ([16d7603](https://github.com/domschmidt/koku/commit/16d7603a6842b7891c0c2381dd4ba479aaf2878d))
+
 ## [2.0.7](https://github.com/domschmidt/koku/compare/v2.0.6...v2.0.7) (2026-01-08)
 
 
