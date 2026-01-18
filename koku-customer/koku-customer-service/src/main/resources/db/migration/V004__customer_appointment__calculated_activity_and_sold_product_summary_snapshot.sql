@@ -1,0 +1,2 @@
+alter table koku.customer_appointment ADD COLUMN sold_products_summary_snapshot varchar not null default '';
+alter table koku.customer_appointment ADD COLUMN activities_summary_snapshot varchar not null default '';

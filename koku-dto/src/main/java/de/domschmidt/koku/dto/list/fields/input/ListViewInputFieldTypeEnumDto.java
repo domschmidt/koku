@@ -1,4 +1,4 @@
-package de.domschmidt.list.dto.response.fields.input;
+package de.domschmidt.koku.dto.list.fields.input;
 
 public enum ListViewInputFieldTypeEnumDto {
 

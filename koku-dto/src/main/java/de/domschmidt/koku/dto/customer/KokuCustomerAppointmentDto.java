@@ -36,6 +36,8 @@ public class KokuCustomerAppointmentDto {
     String activityPriceSummary;
     String activityDurationSummary;
     String activitySoldProductSummary;
+    String activitySummarySnapshot;
+    String soldProductSummarySnapshot;
     String description;
     String additionalInfo;
     String userId;

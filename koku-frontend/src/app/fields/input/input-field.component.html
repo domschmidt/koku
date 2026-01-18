@@ -35,14 +35,17 @@
   @if (loading()) {
     <div class="skeleton w-full bg-neutral content-center" style="--radius-box:0">&nbsp;</div>
   } @else {
-    @if (type() === "DATETIME") {
-      <div class="content-center">{{ value() | date:'dd.MM.yyyy HH:mm \'Uhr\'' }}</div>
-    } @else if (type() === "DATE") {
-      <div class="content-center">{{ value() | date:'dd.MM.yyyy' }}</div>
-    } @else if (type() === "TIME") {
-      <div class="content-center">{{ value() | date:'HH:mm \'Uhr\'' }}</div>
-    } @else {
-      <div class="content-center">{{ value() }}</div>
+    @if (value(); as value) {
+      <div class="content-center {{cls()}}">
+        @if (type() === "DATETIME") {
+          {{ value | date:'dd.MM.yyyy HH:mm \'Uhr\'' }}
+        } @else if (type() === "DATE") {
+          {{ value | date:'dd.MM.yyyy' }}
+        } @else if (type() === "TIME") {
+          {{ value | date:'HH:mm \'Uhr\'' }}
+        } @else {
+          {{ value }}
+        }</div>
     }
   }
 }

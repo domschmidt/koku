@@ -8,16 +8,20 @@ import de.domschmidt.koku.customer.domain.KokuCustomerAppointmentSoldProductDoma
 import de.domschmidt.koku.customer.exceptions.*;
 import de.domschmidt.koku.customer.kafka.activities.service.ActivityKTableProcessor;
 import de.domschmidt.koku.customer.kafka.activity_steps.service.ActivityStepKTableProcessor;
+import de.domschmidt.koku.customer.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.customer.kafka.products.service.ProductKTableProcessor;
 import de.domschmidt.koku.customer.kafka.promotions.service.PromotionKTableProcessor;
 import de.domschmidt.koku.customer.kafka.users.service.UserKTableProcessor;
 import de.domschmidt.koku.customer.persistence.*;
 import de.domschmidt.koku.dto.customer.*;
 import de.domschmidt.koku.product.kafka.dto.ProductKafkaDto;
+import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
 import de.domschmidt.koku.product.kafka.dto.ProductPriceHistoryKafkaDto;
 import de.domschmidt.koku.promotion.kafka.dto.PromotionKafkaDto;
+import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityManager;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
@@ -38,6 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
+@RequiredArgsConstructor
 public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
 
     private static final DateTimeFormatter LONG_SUMMARY_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("'Kundentermin am' dd.MM.yyyy 'um' HH:mm 'Uhr'");
@@ -67,25 +72,9 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     private final ActivityKTableProcessor activityKTableProcessor;
     private final ActivityStepKTableProcessor activityStepKTableProcessor;
     private final ProductKTableProcessor productKTableProcessor;
+    private final ProductManufacturerKTableProcessor productManufacturerKTableProcessor;
     private final PromotionKTableProcessor promotionKTableProcessor;
     private final UserKTableProcessor userKTableProcessor;
-
-    @Autowired
-    public CustomerAppointmentToCustomerAppointmentDtoTransformer(
-            final EntityManager entityManager,
-            final ActivityKTableProcessor activityKTableProcessor,
-            final ActivityStepKTableProcessor activityStepKTableProcessor,
-            final ProductKTableProcessor productKTableProcessor,
-            final PromotionKTableProcessor promotionKTableProcessor,
-            final UserKTableProcessor userKTableProcessor
-    ) {
-        this.entityManager = entityManager;
-        this.activityKTableProcessor = activityKTableProcessor;
-        this.activityStepKTableProcessor = activityStepKTableProcessor;
-        this.productKTableProcessor = productKTableProcessor;
-        this.promotionKTableProcessor = promotionKTableProcessor;
-        this.userKTableProcessor = userKTableProcessor;
-    }
 
     public KokuCustomerAppointmentDto transformToDto(final CustomerAppointment model) {
         final List<KokuCustomerAppointmentActivityDto> activities = new ArrayList<>();
@@ -168,6 +157,12 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                         model.getStart(),
                         soldProducts.stream().map(KokuCustomerAppointmentSoldProductDomain::fromDto).toList(),
                         promotions.stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList()
+                ))
+                .activitySummarySnapshot(this.calculateCustomerAppointmentActivitySummary(
+                        activities.stream().map(KokuCustomerAppointmentActivityDomain::fromDto).toList()
+                ))
+                .soldProductSummarySnapshot(this.calculateCustomerAppointmentSoldProductSummary(
+                        soldProducts.stream().map(KokuCustomerAppointmentSoldProductDomain::fromDto).toList()
                 ))
                 .build();
     }
@@ -293,10 +288,16 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 model.getSoldProducts().stream().map(KokuCustomerAppointmentSoldProductDomain::fromEntity).toList(),
                 model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
         ));
+        model.setSoldProductsSummarySnapshot(this.calculateCustomerAppointmentSoldProductSummary(
+                model.getSoldProducts().stream().map(KokuCustomerAppointmentSoldProductDomain::fromEntity).toList()
+        ));
         model.setActivitiesRevenueSnapshot(this.calculateCustomerAppointmentActivityPriceSum(
                 model.getStart(),
                 model.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromEntity).toList(),
                 model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
+        ));
+        model.setActivitiesSummarySnapshot(this.calculateCustomerAppointmentActivitySummary(
+                model.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromEntity).toList()
         ));
 
         for (CustomerAppointmentSoldProduct soldProduct : model.getSoldProducts()) {
@@ -609,4 +610,29 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         }
         return start.plus(duration);
     }
+
+    public String calculateCustomerAppointmentActivitySummary(List<KokuCustomerAppointmentActivityDomain> list) {
+        List<ActivityKafkaDto> kafkaActivities = new ArrayList<>();
+        for (final KokuCustomerAppointmentActivityDomain currentActivity : list) {
+            kafkaActivities.add(this.activityKTableProcessor.getActivities().get(currentActivity.getActivityId()));
+        }
+        return kafkaActivities.stream()
+                .map(ActivityKafkaDto::getName)
+                .collect(Collectors.joining(", "));
+    }
+
+    public String calculateCustomerAppointmentSoldProductSummary(List<KokuCustomerAppointmentSoldProductDomain> list) {
+        List<ProductKafkaDto> kafkaSoldProducts = new ArrayList<>();
+        ReadOnlyKeyValueStore<Long, ProductKafkaDto> productsSnapshot = this.productKTableProcessor.getProducts();
+        ReadOnlyKeyValueStore<Long, ProductManufacturerKafkaDto> manufacturerSnapshot = this.productManufacturerKTableProcessor.getProductManufacturers();
+        for (final KokuCustomerAppointmentSoldProductDomain currentSoldProduct : list) {
+            kafkaSoldProducts.add(productsSnapshot.get(currentSoldProduct.getProductId()));
+        }
+        return kafkaSoldProducts.stream()
+                .map(productKafkaDto -> Stream.of(manufacturerSnapshot.get(productKafkaDto.getManufacturerId()).getName(), productKafkaDto.getName())
+                        .filter(StringUtils::isNotBlank)
+                        .collect(Collectors.joining(" / ")))
+                .collect(Collectors.joining(", "));
+    }
+
 }

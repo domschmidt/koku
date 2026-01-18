@@ -31,6 +31,47 @@ import {FileViewerComponent} from '../fields/file-viewer/file-viewer.component';
 import {GLOBAL_EVENT_BUS} from '../events/global-events';
 import {BarcodeCaptureComponent} from '../fields/barcode-capture/barcode-capture.component';
 
+const ROUNDED_MAPPING: Partial<Record<KokuDto.KokuRoundedEnum, string>> = {
+  'SM': 'rounded-sm',
+  'MD': 'rounded-md',
+  'LG': 'rounded-lg',
+  'XL': 'rounded-xl',
+  'XL2': 'rounded-2xl',
+  'XL3': 'rounded-3xl',
+  'XL4': 'rounded-4xl'
+}
+const COLOR_MAPPING: Partial<Record<KokuDto.KokuColorEnum, string>> = {
+  "PRIMARY": "bg-primary text-primary-content",
+  "SECONDARY": "bg-secondary text-secondary-content",
+  "ACCENT": "bg-accent text-accent-content",
+  "INFO": "bg-info text-info-content",
+  "SUCCESS": "bg-success text-success-content",
+  "WARNING": "bg-warning text-warning-content",
+  "ERROR": "bg-error text-error-content",
+  "RED": "bg-red",
+  "ORANGE": "bg-orange",
+  "AMBER": "bg-amber",
+  "YELLOW": "bg-yellow",
+  "LIME": "bg-lime",
+  "GREEN": "bg-green",
+  "EMERALD": "bg-emerald",
+  "TEAL": "bg-teal",
+  "CYAN": "bg-cyan",
+  "SKY": "bg-sky",
+  "BLUE": "bg-blue",
+  "INDIGO": "bg-indigo",
+  "VIOLET": "bg-violet",
+  "PURPLE": "bg-purple",
+  "FUCHSIA": "bg-fuchsia",
+  "PINK": "bg-pink",
+  "ROSE": "bg-rose",
+  "SLATE": "bg-slate",
+  "GRAY": "bg-gray",
+  "ZINC": "bg-zinc",
+  "NEUTRAL": "bg-neutral text-neutral-content",
+  "STONE": "bg-stone",
+};
+
 const FIELD_INITIALIZER = (listContent: KokuDto.AbstractListViewFieldDto<any>, value: any) => {
   const result: ListFieldRegistrationType = {
     value: signal(value !== undefined ? value : listContent.defaultValue),
@@ -68,9 +109,17 @@ const FIELD_REGISTRY: Partial<Record<KokuDto.AbstractListViewFieldDto<any>["@typ
     componentType: InputFieldComponent,
     stateInitializer: FIELD_INITIALIZER,
     inputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewInputFieldDto) => {
+
+      const clss = [
+        listContent.rounded && 'p-1 my-1',
+        listContent.rounded && ROUNDED_MAPPING[listContent.rounded],
+        listContent.backgroundColor && COLOR_MAPPING[listContent.backgroundColor]
+      ];
+
       return {
         ...(listContent.type && {type: listContent.type}),
-        valueOnly: true
+        valueOnly: true,
+        cls: clss.join(' ')
       }
     },
     outputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewInputFieldDto) => {

@@ -37,6 +37,7 @@ import de.domschmidt.koku.customer.kafka.users.service.UserKTableProcessor;
 import de.domschmidt.koku.customer.persistence.*;
 import de.domschmidt.koku.customer.transformer.CustomerAppointmentToCustomerAppointmentDtoTransformer;
 import de.domschmidt.koku.dto.KokuColorEnum;
+import de.domschmidt.koku.dto.KokuRoundedEnum;
 import de.domschmidt.koku.dto.activity.KokuActivityDto;
 import de.domschmidt.koku.dto.activity.KokuActivityStepDto;
 import de.domschmidt.koku.dto.chart.filter.types.EnumInputChartFilterType;
@@ -64,6 +65,7 @@ import de.domschmidt.koku.dto.formular.fields.slots.KokuFieldSlotButton;
 import de.domschmidt.koku.dto.formular.fields.stat.StatFormularField;
 import de.domschmidt.koku.dto.formular.fields.textarea.TextareaFormularField;
 import de.domschmidt.koku.dto.formular.listeners.*;
+import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStylingDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.koku.dto.product.KokuProductDto;
@@ -74,7 +76,6 @@ import de.domschmidt.list.dto.response.actions.*;
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadAddItemGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadItemUpdateGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.fields.ListViewFieldReference;
-import de.domschmidt.list.dto.response.fields.input.ListViewInputFieldDto;
 import de.domschmidt.list.dto.response.inline_content.ListViewRoutedContentDto;
 import de.domschmidt.list.dto.response.inline_content.formular.*;
 import de.domschmidt.list.dto.response.inline_content.header.ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto;
@@ -440,7 +441,7 @@ public class CustomerAppointmentController {
                             )
                             .text(activityStep.value.getName())
                             .disabled(Boolean.TRUE.equals(activityStep.value.getDeleted()))
-                            .color(KokuColorEnum.PRIMARY)
+                            .color(KokuColorEnum.SECONDARY)
                             .category("Behandlungsschritte")
                             .build();
                 }).toList()
@@ -457,7 +458,7 @@ public class CustomerAppointmentController {
                             )
                             .text(String.format("%s / %s", this.productManufacturerKTableProcessor.getProductManufacturers().get(product.value.getManufacturerId()).getName(), product.value.getName()))
                             .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
-                            .color(KokuColorEnum.SECONDARY)
+                            .color(KokuColorEnum.PRIMARY)
                             .category("Produkte")
                             .build();
                 }).toList()
@@ -1037,6 +1038,22 @@ public class CustomerAppointmentController {
                         .label("Zusammenfassung")
                         .build()
         );
+        listViewFactory.addField(
+                KokuCustomerAppointmentDto.Fields.activitySummarySnapshot,
+                ListViewInputFieldDto.builder()
+                        .label("Aktivitäten")
+                        .rounded(KokuRoundedEnum.XL)
+                        .backgroundColor(KokuColorEnum.PRIMARY)
+                        .build()
+        );
+        listViewFactory.addField(
+                KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot,
+                ListViewInputFieldDto.builder()
+                        .label("Verkaufte Produkte")
+                        .rounded(KokuRoundedEnum.XL)
+                        .backgroundColor(KokuColorEnum.ACCENT)
+                        .build()
+        );
         final ListViewSourcePathReference deletedSourcePathRef = listViewFactory.addSourcePath(KokuCustomerAppointmentDto.Fields.deleted);
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
@@ -1417,6 +1434,14 @@ public class CustomerAppointmentController {
                         "cast({0} as time)",
                         qClazz.calculatedEndSnapshot.coalesce(qClazz.start)
                 )
+        );
+        listQueryFactory.addFetchExpr(
+                KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot,
+                qClazz.soldProductsSummarySnapshot
+        );
+        listQueryFactory.addFetchExpr(
+                KokuCustomerAppointmentDto.Fields.activitySummarySnapshot,
+                qClazz.activitiesSummarySnapshot
         );
         listQueryFactory.addFetchExpr(
                 KokuCustomerAppointmentDto.Fields.userId,
