@@ -40,6 +40,7 @@ export class InputFieldComponent {
   required = input(false, {transform: booleanAttribute});
   disabled = input(false, {transform: booleanAttribute});
   valueOnly = input(false, {transform: booleanAttribute});
+  cls = input<string>('');
   onChange = output<string>();
   onInput = output<string>();
   onBlur = output<void>();

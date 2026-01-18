@@ -20,6 +20,7 @@ import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
 import de.domschmidt.koku.dto.formular.fields.documents.DocumentDesignerFormularField;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
+import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStylingDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.list.dto.response.ListViewDto;
@@ -30,7 +31,6 @@ import de.domschmidt.list.dto.response.actions.ListViewUserConfirmationValuePara
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadAddItemGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadItemUpdateGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.fields.ListViewFieldReference;
-import de.domschmidt.list.dto.response.fields.input.ListViewInputFieldDto;
 import de.domschmidt.list.dto.response.inline_content.ListViewRoutedContentDto;
 import de.domschmidt.list.dto.response.inline_content.document.ListViewDocumentFormContentAfterSavePropagateGlobalEventDto;
 import de.domschmidt.list.dto.response.inline_content.document.ListViewDocumentFormContentDto;

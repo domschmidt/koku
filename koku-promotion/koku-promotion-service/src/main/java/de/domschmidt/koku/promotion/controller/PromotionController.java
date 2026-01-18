@@ -16,6 +16,7 @@ import de.domschmidt.koku.dto.formular.containers.fieldset.FieldsetContainer;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
 import de.domschmidt.koku.dto.formular.fields.input.EnumInputFormularFieldType;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
+import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
 import de.domschmidt.koku.dto.promotion.KokuPromotionSummaryDto;
 import de.domschmidt.koku.promotion.kafka.promotion.service.PromotionKafkaService;
@@ -30,7 +31,6 @@ import de.domschmidt.list.dto.response.actions.ListViewOpenRoutedContentActionDt
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadAddItemGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadItemUpdateGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.fields.ListViewFieldReference;
-import de.domschmidt.list.dto.response.fields.input.ListViewInputFieldDto;
 import de.domschmidt.list.dto.response.inline_content.ListViewRoutedContentDto;
 import de.domschmidt.list.dto.response.inline_content.formular.ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto;
 import de.domschmidt.list.dto.response.inline_content.formular.ListViewFormularContentDto;

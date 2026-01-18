@@ -26,6 +26,8 @@ import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularFieldPossibleValue;
 import de.domschmidt.koku.dto.formular.fields.slots.KokuFieldSlotButton;
 import de.domschmidt.koku.dto.formular.listeners.*;
+import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
+import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldTypeEnumDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStylingDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.koku.dto.product.KokuProductDto;
@@ -44,8 +46,6 @@ import de.domschmidt.list.dto.response.actions.ListViewUserConfirmationValuePara
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadAddItemGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadItemUpdateGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.fields.ListViewFieldReference;
-import de.domschmidt.list.dto.response.fields.input.ListViewInputFieldDto;
-import de.domschmidt.list.dto.response.fields.input.ListViewInputFieldTypeEnumDto;
 import de.domschmidt.list.dto.response.inline_content.ListViewRoutedContentDto;
 import de.domschmidt.list.dto.response.inline_content.chart.ListViewChartContentDto;
 import de.domschmidt.list.dto.response.inline_content.dock.ListViewDockContentDto;

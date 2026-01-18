@@ -37,10 +37,16 @@ public class CustomerAppointmentKafkaMaintenanceService {
                     model.getSoldProducts().stream().map(KokuCustomerAppointmentSoldProductDomain::fromEntity).toList(),
                     model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
             ));
+            model.setSoldProductsSummarySnapshot(this.transformer.calculateCustomerAppointmentSoldProductSummary(
+                    model.getSoldProducts().stream().map(KokuCustomerAppointmentSoldProductDomain::fromEntity).toList()
+            ));
             model.setActivitiesRevenueSnapshot(this.transformer.calculateCustomerAppointmentActivityPriceSum(
                     model.getStart(),
                     model.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromEntity).toList(),
                     model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
+            ));
+            model.setActivitiesSummarySnapshot(this.transformer.calculateCustomerAppointmentActivitySummary(
+                    model.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromEntity).toList()
             ));
             model.setCalculatedEndSnapshot(this.transformer.calculateCustomerAppointmentEnd(
                     model.getStart(),

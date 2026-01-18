@@ -1,4 +1,4 @@
-package de.domschmidt.list.dto.response.fields.textarea;
+package de.domschmidt.koku.dto.list.fields.checkbox;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.list.dto.response.fields.AbstractListViewFieldDto;
@@ -7,12 +7,12 @@ import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
-@JsonTypeName("textarea")
+@JsonTypeName("checkbox")
 @Getter
-public class ListViewTextareaFieldDto extends AbstractListViewFieldDto<String> {
+public class ListViewCheckboxFieldDto extends AbstractListViewFieldDto<Boolean> {
 
     String label;
     @Builder.Default
-    String defaultValue = "";
+    Boolean defaultValue = Boolean.FALSE;
 
 }

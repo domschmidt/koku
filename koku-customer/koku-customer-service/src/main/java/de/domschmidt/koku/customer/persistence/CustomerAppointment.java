@@ -53,7 +53,9 @@ public class CustomerAppointment implements Serializable {
     List<CustomerAppointmentTreatmentSequenceItem> treatmentSequence = new ArrayList<>();
 
     BigDecimal activitiesRevenueSnapshot;
+    String activitiesSummarySnapshot;
     BigDecimal soldProductsRevenueSnapshot;
+    String soldProductsSummarySnapshot;
 
     @CreationTimestamp
     LocalDateTime recorded;

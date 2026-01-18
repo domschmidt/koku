@@ -8,6 +8,8 @@ import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularFieldPossibleValue;
+import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
+import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldTypeEnumDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStylingDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.koku.file.kafka.customers.service.CustomerKTableProcessor;
@@ -23,8 +25,6 @@ import de.domschmidt.list.dto.response.events.ListViewEventPayloadOpenRoutedCont
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto;
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadSearchTermGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.fields.ListViewFieldReference;
-import de.domschmidt.list.dto.response.fields.input.ListViewInputFieldDto;
-import de.domschmidt.list.dto.response.fields.input.ListViewInputFieldTypeEnumDto;
 import de.domschmidt.list.dto.response.inline_content.ListViewRoutedContentDto;
 import de.domschmidt.list.dto.response.inline_content.formular.ListViewFileViewerContentDto;
 import de.domschmidt.list.dto.response.inline_content.header.ListViewHeaderContentDto;
