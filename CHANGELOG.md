@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/domschmidt/koku/compare/v2.1.0...v2.2.0) (2026-01-18)
+
+
+### Features
+
+* **appointments:** add sales and activity summary in appointment list ([aba1599](https://github.com/domschmidt/koku/commit/aba159953bd88dfdba0e19f0bfc0d1ce3ffb2152))
+
 # [2.1.0](https://github.com/domschmidt/koku/compare/v2.0.7...v2.1.0) (2026-01-12)
 
 
