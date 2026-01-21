@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/domschmidt/koku/compare/v2.2.0...v2.2.1) (2026-01-21)
+
+
+### Bug Fixes
+
+* **minors:** fix sales and activity summary update in appointment list, fix top product and activity ranking, remove delayed visualisation ([bd5a9e1](https://github.com/domschmidt/koku/commit/bd5a9e194b6ec4f857ea7349791b8cdee285cb83))
+
 # [2.2.0](https://github.com/domschmidt/koku/compare/v2.1.0...v2.2.0) (2026-01-18)
 
 
