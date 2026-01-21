@@ -1038,7 +1038,7 @@ public class CustomerAppointmentController {
                         .label("Zusammenfassung")
                         .build()
         );
-        listViewFactory.addField(
+        final ListViewFieldReference activitySummarySnapshotField = listViewFactory.addField(
                 KokuCustomerAppointmentDto.Fields.activitySummarySnapshot,
                 ListViewInputFieldDto.builder()
                         .label("Aktivitäten")
@@ -1046,7 +1046,7 @@ public class CustomerAppointmentController {
                         .backgroundColor(KokuColorEnum.PRIMARY)
                         .build()
         );
-        listViewFactory.addField(
+        final ListViewFieldReference soldProductSummarySnapshotField = listViewFactory.addField(
                 KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot,
                 ListViewInputFieldDto.builder()
                         .label("Verkaufte Produkte")
@@ -1071,7 +1071,9 @@ public class CustomerAppointmentController {
                 .idPath(KokuCustomerAppointmentDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuCustomerAppointmentDto.Fields.shortSummaryText, shortSummaryFieldRef,
-                        KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef
+                        KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef,
+                        KokuCustomerAppointmentDto.Fields.activitySummarySnapshot, activitySummarySnapshotField,
+                        KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot, soldProductSummarySnapshotField
                 ))
                 .build()
         );
@@ -1127,7 +1129,9 @@ public class CustomerAppointmentController {
                 .eventName("customer-appointment-updated")
                 .idPath(KokuCustomerAppointmentDto.Fields.id)
                 .valueMapping(Map.of(
-                        KokuCustomerAppointmentDto.Fields.shortSummaryText, shortSummaryFieldRef
+                        KokuCustomerAppointmentDto.Fields.shortSummaryText, shortSummaryFieldRef,
+                        KokuCustomerAppointmentDto.Fields.activitySummarySnapshot, activitySummarySnapshotField,
+                        KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot, soldProductSummarySnapshotField
                 ))
                 .build()
         );
@@ -2439,7 +2443,7 @@ public class CustomerAppointmentController {
         for (final CustomerAppointment customerAppointment : appointments) {
 
             for (CustomerAppointmentSoldProduct soldProduct : customerAppointment.getSoldProducts()) {
-                if (!productUsages.containsKey(soldProduct.getId())) {
+                if (!productUsages.containsKey(soldProduct.getProductId())) {
                     productUsages.put(soldProduct.getProductId(), 0);
                 }
                 productUsages.put(soldProduct.getProductId(), productUsages.get(soldProduct.getProductId()) + 1);
@@ -2467,7 +2471,7 @@ public class CustomerAppointmentController {
         for (final CustomerAppointment customerAppointment : appointments) {
 
             for (CustomerAppointmentActivity activity : customerAppointment.getActivities()) {
-                if (!activityUsages.containsKey(activity.getId())) {
+                if (!activityUsages.containsKey(activity.getActivityId())) {
                     activityUsages.put(activity.getActivityId(), 0);
                 }
                 activityUsages.put(activity.getActivityId(), activityUsages.get(activity.getActivityId()) + 1);

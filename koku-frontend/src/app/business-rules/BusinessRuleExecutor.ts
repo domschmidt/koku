@@ -2,7 +2,6 @@ import {WritableSignal} from '@angular/core';
 import {BehaviorSubject, filter, Subscription} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {get} from '../utils/get';
-import {delayAtLeast} from '../rxjs/delay-at-least';
 import {set} from '../utils/set';
 import qs from 'qs';
 import {ModalService} from '../modal/modal.service';
@@ -195,7 +194,7 @@ class BusinessRuleExecutor {
           {
             body: castedExecution.method === 'GET' ? undefined : requestBody
           }
-        ).pipe(delayAtLeast(1000)).subscribe((result) => {
+        ).subscribe((result) => {
           console.log('Execution finished', result);
           this.afterExecutionFinished(result);
         });

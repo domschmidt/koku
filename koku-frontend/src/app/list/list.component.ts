@@ -15,7 +15,6 @@ import {HttpClient} from '@angular/common/http';
 import {Observable, of, Subscription} from 'rxjs';
 import {ListItemComponent} from './list-item/list-item.component';
 import {InputFieldComponent} from '../fields/input/input-field.component';
-import {delayAtLeast} from '../rxjs/delay-at-least';
 import {tap} from 'rxjs/operators';
 import {IconComponent} from '../icon/icon.component';
 import {ListItemPreviewComponent} from './list-item-preview/list-item-preview.component';
@@ -393,8 +392,7 @@ export class ListComponent implements OnDestroy, OnChanges {
       } as KokuDto.ListQuery).pipe(
         tap(() => {
           this.lastSourceQuery = query || {};
-        }),
-        delayAtLeast(700)
+        })
       );
 
       this.lastSourceQuerySubscription = newQuery.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
