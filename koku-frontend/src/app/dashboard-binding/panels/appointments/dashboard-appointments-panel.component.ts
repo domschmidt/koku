@@ -4,7 +4,6 @@ import {get} from '../../../utils/get';
 import {HttpClient} from '@angular/common/http';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {finalize, tap} from 'rxjs/operators';
-import {delayAtLeast} from '../../../rxjs/delay-at-least';
 import {MyUserDetailsService} from '../../../user/my-user-details.service';
 import {ToastService} from '../../../toast/toast.service';
 import dayjs from 'dayjs';
@@ -172,7 +171,6 @@ export class DashboardAppointmentsPanelComponent {
           tap(value => {
             this.loading.set(true);
           }),
-          delayAtLeast(700),
           finalize(() => {
             this.loading.set(false);
           })

@@ -4,7 +4,6 @@ import {ToastService} from '../../../toast/toast.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {Subscription} from 'rxjs';
 import {DashboardTextPanelComponent} from './dashboard-text-panel.component';
-import {delayAtLeast} from '../../../rxjs/delay-at-least';
 
 @Component({
   selector: 'dashboard-async-text-panel',
@@ -41,7 +40,6 @@ export class DashboardAsyncTextPanelComponent implements OnChanges {
 
     this.lastContentSubscription = this.httpClient.get<KokuDto.DashboardTextPanelDto>(contentSnapshot.sourceUrl).pipe(
       takeUntilDestroyed(this.destroyRef),
-      delayAtLeast(700)
     ).subscribe((loadedContent) => {
       this.loadedContent.set(loadedContent);
     }, () => {

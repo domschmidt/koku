@@ -7,7 +7,6 @@ import {tap} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
 import {ToastService} from '../toast/toast.service';
 import {ChartFilterRendererComponent} from './filter-renderer/chart-filter-renderer.component';
-import {delayAtLeast} from '../rxjs/delay-at-least';
 
 export interface ChartContentSetup {
   filterRegistry: Partial<Record<KokuDto.AbstractChartFilterDto["@type"] | string, {
@@ -63,8 +62,7 @@ export class ChartComponent {
             .pipe(
               tap(value => {
                 this.loading.set(true);
-              }),
-              delayAtLeast(700)
+              })
             ).subscribe({
               next: (chartData) => {
                 if (this.currentChartInstance) {

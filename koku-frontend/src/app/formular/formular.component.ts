@@ -16,7 +16,6 @@ import {
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {ToastService} from '../toast/toast.service';
 import {ContainerRendererComponent} from './container-renderer/container-renderer.component';
-import {delayAtLeast} from '../rxjs/delay-at-least';
 import {Observable, Subject, Subscriber, Subscription} from 'rxjs';
 import {OutletDirective} from '../portal/outlet.directive';
 import {set} from '../utils/set';
@@ -368,9 +367,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
         this.lastSourceSubscription.unsubscribe();
       }
       this.lastSourceSubscription = this.httpClient.get(sourceUrlSnapshot)
-        .pipe(
-          delayAtLeast(700),
-        ).subscribe({
+        .subscribe({
             next: (source) => {
               this.afterSourceLoaded(source);
             },
