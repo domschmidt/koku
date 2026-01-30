@@ -17,6 +17,8 @@ import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
 import de.domschmidt.koku.dto.formular.fields.input.EnumInputFormularFieldType;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
+import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
+import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDto;
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
 import de.domschmidt.koku.dto.promotion.KokuPromotionSummaryDto;
 import de.domschmidt.koku.promotion.kafka.promotion.service.PromotionKafkaService;
@@ -44,7 +46,9 @@ import de.domschmidt.list.dto.response.items.actions.inline_content.ListViewItem
 import de.domschmidt.list.dto.response.items.actions.inline_content.ListViewItemClickOpenRoutedContentActionItemValueParamDto;
 import de.domschmidt.list.factory.DefaultListViewContentIdGenerator;
 import de.domschmidt.list.factory.ListViewFactory;
+import de.domschmidt.listquery.dto.request.EnumSearchOperator;
 import de.domschmidt.listquery.dto.request.ListQuery;
+import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -196,6 +200,23 @@ public class PromotionController {
                 KokuPromotionDto.Fields.shortSummary,
                 ListViewInputFieldDto.builder()
                         .label("Name")
+                        .build()
+        );
+
+        listViewFactory.addFilter(
+                KokuPromotionDto.Fields.deleted,
+                ListViewToggleFilterDto.builder()
+                        .label("Gelöschte anzeigen?")
+                        .enabledPredicate(QueryPredicate.builder()
+                                .searchExpression(Boolean.TRUE.toString())
+                                .searchOperator(EnumSearchOperator.EQ)
+                                .build()
+                        )
+                        .disabledPredicate(QueryPredicate.builder()
+                                .searchExpression(Boolean.FALSE.toString())
+                                .searchOperator(EnumSearchOperator.EQ)
+                                .build())
+                        .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
                         .build()
         );
 
@@ -357,7 +378,7 @@ public class PromotionController {
                             .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
-                                    .icon("Close")
+                                    .icon("CLOSE")
                                     .build()
                             )
                             .closeOnClickOutside(true)

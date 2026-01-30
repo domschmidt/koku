@@ -180,7 +180,7 @@ public class ListQueryFactory<Entity> {
             }
         }
 
-        int queryPageSize = this.predicate != null && this.predicate.getLimit() != null && this.predicate.getLimit() > 0 && this.predicate.getLimit() <= 1000 ? this.predicate.getLimit() : 25;
+        int queryPageSize = this.predicate != null && this.predicate.getLimit() != null && this.predicate.getLimit() > 0 && this.predicate.getLimit() <= 1000 ? this.predicate.getLimit() : 200;
         int page = this.predicate != null && this.predicate.getPage() != null && this.predicate.getPage() > 0 ? this.predicate.getPage() : 0;
         int queryOffset = page * queryPageSize;
 

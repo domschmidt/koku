@@ -10,6 +10,8 @@ import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularFieldPossibleValue;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldTypeEnumDto;
+import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
+import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStylingDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.koku.file.kafka.customers.service.CustomerKTableProcessor;
@@ -45,7 +47,9 @@ import de.domschmidt.list.dto.response.notifications.ListViewNotificationEventSe
 import de.domschmidt.list.dto.response.notifications.ListViewNotificationEventValueParamDto;
 import de.domschmidt.list.factory.DefaultListViewContentIdGenerator;
 import de.domschmidt.list.factory.ListViewFactory;
+import de.domschmidt.listquery.dto.request.EnumSearchOperator;
 import de.domschmidt.listquery.dto.request.ListQuery;
+import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -140,6 +144,23 @@ public class FileController {
         final ListViewSourcePathReference idSourcePathFieldRef = listViewFactory.addSourcePath(KokuFileDto.Fields.id);
         final ListViewSourcePathReference deletedSourceRef = listViewFactory.addSourcePath(KokuFileDto.Fields.deleted);
         listViewFactory.addSourcePath(KokuFileDto.Fields.customerId);
+
+        listViewFactory.addFilter(
+                KokuFileDto.Fields.deleted,
+                ListViewToggleFilterDto.builder()
+                        .label("Gelöschte anzeigen?")
+                        .enabledPredicate(QueryPredicate.builder()
+                                .searchExpression(Boolean.TRUE.toString())
+                                .searchOperator(EnumSearchOperator.EQ)
+                                .build()
+                        )
+                        .disabledPredicate(QueryPredicate.builder()
+                                .searchExpression(Boolean.FALSE.toString())
+                                .searchOperator(EnumSearchOperator.EQ)
+                                .build())
+                        .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
+                        .build()
+        );
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("capture-barcode")

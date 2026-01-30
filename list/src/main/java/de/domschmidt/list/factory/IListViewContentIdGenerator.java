@@ -3,8 +3,7 @@ package de.domschmidt.list.factory;
 public interface IListViewContentIdGenerator {
 
     String generateUniqueId(
-            final String initialProposal,
-            final String prefix
+            final String initialProposal
     );
 
 }

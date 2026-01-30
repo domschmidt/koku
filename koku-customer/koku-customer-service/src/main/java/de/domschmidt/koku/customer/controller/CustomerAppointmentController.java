@@ -66,6 +66,8 @@ import de.domschmidt.koku.dto.formular.fields.stat.StatFormularField;
 import de.domschmidt.koku.dto.formular.fields.textarea.TextareaFormularField;
 import de.domschmidt.koku.dto.formular.listeners.*;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
+import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
+import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStylingDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.koku.dto.product.KokuProductDto;
@@ -91,7 +93,9 @@ import de.domschmidt.list.dto.response.items.actions.inline_content.ListViewItem
 import de.domschmidt.list.dto.response.notifications.*;
 import de.domschmidt.list.factory.DefaultListViewContentIdGenerator;
 import de.domschmidt.list.factory.ListViewFactory;
+import de.domschmidt.listquery.dto.request.EnumSearchOperator;
 import de.domschmidt.listquery.dto.request.ListQuery;
+import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -1056,6 +1060,23 @@ public class CustomerAppointmentController {
         );
         final ListViewSourcePathReference deletedSourcePathRef = listViewFactory.addSourcePath(KokuCustomerAppointmentDto.Fields.deleted);
 
+        listViewFactory.addFilter(
+                KokuCustomerAppointmentDto.Fields.deleted,
+                ListViewToggleFilterDto.builder()
+                        .label("Gelöschte anzeigen?")
+                        .enabledPredicate(QueryPredicate.builder()
+                                .searchExpression(Boolean.TRUE.toString())
+                                .searchOperator(EnumSearchOperator.EQ)
+                                .build()
+                        )
+                        .disabledPredicate(QueryPredicate.builder()
+                                .searchExpression(Boolean.FALSE.toString())
+                                .searchOperator(EnumSearchOperator.EQ)
+                                .build())
+                        .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
+                        .build()
+        );
+
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("new")
                 .icon("PLUS")
@@ -1488,7 +1509,7 @@ public class CustomerAppointmentController {
                             .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
-                                    .icon("Close")
+                                    .icon("CLOSE")
                                     .build()
                             )
                             .closeOnClickOutside(true)

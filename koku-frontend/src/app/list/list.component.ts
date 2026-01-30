@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {HttpClient} from '@angular/common/http';
-import {Observable, of, Subscription} from 'rxjs';
+import {debounceTime, distinctUntilChanged, Observable, of, Subject, Subscription} from 'rxjs';
 import {ListItemComponent} from './list-item/list-item.component';
 import {InputFieldComponent} from '../fields/input/input-field.component';
 import {tap} from 'rxjs/operators';
@@ -28,6 +28,7 @@ import {deepEqual} from '../utils/deepEqual';
 import {UNIQUE_REF_GENERATOR} from '../utils/uniqueRef';
 import {ModalService} from '../modal/modal.service';
 import {ModalContentSetup, RenderedModalType} from '../modal/modal.type';
+import {ListFilterComponent} from './list-filter/list-filter.component';
 
 export type ListFieldRegistrationType = {
   value: WritableSignal<any>,
@@ -57,6 +58,17 @@ export type ItemStylingSetup = Partial<Record<KokuDto.AbstractListViewGlobalItem
   itemClasses?(stylingDefinition: KokuDto.AbstractListViewGlobalItemStylingDto, source: {
     [p: string]: any
   }): string[]
+}>>;
+
+export type ListFilterSetup = Partial<Record<KokuDto.AbstractListViewFilterDto["@type"] | string, {
+  componentType: any;
+  stateInitializer?: (filter: KokuDto.AbstractListViewFilterDto) => KokuDto.QueryPredicate[],
+  inputBindings?(instance: ListFilterComponent, filter: KokuDto.AbstractListViewFilterDto): {
+    [key: string]: any
+  }
+  outputBindings?(instance: ListFilterComponent, filter: KokuDto.AbstractListViewFilterDto): {
+    [key: string]: any
+  }
 }>>;
 
 export interface ListContentSetup {
@@ -97,6 +109,7 @@ export interface ListContentSetup {
       [key: string]: any
     }
   }>>,
+  filterRegistry: ListFilterSetup,
   modalRegistry: ModalContentSetup,
   itemStylingRegistry: ItemStylingSetup,
 }
@@ -131,6 +144,7 @@ export type ListModalItem = {
     ListItemPreviewComponent,
     ListInlineContentComponent,
     ListItemActionComponent,
+    ListFilterComponent
   ],
   templateUrl: './list.component.html',
   styleUrl: './list.component.css'
@@ -160,11 +174,20 @@ export class ListComponent implements OnDestroy, OnChanges {
 
   currentPage = signal<number>(0);
   globalSearchTerm = signal<string>('');
+  showFilters = signal<boolean>(false);
+  globalSearchTermSubject = new Subject<string>();
 
   private lastSourceQuery: Partial<KokuDto.ListQuery> | null = null;
   private lastSourceQuerySubscription: Subscription | undefined;
   private lastListSubscription: Subscription | undefined;
   private routerUrlSubscription: Subscription | undefined;
+  private globalSearchTermSubscription: Subscription | undefined;
+  private filters: {
+    [key: string]: {
+      valuePath: string;
+      predicates: KokuDto.QueryPredicate[]
+    }
+  } = {};
 
   componentRef = UNIQUE_REF_GENERATOR.generate();
 
@@ -359,6 +382,40 @@ export class ListComponent implements OnDestroy, OnChanges {
               });
             }
 
+            this.filters = {};
+            for (const currentFilter of listData.filters || []) {
+              if (currentFilter.filterDefinition) {
+                const resolvedFilter = this.contentSetup().filterRegistry[currentFilter.filterDefinition['@type']];
+                if (resolvedFilter && resolvedFilter.stateInitializer) {
+                  const filterQueryPredicates = resolvedFilter.stateInitializer(currentFilter.filterDefinition);
+                  if (filterQueryPredicates && currentFilter.id && currentFilter.valuePath) {
+                    this.filters[currentFilter.id] = {
+                      valuePath: currentFilter.valuePath,
+                      predicates: filterQueryPredicates
+                    };
+                  }
+                }
+              }
+            }
+
+            if (this.globalSearchTermSubscription) {
+              this.globalSearchTermSubscription.unsubscribe();
+            }
+            this.globalSearchTermSubscription = this.globalSearchTermSubject
+              .pipe(
+                debounceTime(300),
+                distinctUntilChanged()
+              )
+              .subscribe(term => {
+                this.currentPage.set(0);
+                this.globalSearchTerm.set(term);
+
+                this.loadListSource({
+                  globalSearchTerm: term,
+                  page: this.currentPage()
+                });
+              });
+
             this.listData.set(listData);
             subscriber.next(listData);
             subscriber.complete();
@@ -385,13 +442,35 @@ export class ListComponent implements OnDestroy, OnChanges {
       if (this.routerUrlSubscription && !this.routerUrlSubscription.closed) {
         this.routerUrlSubscription.unsubscribe();
       }
-      const newQuery = this.httpClient.post<KokuDto.ListPage>(sourceUrlSnapshot, {
+
+      const fieldPredicates: { [index: string]: KokuDto.ListFieldQuery } = {};
+
+      for (const currentFilter of Object.values(this.filters)) {
+        if (!fieldPredicates[currentFilter.valuePath]) {
+          fieldPredicates[currentFilter.valuePath] = {
+            predicates: currentFilter.predicates
+          };
+        } else {
+          fieldPredicates[currentFilter.valuePath] = {
+            predicates: [
+              ...(fieldPredicates[currentFilter.valuePath].predicates || []),
+              ...(currentFilter.predicates || [])
+            ]
+          };
+        }
+      }
+
+      const newQueryParams = {
         ...(this.lastSourceQuery || {}),
-        ...(query || {}),
-        fieldSelection: (this.listData() || {}).fieldFetchPaths || []
+        ...(query || {})
+      };
+      const newQuery = this.httpClient.post<KokuDto.ListPage>(sourceUrlSnapshot, {
+        ...newQueryParams,
+        fieldSelection: (this.listData() || {}).fieldFetchPaths || [],
+        fieldPredicates
       } as KokuDto.ListQuery).pipe(
         tap(() => {
-          this.lastSourceQuery = query || {};
+          this.lastSourceQuery = newQueryParams || {};
         })
       );
 
@@ -854,4 +933,14 @@ export class ListComponent implements OnDestroy, OnChanges {
     return result;
   }
 
+  onFilterChange(id: string, valuePath: string, predicates: KokuDto.QueryPredicate[]) {
+    this.filters[id] = {
+      valuePath: valuePath,
+      predicates: predicates
+    };
+    this.currentPage.set(0);
+    this.loadListSource({
+      page: this.currentPage()
+    });
+  }
 }
