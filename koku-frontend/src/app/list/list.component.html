@@ -3,13 +3,20 @@
        [class.flex]="inlineContent() === null"
        [class.hidden]="inlineContent() !== null"
   >
-    <div class="p-0 min-h-0 bg-neutral shadow-md">
+    <div class="p-0 min-h-0 bg-neutral shadow-md rounded-bl-3xl">
       <div class="px-4 py-2 flex gap-3">
+        @if (((listData() || {}).filters || []).length) {
+          <button class="btn btn-neutral btn-square" (click)="showFilters.set(!showFilters())"
+                  [class.btn-primary]="showFilters()">
+            <koku-icon name="FUNNEL"></koku-icon>
+          </button>
+        }
+
         <input-field
           name="globalSearchTerm"
           placeholder="Suche"
-          [value]="globalSearchTerm()"
-          (onChange)="setGlobalSearchTerm($event)"
+          value=""
+          (onInput)="globalSearchTermSubject.next($event)"
         >
           <button class="btn join-item" (click)="setGlobalSearchTerm('')">
             <koku-icon name="CLOSE" class="w-4"></koku-icon>
@@ -24,6 +31,21 @@
           </button>
         }
       </div>
+      @if (showFilters()) {
+        <hr class="border-neutral-content/20">
+        <div class="px-4 py-2 flex gap-3">
+          @for (currentFilter of (listData() || {}).filters || []; track currentFilter.id) {
+            @if (currentFilter.id && currentFilter.valuePath) {
+              <div list-filter
+                   [contentSetup]="contentSetup()"
+                   [filter]="currentFilter"
+                   (onFilterChange)="onFilterChange(currentFilter.id, currentFilter.valuePath, $event)"
+                   class="w-full"
+              ></div>
+            }
+          }
+        </div>
+      }
     </div>
 
     <div class="flex-1 overflow-auto ">
@@ -110,15 +132,17 @@
       </ul>
     </div>
 
-    <div class="join py-2 absolute bottom-0 left-[50%] p-0 min-h-0 translate-x-[-50%]">
-      <button class="join-item btn" [disabled]="currentPage() == 0"
-              (click)="currentPage.set(currentPage() - 1); loadListSource({page: currentPage()})">«
-      </button>
-      <button class="join-item btn">Seite {{ currentPage() + 1 }}</button>
-      <button class="join-item btn" [disabled]="!sourceData()?.hasMore"
-              (click)="currentPage.set(currentPage() + 1); loadListSource({page: currentPage()})">»
-      </button>
-    </div>
+    @if (currentPage() !== 0 || sourceData()?.hasMore) {
+      <div class="join py-2 absolute bottom-0 left-[50%] p-0 min-h-0 translate-x-[-50%]">
+        <button class="join-item btn" [disabled]="currentPage() == 0"
+                (click)="currentPage.set(currentPage() - 1); loadListSource({page: currentPage()})">«
+        </button>
+        <button class="join-item btn">Seite {{ currentPage() + 1 }}</button>
+        <button class="join-item btn" [disabled]="!sourceData()?.hasMore"
+                (click)="currentPage.set(currentPage() + 1); loadListSource({page: currentPage()})">»
+        </button>
+      </div>
+    }
   </div>
 
   @if (inlineContent(); as activeContent) {

@@ -2,11 +2,15 @@ package de.domschmidt.listquery.dto.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Setter;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class QueryPredicate {
 
     String searchExpression;

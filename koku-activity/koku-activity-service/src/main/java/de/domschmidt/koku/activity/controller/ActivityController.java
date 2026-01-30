@@ -29,6 +29,8 @@ import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
 import de.domschmidt.koku.dto.formular.fields.input.EnumInputFormularFieldType;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
+import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
+import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStylingDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.list.dto.response.ListViewDto;
@@ -64,7 +66,9 @@ import de.domschmidt.list.dto.response.notifications.ListViewNotificationEventSe
 import de.domschmidt.list.dto.response.notifications.ListViewNotificationEventValueParamDto;
 import de.domschmidt.list.factory.DefaultListViewContentIdGenerator;
 import de.domschmidt.list.factory.ListViewFactory;
+import de.domschmidt.listquery.dto.request.EnumSearchOperator;
 import de.domschmidt.listquery.dto.request.ListQuery;
+import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -162,6 +166,23 @@ public class ActivityController {
                 KokuActivityDto.Fields.name,
                 ListViewInputFieldDto.builder()
                         .label("Name")
+                        .build()
+        );
+
+        listViewFactory.addFilter(
+                KokuActivityDto.Fields.deleted,
+                ListViewToggleFilterDto.builder()
+                        .label("Gelöschte anzeigen?")
+                        .enabledPredicate(QueryPredicate.builder()
+                                .searchExpression(Boolean.TRUE.toString())
+                                .searchOperator(EnumSearchOperator.EQ)
+                                .build()
+                        )
+                        .disabledPredicate(QueryPredicate.builder()
+                                .searchExpression(Boolean.FALSE.toString())
+                                .searchOperator(EnumSearchOperator.EQ)
+                                .build())
+                        .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
                         .build()
         );
 
@@ -513,7 +534,7 @@ public class ActivityController {
                             .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
-                                    .icon("Close")
+                                    .icon("CLOSE")
                                     .build()
                             )
                             .closeOnClickOutside(true)

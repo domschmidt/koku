@@ -8,6 +8,8 @@ import de.domschmidt.list.dto.response.events.AbstractListViewGlobalEventListene
 import de.domschmidt.list.dto.response.fields.AbstractListViewFieldDto;
 import de.domschmidt.list.dto.response.fields.ListViewFieldContentDto;
 import de.domschmidt.list.dto.response.fields.ListViewFieldReference;
+import de.domschmidt.list.dto.response.filters.AbstractListViewFilterDto;
+import de.domschmidt.list.dto.response.filters.ListViewFilterContentDto;
 import de.domschmidt.list.dto.response.items.AbstractListViewItemClickActionDto;
 import de.domschmidt.list.dto.response.items.AbstractListViewRoutedItemDto;
 import de.domschmidt.list.dto.response.items.actions.AbstractListViewItemActionDto;
@@ -29,6 +31,7 @@ public class ListViewFactory {
     private final List<AbstractListViewRoutedItemDto> routedItems = new ArrayList<>();
     private final List<AbstractListViewItemActionDto> itemActions = new ArrayList<>();
     private final List<ListViewFieldContentDto> fields = new ArrayList<>();
+    private final List<ListViewFilterContentDto> filters = new ArrayList<>();
     private final List<AbstractListViewActionDto> actions = new ArrayList<>();
     private final List<AbstractListViewGlobalEventListenerDto> globalEventListeners = new ArrayList<>();
     private final List<AbstractListViewGlobalItemStylingDto> globalItemStyling = new ArrayList<>();
@@ -80,7 +83,7 @@ public class ListViewFactory {
             final String valuePath,
             final AbstractListViewFieldDto<?> fieldDefinition
     ) {
-        final String uniqueFieldId = this.idGenerator.generateUniqueId(valuePath, "field");
+        final String uniqueFieldId = this.idGenerator.generateUniqueId(valuePath);
         this.fields.add(ListViewFieldContentDto.builder()
                 .id(uniqueFieldId)
                 .valuePath(valuePath)
@@ -91,10 +94,23 @@ public class ListViewFactory {
         return new ListViewFieldReference(uniqueFieldId);
     }
 
+    public void addFilter(
+            final String valuePath,
+            final AbstractListViewFilterDto filterDefinition
+    ) {
+        this.filters.add(ListViewFilterContentDto.builder()
+                .id(valuePath + "-filter")
+                .valuePath(valuePath)
+                .filterDefinition(filterDefinition)
+                .build()
+        );
+        this.fieldFetchPaths.add(valuePath);
+    }
+
     public ListViewSourcePathReference addSourcePath(
             final String valuePath
     ) {
-        final String uniqueFieldId = this.idGenerator.generateUniqueId(valuePath, "source");
+        final String uniqueFieldId = this.idGenerator.generateUniqueId(valuePath);
         this.fieldFetchPaths.add(valuePath);
         return new ListViewSourcePathReference(uniqueFieldId);
     }
@@ -111,6 +127,7 @@ public class ListViewFactory {
                 this.fieldFetchPaths,
                 this.actions,
                 this.fields,
+                this.filters,
                 this.routedContents,
                 this.routedItems,
                 this.itemClickAction,

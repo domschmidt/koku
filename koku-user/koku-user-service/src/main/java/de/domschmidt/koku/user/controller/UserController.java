@@ -20,8 +20,11 @@ import de.domschmidt.koku.dto.formular.fields.picture_upload.PictureUploadFormul
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularFieldPossibleValue;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
+import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
+import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStylingDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
+import de.domschmidt.koku.dto.user.KokuUserAppointmentDto;
 import de.domschmidt.koku.dto.user.KokuUserDto;
 import de.domschmidt.koku.dto.user.KokuUserSummaryDto;
 import de.domschmidt.koku.user.kafka.users.service.UserKafkaService;
@@ -57,7 +60,9 @@ import de.domschmidt.list.dto.response.notifications.ListViewNotificationEventSe
 import de.domschmidt.list.dto.response.notifications.ListViewNotificationEventValueParamDto;
 import de.domschmidt.list.factory.DefaultListViewContentIdGenerator;
 import de.domschmidt.list.factory.ListViewFactory;
+import de.domschmidt.listquery.dto.request.EnumSearchOperator;
 import de.domschmidt.listquery.dto.request.ListQuery;
+import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -166,6 +171,24 @@ public class UserController {
         final ListViewSourcePathReference deletedSourcePathRef = listViewFactory.addSourcePath(
                 KokuUserDto.Fields.deleted
         );
+
+        listViewFactory.addFilter(
+                KokuUserAppointmentDto.Fields.deleted,
+                ListViewToggleFilterDto.builder()
+                        .label("Gelöschte anzeigen?")
+                        .enabledPredicate(QueryPredicate.builder()
+                                .searchExpression(Boolean.TRUE.toString())
+                                .searchOperator(EnumSearchOperator.EQ)
+                                .build()
+                        )
+                        .disabledPredicate(QueryPredicate.builder()
+                                .searchExpression(Boolean.FALSE.toString())
+                                .searchOperator(EnumSearchOperator.EQ)
+                                .build())
+                        .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
+                        .build()
+        );
+
         if (!selectMode) {
             listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
                     .route(":userId")
@@ -477,7 +500,7 @@ public class UserController {
                             .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
-                                    .icon("Close")
+                                    .icon("CLOSE")
                                     .build()
                             )
                             .closeOnClickOutside(true)
@@ -504,7 +527,7 @@ public class UserController {
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Transactional
-    public KokuUserDto delete(@PathVariable("id") Long id) {
+    public KokuUserDto delete(@PathVariable("id") String id) {
         final User user = this.entityManager.getReference(User.class, id);
         if (user.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not deletable");
@@ -518,7 +541,7 @@ public class UserController {
     @PutMapping(value = "/{id}/restore")
     @ResponseStatus(HttpStatus.OK)
     @Transactional
-    public KokuUserDto restore(@PathVariable("id") Long id) {
+    public KokuUserDto restore(@PathVariable("id") String id) {
         final User user = this.entityManager.getReference(User.class, id);
         if (!user.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not restorable");

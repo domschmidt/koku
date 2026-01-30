@@ -1,4 +1,10 @@
-import {ItemStylingSetup, ListContentSetup, ListFieldRegistrationType, ListItemSetup} from '../list/list.component';
+import {
+  ItemStylingSetup,
+  ListContentSetup,
+  ListFieldRegistrationType,
+  ListFilterSetup,
+  ListItemSetup
+} from '../list/list.component';
 import {InputFieldComponent} from '../fields/input/input-field.component';
 import {PictureUploadComponent} from '../fields/picture-upload/picture-upload.component';
 import {ListItemComponent} from '../list/list-item/list-item.component';
@@ -30,6 +36,8 @@ import {DocumentFormFieldComponent} from '../fields/document/document-form/docum
 import {FileViewerComponent} from '../fields/file-viewer/file-viewer.component';
 import {GLOBAL_EVENT_BUS} from '../events/global-events';
 import {BarcodeCaptureComponent} from '../fields/barcode-capture/barcode-capture.component';
+import {ListFilterComponent} from '../list/list-filter/list-filter.component';
+import {ToggleFilterComponent, ToggleFilterTriState} from './filters/toggle/toggle-filter.component';
 
 const ROUNDED_MAPPING: Partial<Record<KokuDto.KokuRoundedEnum, string>> = {
   'SM': 'rounded-sm',
@@ -1222,6 +1230,69 @@ const STYLING_REGISTRY: ItemStylingSetup = {
     }
   }
 };
+const FILTER_REGISTRY: ListFilterSetup = {
+  "toggle": {
+    componentType: ToggleFilterComponent,
+    stateInitializer: (filter: KokuDto.ListViewToggleFilterDto) => {
+      let result: KokuDto.QueryPredicate[] = [];
+
+      if (filter) {
+        const defaultState = filter.defaultState;
+        if (defaultState) {
+          switch (defaultState) {
+            case "DISABLED": {
+              if (filter.disabledPredicates) {
+                result = filter.disabledPredicates;
+              }
+              break;
+            }
+            case "NEUTRAL": {
+              if (filter.neutralPredicates) {
+                result = filter.neutralPredicates;
+              }
+              break;
+            }
+            case "ENABLED": {
+              if (filter.enabledPredicates) {
+                result = filter.enabledPredicates;
+              }
+              break;
+            }
+          }
+        }
+      }
+
+      return result;
+    },
+    inputBindings(instance: ListFilterComponent, filter: KokuDto.ListViewToggleFilterDto): { [p: string]: any } {
+      return {
+        'label': filter.label
+      };
+    },
+    outputBindings(instance: ListFilterComponent, filter: KokuDto.ListViewToggleFilterDto): { [p: string]: any } {
+      return {
+        'onFilterChange': (state: ToggleFilterTriState) => {
+          let result: KokuDto.QueryPredicate[] = [];
+          switch (state) {
+            case 'checked': {
+              result = filter.enabledPredicates || [];
+              break;
+            }
+            case 'unchecked': {
+              result = filter.disabledPredicates || [];
+              break;
+            }
+            case 'indeterminate': {
+              result = filter.neutralPredicates || [];
+              break;
+            }
+          }
+          instance.onFilterChange.emit(result);
+        }
+      };
+    }
+  }
+};
 
 export const LIST_CONTENT_SETUP: ListContentSetup = {
   fieldRegistry: FIELD_REGISTRY,
@@ -1229,5 +1300,6 @@ export const LIST_CONTENT_SETUP: ListContentSetup = {
   inlineContentRegistry: INLINE_CONTENT_REGISTRY,
   actionRegistry: ACTION_REGISTRY,
   modalRegistry: MODAL_REGISTRY,
-  itemStylingRegistry: STYLING_REGISTRY
+  itemStylingRegistry: STYLING_REGISTRY,
+  filterRegistry: FILTER_REGISTRY
 }
