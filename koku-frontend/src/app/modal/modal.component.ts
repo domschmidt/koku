@@ -4,6 +4,7 @@ import {ButtonComponent} from '../button/button.component';
 import {SignalComponentIoModule} from 'ng-dynamic-component/signal-component-io';
 import {ComponentOutletInjectorModule, DynamicComponent, DynamicIoDirective} from 'ng-dynamic-component';
 import {KeyValuePipe} from '@angular/common';
+import {ModalType} from './modal.type';
 
 @Component({
   selector: 'koku-modal',
@@ -20,4 +21,13 @@ import {KeyValuePipe} from '@angular/common';
 })
 export class ModalComponent {
   readonly modalService = inject(ModalService);
+
+  handleBackdropClick(event: MouseEvent, modal: ModalType) {
+    if (event.target === event.currentTarget) {
+      if (modal.clickOutside) {
+        modal.clickOutside(event);
+      }
+    }
+  }
+
 }

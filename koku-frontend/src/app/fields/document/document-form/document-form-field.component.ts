@@ -1,7 +1,7 @@
 import {
   Component,
   DestroyRef,
-  ElementRef,
+  ElementRef, HostListener,
   inject,
   input,
   OnChanges,
@@ -162,6 +162,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges {
             multiVariableText:
               '<svg fill="#000000" width="24px" height="24px" viewBox="0 0 24 24"><path d="M6.643,13.072,17.414,2.3a1.027,1.027,0,0,1,1.452,0L20.7,4.134a1.027,1.027,0,0,1,0,1.452L9.928,16.357,5,18ZM21,20H3a1,1,0,0,0,0,2H21a1,1,0,0,0,0-2Z"/></svg>',
           },
+          maxZoom: 10000,
         },
         plugins: getPlugins()
       });
@@ -231,6 +232,28 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges {
       } else {
         this.submitting.set(false);
       }
+    }
+  }
+
+  toggleNativeFullscreen() {
+    const elem = this.formRoot().nativeElement;
+    if (!document.fullscreenElement) {
+      elem.requestFullscreen().catch((err) => {
+        this.toastService.add(`Fullscreen Fehler: ${err.message}`, 'error');
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  @HostListener('document:fullscreenchange', [])
+  onFullscreenChange() {
+    const form = this.form;
+    if (form) {
+      setTimeout(() => {
+        form.updateOptions({ zoom: undefined });
+        window.dispatchEvent(new Event('resize'));
+      }, 150);
     }
   }
 
