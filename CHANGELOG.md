@@ -1,3 +1,10 @@
+## [2.2.3](https://github.com/domschmidt/koku/compare/v2.2.2...v2.2.3) (2026-02-03)
+
+
+### Bug Fixes
+
+* **minors:** correct dialog handling, file controller fix, fullscreen document capture ([87b0880](https://github.com/domschmidt/koku/commit/87b0880a783039595664cc156bb385727742aba9))
+
 ## [2.2.2](https://github.com/domschmidt/koku/compare/v2.2.1...v2.2.2) (2026-01-30)
 
 
