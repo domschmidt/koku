@@ -1,17 +1,31 @@
-<div #formRoot style="width: 100%; max-width: 100%;"></div>
+<div #formRoot style="width: 100%;"></div>
 
 @if (buttonDockOutlet()) {
   <ng-template koku-portal [portalOutlet]="buttonDockOutlet()" [append]="true">
+    <div class="flex gap-2">
+      <button
+        (click)="toggleNativeFullscreen()"
+        class="btn btn-circle btn-neutral">
+        <koku-icon name="VIEWFINDER"/>
+      </button>
+      <button (click)="submit()"
+              [class.skeleton]="submitting()"
+              class="btn btn-circle">
+        <koku-icon name="SAVE"/>
+      </button>
+    </div>
+  </ng-template>
+} @else {
+  <div>
+    <button
+      (click)="toggleNativeFullscreen()"
+      class="btn btn-circle btn-neutral">
+      <koku-icon name="VIEWFINDER"/>
+    </button>
     <button (click)="submit()"
             [class.skeleton]="submitting()"
             class="btn btn-circle">
       <koku-icon name="SAVE"/>
     </button>
-  </ng-template>
-} @else {
-  <button (click)="submit()"
-          [class.skeleton]="submitting()"
-          class="btn btn-circle">
-    <koku-icon name="SAVE"/>
-  </button>
+  </div>
 }

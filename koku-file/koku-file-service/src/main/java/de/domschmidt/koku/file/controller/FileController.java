@@ -478,7 +478,7 @@ public class FileController {
     @DeleteMapping(value = "/files/{fileId}")
     @ResponseStatus(HttpStatus.OK)
     @Transactional
-    public KokuFileDto delete(@PathVariable("fileId") Long fileId) {
+    public KokuFileDto delete(@PathVariable("fileId") UUID fileId) {
         final File file = this.entityManager.getReference(File.class, fileId);
         if (file.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer is not deletable");
@@ -491,7 +491,7 @@ public class FileController {
     @PutMapping(value = "/files/{fileId}/restore")
     @ResponseStatus(HttpStatus.OK)
     @Transactional
-    public KokuFileDto restore(@PathVariable("fileId") Long fileId) {
+    public KokuFileDto restore(@PathVariable("fileId") UUID fileId) {
         final File file = this.entityManager.getReference(File.class, fileId);
         if (!file.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CustomerUpload is not restorable");

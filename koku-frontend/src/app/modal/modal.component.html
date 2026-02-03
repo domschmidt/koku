@@ -1,8 +1,8 @@
 @for (entry of modalService.renderedModals() | keyvalue; track entry.key) {
   @if (entry.value; as modal) {
-    <dialog class="modal modal-open" (click)="modal.clickOutside ? modal.clickOutside($event) : null">
+    <dialog class="modal modal-open"
+            (click)="handleBackdropClick($event, modal)">
       <div class="modal-box"
-           (click)="$event.stopPropagation()"
            [class.h-full]="modal.fullscreen"
            [class.w-full]="modal.fullscreen"
            [class.max-md:rounded-none]="modal.fullscreen"
