@@ -2,3 +2,24 @@
   display: flex;
   width: 100%;
 }
+
+.pseudo-fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: var(--vhvv, var(--vh, var(100dvh, 100vh)));
+  background: #fff;
+  z-index: 10000;
+
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.no-scroll {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}

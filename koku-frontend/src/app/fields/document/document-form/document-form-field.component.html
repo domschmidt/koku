@@ -1,10 +1,19 @@
+@if (fullscreenService.isFallbackFullscreen()) {
+  <button
+    class="fixed top-5 right-5 z-[10001] flex items-center justify-center h-10 w-10 rounded-full bg-black/70 text-white shadow-lg backdrop-blur hover:bg-black/80 active:scale-95 transition"
+    (click)="exitFullscreen()"
+  >
+    <koku-icon name="CLOSE"/>
+  </button>
+}
+
 <div #formRoot style="width: 100%;"></div>
 
 @if (buttonDockOutlet()) {
   <ng-template koku-portal [portalOutlet]="buttonDockOutlet()" [append]="true">
     <div class="flex gap-2">
       <button
-        (click)="toggleNativeFullscreen()"
+        (click)="enterFullscreen()"
         class="btn btn-circle btn-neutral">
         <koku-icon name="VIEWFINDER"/>
       </button>
@@ -18,7 +27,7 @@
 } @else {
   <div>
     <button
-      (click)="toggleNativeFullscreen()"
+      (click)="enterFullscreen()"
       class="btn btn-circle btn-neutral">
       <koku-icon name="VIEWFINDER"/>
     </button>
