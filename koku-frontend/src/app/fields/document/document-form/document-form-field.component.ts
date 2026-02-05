@@ -24,6 +24,7 @@ import {generate} from '@pdfme/generator';
 import {IconComponent} from '../../../icon/icon.component';
 import {ToastService} from '../../../toast/toast.service';
 import dayjs from 'dayjs';
+import {FullscreenService} from '../../../fullscreen/fullscreen.service';
 
 @Component({
   selector: 'document-form-field',
@@ -48,6 +49,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges {
   destroyRef = inject(DestroyRef);
   httpClient = inject(HttpClient);
   toastService = inject(ToastService);
+  fullscreenService = inject(FullscreenService);
 
   submitting = signal<boolean>(false);
 
@@ -172,13 +174,11 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges {
     }
   }
 
-  ngOnDestroy()
-    :
-    void {
-    if (this.form
-    ) {
+  ngOnDestroy(): void {
+    if (this.form) {
       this.form.destroy();
     }
+    this.fullscreenService.exit();
   }
 
   submit() {
@@ -235,27 +235,12 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges {
     }
   }
 
-  toggleNativeFullscreen() {
-    const elem = this.formRoot().nativeElement;
-    if (!document.fullscreenElement) {
-      elem.requestFullscreen().catch((err) => {
-        this.toastService.add(`Fullscreen Fehler: ${err.message}`, 'error');
-      });
-    } else {
-      document.exitFullscreen();
-    }
+  enterFullscreen() {
+    this.fullscreenService.enter(this.formRoot().nativeElement);
   }
 
-  @HostListener('document:fullscreenchange', [])
-  onFullscreenChange() {
-    const form = this.form;
-    if (form) {
-      setTimeout(() => {
-        form.updateOptions({ zoom: undefined });
-        window.dispatchEvent(new Event('resize'));
-      }, 150);
-    }
+  exitFullscreen() {
+    this.fullscreenService.exit();
   }
-
 
 }
