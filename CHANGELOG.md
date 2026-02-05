@@ -1,3 +1,10 @@
+## [2.2.4](https://github.com/domschmidt/koku/compare/v2.2.3...v2.2.4) (2026-02-05)
+
+
+### Bug Fixes
+
+* **minors:** fix fullscreen on mobile devices ([e5cc4e5](https://github.com/domschmidt/koku/commit/e5cc4e58497e9267a66b61343c15fe984190cdfa))
+
 ## [2.2.3](https://github.com/domschmidt/koku/compare/v2.2.2...v2.2.3) (2026-02-03)
 
 
