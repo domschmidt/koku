@@ -1,13 +1,20 @@
 @if (fullscreenService.isFallbackFullscreen()) {
-  <button
-    class="fixed top-5 right-5 z-[10001] flex items-center justify-center h-10 w-10 rounded-full bg-black/70 text-white shadow-lg backdrop-blur hover:bg-black/80 active:scale-95 transition"
-    (click)="exitFullscreen()"
-  >
-    <koku-icon name="CLOSE"/>
-  </button>
+  <div class="fixed top-3 right-4 z-[10001] flex items-center justify-center gap-2">
+    <button
+      class="btn btn-circle btn-neutral"
+      (click)="exitFullscreen()"
+    >
+      <koku-icon name="CLOSE"/>
+    </button>
+    <button (click)="submit()"
+            [class.skeleton]="submitting()"
+            class="btn btn-circle">
+      <koku-icon name="SAVE"/>
+    </button>
+  </div>
 }
 
-<div #formRoot style="width: 100%;"></div>
+<div #formRoot class="w-full flex justify-center"></div>
 
 @if (buttonDockOutlet()) {
   <ng-template koku-portal [portalOutlet]="buttonDockOutlet()" [append]="true">
