@@ -6,8 +6,6 @@
 .pseudo-fullscreen {
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: var(--vhvv, var(--vh, var(100dvh, 100vh)));
   background: #fff;
   z-index: 10000;
 

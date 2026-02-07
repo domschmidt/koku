@@ -1,7 +1,8 @@
 import {
+  AfterViewInit,
   Component,
   DestroyRef,
-  ElementRef, HostListener,
+  ElementRef,
   inject,
   input,
   OnChanges,
@@ -11,7 +12,7 @@ import {
   SimpleChanges,
   viewChild
 } from '@angular/core';
-import {Template} from '@pdfme/common';
+import {Template, ZOOM} from '@pdfme/common';
 import {Form} from '@pdfme/ui';
 import {getFontsData} from '../fonts';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
@@ -25,6 +26,8 @@ import {IconComponent} from '../../../icon/icon.component';
 import {ToastService} from '../../../toast/toast.service';
 import dayjs from 'dayjs';
 import {FullscreenService} from '../../../fullscreen/fullscreen.service';
+import {fromEvent} from 'rxjs';
+import {debounce} from '../../../utils/debounce';
 
 @Component({
   selector: 'document-form-field',
@@ -36,7 +39,7 @@ import {FullscreenService} from '../../../fullscreen/fullscreen.service';
   ],
   standalone: true
 })
-export class DocumentFormFieldComponent implements OnDestroy, OnChanges {
+export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterViewInit {
 
   formRoot = viewChild.required<ElementRef<HTMLDivElement>>("formRoot");
 
@@ -168,6 +171,27 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges {
         },
         plugins: getPlugins()
       });
+      this.form.resizeObserver.disconnect();
+      this.form.resizeObserver = new ResizeObserver(debounce(() => {
+        const self = this.form as any;
+
+        const rect = self.domContainer.getBoundingClientRect();
+
+        const pageWidth = self.template.basePdf.width;
+        const pageHeight = self.template.basePdf.height;
+        const aspectRatio = pageHeight / pageWidth;
+
+        const calculatedWidth = Math.floor(rect.width);
+        self.size = {
+          height: Math.max(
+            rect.height,
+            Math.min(calculatedWidth * aspectRatio, pageHeight * ZOOM)
+          ),
+          width: calculatedWidth
+        };
+        self.render();
+      }, 50));
+      this.form.resizeObserver.observe(this.formRoot().nativeElement);
     } else {
       form.updateTemplate(parsedTemplate);
       form.setInputs(inputs);
@@ -241,6 +265,21 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges {
 
   exitFullscreen() {
     this.fullscreenService.exit();
+  }
+
+  ngAfterViewInit() {
+    fromEvent(screen.orientation, 'change')
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        if (screen.orientation.type.includes('landscape')) {
+          this.enterFullscreen();
+        } else {
+          this.exitFullscreen();
+        }
+      });
+
   }
 
 }
