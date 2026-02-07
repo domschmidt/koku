@@ -1,3 +1,10 @@
+## [2.2.5](https://github.com/domschmidt/koku/compare/v2.2.4...v2.2.5) (2026-02-07)
+
+
+### Bug Fixes
+
+* **minors:** enter fullscreen on landscape, further positioning fixes for document capture ([8b704ac](https://github.com/domschmidt/koku/commit/8b704ac51a4a7df891d8d47e534cabe2572a5fd4))
+
 ## [2.2.4](https://github.com/domschmidt/koku/compare/v2.2.3...v2.2.4) (2026-02-05)
 
 
