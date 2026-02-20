@@ -11,5 +11,4 @@ import lombok.experimental.SuperBuilder;
 public class ListViewCallHttpListValueActionParamDto extends AbstractListViewCallHttpListActionParamDto {
 
     ListViewReference valueReference;
-
 }

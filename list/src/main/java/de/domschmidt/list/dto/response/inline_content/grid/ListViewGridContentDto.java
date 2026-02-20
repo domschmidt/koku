@@ -2,12 +2,11 @@ package de.domschmidt.list.dto.response.inline_content.grid;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.list.dto.response.actions.AbstractListViewContentDto;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SuperBuilder
 @JsonTypeName("grid")
@@ -25,7 +24,7 @@ public class ListViewGridContentDto extends AbstractListViewContentDto {
     Integer xl6;
     Integer xl7;
     Integer cols;
+
     @Builder.Default
     List<AbstractListViewContentDto> content = new ArrayList<>();
-
 }

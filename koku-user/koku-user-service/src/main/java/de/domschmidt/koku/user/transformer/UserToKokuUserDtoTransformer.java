@@ -4,11 +4,10 @@ import de.domschmidt.koku.dto.user.KokuUserDto;
 import de.domschmidt.koku.user.persistence.User;
 import de.domschmidt.koku.user.persistence.UserRegion;
 import jakarta.persistence.EntityManager;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
-import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -23,16 +22,17 @@ public class UserToKokuUserDtoTransformer {
                 .version(model.getVersion())
                 .firstname(model.getFirstname())
                 .lastname(model.getLastname())
-                .initials(
-                        (model.getFirstname() != null ? StringUtils.truncate(model.getFirstname(), 1) : "") +
-                                (model.getLastname() != null ? StringUtils.truncate(model.getLastname(), 1) : "")
-                )
-                .fullname(String.join(" ", Stream.of(model.getFirstname(), model.getLastname()).filter(s -> s != null && !s.isEmpty()).toList()))
-                .fullname((
-                        (model.getFirstname() != null ? model.getFirstname() : "")
+                .initials((model.getFirstname() != null ? StringUtils.truncate(model.getFirstname(), 1) : "")
+                        + (model.getLastname() != null ? StringUtils.truncate(model.getLastname(), 1) : ""))
+                .fullname(String.join(
+                        " ",
+                        Stream.of(model.getFirstname(), model.getLastname())
+                                .filter(s -> s != null && !s.isEmpty())
+                                .toList()))
+                .fullname(((model.getFirstname() != null ? model.getFirstname() : "")
                                 + " "
-                                + (model.getLastname() != null ? model.getLastname() : "")
-                ).trim())
+                                + (model.getLastname() != null ? model.getLastname() : ""))
+                        .trim())
                 .avatarBase64(model.getAvatarBase64())
                 .regionId(model.getRegion() != null ? model.getRegion().getId() : null)
                 .updated(model.getUpdated())
@@ -40,10 +40,7 @@ public class UserToKokuUserDtoTransformer {
                 .build();
     }
 
-    public User transformToEntity(
-            final User model,
-            final KokuUserDto updatedDto
-    ) {
+    public User transformToEntity(final User model, final KokuUserDto updatedDto) {
         if (updatedDto.getFirstname() != null) {
             model.setFirstname(updatedDto.getFirstname());
         }

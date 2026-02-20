@@ -1,15 +1,13 @@
 package de.domschmidt.calendar.dto.response;
 
-
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.listquery.dto.request.EnumSearchOperatorHint;
+import java.util.List;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -33,5 +31,4 @@ public class CalendarListSourceConfigDto extends AbstractCalendarListSourceConfi
     List<String> additionalFieldSelectionPaths;
     String displayTextFieldSelectionPath;
     String deletedFieldSelectionPath;
-
 }

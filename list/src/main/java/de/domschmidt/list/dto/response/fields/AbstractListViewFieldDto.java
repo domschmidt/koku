@@ -12,5 +12,4 @@ import lombok.experimental.SuperBuilder;
 public abstract class AbstractListViewFieldDto<T> implements IListViewFieldDefault<T> {
 
     String id;
-
 }

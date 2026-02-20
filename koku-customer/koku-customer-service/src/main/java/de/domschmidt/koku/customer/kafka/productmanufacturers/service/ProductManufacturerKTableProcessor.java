@@ -23,27 +23,26 @@ public class ProductManufacturerKTableProcessor {
     private final StreamsBuilderFactoryBean factoryBean;
 
     @Autowired
-    public ProductManufacturerKTableProcessor(
-            final StreamsBuilderFactoryBean factoryBean
-    ) {
+    public ProductManufacturerKTableProcessor(final StreamsBuilderFactoryBean factoryBean) {
         this.factoryBean = factoryBean;
     }
 
     @Bean
     public KTable<Long, ProductManufacturerKafkaDto> productManufacturerKTable(StreamsBuilder streamsBuilder) {
-        return streamsBuilder.stream(ProductManufacturerKafkaDto.TOPIC,
-                Consumed.with(Serdes.Long(), new ProductManufacturerKafkaDtoSerdes())
-        ).toTable(Materialized.<Long, ProductManufacturerKafkaDto>as(Stores.inMemoryKeyValueStore(ProductManufacturerKTableProcessor.STORE_NAME))
-                .withKeySerde(Serdes.Long())
-                .withValueSerde(new ProductManufacturerKafkaDtoSerdes())
-        );
+        return streamsBuilder.stream(
+                        ProductManufacturerKafkaDto.TOPIC,
+                        Consumed.with(Serdes.Long(), new ProductManufacturerKafkaDtoSerdes()))
+                .toTable(Materialized.<Long, ProductManufacturerKafkaDto>as(
+                                Stores.inMemoryKeyValueStore(ProductManufacturerKTableProcessor.STORE_NAME))
+                        .withKeySerde(Serdes.Long())
+                        .withValueSerde(new ProductManufacturerKafkaDtoSerdes()));
     }
 
     public ReadOnlyKeyValueStore<Long, ProductManufacturerKafkaDto> getProductManufacturers() {
-        return factoryBean.getKafkaStreams().store(
-                StoreQueryParameters.fromNameAndType(ProductManufacturerKTableProcessor.STORE_NAME,
-                        QueryableStoreTypes.<Long, ProductManufacturerKafkaDto>keyValueStore())
-        );
+        return factoryBean
+                .getKafkaStreams()
+                .store(StoreQueryParameters.fromNameAndType(
+                        ProductManufacturerKTableProcessor.STORE_NAME,
+                        QueryableStoreTypes.<Long, ProductManufacturerKafkaDto>keyValueStore()));
     }
-
 }

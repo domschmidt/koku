@@ -7,6 +7,6 @@ import de.domschmidt.listquery.dto.request.QueryPredicate;
 public interface IListFilter {
 
     BooleanExpression buildGlobalSearchExpression(Expression<?> fieldPath, String query);
-    BooleanExpression buildSearchExpression(Expression<?> fieldPath, QueryPredicate query);
 
+    BooleanExpression buildSearchExpression(Expression<?> fieldPath, QueryPredicate query);
 }

@@ -11,5 +11,4 @@ public class PromotionToPromotionSummaryDtoTransformer {
                 .summary(model.getName())
                 .build();
     }
-
 }

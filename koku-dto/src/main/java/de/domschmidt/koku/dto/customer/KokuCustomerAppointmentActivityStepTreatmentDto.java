@@ -1,6 +1,5 @@
 package de.domschmidt.koku.dto.customer;
 
-
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,11 +13,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-
 @FieldNameConstants
 @JsonTypeName("activity-step")
 public class KokuCustomerAppointmentActivityStepTreatmentDto extends KokuCustomerAppointmentTreatmentDto {
 
     Long activityStepId;
-
 }

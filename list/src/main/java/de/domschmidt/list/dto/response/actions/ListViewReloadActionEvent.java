@@ -7,5 +7,4 @@ import lombok.experimental.SuperBuilder;
 @JsonTypeName("reload")
 @SuperBuilder
 @Data
-public class ListViewReloadActionEvent extends AbstractListViewActionEventDto {
-}
+public class ListViewReloadActionEvent extends AbstractListViewActionEventDto {}

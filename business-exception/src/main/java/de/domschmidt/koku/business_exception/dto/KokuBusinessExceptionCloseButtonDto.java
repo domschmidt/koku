@@ -7,6 +7,4 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeName("close-button")
 @Data
-public class KokuBusinessExceptionCloseButtonDto extends KokuBusinessExceptionButtonDto {
-
-}
+public class KokuBusinessExceptionCloseButtonDto extends KokuBusinessExceptionButtonDto {}

@@ -1,10 +1,9 @@
 package de.domschmidt.koku.business_exception.dto;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.util.List;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
@@ -18,5 +17,4 @@ public abstract class KokuBusinessExceptionButtonDto {
     Boolean disabled;
     List<KokuBusinessExceptionButtonStyle> styles;
     KokuBusinessExceptionButtonSizeEnum size;
-
 }

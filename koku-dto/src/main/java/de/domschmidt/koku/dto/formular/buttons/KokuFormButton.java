@@ -3,10 +3,9 @@ package de.domschmidt.koku.dto.formular.buttons;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.formular.dto.content.buttons.AbstractFormButton;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
+import java.util.List;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @SuperBuilder
 @JsonTypeName("button")
@@ -23,5 +22,4 @@ public class KokuFormButton extends AbstractFormButton {
     Boolean dockable;
     ButtonDockableSettings dockableSettings;
     List<EnumButtonStyle> styles;
-
 }

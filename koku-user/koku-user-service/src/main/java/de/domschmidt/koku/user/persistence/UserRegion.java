@@ -1,13 +1,12 @@
 package de.domschmidt.koku.user.persistence;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
-
-import java.io.Serializable;
 
 @Entity
 @Getter
@@ -26,5 +25,4 @@ public class UserRegion implements Serializable {
     String countryName;
     String stateIso;
     String stateName;
-
 }

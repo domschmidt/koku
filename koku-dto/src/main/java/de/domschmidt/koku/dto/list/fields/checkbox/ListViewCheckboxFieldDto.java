@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 public class ListViewCheckboxFieldDto extends AbstractListViewFieldDto<Boolean> {
 
     String label;
+
     @Builder.Default
     Boolean defaultValue = Boolean.FALSE;
-
 }

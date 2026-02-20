@@ -12,5 +12,4 @@ public class CalendarReplaceItemViaPayloadGlobalEventListenerDto extends Abstrac
     String sourceId;
     String deletedPath;
     Object deletedExpression;
-
 }

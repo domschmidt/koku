@@ -10,5 +10,4 @@ import lombok.experimental.SuperBuilder;
 public class ListViewOpenInlineContentActionDto extends AbstractListViewActionDto {
 
     AbstractListViewContentDto inlineContent;
-
 }

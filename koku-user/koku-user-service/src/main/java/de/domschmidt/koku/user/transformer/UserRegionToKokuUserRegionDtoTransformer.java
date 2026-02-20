@@ -16,5 +16,4 @@ public class UserRegionToKokuUserRegionDtoTransformer {
                 .state(model.getStateIso())
                 .build();
     }
-
 }

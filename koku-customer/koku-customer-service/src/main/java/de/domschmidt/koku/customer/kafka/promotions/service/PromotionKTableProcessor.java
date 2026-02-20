@@ -23,27 +23,25 @@ public class PromotionKTableProcessor {
     private final StreamsBuilderFactoryBean factoryBean;
 
     @Autowired
-    public PromotionKTableProcessor(
-            final StreamsBuilderFactoryBean factoryBean
-    ) {
+    public PromotionKTableProcessor(final StreamsBuilderFactoryBean factoryBean) {
         this.factoryBean = factoryBean;
     }
 
     @Bean
     public KTable<Long, PromotionKafkaDto> promotionKTable(StreamsBuilder streamsBuilder) {
-        return streamsBuilder.stream(PromotionKafkaDto.TOPIC,
-                Consumed.with(Serdes.Long(), new PromotionKafkaDtoSerdes())
-        ).toTable(Materialized.<Long, PromotionKafkaDto>as(Stores.inMemoryKeyValueStore(PromotionKTableProcessor.STORE_NAME))
-                .withKeySerde(Serdes.Long())
-                .withValueSerde(new PromotionKafkaDtoSerdes())
-        );
+        return streamsBuilder.stream(
+                        PromotionKafkaDto.TOPIC, Consumed.with(Serdes.Long(), new PromotionKafkaDtoSerdes()))
+                .toTable(Materialized.<Long, PromotionKafkaDto>as(
+                                Stores.inMemoryKeyValueStore(PromotionKTableProcessor.STORE_NAME))
+                        .withKeySerde(Serdes.Long())
+                        .withValueSerde(new PromotionKafkaDtoSerdes()));
     }
 
     public ReadOnlyKeyValueStore<Long, PromotionKafkaDto> getPromotions() {
-        return factoryBean.getKafkaStreams().store(
-                StoreQueryParameters.fromNameAndType(PromotionKTableProcessor.STORE_NAME,
-                        QueryableStoreTypes.<Long, PromotionKafkaDto>keyValueStore())
-        );
+        return factoryBean
+                .getKafkaStreams()
+                .store(StoreQueryParameters.fromNameAndType(
+                        PromotionKTableProcessor.STORE_NAME,
+                        QueryableStoreTypes.<Long, PromotionKafkaDto>keyValueStore()));
     }
-
 }

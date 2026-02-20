@@ -10,5 +10,4 @@ import lombok.experimental.SuperBuilder;
 public class ListViewOpenRoutedContentActionDto extends AbstractListViewActionDto {
 
     String route;
-
 }

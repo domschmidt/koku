@@ -5,12 +5,10 @@ import de.domschmidt.formular.dto.content.layouts.AbstractFormLayout;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
-
 @SuperBuilder
 @JsonTypeName("divider")
 @Getter
 public class DividerLayout extends AbstractFormLayout {
 
     String text;
-
 }

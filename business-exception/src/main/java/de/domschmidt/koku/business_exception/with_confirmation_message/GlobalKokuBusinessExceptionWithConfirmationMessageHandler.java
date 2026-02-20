@@ -11,9 +11,7 @@ public class GlobalKokuBusinessExceptionWithConfirmationMessageHandler {
 
     @ExceptionHandler(KokuBusinessExceptionWithConfirmationMessage.class)
     public ResponseEntity<KokuBusinessExceptionWithConfirmationMessageDto> handleConflict(
-            KokuBusinessExceptionWithConfirmationMessage exception
-    ) {
+            KokuBusinessExceptionWithConfirmationMessage exception) {
         return new ResponseEntity<>(exception.getConfirmationMessage(), HttpStatus.CONFLICT);
     }
-
 }

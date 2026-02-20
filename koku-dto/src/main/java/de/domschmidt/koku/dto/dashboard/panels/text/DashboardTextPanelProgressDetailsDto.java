@@ -11,5 +11,4 @@ public class DashboardTextPanelProgressDetailsDto {
     String headline;
     KokuColorEnum headlineColor;
     String subHeadline;
-
 }

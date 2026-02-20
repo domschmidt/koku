@@ -11,5 +11,4 @@ public class CalendarFormularSourceOverrideDto {
     CalendarFormularContextSourceValueEnumDto value;
     Long offsetValue;
     CalendarFormularContextSourceOffsetUnitEnumDto offsetUnit;
-
 }

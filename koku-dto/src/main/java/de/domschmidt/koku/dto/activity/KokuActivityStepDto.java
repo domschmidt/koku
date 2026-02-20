@@ -1,9 +1,8 @@
 package de.domschmidt.koku.dto.activity;
 
+import java.time.LocalDateTime;
 import lombok.*;
 import lombok.experimental.FieldNameConstants;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter

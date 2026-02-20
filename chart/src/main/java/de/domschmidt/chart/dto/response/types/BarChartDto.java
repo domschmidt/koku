@@ -1,12 +1,12 @@
 package de.domschmidt.chart.dto.response.types;
+
 import de.domschmidt.chart.dto.response.axes.AxesDto;
 import de.domschmidt.chart.dto.response.values.NumericSeriesDto;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -18,5 +18,4 @@ public class BarChartDto extends AbstractChartDto {
     List<NumericSeriesDto> series;
     Boolean stacked;
     Boolean showTotals;
-
 }

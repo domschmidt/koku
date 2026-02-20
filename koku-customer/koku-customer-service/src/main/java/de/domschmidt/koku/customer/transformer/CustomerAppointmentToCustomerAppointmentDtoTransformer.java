@@ -20,12 +20,6 @@ import de.domschmidt.koku.product.kafka.dto.ProductPriceHistoryKafkaDto;
 import de.domschmidt.koku.promotion.kafka.dto.PromotionKafkaDto;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
-import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -40,13 +34,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 @Component
 @RequiredArgsConstructor
 public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
 
-    private static final DateTimeFormatter LONG_SUMMARY_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("'Kundentermin am' dd.MM.yyyy 'um' HH:mm 'Uhr'");
-    private static final DateTimeFormatter SHORT_SUMMARY_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy 'um' HH:mm 'Uhr'");
+    private static final DateTimeFormatter LONG_SUMMARY_DATETIME_FORMATTER =
+            DateTimeFormatter.ofPattern("'Kundentermin am' dd.MM.yyyy 'um' HH:mm 'Uhr'");
+    private static final DateTimeFormatter SHORT_SUMMARY_DATETIME_FORMATTER =
+            DateTimeFormatter.ofPattern("dd.MM.yyyy 'um' HH:mm 'Uhr'");
 
     private static final NumberFormat PRICE_FORMATTER;
 
@@ -83,8 +84,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 activities.add(KokuCustomerAppointmentActivityDto.builder()
                         .price(currentActivity.getSellPrice())
                         .activityId(currentActivity.getActivityId())
-                        .build()
-                );
+                        .build());
             }
         }
         final List<KokuCustomerAppointmentTreatmentDto> treatmentSequence = new ArrayList<>();
@@ -93,13 +93,11 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 if (currentTreatment.getActivityStepId() != null) {
                     treatmentSequence.add(KokuCustomerAppointmentActivityStepTreatmentDto.builder()
                             .activityStepId(currentTreatment.getActivityStepId())
-                            .build()
-                    );
+                            .build());
                 } else if (currentTreatment.getProductId() != null) {
                     treatmentSequence.add(KokuCustomerAppointmentProductTreatmentDto.builder()
                             .productId(currentTreatment.getProductId())
-                            .build()
-                    );
+                            .build());
                 }
             }
         }
@@ -109,8 +107,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 soldProducts.add(KokuCustomerAppointmentSoldProductDto.builder()
                         .price(currentSoldProduct.getSellPrice())
                         .productId(currentSoldProduct.getProductId())
-                        .build()
-                );
+                        .build());
             }
         }
         final List<KokuCustomerAppointmentPromotionDto> promotions = new ArrayList<>();
@@ -118,8 +115,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
             for (final CustomerAppointmentPromotion currentPromotion : model.getPromotions()) {
                 promotions.add(KokuCustomerAppointmentPromotionDto.builder()
                         .promotionId(currentPromotion.getPromotionId())
-                        .build()
-                );
+                        .build());
             }
         }
         return KokuCustomerAppointmentDto.builder()
@@ -128,17 +124,24 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 .version(model.getVersion())
                 .date(model.getStart() != null ? model.getStart().toLocalDate() : null)
                 .time(model.getStart() != null ? model.getStart().toLocalTime() : null)
-                .approximatelyEndDate(model.getCalculatedEndSnapshot() != null ? model.getCalculatedEndSnapshot().toLocalDate() : null)
-                .approximatelyEndTime(model.getCalculatedEndSnapshot() != null ? model.getCalculatedEndSnapshot().toLocalTime() : null)
+                .approximatelyEndDate(
+                        model.getCalculatedEndSnapshot() != null
+                                ? model.getCalculatedEndSnapshot().toLocalDate()
+                                : null)
+                .approximatelyEndTime(
+                        model.getCalculatedEndSnapshot() != null
+                                ? model.getCalculatedEndSnapshot().toLocalTime()
+                                : null)
                 .description(model.getDescription())
                 .additionalInfo(model.getAdditionalInfo())
                 .userId(model.getUserId())
                 .customerId(model.getCustomer().getId())
-                .customerName(Stream.of(model.getCustomer().getFirstname(), model.getCustomer().getLastname())
-                        .filter(s -> s != null && !s.isEmpty())
-                        .collect(Collectors.joining(" "))
-                        + (model.getCustomer().isOnFirstnameBasis() ? " *" : "")
-                )
+                .customerName(Stream.of(
+                                        model.getCustomer().getFirstname(),
+                                        model.getCustomer().getLastname())
+                                .filter(s -> s != null && !s.isEmpty())
+                                .collect(Collectors.joining(" "))
+                        + (model.getCustomer().isOnFirstnameBasis() ? " *" : ""))
                 .shortSummaryText(SHORT_SUMMARY_DATETIME_FORMATTER.format(model.getStart()))
                 .longSummaryText(LONG_SUMMARY_DATETIME_FORMATTER.format(model.getStart()))
                 .activities(activities)
@@ -147,30 +150,37 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 .promotions(promotions)
                 .activityPriceSummary(this.calculateCustomerAppointmentActivityPriceSumFormatted(
                         model.getStart(),
-                        activities.stream().map(KokuCustomerAppointmentActivityDomain::fromDto).toList(),
-                        promotions.stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList()
-                ))
-                .activityDurationSummary(this.calculateCustomerAppointmentActivityDurationHumanReadable(
-                        activities.stream().map(KokuCustomerAppointmentActivityDto::getActivityId).collect(Collectors.toList())
-                ))
+                        activities.stream()
+                                .map(KokuCustomerAppointmentActivityDomain::fromDto)
+                                .toList(),
+                        promotions.stream()
+                                .map(KokuCustomerAppointmentPromotionDomain::fromDto)
+                                .toList()))
+                .activityDurationSummary(
+                        this.calculateCustomerAppointmentActivityDurationHumanReadable(activities.stream()
+                                .map(KokuCustomerAppointmentActivityDto::getActivityId)
+                                .collect(Collectors.toList())))
                 .activitySoldProductSummary(this.calculateCustomerAppointmentSoldProductPriceSumFormatted(
                         model.getStart(),
-                        soldProducts.stream().map(KokuCustomerAppointmentSoldProductDomain::fromDto).toList(),
-                        promotions.stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList()
-                ))
-                .activitySummarySnapshot(this.calculateCustomerAppointmentActivitySummary(
-                        activities.stream().map(KokuCustomerAppointmentActivityDomain::fromDto).toList()
-                ))
-                .soldProductSummarySnapshot(this.calculateCustomerAppointmentSoldProductSummary(
-                        soldProducts.stream().map(KokuCustomerAppointmentSoldProductDomain::fromDto).toList()
-                ))
+                        soldProducts.stream()
+                                .map(KokuCustomerAppointmentSoldProductDomain::fromDto)
+                                .toList(),
+                        promotions.stream()
+                                .map(KokuCustomerAppointmentPromotionDomain::fromDto)
+                                .toList()))
+                .activitySummarySnapshot(this.calculateCustomerAppointmentActivitySummary(activities.stream()
+                        .map(KokuCustomerAppointmentActivityDomain::fromDto)
+                        .toList()))
+                .soldProductSummarySnapshot(this.calculateCustomerAppointmentSoldProductSummary(soldProducts.stream()
+                        .map(KokuCustomerAppointmentSoldProductDomain::fromDto)
+                        .toList()))
                 .build();
     }
 
     public CustomerAppointment transformToEntity(
-            final CustomerAppointment model,
-            final KokuCustomerAppointmentDto updatedDto
-    ) throws UserIdNotFoundException, ActivityIdNotFoundException, ActivityStepIdNotFoundException, ProductIdNotFoundException, PromotionIdNotFoundException {
+            final CustomerAppointment model, final KokuCustomerAppointmentDto updatedDto)
+            throws UserIdNotFoundException, ActivityIdNotFoundException, ActivityStepIdNotFoundException,
+                    ProductIdNotFoundException, PromotionIdNotFoundException {
         if (updatedDto.getDate() != null && updatedDto.getTime() != null) {
             model.setStart(updatedDto.getDate().atTime(updatedDto.getTime()));
         }
@@ -202,11 +212,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 }
 
                 final CustomerAppointmentActivity newActivity = new CustomerAppointmentActivity(
-                        model,
-                        currentActivity.getActivityId(),
-                        currentActivity.getPrice(),
-                        position++
-                );
+                        model, currentActivity.getActivityId(), currentActivity.getPrice(), position++);
 
                 newActivities.add(newActivity);
             }
@@ -219,26 +225,19 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
             for (final KokuCustomerAppointmentTreatmentDto currentTreatment : updatedDto.getTreatmentSequence()) {
                 switch (currentTreatment) {
                     case KokuCustomerAppointmentActivityStepTreatmentDto activityStep -> {
-                        if (this.activityStepKTableProcessor.getActivitySteps().get(activityStep.getActivityStepId()) == null) {
+                        if (this.activityStepKTableProcessor.getActivitySteps().get(activityStep.getActivityStepId())
+                                == null) {
                             throw new ActivityStepIdNotFoundException(activityStep.getActivityStepId());
                         }
                         newTreatments.add(new CustomerAppointmentTreatmentSequenceItem(
-                                model,
-                                activityStep.getActivityStepId(),
-                                null,
-                                position++
-                        ));
+                                model, activityStep.getActivityStepId(), null, position++));
                     }
                     case KokuCustomerAppointmentProductTreatmentDto product -> {
                         if (this.productKTableProcessor.getProducts().get(product.getProductId()) == null) {
                             throw new ProductIdNotFoundException(product.getProductId());
                         }
                         newTreatments.add(new CustomerAppointmentTreatmentSequenceItem(
-                                model,
-                                null,
-                                product.getProductId(),
-                                position++
-                        ));
+                                model, null, product.getProductId(), position++));
                     }
                     default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unexpected type");
                 }
@@ -255,11 +254,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 }
 
                 final CustomerAppointmentSoldProduct newSoldProduct = new CustomerAppointmentSoldProduct(
-                        model,
-                        currentSoldProduct.getProductId(),
-                        currentSoldProduct.getPrice(),
-                        position++
-                );
+                        model, currentSoldProduct.getProductId(), currentSoldProduct.getPrice(), position++);
 
                 newSoldProducts.add(newSoldProduct);
             }
@@ -274,52 +269,60 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                     throw new PromotionIdNotFoundException(currentPromotion.getPromotionId());
                 }
 
-                newPromotions.add(new CustomerAppointmentPromotion(
-                        model,
-                        currentPromotion.getPromotionId(),
-                        position++
-                ));
+                newPromotions.add(
+                        new CustomerAppointmentPromotion(model, currentPromotion.getPromotionId(), position++));
             }
             model.setPromotions(newPromotions);
         }
 
         model.setSoldProductsRevenueSnapshot(this.calculateCustomerAppointmentSoldProductPriceSum(
                 model.getStart(),
-                model.getSoldProducts().stream().map(KokuCustomerAppointmentSoldProductDomain::fromEntity).toList(),
-                model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
-        ));
-        model.setSoldProductsSummarySnapshot(this.calculateCustomerAppointmentSoldProductSummary(
-                model.getSoldProducts().stream().map(KokuCustomerAppointmentSoldProductDomain::fromEntity).toList()
-        ));
+                model.getSoldProducts().stream()
+                        .map(KokuCustomerAppointmentSoldProductDomain::fromEntity)
+                        .toList(),
+                model.getPromotions().stream()
+                        .map(KokuCustomerAppointmentPromotionDomain::fromEntity)
+                        .toList()));
+        model.setSoldProductsSummarySnapshot(
+                this.calculateCustomerAppointmentSoldProductSummary(model.getSoldProducts().stream()
+                        .map(KokuCustomerAppointmentSoldProductDomain::fromEntity)
+                        .toList()));
         model.setActivitiesRevenueSnapshot(this.calculateCustomerAppointmentActivityPriceSum(
                 model.getStart(),
-                model.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromEntity).toList(),
-                model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
-        ));
-        model.setActivitiesSummarySnapshot(this.calculateCustomerAppointmentActivitySummary(
-                model.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromEntity).toList()
-        ));
+                model.getActivities().stream()
+                        .map(KokuCustomerAppointmentActivityDomain::fromEntity)
+                        .toList(),
+                model.getPromotions().stream()
+                        .map(KokuCustomerAppointmentPromotionDomain::fromEntity)
+                        .toList()));
+        model.setActivitiesSummarySnapshot(
+                this.calculateCustomerAppointmentActivitySummary(model.getActivities().stream()
+                        .map(KokuCustomerAppointmentActivityDomain::fromEntity)
+                        .toList()));
 
         for (CustomerAppointmentSoldProduct soldProduct : model.getSoldProducts()) {
             soldProduct.setFinalPriceSnapshot(this.calculateSoldProductPrice(
                     model.getStart(),
                     KokuCustomerAppointmentSoldProductDomain.fromEntity(soldProduct),
-                    model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
-            ));
+                    model.getPromotions().stream()
+                            .map(KokuCustomerAppointmentPromotionDomain::fromEntity)
+                            .toList()));
         }
 
         for (CustomerAppointmentActivity activity : model.getActivities()) {
             activity.setFinalPriceSnapshot(this.calculateActivityPrice(
                     model.getStart(),
                     KokuCustomerAppointmentActivityDomain.fromEntity(activity),
-                    model.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromEntity).toList()
-            ));
+                    model.getPromotions().stream()
+                            .map(KokuCustomerAppointmentPromotionDomain::fromEntity)
+                            .toList()));
         }
 
         model.setCalculatedEndSnapshot(this.calculateCustomerAppointmentEnd(
                 model.getStart(),
-                model.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromEntity).toList()
-        ));
+                model.getActivities().stream()
+                        .map(KokuCustomerAppointmentActivityDomain::fromEntity)
+                        .toList()));
 
         return model;
     }
@@ -327,8 +330,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     public BigDecimal calculateCustomerAppointmentActivityPriceSum(
             final LocalDateTime date,
             final List<KokuCustomerAppointmentActivityDomain> activities,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions
-    ) {
+            final List<KokuCustomerAppointmentPromotionDomain> promotions) {
         BigDecimal sum = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         if (activities != null) {
             for (final KokuCustomerAppointmentActivityDomain currentActivity : activities) {
@@ -337,16 +339,20 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         }
 
         for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-            final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
+            final PromotionKafkaDto currentKafkaPromotion =
+                    this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
             if (currentKafkaPromotion.getActivityAbsoluteSavings() != null) {
                 sum = sum.subtract(currentKafkaPromotion.getActivityAbsoluteSavings());
             }
         }
 
         for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-            final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
+            final PromotionKafkaDto currentKafkaPromotion =
+                    this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
             if (currentKafkaPromotion.getActivityRelativeSavings() != null) {
-                sum = sum.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion.getActivityRelativeSavings().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
+                sum = sum.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion
+                        .getActivityRelativeSavings()
+                        .divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
             }
         }
 
@@ -360,22 +366,25 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     public BigDecimal calculateActivityPrice(
             final LocalDateTime date,
             final KokuCustomerAppointmentActivityDomain currentActivity,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions
-    ) {
+            final List<KokuCustomerAppointmentPromotionDomain> promotions) {
         BigDecimal sellPrice = currentActivity.getPrice();
         if (sellPrice == null) {
             sellPrice = getActivityHistoryDefaultPrice(date, currentActivity.getActivityId());
 
             for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-                final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
+                final PromotionKafkaDto currentKafkaPromotion =
+                        this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
                 if (currentKafkaPromotion.getActivityAbsoluteItemSavings() != null) {
                     sellPrice = sellPrice.subtract(currentKafkaPromotion.getActivityAbsoluteItemSavings());
                 }
             }
             for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-                final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
+                final PromotionKafkaDto currentKafkaPromotion =
+                        this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
                 if (currentKafkaPromotion.getActivityAbsoluteItemSavings() != null) {
-                    sellPrice = sellPrice.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion.getActivityRelativeItemSavings().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
+                    sellPrice = sellPrice.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion
+                            .getActivityRelativeItemSavings()
+                            .divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
                 }
             }
         }
@@ -388,16 +397,14 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     private String calculateCustomerAppointmentActivityPriceSumFormatted(
             final LocalDateTime date,
             final List<KokuCustomerAppointmentActivityDomain> activities,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions
-    ) {
+            final List<KokuCustomerAppointmentPromotionDomain> promotions) {
         return PRICE_FORMATTER.format(calculateCustomerAppointmentActivityPriceSum(date, activities, promotions));
     }
 
     public BigDecimal calculateCustomerAppointmentSoldProductPriceSum(
             final LocalDateTime date,
             final List<KokuCustomerAppointmentSoldProductDomain> soldProducts,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions
-    ) {
+            final List<KokuCustomerAppointmentPromotionDomain> promotions) {
         BigDecimal sum = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         if (soldProducts != null) {
             for (final KokuCustomerAppointmentSoldProductDomain currentSoldProduct : soldProducts) {
@@ -405,18 +412,21 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
             }
         }
 
-
         for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-            final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
+            final PromotionKafkaDto currentKafkaPromotion =
+                    this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
             if (currentKafkaPromotion.getProductAbsoluteSavings() != null) {
                 sum = sum.subtract(currentKafkaPromotion.getProductAbsoluteSavings());
             }
         }
 
         for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-            final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
+            final PromotionKafkaDto currentKafkaPromotion =
+                    this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
             if (currentKafkaPromotion.getProductRelativeSavings() != null) {
-                sum = sum.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion.getProductRelativeSavings().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
+                sum = sum.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion
+                        .getProductRelativeSavings()
+                        .divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
             }
         }
 
@@ -426,22 +436,26 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     public BigDecimal calculateSoldProductPrice(
             final LocalDateTime date,
             final KokuCustomerAppointmentSoldProductDomain currentSoldProduct,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions
-    ) {
+            final List<KokuCustomerAppointmentPromotionDomain> promotions) {
         BigDecimal sellPrice = currentSoldProduct.getPrice();
         if (sellPrice == null) {
-            sellPrice = getProductHistoryDefaultPrice(date, this.productKTableProcessor.getProducts().get(currentSoldProduct.getProductId()));
+            sellPrice = getProductHistoryDefaultPrice(
+                    date, this.productKTableProcessor.getProducts().get(currentSoldProduct.getProductId()));
 
             for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-                final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
+                final PromotionKafkaDto currentKafkaPromotion =
+                        this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
                 if (currentKafkaPromotion.getProductAbsoluteItemSavings() != null) {
                     sellPrice = sellPrice.subtract(currentKafkaPromotion.getProductAbsoluteItemSavings());
                 }
             }
             for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
-                final PromotionKafkaDto currentKafkaPromotion = this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
+                final PromotionKafkaDto currentKafkaPromotion =
+                        this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
                 if (currentKafkaPromotion.getProductAbsoluteItemSavings() != null) {
-                    sellPrice = sellPrice.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion.getProductRelativeItemSavings().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
+                    sellPrice = sellPrice.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion
+                            .getProductRelativeItemSavings()
+                            .divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
                 }
             }
         }
@@ -454,14 +468,11 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     private String calculateCustomerAppointmentSoldProductPriceSumFormatted(
             final LocalDateTime date,
             final List<KokuCustomerAppointmentSoldProductDomain> soldProducts,
-            final List<KokuCustomerAppointmentPromotionDomain> promotions
-    ) {
+            final List<KokuCustomerAppointmentPromotionDomain> promotions) {
         return PRICE_FORMATTER.format(calculateCustomerAppointmentSoldProductPriceSum(date, soldProducts, promotions));
     }
 
-    public String calculateCustomerAppointmentActivityDurationHumanReadable(
-            final List<Long> activityIds
-    ) {
+    public String calculateCustomerAppointmentActivityDurationHumanReadable(final List<Long> activityIds) {
         final Duration sum = calculateCustomerAppointmentActivityDuration(activityIds);
         long minutes = sum.toMinutesPart();
         long hours = sum.toHoursPart();
@@ -480,13 +491,12 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         return formattedDuration.toString().trim();
     }
 
-    private Duration calculateCustomerAppointmentActivityDuration(
-            final List<Long> activityIds
-    ) {
+    private Duration calculateCustomerAppointmentActivityDuration(final List<Long> activityIds) {
         Duration sum = Duration.ZERO;
         if (activityIds != null) {
             for (final Long currentActivityId : activityIds) {
-                final ActivityKafkaDto kafkaActivity = this.activityKTableProcessor.getActivities().get(currentActivityId);
+                final ActivityKafkaDto kafkaActivity =
+                        this.activityKTableProcessor.getActivities().get(currentActivityId);
                 if (kafkaActivity.getApproximatelyDuration() != null) {
                     sum = sum.plus(kafkaActivity.getApproximatelyDuration());
                 }
@@ -495,11 +505,9 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         return sum;
     }
 
-    private BigDecimal getActivityHistoryDefaultPrice(
-            final LocalDateTime date,
-            final Long activityId
-    ) {
-        final ActivityKafkaDto kafkaActivity = this.activityKTableProcessor.getActivities().get(activityId);
+    private BigDecimal getActivityHistoryDefaultPrice(final LocalDateTime date, final Long activityId) {
+        final ActivityKafkaDto kafkaActivity =
+                this.activityKTableProcessor.getActivities().get(activityId);
         BigDecimal result = null;
         if (kafkaActivity.getPriceHistory() != null) {
             kafkaActivity.getPriceHistory().sort(Comparator.comparing(ActivityPriceHistoryKafkaDto::getRecorded));
@@ -511,7 +519,9 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 }
             }
         }
-        if (result == null && kafkaActivity.getPriceHistory() != null && !kafkaActivity.getPriceHistory().isEmpty()) {
+        if (result == null
+                && kafkaActivity.getPriceHistory() != null
+                && !kafkaActivity.getPriceHistory().isEmpty()) {
             result = kafkaActivity.getPriceHistory().getFirst().getPrice();
         }
         if (result == null) {
@@ -520,10 +530,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         return result;
     }
 
-    private BigDecimal getProductHistoryDefaultPrice(
-            final LocalDateTime date,
-            final ProductKafkaDto product
-    ) {
+    private BigDecimal getProductHistoryDefaultPrice(final LocalDateTime date, final ProductKafkaDto product) {
         BigDecimal result = null;
         if (product.getPriceHistory() != null) {
             product.getPriceHistory().sort(Comparator.comparing(ProductPriceHistoryKafkaDto::getRecorded));
@@ -535,7 +542,9 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 }
             }
         }
-        if (result == null && product.getPriceHistory() != null && !product.getPriceHistory().isEmpty()) {
+        if (result == null
+                && product.getPriceHistory() != null
+                && !product.getPriceHistory().isEmpty()) {
             result = product.getPriceHistory().getFirst().getPrice();
         }
         if (result == null) {
@@ -545,8 +554,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     }
 
     public KokuCustomerActivityPriceSummaryDto transformToActivityPriceSummary(
-            final KokuActivityPriceSummaryRequestDto request
-    ) {
+            final KokuActivityPriceSummaryRequestDto request) {
         final LocalDateTime targetTimestamp;
         if (request.getDate() != null && request.getTime() != null) {
             targetTimestamp = request.getDate().atTime(request.getTime());
@@ -559,24 +567,23 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         }
 
         return KokuCustomerActivityPriceSummaryDto.builder()
-                .priceSum(
-                        this.calculateCustomerAppointmentActivityPriceSumFormatted(
-                                targetTimestamp,
-                                request.getActivities().stream().map(KokuCustomerAppointmentActivityDomain::fromDto).toList(),
-                                request.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList()
-                        )
-                )
+                .priceSum(this.calculateCustomerAppointmentActivityPriceSumFormatted(
+                        targetTimestamp,
+                        request.getActivities().stream()
+                                .map(KokuCustomerAppointmentActivityDomain::fromDto)
+                                .toList(),
+                        request.getPromotions().stream()
+                                .map(KokuCustomerAppointmentPromotionDomain::fromDto)
+                                .toList()))
                 .durationSum(
-                        this.calculateCustomerAppointmentActivityDurationHumanReadable(
-                                request.getActivities().stream().map(KokuCustomerAppointmentActivityDto::getActivityId).toList()
-                        )
-                )
+                        this.calculateCustomerAppointmentActivityDurationHumanReadable(request.getActivities().stream()
+                                .map(KokuCustomerAppointmentActivityDto::getActivityId)
+                                .toList()))
                 .build();
     }
 
     public KokuActivitySoldProductPriceSummaryDto transformToSoldProductPriceSummary(
-            final KokuActivitySoldProductSummaryRequestDto request
-    ) {
+            final KokuActivitySoldProductSummaryRequestDto request) {
         final LocalDateTime targetTimestamp;
         if (request.getDate() != null && request.getTime() != null) {
             targetTimestamp = request.getDate().atTime(request.getTime());
@@ -589,23 +596,23 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         }
 
         return KokuActivitySoldProductPriceSummaryDto.builder()
-                .priceSum(
-                        this.calculateCustomerAppointmentSoldProductPriceSumFormatted(
-                                targetTimestamp,
-                                request.getSoldProducts().stream().map(KokuCustomerAppointmentSoldProductDomain::fromDto).toList(),
-                                request.getPromotions().stream().map(KokuCustomerAppointmentPromotionDomain::fromDto).toList()
-                        )
-                )
+                .priceSum(this.calculateCustomerAppointmentSoldProductPriceSumFormatted(
+                        targetTimestamp,
+                        request.getSoldProducts().stream()
+                                .map(KokuCustomerAppointmentSoldProductDomain::fromDto)
+                                .toList(),
+                        request.getPromotions().stream()
+                                .map(KokuCustomerAppointmentPromotionDomain::fromDto)
+                                .toList()))
                 .build();
     }
 
     public LocalDateTime calculateCustomerAppointmentEnd(
-            final LocalDateTime start,
-            final List<KokuCustomerAppointmentActivityDomain> activities
-    ) {
+            final LocalDateTime start, final List<KokuCustomerAppointmentActivityDomain> activities) {
         Duration duration = Duration.ZERO;
         for (final KokuCustomerAppointmentActivityDomain currentActivity : activities) {
-            final ActivityKafkaDto kafkaActivity = this.activityKTableProcessor.getActivities().get(currentActivity.getActivityId());
+            final ActivityKafkaDto kafkaActivity =
+                    this.activityKTableProcessor.getActivities().get(currentActivity.getActivityId());
             duration = duration.plus(kafkaActivity.getApproximatelyDuration());
         }
         return start.plus(duration);
@@ -616,23 +623,25 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         for (final KokuCustomerAppointmentActivityDomain currentActivity : list) {
             kafkaActivities.add(this.activityKTableProcessor.getActivities().get(currentActivity.getActivityId()));
         }
-        return kafkaActivities.stream()
-                .map(ActivityKafkaDto::getName)
-                .collect(Collectors.joining(", "));
+        return kafkaActivities.stream().map(ActivityKafkaDto::getName).collect(Collectors.joining(", "));
     }
 
     public String calculateCustomerAppointmentSoldProductSummary(List<KokuCustomerAppointmentSoldProductDomain> list) {
         List<ProductKafkaDto> kafkaSoldProducts = new ArrayList<>();
         ReadOnlyKeyValueStore<Long, ProductKafkaDto> productsSnapshot = this.productKTableProcessor.getProducts();
-        ReadOnlyKeyValueStore<Long, ProductManufacturerKafkaDto> manufacturerSnapshot = this.productManufacturerKTableProcessor.getProductManufacturers();
+        ReadOnlyKeyValueStore<Long, ProductManufacturerKafkaDto> manufacturerSnapshot =
+                this.productManufacturerKTableProcessor.getProductManufacturers();
         for (final KokuCustomerAppointmentSoldProductDomain currentSoldProduct : list) {
             kafkaSoldProducts.add(productsSnapshot.get(currentSoldProduct.getProductId()));
         }
         return kafkaSoldProducts.stream()
-                .map(productKafkaDto -> Stream.of(manufacturerSnapshot.get(productKafkaDto.getManufacturerId()).getName(), productKafkaDto.getName())
+                .map(productKafkaDto -> Stream.of(
+                                manufacturerSnapshot
+                                        .get(productKafkaDto.getManufacturerId())
+                                        .getName(),
+                                productKafkaDto.getName())
                         .filter(StringUtils::isNotBlank)
                         .collect(Collectors.joining(" / ")))
                 .collect(Collectors.joining(", "));
     }
-
 }

@@ -10,5 +10,4 @@ import lombok.experimental.SuperBuilder;
 public abstract class AbstractCalendarGlobalEventListenerDto {
 
     String eventName;
-
 }

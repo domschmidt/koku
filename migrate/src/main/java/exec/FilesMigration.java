@@ -1,7 +1,5 @@
 package exec;
 
-import org.apache.commons.io.FilenameUtils;
-
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +8,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.io.FilenameUtils;
 
 public class FilesMigration extends BaseMigration {
 
@@ -28,13 +27,16 @@ public class FilesMigration extends BaseMigration {
         System.out.println("Migrating Files...");
 
         Map<String, Long> customerExternalRefMapping = new HashMap<>();
-        read("SELECT id, external_ref FROM koku.customer", rs -> {
-            try {
-                customerExternalRefMapping.put(rs.getString("external_ref"), rs.getLong("id"));
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }, this.customersTarget);
+        read(
+                "SELECT id, external_ref FROM koku.customer",
+                rs -> {
+                    try {
+                        customerExternalRefMapping.put(rs.getString("external_ref"), rs.getLong("id"));
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                this.customersTarget);
 
         read("""
                      SELECT uuid, creation_date, deleted, file_name, customer_id, size, media_type
@@ -46,7 +48,8 @@ public class FilesMigration extends BaseMigration {
 
                 String fileUUID = rs.getString("uuid");
                 String fileName = rs.getString("file_name");
-                Path filePath = Paths.get(uploadsDir, String.format("%s.%s", fileUUID, FilenameUtils.getExtension(fileName)));
+                Path filePath =
+                        Paths.get(uploadsDir, String.format("%s.%s", fileUUID, FilenameUtils.getExtension(fileName)));
                 byte[] content = Files.readAllBytes(filePath);
 
                 String mime_type = rs.getString("media_type");
@@ -60,7 +63,8 @@ public class FilesMigration extends BaseMigration {
                     mime_type = "application/octet-stream";
                 }
 
-                exec("""
+                exec(
+                        """
                                 INSERT INTO koku.file (external_ref, recorded, updated, deleted, filename, content, mime_type, size, customer_id)
                                 VALUES (?, COALESCE(?, CURRENT_TIMESTAMP), ?, ?, ?, ?, ?, ?, ?)
                                 ON CONFLICT (external_ref)
@@ -83,8 +87,7 @@ public class FilesMigration extends BaseMigration {
                         content,
                         mime_type,
                         rs.getLong("size"),
-                        mappedCustomerId
-                );
+                        mappedCustomerId);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

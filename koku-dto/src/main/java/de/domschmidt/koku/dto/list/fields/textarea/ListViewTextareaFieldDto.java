@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 public class ListViewTextareaFieldDto extends AbstractListViewFieldDto<String> {
 
     String label;
+
     @Builder.Default
     String defaultValue = "";
-
 }

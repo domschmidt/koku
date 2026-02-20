@@ -15,11 +15,10 @@ import de.domschmidt.list.dto.response.items.AbstractListViewRoutedItemDto;
 import de.domschmidt.list.dto.response.items.actions.AbstractListViewItemActionDto;
 import de.domschmidt.list.dto.response.items.preview.AbstractListViewItemPreviewDto;
 import de.domschmidt.list.dto.response.items.style.AbstractListViewGlobalItemStylingDto;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ListViewFactory {
@@ -38,86 +37,62 @@ public class ListViewFactory {
 
     @Setter
     private AbstractListViewItemClickActionDto itemClickAction;
+
     @Setter
     private AbstractListViewItemPreviewDto itemPreview;
 
-    public ListViewFactory(
-            final IListViewContentIdGenerator idGenerator,
-            final String itemIdPath
-    ) {
+    public ListViewFactory(final IListViewContentIdGenerator idGenerator, final String itemIdPath) {
         this.itemIdPath = itemIdPath;
         this.idGenerator = idGenerator;
     }
 
-    public void addAction(
-            final AbstractListViewActionDto action
-    ) {
+    public void addAction(final AbstractListViewActionDto action) {
         this.actions.add(action);
     }
 
-    public void addRoutedItem(
-            final AbstractListViewRoutedItemDto item
-    ) {
+    public void addRoutedItem(final AbstractListViewRoutedItemDto item) {
         this.routedItems.add(item);
     }
 
-    public void addRoutedContent(
-            final AbstractListViewRoutedContentDto routedContent
-    ) {
+    public void addRoutedContent(final AbstractListViewRoutedContentDto routedContent) {
         this.routedContents.add(routedContent);
     }
 
-    public void addItemAction(
-            final AbstractListViewItemActionDto itemAction
-    ) {
+    public void addItemAction(final AbstractListViewItemActionDto itemAction) {
         this.itemActions.add(itemAction);
     }
 
-    public void addGlobalItemStyling(
-            final AbstractListViewGlobalItemStylingDto itemStyling
-    ) {
+    public void addGlobalItemStyling(final AbstractListViewGlobalItemStylingDto itemStyling) {
         this.globalItemStyling.add(itemStyling);
     }
 
-    public ListViewFieldReference addField(
-            final String valuePath,
-            final AbstractListViewFieldDto<?> fieldDefinition
-    ) {
+    public ListViewFieldReference addField(final String valuePath, final AbstractListViewFieldDto<?> fieldDefinition) {
         final String uniqueFieldId = this.idGenerator.generateUniqueId(valuePath);
         this.fields.add(ListViewFieldContentDto.builder()
                 .id(uniqueFieldId)
                 .valuePath(valuePath)
                 .fieldDefinition(fieldDefinition)
-                .build()
-        );
+                .build());
         this.fieldFetchPaths.add(valuePath);
         return new ListViewFieldReference(uniqueFieldId);
     }
 
-    public void addFilter(
-            final String valuePath,
-            final AbstractListViewFilterDto filterDefinition
-    ) {
+    public void addFilter(final String valuePath, final AbstractListViewFilterDto filterDefinition) {
         this.filters.add(ListViewFilterContentDto.builder()
                 .id(valuePath + "-filter")
                 .valuePath(valuePath)
                 .filterDefinition(filterDefinition)
-                .build()
-        );
+                .build());
         this.fieldFetchPaths.add(valuePath);
     }
 
-    public ListViewSourcePathReference addSourcePath(
-            final String valuePath
-    ) {
+    public ListViewSourcePathReference addSourcePath(final String valuePath) {
         final String uniqueFieldId = this.idGenerator.generateUniqueId(valuePath);
         this.fieldFetchPaths.add(valuePath);
         return new ListViewSourcePathReference(uniqueFieldId);
     }
 
-    public void addGlobalEventListener(
-            final AbstractListViewGlobalEventListenerDto listener
-    ) {
+    public void addGlobalEventListener(final AbstractListViewGlobalEventListenerDto listener) {
         this.globalEventListeners.add(listener);
     }
 
@@ -134,8 +109,6 @@ public class ListViewFactory {
                 this.itemActions,
                 this.itemPreview,
                 this.globalEventListeners,
-                this.globalItemStyling
-        );
+                this.globalItemStyling);
     }
-
 }

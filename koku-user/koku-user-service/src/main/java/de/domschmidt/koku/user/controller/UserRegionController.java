@@ -25,10 +25,9 @@ public class UserRegionController {
     private final UserRegionToKokuUserRegionDtoTransformer transformer;
 
     @GetMapping("/@self/region")
-    public KokuUserRegionDto getMyRegionDetails(
-            @AuthenticationPrincipal Jwt jwt
-    ) {
-        final User user = this.userRepository.findById(jwt.getSubject())
+    public KokuUserRegionDto getMyRegionDetails(@AuthenticationPrincipal Jwt jwt) {
+        final User user = this.userRepository
+                .findById(jwt.getSubject())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         final UserRegion userRegion;
         if (user.getRegion() == null) {
@@ -38,5 +37,4 @@ public class UserRegionController {
         }
         return this.transformer.transformToDto(userRegion);
     }
-
 }

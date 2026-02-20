@@ -1,10 +1,9 @@
 package de.domschmidt.koku.dto.product;
 
-import lombok.*;
-import lombok.experimental.FieldNameConstants;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.*;
+import lombok.experimental.FieldNameConstants;
 
 @Getter
 @Setter

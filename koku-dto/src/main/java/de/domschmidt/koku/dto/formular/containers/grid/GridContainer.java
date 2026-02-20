@@ -3,12 +3,11 @@ package de.domschmidt.koku.dto.formular.containers.grid;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.formular.dto.content.IFormularContent;
 import de.domschmidt.formular.dto.content.containers.AbstractFormContainer;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SuperBuilder
 @JsonTypeName("grid")
@@ -21,6 +20,7 @@ public class GridContainer extends AbstractFormContainer {
     Integer xl;
     Integer xl2;
     Integer cols;
+
     @Builder.Default
     List<IFormularContent> content = new ArrayList<>();
 
@@ -28,5 +28,4 @@ public class GridContainer extends AbstractFormContainer {
     public void addContent(final IFormularContent content) {
         this.content.add(content);
     }
-
 }

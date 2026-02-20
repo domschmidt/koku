@@ -16,5 +16,4 @@ public abstract class AbstractCalendarActionDto {
     String imgBase64;
     CalendarActionColorEnumDto color;
     Boolean loading;
-
 }

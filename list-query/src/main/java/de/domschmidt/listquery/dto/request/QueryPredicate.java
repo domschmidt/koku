@@ -1,9 +1,9 @@
 package de.domschmidt.listquery.dto.request;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
@@ -18,5 +18,4 @@ public class QueryPredicate {
     EnumSearchOperatorHint searchOperatorHint;
     Boolean negate;
     String orGroupIdentifier;
-
 }

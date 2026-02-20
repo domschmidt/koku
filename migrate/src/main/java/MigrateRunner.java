@@ -1,5 +1,4 @@
 import exec.*;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.HashMap;
@@ -9,16 +8,13 @@ public class MigrateRunner {
 
     public static void main(String[] args) throws Exception {
 
-        try (
-                Connection source = DriverManager.getConnection(System.getenv("db_source"));
-
+        try (Connection source = DriverManager.getConnection(System.getenv("db_source"));
                 Connection products = DriverManager.getConnection(System.getenv("db_target_products"));
                 Connection promotions = DriverManager.getConnection(System.getenv("db_target_promotions"));
                 Connection activities = DriverManager.getConnection(System.getenv("db_target_activities"));
                 Connection users = DriverManager.getConnection(System.getenv("db_target_users"));
                 Connection customers = DriverManager.getConnection(System.getenv("db_target_customers"));
-                Connection files = DriverManager.getConnection(System.getenv("db_target_files"));
-        ) {
+                Connection files = DriverManager.getConnection(System.getenv("db_target_files")); ) {
             String uploadsDir = System.getenv("dir_source_uploads");
 
             Map<String, String> userMapping = new HashMap<>();
@@ -50,5 +46,4 @@ public class MigrateRunner {
             System.out.println("\n🎉 Migration finished successfully.");
         }
     }
-
 }

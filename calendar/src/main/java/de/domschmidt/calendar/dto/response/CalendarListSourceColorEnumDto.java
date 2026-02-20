@@ -1,7 +1,6 @@
 package de.domschmidt.calendar.dto.response;
 
 public enum CalendarListSourceColorEnumDto {
-
     RED,
     ORANGE,
     AMBER,

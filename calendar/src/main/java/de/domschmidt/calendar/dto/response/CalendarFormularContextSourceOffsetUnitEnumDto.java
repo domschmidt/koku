@@ -1,7 +1,6 @@
 package de.domschmidt.calendar.dto.response;
 
 public enum CalendarFormularContextSourceOffsetUnitEnumDto {
-
     SECOND,
     MINUTE,
     HOUR,
@@ -9,5 +8,4 @@ public enum CalendarFormularContextSourceOffsetUnitEnumDto {
     WEEK,
     MONTH,
     YEAR
-
 }

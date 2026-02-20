@@ -11,9 +11,9 @@ public class UserKafkaDtoSerdes extends Serdes.WrapperSerde<UserKafkaDto> {
     }
 
     private static JacksonJsonDeserializer<UserKafkaDto> getDeserializer() {
-        final JacksonJsonDeserializer<UserKafkaDto> customerDtoJsonDeserializer = new JacksonJsonDeserializer<>(UserKafkaDto.class);
+        final JacksonJsonDeserializer<UserKafkaDto> customerDtoJsonDeserializer =
+                new JacksonJsonDeserializer<>(UserKafkaDto.class);
         customerDtoJsonDeserializer.setUseTypeHeaders(false);
         return customerDtoJsonDeserializer;
     }
-
 }

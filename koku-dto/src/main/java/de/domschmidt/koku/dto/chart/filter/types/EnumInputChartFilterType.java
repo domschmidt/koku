@@ -1,7 +1,6 @@
 package de.domschmidt.koku.dto.chart.filter.types;
 
 public enum EnumInputChartFilterType {
-
     TEXT,
     PASSWORD,
     EMAIL,
@@ -14,5 +13,4 @@ public enum EnumInputChartFilterType {
     URL,
     SEARCH,
     TIME,
-
 }

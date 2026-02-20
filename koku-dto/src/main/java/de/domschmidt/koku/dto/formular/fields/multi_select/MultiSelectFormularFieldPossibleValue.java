@@ -12,11 +12,12 @@ import lombok.experimental.FieldNameConstants;
 public class MultiSelectFormularFieldPossibleValue {
 
     String id;
+
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
     Object valueMapping;
+
     String text;
     Boolean disabled;
     KokuColorEnum color;
     String category;
-
 }

@@ -1,16 +1,14 @@
 package de.domschmidt.koku.user.persistence;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
 
 @Entity
 @Getter
@@ -23,7 +21,9 @@ public class UserAppointment implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
     boolean deleted;
+
     @Version
     Long version;
 
@@ -37,7 +37,7 @@ public class UserAppointment implements Serializable {
 
     @CreationTimestamp
     LocalDateTime recorded;
+
     @UpdateTimestamp
     LocalDateTime updated;
-
 }

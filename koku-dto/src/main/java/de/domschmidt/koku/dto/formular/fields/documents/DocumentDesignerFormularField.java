@@ -13,5 +13,4 @@ public class DocumentDesignerFormularField extends AbstractFormField<String> {
 
     @Builder.Default
     String defaultValue = "";
-
 }

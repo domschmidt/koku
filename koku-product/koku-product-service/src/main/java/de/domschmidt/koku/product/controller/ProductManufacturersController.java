@@ -62,17 +62,16 @@ import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 @RestController
 @RequestMapping()
@@ -88,17 +87,13 @@ public class ProductManufacturersController {
     public FormViewDto getFormularView() {
         final FormViewFactory formFactory = new FormViewFactory(
                 new DefaultViewContentIdGenerator(),
-                GridContainer.builder()
-                        .cols(1)
-                        .build()
-        );
+                GridContainer.builder().cols(1).build());
 
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuProductManufacturerDto.Fields.name)
                 .label("Name")
                 .required(true)
-                .build()
-        );
+                .build());
 
         formFactory.addButton(KokuFormButton.builder()
                 .buttonType(EnumButtonType.SUBMIT)
@@ -109,34 +104,25 @@ public class ProductManufacturersController {
                 .dockableSettings(ButtonDockableSettings.builder()
                         .icon("SAVE")
                         .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build()
-                )
+                        .build())
                 .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build()
-        );
+                .build());
 
         return formFactory.create();
     }
 
     @GetMapping("/productmanufacturers/list")
     public ListViewDto getListView() {
-        final ListViewFactory listViewFactory = new ListViewFactory(
-                new DefaultListViewContentIdGenerator(),
-                KokuProductManufacturerDto.Fields.id
-        );
+        final ListViewFactory listViewFactory =
+                new ListViewFactory(new DefaultListViewContentIdGenerator(), KokuProductManufacturerDto.Fields.id);
 
-        final ListViewSourcePathReference deletedSourcePathRef = listViewFactory.addSourcePath(
-                KokuProductManufacturerDto.Fields.deleted
-        );
-        final ListViewSourcePathReference idSourcePathRef = listViewFactory.addSourcePath(
-                KokuProductManufacturerDto.Fields.id
-        );
+        final ListViewSourcePathReference deletedSourcePathRef =
+                listViewFactory.addSourcePath(KokuProductManufacturerDto.Fields.deleted);
+        final ListViewSourcePathReference idSourcePathRef =
+                listViewFactory.addSourcePath(KokuProductManufacturerDto.Fields.id);
         final ListViewFieldReference nameFieldRef = listViewFactory.addField(
                 KokuProductManufacturerDto.Fields.name,
-                ListViewInputFieldDto.builder()
-                        .label("Name")
-                        .build()
-        );
+                ListViewInputFieldDto.builder().label("Name").build());
 
         listViewFactory.addFilter(
                 KokuProductManufacturerDto.Fields.deleted,
@@ -145,278 +131,215 @@ public class ProductManufacturersController {
                         .enabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.TRUE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
-                                .build()
-                        )
+                                .build())
                         .disabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.FALSE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
                                 .build())
                         .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
-                        .build()
-        );
+                        .build());
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("new")
                 .icon("PLUS")
-                .build()
-        );
+                .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
                 .route("new")
                 .text("Neuer Produkthersteller")
-                .build()
-        );
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
                 .eventName("productmanufacturer-created")
                 .idPath(KokuProductManufacturerDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuProductManufacturerDto.Fields.name, nameFieldRef,
-                        KokuProductManufacturerDto.Fields.deleted, deletedSourcePathRef
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route("new")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .title("Neuer Produkthersteller")
-                                .content(ListViewFormularContentDto.builder()
-                                        .formularUrl("services/products/productmanufacturers/form")
-                                        .submitUrl("services/products/productmanufacturers")
-                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
-                                        .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                        .eventName("productmanufacturer-created")
-                                                        .build(),
-                                                ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                        .route(":productManufacturerId")
-                                                        .params(Arrays.asList(
-                                                                ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto.builder()
-                                                                        .param(":productManufacturerId")
-                                                                        .valuePath(KokuProductManufacturerDto.Fields.id)
-                                                                        .build()
-                                                        ))
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                        KokuProductManufacturerDto.Fields.deleted, deletedSourcePathRef))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route("new")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .title("Neuer Produkthersteller")
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/products/productmanufacturers/form")
+                                .submitUrl("services/products/productmanufacturers")
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
+                                .maxWidthInPx(800)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("productmanufacturer-created")
+                                                .build(),
+                                        ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
+                                                .route(":productManufacturerId")
+                                                .params(Arrays.asList(
+                                                        ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
+                                                                .builder()
+                                                                .param(":productManufacturerId")
+                                                                .valuePath(KokuProductManufacturerDto.Fields.id)
+                                                                .build()))
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
                 .route(":productManufacturerId")
-                .params(Arrays.asList(
-                        ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
-                                .param(":productManufacturerId")
-                                .valueReference(idSourcePathRef)
-                                .build()
-                ))
-                .build()
-        );
+                .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
+                        .param(":productManufacturerId")
+                        .valueReference(idSourcePathRef)
+                        .build()))
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadItemUpdateGlobalEventListenerDto.builder()
                 .eventName("productmanufacturer-updated")
                 .idPath(KokuProductManufacturerDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuProductManufacturerDto.Fields.name, nameFieldRef,
-                        KokuProductManufacturerDto.Fields.deleted, deletedSourcePathRef
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route(":productManufacturerId")
-                        .itemId(":productManufacturerId")
-                        .inlineContent(
-                                ListViewHeaderContentDto.builder()
-                                        .sourceUrl("services/products/productmanufacturers/:productManufacturerId/summary")
-                                        .titlePath(KokuProductManufacturerSummaryDto.Fields.summary)
-                                        .globalEventListeners(Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
+                        KokuProductManufacturerDto.Fields.deleted, deletedSourcePathRef))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route(":productManufacturerId")
+                .itemId(":productManufacturerId")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .sourceUrl("services/products/productmanufacturers/:productManufacturerId/summary")
+                        .titlePath(KokuProductManufacturerSummaryDto.Fields.summary)
+                        .globalEventListeners(
+                                Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
+                                        .eventName("productmanufacturer-updated")
+                                        .idPath(KokuProductManufacturerDto.Fields.id)
+                                        .titleValuePath(KokuProductManufacturerDto.Fields.name)
+                                        .build()))
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/products/productmanufacturers/form")
+                                .sourceUrl("services/products/productmanufacturers/:productManufacturerId")
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
+                                .maxWidthInPx(800)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
                                                 .eventName("productmanufacturer-updated")
-                                                .idPath(KokuProductManufacturerDto.Fields.id)
-                                                .titleValuePath(KokuProductManufacturerDto.Fields.name)
-                                                .build()
-                                        ))
-                                        .content(ListViewFormularContentDto.builder()
-                                                .formularUrl("services/products/productmanufacturers/form")
-                                                .sourceUrl("services/products/productmanufacturers/:productManufacturerId")
-                                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
-                                                .maxWidthInPx(800)
-                                                .onSaveEvents(Arrays.asList(
-                                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                                .eventName("productmanufacturer-updated")
-                                                                .build()
-                                                ))
-                                                .build())
-                                        .build()
-                        )
-                        .build()
-        );
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
         listViewFactory.addGlobalItemStyling(ListViewConditionalItemValueStylingDto.builder()
                 .compareValuePath(KokuProductManufacturerDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveStyling(ListViewItemStylingDto.builder()
                         .lineThrough(true)
                         .opacity((short) 50)
-                        .build()
-                )
-                .build()
-        );
+                        .build())
+                .build());
         listViewFactory.addItemAction(ListViewConditionalItemValueActionDto.builder()
                 .compareValuePath(KokuProductManufacturerDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
                         .url("services/products/productmanufacturers/:productManufacturerId/restore")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":productManufacturerId")
-                                        .valueReference(idSourcePathRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":productManufacturerId")
+                                .valueReference(idSourcePathRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Produkthersteller wiederherstellen")
                                 .content("Produkthersteller :name wiederherstellen?")
-                                .params(Arrays.asList(
-                                        ListViewUserConfirmationValueParamDto.builder()
-                                                .param(":name")
-                                                .valueReference(nameFieldRef)
-                                                .build()
-                                ))
-                                .build()
-                        )
+                                .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
                                         .text("Produkthersteller :name wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .valueReference(nameFieldRef)
+                                                .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuProductManufacturerDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuProductManufacturerDto.Fields.deleted, deletedSourcePathRef
-                                        ))
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text("Produkthersteller :name konnte nicht wiederhergestellt werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
+                                        .valueMapping(
+                                                Map.of(KokuProductManufacturerDto.Fields.deleted, deletedSourcePathRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text("Produkthersteller :name konnte nicht wiederhergestellt werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build()))
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
                         .url("services/products/productmanufacturers/:productManufacturerId")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":productManufacturerId")
-                                        .valueReference(idSourcePathRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":productManufacturerId")
+                                .valueReference(idSourcePathRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Produkthersteller löschen")
                                 .content("Produkthersteller :name als gelöscht markieren?")
-                                .params(Arrays.asList(
-                                        ListViewUserConfirmationValueParamDto.builder()
-                                                .param(":name")
-                                                .valueReference(nameFieldRef)
-                                                .build()
-                                ))
-                                .build()
-                        )
+                                .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Produkthersteller :name wurde erfolgreich als gelöscht markiert")
+                                        .text("Produkthersteller :name wurde erfolgreich als gelöscht" + " markiert")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .valueReference(nameFieldRef)
+                                                .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuProductManufacturerDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuProductManufacturerDto.Fields.deleted, deletedSourcePathRef
-                                        ))
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text("Produkthersteller :name konnte nicht als gelöscht markiert werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
-                        .build()
-                )
-                .build()
-        );
+                                        .valueMapping(
+                                                Map.of(KokuProductManufacturerDto.Fields.deleted, deletedSourcePathRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text("Produkthersteller :name konnte nicht als gelöscht markiert" + " werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build()))
+                        .build())
+                .build());
 
         return listViewFactory.create();
     }
 
     @PostMapping("/productmanufacturers/query")
-    public ListPage findAll(
-            @RequestBody(required = false) final ListQuery predicate
-    ) {
+    public ListPage findAll(@RequestBody(required = false) final ListQuery predicate) {
         final QProductManufacturer qClazz = QProductManufacturer.productManufacturer;
-        final ListQueryFactory<ProductManufacturer> listQueryFactory = new ListQueryFactory<>(
-                this.entityManager,
-                qClazz,
-                qClazz.id,
-                predicate
-        );
+        final ListQueryFactory<ProductManufacturer> listQueryFactory =
+                new ListQueryFactory<>(this.entityManager, qClazz, qClazz.id, predicate);
 
         listQueryFactory.setDefaultOrder(qClazz.name.asc());
 
-        listQueryFactory.addFetchExpr(
-                KokuProductManufacturerDto.Fields.id,
-                qClazz.id
-        );
-        listQueryFactory.addFetchExpr(
-                KokuProductManufacturerDto.Fields.deleted,
-                qClazz.deleted
-        );
-        listQueryFactory.addFetchExpr(
-                KokuProductManufacturerDto.Fields.name,
-                qClazz.name
-        );
+        listQueryFactory.addFetchExpr(KokuProductManufacturerDto.Fields.id, qClazz.id);
+        listQueryFactory.addFetchExpr(KokuProductManufacturerDto.Fields.deleted, qClazz.deleted);
+        listQueryFactory.addFetchExpr(KokuProductManufacturerDto.Fields.name, qClazz.name);
 
         return listQueryFactory.create();
     }
 
     @GetMapping(value = "/productmanufacturers/{productManufacturerId}")
     public KokuProductManufacturerDto read(@PathVariable("productManufacturerId") Long productManufacturerId) {
-        final ProductManufacturer productManufacturer = this.productManufacturerRepository.findById(productManufacturerId)
+        final ProductManufacturer productManufacturer = this.productManufacturerRepository
+                .findById(productManufacturerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product Manufacturer not found"));
         return this.transformer.transformToDto(productManufacturer);
     }
 
     @GetMapping(value = "/productmanufacturers/{productManufacturerId}/summary")
-    public KokuProductManufacturerSummaryDto readSummary(@PathVariable("productManufacturerId") Long productManufacturerId) {
-        final ProductManufacturer productManufacturer = this.productManufacturerRepository.findById(productManufacturerId)
+    public KokuProductManufacturerSummaryDto readSummary(
+            @PathVariable("productManufacturerId") Long productManufacturerId) {
+        final ProductManufacturer productManufacturer = this.productManufacturerRepository
+                .findById(productManufacturerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product Manufacturer not found"));
         return new ProductManufacturerToProductManufacturerSummaryDtoTransformer().transformToDto(productManufacturer);
     }
@@ -427,34 +350,34 @@ public class ProductManufacturersController {
     public KokuProductManufacturerDto update(
             @PathVariable("productManufacturerId") Long productManufacturerId,
             @RequestParam(value = "forceUpdate", required = false) Boolean forceUpdate,
-            @RequestBody KokuProductManufacturerDto updatedDto
-    ) {
-        final ProductManufacturer productManufacturer = this.entityManager.getReference(ProductManufacturer.class, productManufacturerId);
-        if (!Boolean.TRUE.equals(forceUpdate) && !productManufacturer.getVersion().equals(updatedDto.getVersion())) {
+            @RequestBody KokuProductManufacturerDto updatedDto) {
+        final ProductManufacturer productManufacturer =
+                this.entityManager.getReference(ProductManufacturer.class, productManufacturerId);
+        if (!Boolean.TRUE.equals(forceUpdate)
+                && !productManufacturer.getVersion().equals(updatedDto.getVersion())) {
             throw new KokuBusinessExceptionWithConfirmationMessage(
                     KokuBusinessExceptionWithConfirmationMessageDto.builder()
                             .headline("Konflikt")
-                            .confirmationMessage("Der Produkthersteller wurde zwischenzeitlich bearbeitet.\nWillst Du die Speicherung dennoch vornehmen?")
+                            .confirmationMessage("Der Produkthersteller wurde zwischenzeitlich bearbeitet.\n"
+                                    + "Willst Du die Speicherung dennoch vornehmen?")
                             .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
                                     .icon("CLOSE")
-                                    .build()
-                            )
+                                    .build())
                             .closeOnClickOutside(true)
                             .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
                                     .text("Trotzdem speichern")
                                     .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format("services/products/productmanufacturers/%s?forceUpdate=%s", productManufacturerId, Boolean.TRUE))
-                                    .build()
-                            )
+                                    .endpointUrl(String.format(
+                                            "services/products/productmanufacturers/%s?forceUpdate=%s",
+                                            productManufacturerId, Boolean.TRUE))
+                                    .build())
                             .button(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
-                                    .build()
-                            )
-                            .build()
-            );
+                                    .build())
+                            .build());
         }
         this.transformer.transformToEntity(productManufacturer, updatedDto);
         this.entityManager.flush();
@@ -466,7 +389,8 @@ public class ProductManufacturersController {
     @ResponseStatus(HttpStatus.OK)
     @Transactional
     public KokuProductManufacturerDto delete(@PathVariable("productManufacturerId") Long productManufacturerId) {
-        final ProductManufacturer productManufacturer = this.entityManager.getReference(ProductManufacturer.class, productManufacturerId);
+        final ProductManufacturer productManufacturer =
+                this.entityManager.getReference(ProductManufacturer.class, productManufacturerId);
         if (productManufacturer.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Manufacturer is not deletable");
         }
@@ -480,7 +404,8 @@ public class ProductManufacturersController {
     @ResponseStatus(HttpStatus.OK)
     @Transactional
     public KokuProductManufacturerDto restore(@PathVariable("productManufacturerId") Long productManufacturerId) {
-        final ProductManufacturer productManufacturer = this.entityManager.getReference(ProductManufacturer.class, productManufacturerId);
+        final ProductManufacturer productManufacturer =
+                this.entityManager.getReference(ProductManufacturer.class, productManufacturerId);
         if (!productManufacturer.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product Manufacturer is not restorable");
         }
@@ -494,8 +419,10 @@ public class ProductManufacturersController {
     @ResponseStatus(HttpStatus.CREATED)
     @Transactional
     public KokuProductManufacturerDto create(@RequestBody KokuProductManufacturerDto newDto) {
-        final ProductManufacturer newProductManufacturer = this.transformer.transformToEntity(new ProductManufacturer(), newDto);
-        final ProductManufacturer savedProductManufacturer = this.productManufacturerRepository.saveAndFlush(newProductManufacturer);
+        final ProductManufacturer newProductManufacturer =
+                this.transformer.transformToEntity(new ProductManufacturer(), newDto);
+        final ProductManufacturer savedProductManufacturer =
+                this.productManufacturerRepository.saveAndFlush(newProductManufacturer);
         sendProductManufacturerUpdate(savedProductManufacturer);
         return this.transformer.transformToDto(savedProductManufacturer);
     }

@@ -10,5 +10,4 @@ import lombok.experimental.SuperBuilder;
 public class CalendarFlashOnceGlobalEventListenerDto extends AbstractCalendarGlobalEventListenerDto {
 
     String sourceId;
-
 }

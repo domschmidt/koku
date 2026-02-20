@@ -1,6 +1,5 @@
 package de.domschmidt.koku.dto.formular.listeners;
 
-
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
@@ -13,5 +12,4 @@ import lombok.experimental.SuperBuilder;
 public class FormViewFieldReferenceValueMapping extends AbstractFormViewFieldValueMapping {
 
     AbstractFormViewEventPayloadFieldUpdateValueSource source;
-
 }

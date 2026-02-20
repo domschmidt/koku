@@ -1,6 +1,5 @@
 package de.domschmidt.calendar.dto.response;
 
-
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Data;
 import lombok.Getter;
@@ -14,6 +13,4 @@ import lombok.experimental.SuperBuilder;
 @JsonTypeName("holiday")
 @SuperBuilder
 @Data
-public class CalendarHolidaySourceConfigDto extends AbstractCalendarListSourceConfigDto {
-
-}
+public class CalendarHolidaySourceConfigDto extends AbstractCalendarListSourceConfigDto {}

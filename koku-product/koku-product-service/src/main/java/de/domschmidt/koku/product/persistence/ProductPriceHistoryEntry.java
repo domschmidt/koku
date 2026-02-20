@@ -1,6 +1,9 @@
 package de.domschmidt.koku.product.persistence;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,14 +11,9 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @Setter
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "product_price_history", schema = "koku")
@@ -32,13 +30,11 @@ public class ProductPriceHistoryEntry implements Serializable {
 
     @CreationTimestamp
     LocalDateTime recorded;
+
     @UpdateTimestamp
     LocalDateTime updated;
 
-    public ProductPriceHistoryEntry(
-            final Product product,
-            final BigDecimal price
-    ) {
+    public ProductPriceHistoryEntry(final Product product, final BigDecimal price) {
         this.price = price;
         this.product = product;
     }

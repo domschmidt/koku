@@ -1,7 +1,6 @@
 package de.domschmidt.chart.dto.response.colors;
 
 public enum ColorsEnumDto {
-
     PRIMARY,
     SECONDARY,
     ACCENT,
@@ -31,5 +30,4 @@ public enum ColorsEnumDto {
     ZINC,
     NEUTRAL,
     STONE,
-
 }

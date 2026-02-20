@@ -7,9 +7,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeName("event-payload")
 @Data
-public class ListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto extends AbstractListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto {
+public class ListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto
+        extends AbstractListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto {
 
     String param;
     String valuePath;
-
 }

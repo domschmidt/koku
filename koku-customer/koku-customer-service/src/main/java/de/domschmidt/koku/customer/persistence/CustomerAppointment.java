@@ -1,19 +1,17 @@
 package de.domschmidt.koku.customer.persistence;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 
 @Entity
 @Getter
@@ -26,7 +24,9 @@ public class CustomerAppointment implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
     boolean deleted;
+
     @Version
     Long version;
 
@@ -38,16 +38,21 @@ public class CustomerAppointment implements Serializable {
 
     @ManyToOne
     Customer customer;
+
     String userId;
+
     @OneToMany(orphanRemoval = true, mappedBy = "appointment", cascade = CascadeType.ALL)
     @OrderBy("position asc")
     List<CustomerAppointmentActivity> activities = new ArrayList<>();
+
     @OneToMany(orphanRemoval = true, mappedBy = "appointment", cascade = CascadeType.ALL)
     @OrderBy("position asc")
     List<CustomerAppointmentPromotion> promotions = new ArrayList<>();
+
     @OneToMany(orphanRemoval = true, mappedBy = "appointment", cascade = CascadeType.ALL)
     @OrderBy("position asc")
     List<CustomerAppointmentSoldProduct> soldProducts = new ArrayList<>();
+
     @OneToMany(orphanRemoval = true, mappedBy = "appointment", cascade = CascadeType.ALL)
     @OrderBy("position asc")
     List<CustomerAppointmentTreatmentSequenceItem> treatmentSequence = new ArrayList<>();
@@ -59,6 +64,7 @@ public class CustomerAppointment implements Serializable {
 
     @CreationTimestamp
     LocalDateTime recorded;
+
     @UpdateTimestamp
     LocalDateTime updated;
 }

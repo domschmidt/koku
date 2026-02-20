@@ -1,6 +1,5 @@
 package de.domschmidt.list.dto.response.items;
 
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -12,5 +11,4 @@ public abstract class AbstractListViewItemClickActionDto {
 
     String icon;
     Boolean loading;
-
 }

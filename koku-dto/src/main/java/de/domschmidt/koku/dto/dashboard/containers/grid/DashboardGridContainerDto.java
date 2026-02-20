@@ -3,12 +3,11 @@ package de.domschmidt.koku.dto.dashboard.containers.grid;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.dashboard.dto.content.IDashboardContent;
 import de.domschmidt.dashboard.dto.content.containers.AbstractDashboardContainer;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SuperBuilder
 @JsonTypeName("grid")
@@ -25,6 +24,7 @@ public class DashboardGridContainerDto extends AbstractDashboardContainer {
     Integer xl5;
     Integer cols;
     Integer maxWidthInPx;
+
     @Builder.Default
     List<IDashboardContent> content = new ArrayList<>();
 
@@ -32,5 +32,4 @@ public class DashboardGridContainerDto extends AbstractDashboardContainer {
     public void addContent(final IDashboardContent content) {
         this.content.add(content);
     }
-
 }

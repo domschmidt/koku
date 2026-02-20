@@ -13,5 +13,4 @@ public class KokuCustomerAppointmentSummaryDto {
     Long id;
 
     String appointmentSummary;
-
 }

@@ -10,5 +10,4 @@ public class ListViewFilterContentDto {
     String id;
     String valuePath;
     AbstractListViewFilterDto filterDefinition;
-
 }

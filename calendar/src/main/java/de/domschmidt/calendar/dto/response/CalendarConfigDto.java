@@ -1,11 +1,9 @@
 package de.domschmidt.calendar.dto.response;
 
-
-import lombok.*;
-import lombok.experimental.FieldNameConstants;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
+import lombok.experimental.FieldNameConstants;
 
 @Getter
 @Setter
@@ -23,5 +21,4 @@ public class CalendarConfigDto {
 
     @Builder.Default
     List<AbstractCalendarRoutedContentDto> routedContents = new ArrayList<>();
-
 }

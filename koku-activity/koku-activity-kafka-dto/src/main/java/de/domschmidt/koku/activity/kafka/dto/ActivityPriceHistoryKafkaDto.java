@@ -1,10 +1,8 @@
 package de.domschmidt.koku.activity.kafka.dto;
 
-
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Getter
 @Setter
@@ -16,6 +14,4 @@ public class ActivityPriceHistoryKafkaDto {
     BigDecimal price;
 
     LocalDateTime recorded;
-
 }
-

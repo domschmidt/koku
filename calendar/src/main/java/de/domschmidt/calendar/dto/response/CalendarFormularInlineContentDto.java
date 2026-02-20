@@ -1,10 +1,9 @@
 package de.domschmidt.calendar.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.List;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @SuperBuilder
 @JsonTypeName("formular")
@@ -19,5 +18,4 @@ public class CalendarFormularInlineContentDto extends AbstractCalendarInlineCont
     List<AbstractCalendarItemInlineFormularContentSaveEventDto> onSaveEvents;
     List<CalendarFormularFieldOverrideDto> fieldOverrides;
     List<CalendarFormularSourceOverrideDto> sourceOverrides;
-
 }

@@ -14,10 +14,7 @@ import lombok.experimental.SuperBuilder;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes(
         value = {
-                @JsonSubTypes.Type(value = KokuCustomerAppointmentActivityStepTreatmentDto.class, name = "activity-step"),
-                @JsonSubTypes.Type(value = KokuCustomerAppointmentProductTreatmentDto.class, name = "product"),
-        }
-)
-public abstract class KokuCustomerAppointmentTreatmentDto {
-
-}
+            @JsonSubTypes.Type(value = KokuCustomerAppointmentActivityStepTreatmentDto.class, name = "activity-step"),
+            @JsonSubTypes.Type(value = KokuCustomerAppointmentProductTreatmentDto.class, name = "product"),
+        })
+public abstract class KokuCustomerAppointmentTreatmentDto {}

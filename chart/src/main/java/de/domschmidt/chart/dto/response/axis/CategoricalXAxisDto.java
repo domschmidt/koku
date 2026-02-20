@@ -1,13 +1,11 @@
 package de.domschmidt.chart.dto.response.axis;
 
-
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -17,5 +15,4 @@ import java.util.List;
 public class CategoricalXAxisDto extends AbstractXAxisDto {
 
     List<String> categories;
-
 }

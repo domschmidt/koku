@@ -9,8 +9,8 @@ import lombok.experimental.SuperBuilder;
 @JsonTypeName("static-value")
 @Getter
 @FieldNameConstants
-public class FormViewEventPayloadStaticValueFieldUpdateValueSourceDto extends AbstractFormViewEventPayloadFieldUpdateValueSource {
+public class FormViewEventPayloadStaticValueFieldUpdateValueSourceDto
+        extends AbstractFormViewEventPayloadFieldUpdateValueSource {
 
     String value;
-
 }

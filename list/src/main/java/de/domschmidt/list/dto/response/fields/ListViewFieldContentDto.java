@@ -10,5 +10,4 @@ public class ListViewFieldContentDto {
     String id;
     String valuePath;
     AbstractListViewFieldDto<?> fieldDefinition;
-
 }

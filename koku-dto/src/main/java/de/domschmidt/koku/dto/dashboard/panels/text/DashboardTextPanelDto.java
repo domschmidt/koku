@@ -3,10 +3,9 @@ package de.domschmidt.koku.dto.dashboard.panels.text;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.dashboard.dto.content.panels.AbstractDashboardPanel;
 import de.domschmidt.koku.dto.KokuColorEnum;
+import java.util.List;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @SuperBuilder
 @JsonTypeName("text")
@@ -21,5 +20,4 @@ public class DashboardTextPanelDto extends AbstractDashboardPanel {
     List<DashboardTextPanelProgressDetailsDto> progressDetails;
     List<DashboardTextPanelExplanationItemDto> explanations;
     Short progress;
-
 }

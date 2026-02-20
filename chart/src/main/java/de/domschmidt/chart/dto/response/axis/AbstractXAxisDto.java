@@ -12,9 +12,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = CategoricalXAxisDto.class, name = "categorical")
-})
+@JsonSubTypes({@JsonSubTypes.Type(value = CategoricalXAxisDto.class, name = "categorical")})
 public abstract class AbstractXAxisDto {
     String label;
 }

@@ -7,5 +7,4 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @Data
-public abstract class AbstractListViewActionEventDto {
-}
+public abstract class AbstractListViewActionEventDto {}

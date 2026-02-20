@@ -10,5 +10,4 @@ import lombok.experimental.SuperBuilder;
 public class StringTransformationSourcePathPatternParam extends AbstractStringTransformationPatternParam {
 
     String sourcePath;
-
 }

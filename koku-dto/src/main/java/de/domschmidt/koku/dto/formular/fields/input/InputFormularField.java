@@ -13,12 +13,13 @@ public class InputFormularField extends AbstractFormField<String> {
 
     @Builder.Default
     EnumInputFormularFieldType type = EnumInputFormularFieldType.TEXT;
+
     String label;
     String placeholder;
     Integer minLength;
     Integer maxLength;
     String regexp;
+
     @Builder.Default
     String defaultValue = "";
-
 }

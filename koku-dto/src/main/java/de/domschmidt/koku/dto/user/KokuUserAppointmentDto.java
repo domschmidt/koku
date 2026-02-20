@@ -1,11 +1,10 @@
 package de.domschmidt.koku.dto.user;
 
-import lombok.*;
-import lombok.experimental.FieldNameConstants;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import lombok.*;
+import lombok.experimental.FieldNameConstants;
 
 @Getter
 @Setter
@@ -30,5 +29,4 @@ public class KokuUserAppointmentDto {
 
     LocalDateTime updated;
     LocalDateTime recorded;
-
 }

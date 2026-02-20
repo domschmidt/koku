@@ -16,19 +16,26 @@ public class CustomerAppointmentSoldProductMigration extends BaseMigration {
     @Override
     public void migrate() throws Exception {
         System.out.println("Migrating CustomerAppointmentSoldProduct...");
-        Map<String , Long> productTargetExternalRefMapping = new HashMap<>();
-        read("SELECT id, external_ref FROM koku.product", rs -> {
-            try {
-                productTargetExternalRefMapping.put(rs.getString("external_ref"), rs.getLong("id"));
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }, this.productTarget);
+        Map<String, Long> productTargetExternalRefMapping = new HashMap<>();
+        read(
+                "SELECT id, external_ref FROM koku.product",
+                rs -> {
+                    try {
+                        productTargetExternalRefMapping.put(rs.getString("external_ref"), rs.getLong("id"));
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                this.productTarget);
 
-        read("SELECT id, recorded, updated, customer_appointment_id, product_id, position, sell_price FROM koku.customer_appointment_soldproducts_composing", rs -> {
-            try {
-                String productIdRaw = rs.getString("product_id");
-                exec("""
+        read(
+                "SELECT id, recorded, updated, customer_appointment_id, product_id, position, sell_price"
+                        + " FROM koku.customer_appointment_soldproducts_composing",
+                rs -> {
+                    try {
+                        String productIdRaw = rs.getString("product_id");
+                        exec(
+                                """
                                 INSERT INTO koku.customer_appointment_sold_product (external_ref, recorded, updated, appointment_id, product_id, position, sell_price)
                                 VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, (SELECT ID FROM koku.customer_appointment where external_ref = ?), ?, ?, ?)
                                 ON CONFLICT (external_ref)
@@ -41,19 +48,18 @@ public class CustomerAppointmentSoldProductMigration extends BaseMigration {
                                               version = customer_appointment_sold_product.version + 1
                                 WHERE EXCLUDED.updated > customer_appointment_sold_product.updated;
                                 """,
-                        rs.getString("id"),
-                        rs.getTimestamp("recorded"),
-                        rs.getTimestamp("updated"),
-                        rs.getTimestamp("updated"),
-                        rs.getString("customer_appointment_id"),
-                        productTargetExternalRefMapping.get(productIdRaw),
-                        rs.getInt("position"),
-                        rs.getBigDecimal("sell_price")
-                );
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+                                rs.getString("id"),
+                                rs.getTimestamp("recorded"),
+                                rs.getTimestamp("updated"),
+                                rs.getTimestamp("updated"),
+                                rs.getString("customer_appointment_id"),
+                                productTargetExternalRefMapping.get(productIdRaw),
+                                rs.getInt("position"),
+                                rs.getBigDecimal("sell_price"));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
 
         System.out.println("✔ CustomerAppointmentSoldProduct done.");
     }

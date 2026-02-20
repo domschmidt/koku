@@ -21,9 +21,10 @@ public class PromotionMigration extends BaseMigration {
                  LEFT OUTER JOIN koku.promotion_product_settings prodset ON (prodset.id = promotion_product_settings_id)
                  """, rs -> {
             try {
-                exec("""
+                exec(
+                        """
                         INSERT INTO koku.promotion (
-                          external_ref, recorded, updated, deleted, name, 
+                          external_ref, recorded, updated, deleted, name,
                           activity_absolute_item_savings, activity_absolute_savings, activity_relative_item_savings, activity_relative_savings,
                           product_absolute_item_savings, product_absolute_savings, product_relative_item_savings, product_relative_savings
                         )
@@ -57,8 +58,7 @@ public class PromotionMigration extends BaseMigration {
                         rs.getBigDecimal("prodset_absolute_item_savings"),
                         rs.getBigDecimal("prodset_absolute_savings"),
                         rs.getBigDecimal("prodset_relative_item_savings"),
-                        rs.getBigDecimal("prodset_relative_savings")
-                );
+                        rs.getBigDecimal("prodset_relative_savings"));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

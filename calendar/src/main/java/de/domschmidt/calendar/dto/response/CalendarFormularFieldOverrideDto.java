@@ -11,5 +11,4 @@ public abstract class CalendarFormularFieldOverrideDto {
 
     String fieldId;
     Boolean disable;
-
 }

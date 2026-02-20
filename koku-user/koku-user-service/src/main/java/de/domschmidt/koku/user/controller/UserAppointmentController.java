@@ -67,6 +67,11 @@ import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -75,12 +80,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping()
@@ -95,8 +94,7 @@ public class UserAppointmentController {
     public UserAppointmentController(
             final EntityManager entityManager,
             final UserAppointmentRepository userAppointmentRepository,
-            final UserAppointmentToUserAppointmentDtoTransformer transformer
-    ) {
+            final UserAppointmentToUserAppointmentDtoTransformer transformer) {
         this.entityManager = entityManager;
         this.userAppointmentRepository = userAppointmentRepository;
         this.transformer = transformer;
@@ -106,70 +104,58 @@ public class UserAppointmentController {
     public FormViewDto getFormularView() {
         final FormViewFactory formFactory = new FormViewFactory(
                 new DefaultViewContentIdGenerator(),
-                GridContainer.builder()
-                        .cols(1)
-                        .build()
-        );
+                GridContainer.builder().cols(1).build());
         final QUser qUser = QUser.user;
-        final List<User> usersSnapshot = new JPAQuery<>(this.entityManager)
-                .select(qUser)
-                .from(qUser)
-                .fetch();
+        final List<User> usersSnapshot =
+                new JPAQuery<>(this.entityManager).select(qUser).from(qUser).fetch();
         formFactory.addField(SelectFormularField.builder()
                 .valuePath(KokuUserAppointmentDto.Fields.userId)
                 .label("Nutzer")
                 .id(KokuUserAppointmentDto.Fields.userId)
-                .possibleValues(usersSnapshot.stream().map(user -> {
-                    return SelectFormularFieldPossibleValue.builder()
-                            .id(user.getId())
-                            .text((user.getFirstname() + " " + user.getLastname()).trim())
-                            .disabled(user.isDeleted())
-                            .build();
-                }).toList())
-                .defaultValue(SecurityContextHolder.getContext().getAuthentication().getName())
+                .possibleValues(usersSnapshot.stream()
+                        .map(user -> {
+                            return SelectFormularFieldPossibleValue.builder()
+                                    .id(user.getId())
+                                    .text((user.getFirstname() + " " + user.getLastname()).trim())
+                                    .disabled(user.isDeleted())
+                                    .build();
+                        })
+                        .toList())
+                .defaultValue(
+                        SecurityContextHolder.getContext().getAuthentication().getName())
                 .readonly(true)
-                .build()
-        );
+                .build());
 
         formFactory.addField(TextareaFormularField.builder()
                 .label("Beschreibung")
                 .valuePath(KokuUserAppointmentDto.Fields.description)
-                .build()
-        );
+                .build());
 
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .md(2)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).md(2).build());
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuUserAppointmentDto.Fields.startDate)
                 .type(EnumInputFormularFieldType.DATE)
                 .label("Datum von")
                 .required(true)
-                .build()
-        );
+                .build());
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuUserAppointmentDto.Fields.startTime)
                 .type(EnumInputFormularFieldType.TIME)
                 .label("Zeit von")
                 .required(true)
-                .build()
-        );
+                .build());
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuUserAppointmentDto.Fields.endDate)
                 .type(EnumInputFormularFieldType.DATE)
                 .label("Datum bis")
                 .required(true)
-                .build()
-        );
+                .build());
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuUserAppointmentDto.Fields.endTime)
                 .type(EnumInputFormularFieldType.TIME)
                 .label("Zeit bis")
                 .required(true)
-                .build()
-        );
+                .build());
         formFactory.endContainer();
 
         formFactory.addButton(KokuFormButton.builder()
@@ -181,44 +167,34 @@ public class UserAppointmentController {
                 .dockableSettings(ButtonDockableSettings.builder()
                         .icon("SAVE")
                         .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build()
-                )
+                        .build())
                 .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build()
-        );
+                .build());
 
         return formFactory.create();
     }
 
-
     @GetMapping("/users/appointments/list")
     public ListViewDto getListView() {
-        final ListViewFactory listViewFactory = new ListViewFactory(
-                new DefaultListViewContentIdGenerator(),
-                KokuUserAppointmentDto.Fields.id
-        );
+        final ListViewFactory listViewFactory =
+                new ListViewFactory(new DefaultListViewContentIdGenerator(), KokuUserAppointmentDto.Fields.id);
 
         final ListViewFieldReference startDateFieldRef = listViewFactory.addField(
                 KokuUserAppointmentDto.Fields.startDate,
                 ListViewInputFieldDto.builder()
                         .label("Datum")
                         .type(ListViewInputFieldTypeEnumDto.DATE)
-                        .build()
-        );
+                        .build());
         final ListViewFieldReference startTimeFieldRef = listViewFactory.addField(
                 KokuUserAppointmentDto.Fields.startTime,
-                ListViewInputFieldDto.builder()
-                        .label("Zeit")
-                        .build()
-        );
+                ListViewInputFieldDto.builder().label("Zeit").build());
         final ListViewFieldReference descriptionFieldRef = listViewFactory.addField(
                 KokuUserAppointmentDto.Fields.description,
-                ListViewInputFieldDto.builder()
-                        .label("Beschreibung")
-                        .build()
-        );
-        final ListViewSourcePathReference idSourcePathFieldRef = listViewFactory.addSourcePath(KokuUserAppointmentDto.Fields.id);
-        final ListViewSourcePathReference deletedSourceRef = listViewFactory.addSourcePath(KokuUserAppointmentDto.Fields.deleted);
+                ListViewInputFieldDto.builder().label("Beschreibung").build());
+        final ListViewSourcePathReference idSourcePathFieldRef =
+                listViewFactory.addSourcePath(KokuUserAppointmentDto.Fields.id);
+        final ListViewSourcePathReference deletedSourceRef =
+                listViewFactory.addSourcePath(KokuUserAppointmentDto.Fields.deleted);
 
         listViewFactory.addFilter(
                 KokuUserAppointmentDto.Fields.deleted,
@@ -227,137 +203,113 @@ public class UserAppointmentController {
                         .enabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.TRUE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
-                                .build()
-                        )
+                                .build())
                         .disabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.FALSE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
                                 .build())
                         .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
-                        .build()
-        );
+                        .build());
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("appointments/new")
                 .icon("PLUS")
-                .build()
-        );
+                .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
                 .route("appointments/new")
                 .text("Neuer Privater Termin")
-                .build()
-        );
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
                 .eventName("user-appointment-created")
                 .idPath(KokuUserAppointmentDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuUserAppointmentDto.Fields.startDate, startDateFieldRef,
                         KokuUserAppointmentDto.Fields.startTime, startTimeFieldRef,
-                        KokuUserAppointmentDto.Fields.description, descriptionFieldRef
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route("appointments/new")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .title("Neuer Privater Termin")
-                                .content(ListViewFormularContentDto.builder()
-                                        .formularUrl("services/users/users/appointments/form")
-                                        .submitUrl("services/users/users/appointments")
-                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
-                                        .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                        .eventName("user-appointment-created")
-                                                        .build(),
-                                                ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                        .route("appointments/:appointmentId")
-                                                        .params(Arrays.asList(
-                                                                ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto.builder()
-                                                                        .param(":appointmentId")
-                                                                        .valuePath(KokuUserAppointmentDto.Fields.id)
-                                                                        .build()
-                                                        ))
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                        KokuUserAppointmentDto.Fields.description, descriptionFieldRef))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route("appointments/new")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .title("Neuer Privater Termin")
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/users/users/appointments/form")
+                                .submitUrl("services/users/users/appointments")
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
+                                .maxWidthInPx(800)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("user-appointment-created")
+                                                .build(),
+                                        ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
+                                                .route("appointments/:appointmentId")
+                                                .params(Arrays.asList(
+                                                        ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
+                                                                .builder()
+                                                                .param(":appointmentId")
+                                                                .valuePath(KokuUserAppointmentDto.Fields.id)
+                                                                .build()))
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
                 .route("appointments/:appointmentId")
                 .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
                         .param(":appointmentId")
                         .valueReference(idSourcePathFieldRef)
-                        .build()
-                ))
-                .build()
-        );
+                        .build()))
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadItemUpdateGlobalEventListenerDto.builder()
                 .eventName("user-appointment-updated")
                 .idPath(KokuUserAppointmentDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuUserAppointmentDto.Fields.startDate, startDateFieldRef,
                         KokuUserAppointmentDto.Fields.startTime, startTimeFieldRef,
-                        KokuUserAppointmentDto.Fields.description, descriptionFieldRef
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route("appointments/:appointmentId")
-                        .itemId(":appointmentId")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .sourceUrl("services/users/users/appointments/:appointmentId/summary")
-                                .titlePath(KokuUserAppointmentSummaryDto.Fields.summary)
-                                .globalEventListeners(Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
+                        KokuUserAppointmentDto.Fields.description, descriptionFieldRef))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route("appointments/:appointmentId")
+                .itemId(":appointmentId")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .sourceUrl("services/users/users/appointments/:appointmentId/summary")
+                        .titlePath(KokuUserAppointmentSummaryDto.Fields.summary)
+                        .globalEventListeners(
+                                Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
                                         .eventName("user-appointment-updated")
                                         .idPath(KokuUserAppointmentDto.Fields.id)
                                         .titleValuePath(KokuUserAppointmentDto.Fields.summary)
-                                        .build()
-                                ))
-                                .content(ListViewFormularContentDto.builder()
-                                        .formularUrl("services/users/users/appointments/form")
-                                        .sourceUrl("services/users/users/appointments/:appointmentId")
-                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
-                                        .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                        .eventName("user-appointment-updated")
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                                        .build()))
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/users/users/appointments/form")
+                                .sourceUrl("services/users/users/appointments/:appointmentId")
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
+                                .maxWidthInPx(800)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("user-appointment-updated")
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
         listViewFactory.addGlobalItemStyling(ListViewConditionalItemValueStylingDto.builder()
                 .compareValuePath(KokuUserAppointmentDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveStyling(ListViewItemStylingDto.builder()
                         .lineThrough(true)
                         .opacity((short) 50)
-                        .build()
-                )
-                .build()
-        );
+                        .build())
+                .build());
         listViewFactory.addItemAction(ListViewConditionalItemValueActionDto.builder()
                 .compareValuePath(KokuUserAppointmentDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
                         .url("services/users/users/appointments/:appointmentId/restore")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":appointmentId")
-                                        .valueReference(idSourcePathFieldRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":appointmentId")
+                                .valueReference(idSourcePathFieldRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Termin wiederherstellen")
@@ -365,202 +317,129 @@ public class UserAppointmentController {
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(":date")
                                         .valueReference(startDateFieldRef)
-                                        .build()
-                                ))
-                                .build()
-                        )
+                                        .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
                                         .text("Termin vom :date wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":date")
-                                                        .valueReference(startDateFieldRef)
-                                                        .build()
-                                        ))
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                                .param(":date")
+                                                .valueReference(startDateFieldRef)
+                                                .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuUserAppointmentDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuUserAppointmentDto.Fields.deleted, deletedSourceRef
-                                        ))
+                                        .valueMapping(Map.of(KokuUserAppointmentDto.Fields.deleted, deletedSourceRef))
                                         .build(),
                                 ListViewPropagateGlobalEventActionEventDto.builder()
                                         .eventName("user-appointment-updated")
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text("Termin vom :date konnte nicht wiederhergestellt werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":date")
-                                                        .valueReference(startDateFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text("Termin vom :date konnte nicht wiederhergestellt werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":date")
+                                        .valueReference(startDateFieldRef)
+                                        .build()))
+                                .build()))
                         .build())
-                .negativeAction(
-                        ListViewCallHttpListItemActionDto.builder()
-                                .icon("TRASH")
-                                .url("services/users/users/appointments/:appointmentId")
-                                .params(Arrays.asList(
-                                        ListViewCallHttpListValueActionParamDto.builder()
-                                                .param(":appointmentId")
-                                                .valueReference(idSourcePathFieldRef)
-                                                .build()
-                                ))
-                                .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
-                                .userConfirmation(ListViewUserConfirmationDto.builder()
-                                        .headline("Termin löschen")
-                                        .content("Termin vom :date als gelöscht markieren?")
-                                        .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                .negativeAction(ListViewCallHttpListItemActionDto.builder()
+                        .icon("TRASH")
+                        .url("services/users/users/appointments/:appointmentId")
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":appointmentId")
+                                .valueReference(idSourcePathFieldRef)
+                                .build()))
+                        .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
+                        .userConfirmation(ListViewUserConfirmationDto.builder()
+                                .headline("Termin löschen")
+                                .content("Termin vom :date als gelöscht markieren?")
+                                .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                                        .param(":date")
+                                        .valueReference(startDateFieldRef)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                ListViewNotificationEvent.builder()
+                                        .text("Termin vom :date erfolgreich als gelöscht markiert")
+                                        .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                 .param(":date")
                                                 .valueReference(startDateFieldRef)
-                                                .build()
-                                        ))
-                                        .build()
-                                )
-
-                                .successEvents(Arrays.asList(
-                                        ListViewNotificationEvent.builder()
-                                                .text("Termin vom :date erfolgreich als gelöscht markiert")
-                                                .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                                .params(Arrays.asList(
-                                                        ListViewNotificationEventValueParamDto.builder()
-                                                                .param(":date")
-                                                                .valueReference(startDateFieldRef)
-                                                                .build()
-                                                ))
-                                                .build(),
-                                        ListViewEventPayloadUpdateActionEventDto.builder()
-                                                .idPath(KokuUserAppointmentDto.Fields.id)
-                                                .valueMapping(Map.of(
-                                                        KokuUserAppointmentDto.Fields.deleted, deletedSourceRef
-                                                ))
-                                                .build(),
-                                        ListViewPropagateGlobalEventActionEventDto.builder()
-                                                .eventName("user-appointment-updated")
-                                                .build()
-                                ))
-                                .failEvents(Arrays.asList(
-                                        ListViewNotificationEvent.builder()
-                                                .text("Termin vom :date konnte nicht als gelöscht markiert werden")
-                                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                                .params(Arrays.asList(
-                                                        ListViewNotificationEventValueParamDto.builder()
-                                                                .param(":date")
-                                                                .valueReference(startDateFieldRef)
-                                                                .build()
-                                                ))
-                                                .build()
-                                ))
-                                .build()
-                )
-                .build()
-        );
+                                                .build()))
+                                        .build(),
+                                ListViewEventPayloadUpdateActionEventDto.builder()
+                                        .idPath(KokuUserAppointmentDto.Fields.id)
+                                        .valueMapping(Map.of(KokuUserAppointmentDto.Fields.deleted, deletedSourceRef))
+                                        .build(),
+                                ListViewPropagateGlobalEventActionEventDto.builder()
+                                        .eventName("user-appointment-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text("Termin vom :date konnte nicht als gelöscht markiert werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":date")
+                                        .valueReference(startDateFieldRef)
+                                        .build()))
+                                .build()))
+                        .build())
+                .build());
 
         return listViewFactory.create();
     }
 
-    @PostMapping(value = {
-            "/users/{userId}/appointments/query",
-            "/users/appointments/query"
-    })
+    @PostMapping(value = {"/users/{userId}/appointments/query", "/users/appointments/query"})
     public ListPage findAll(
             @PathVariable(value = "userId", required = false) String requestedUserId,
-            @RequestBody(required = false) final ListQuery predicate
-    ) {
+            @RequestBody(required = false) final ListQuery predicate) {
 
         final QUserAppointment qClazz = QUserAppointment.userAppointment;
-        final ListQueryFactory<UserAppointment> listQueryFactory = new ListQueryFactory<>(
-                this.entityManager,
-                qClazz,
-                qClazz.id,
-                predicate
-        );
+        final ListQueryFactory<UserAppointment> listQueryFactory =
+                new ListQueryFactory<>(this.entityManager, qClazz, qClazz.id, predicate);
 
         if (requestedUserId != null) {
             listQueryFactory.addDefaultFilter(qClazz.user.id.eq(requestedUserId));
         }
         listQueryFactory.setDefaultOrder(qClazz.startTimestamp.desc());
 
-        listQueryFactory.addFetchExpr(
-                KokuUserAppointmentDto.Fields.id,
-                qClazz.id
-        );
-        listQueryFactory.addFetchExpr(
-                KokuUserAppointmentDto.Fields.deleted,
-                qClazz.deleted
-        );
-        listQueryFactory.addFetchExpr(
-                KokuUserAppointmentDto.Fields.version,
-                qClazz.version
-        );
-        listQueryFactory.addFetchExpr(
-                KokuUserAppointmentDto.Fields.description,
-                qClazz.description
-        );
+        listQueryFactory.addFetchExpr(KokuUserAppointmentDto.Fields.id, qClazz.id);
+        listQueryFactory.addFetchExpr(KokuUserAppointmentDto.Fields.deleted, qClazz.deleted);
+        listQueryFactory.addFetchExpr(KokuUserAppointmentDto.Fields.version, qClazz.version);
+        listQueryFactory.addFetchExpr(KokuUserAppointmentDto.Fields.description, qClazz.description);
         listQueryFactory.addFetchExpr(
                 KokuUserAppointmentDto.Fields.userName,
-                qClazz.user.firstname
-                        .concat(" ")
-                        .concat(qClazz.user.lastname)
-                        .trim()
-        );
+                qClazz.user.firstname.concat(" ").concat(qClazz.user.lastname).trim());
         listQueryFactory.addFetchExpr(
                 KokuUserAppointmentDto.Fields.startDate,
-                Expressions.dateTemplate(
-                        LocalDate.class,
-                        "DATE({0})",
-                        qClazz.startTimestamp
-                )
-        );
+                Expressions.dateTemplate(LocalDate.class, "DATE({0})", qClazz.startTimestamp));
         listQueryFactory.addFetchExpr(
                 KokuUserAppointmentDto.Fields.startTime,
-                Expressions.timeTemplate(
-                        LocalTime.class,
-                        "cast({0} as time)",
-                        qClazz.startTimestamp
-                )
-        );
+                Expressions.timeTemplate(LocalTime.class, "cast({0} as time)", qClazz.startTimestamp));
         listQueryFactory.addFetchExpr(
                 KokuUserAppointmentDto.Fields.endDate,
-                Expressions.dateTemplate(
-                        LocalDate.class,
-                        "DATE({0})",
-                        qClazz.endTimestamp
-                )
-        );
+                Expressions.dateTemplate(LocalDate.class, "DATE({0})", qClazz.endTimestamp));
         listQueryFactory.addFetchExpr(
                 KokuUserAppointmentDto.Fields.endTime,
-                Expressions.timeTemplate(
-                        LocalTime.class,
-                        "cast({0} as time)",
-                        qClazz.endTimestamp
-                )
-        );
-        listQueryFactory.addFetchExpr(
-                KokuUserAppointmentDto.Fields.userId,
-                qClazz.user.id
-        );
+                Expressions.timeTemplate(LocalTime.class, "cast({0} as time)", qClazz.endTimestamp));
+        listQueryFactory.addFetchExpr(KokuUserAppointmentDto.Fields.userId, qClazz.user.id);
 
         return listQueryFactory.create();
     }
 
     @GetMapping(value = "/users/appointments/{appointmentId}")
     public KokuUserAppointmentDto readAppointment(@PathVariable("appointmentId") Long appointmentId) {
-        final UserAppointment userAppointment = this.userAppointmentRepository.findById(appointmentId)
+        final UserAppointment userAppointment = this.userAppointmentRepository
+                .findById(appointmentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment not found"));
         return this.transformer.transformToDto(userAppointment);
     }
 
     @GetMapping(value = "/users/appointments/{appointmentId}/summary")
     public KokuUserAppointmentSummaryDto readAppointmentSummary(@PathVariable("appointmentId") Long appointmentId) {
-        final UserAppointment userAppointment = this.userAppointmentRepository.findById(appointmentId)
+        final UserAppointment userAppointment = this.userAppointmentRepository
+                .findById(appointmentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment not found"));
         return new UserAppointmentToUserAppointmentSummaryDtoTransformer().transformToSummaryDto(userAppointment);
     }
@@ -571,34 +450,32 @@ public class UserAppointmentController {
     public KokuUserAppointmentDto update(
             @PathVariable("appointmentId") Long appointmentId,
             @RequestParam(value = "forceUpdate", required = false) Boolean forceUpdate,
-            @RequestBody KokuUserAppointmentDto updatedDto
-    ) {
+            @RequestBody KokuUserAppointmentDto updatedDto) {
         final UserAppointment userAppointment = this.entityManager.getReference(UserAppointment.class, appointmentId);
         if (!Boolean.TRUE.equals(forceUpdate) && !userAppointment.getVersion().equals(updatedDto.getVersion())) {
             throw new KokuBusinessExceptionWithConfirmationMessage(
                     KokuBusinessExceptionWithConfirmationMessageDto.builder()
                             .headline("Konflikt")
-                            .confirmationMessage("Der Termin wurde zwischenzeitlich bearbeitet.\nWillst Du die Speicherung dennoch vornehmen?")
+                            .confirmationMessage("Der Termin wurde zwischenzeitlich bearbeitet.\n"
+                                    + "Willst Du die Speicherung dennoch vornehmen?")
                             .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
                                     .icon("CLOSE")
-                                    .build()
-                            )
+                                    .build())
                             .closeOnClickOutside(true)
                             .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
                                     .text("Trotzdem speichern")
                                     .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format("services/users/users/appointments/%s?forceUpdate=%s", appointmentId, Boolean.TRUE))
-                                    .build()
-                            )
+                                    .endpointUrl(String.format(
+                                            "services/users/users/appointments/%s?forceUpdate=%s",
+                                            appointmentId, Boolean.TRUE))
+                                    .build())
                             .button(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
-                                    .build()
-                            )
-                            .build()
-            );
+                                    .build())
+                            .build());
         }
         this.transformer.transformToEntity(userAppointment, updatedDto);
         this.entityManager.flush();
@@ -635,9 +512,10 @@ public class UserAppointmentController {
     @ResponseStatus(HttpStatus.CREATED)
     @Transactional
     public KokuUserAppointmentDto create(@Validated @RequestBody KokuUserAppointmentDto newDto) {
-        final UserAppointment newKokuUserAppointment = this.transformer.transformToEntity(new UserAppointment(), newDto);
-        final UserAppointment savedKokuUserAppointment = this.userAppointmentRepository.saveAndFlush(newKokuUserAppointment);
+        final UserAppointment newKokuUserAppointment =
+                this.transformer.transformToEntity(new UserAppointment(), newDto);
+        final UserAppointment savedKokuUserAppointment =
+                this.userAppointmentRepository.saveAndFlush(newKokuUserAppointment);
         return this.transformer.transformToDto(savedKokuUserAppointment);
     }
-
 }

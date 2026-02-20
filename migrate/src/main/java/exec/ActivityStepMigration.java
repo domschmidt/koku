@@ -14,7 +14,8 @@ public class ActivityStepMigration extends BaseMigration {
 
         read("SELECT id, recorded, updated, deleted, description FROM koku.activity_step", rs -> {
             try {
-                exec("""
+                exec(
+                        """
                         INSERT INTO koku.activity_step (external_ref, recorded, updated, deleted, name)
                         VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, ?, ?)
                         ON CONFLICT (external_ref)
@@ -30,8 +31,7 @@ public class ActivityStepMigration extends BaseMigration {
                         rs.getTimestamp("updated"),
                         rs.getTimestamp("updated"),
                         rs.getBoolean("deleted"),
-                        rs.getString("description")
-                );
+                        rs.getString("description"));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

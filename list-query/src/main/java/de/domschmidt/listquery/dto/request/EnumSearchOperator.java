@@ -1,7 +1,6 @@
 package de.domschmidt.listquery.dto.request;
 
 public enum EnumSearchOperator {
-
     EQ,
     LESS,
     GREATER,
@@ -10,5 +9,4 @@ public enum EnumSearchOperator {
     LIKE,
     STARTS_WITH,
     ENDS_WITH,
-
 }

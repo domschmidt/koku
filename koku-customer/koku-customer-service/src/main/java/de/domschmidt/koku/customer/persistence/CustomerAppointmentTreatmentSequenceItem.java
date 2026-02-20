@@ -1,6 +1,8 @@
 package de.domschmidt.koku.customer.persistence;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,13 +10,9 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @Setter
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "customer_appointment_activity_sequence", schema = "koku")
@@ -23,6 +21,7 @@ public class CustomerAppointmentTreatmentSequenceItem implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
     @Version
     Long version;
 
@@ -31,10 +30,12 @@ public class CustomerAppointmentTreatmentSequenceItem implements Serializable {
 
     @ManyToOne
     CustomerAppointment appointment;
+
     Integer position;
 
     @CreationTimestamp
     LocalDateTime recorded;
+
     @UpdateTimestamp
     LocalDateTime updated;
 
@@ -42,8 +43,7 @@ public class CustomerAppointmentTreatmentSequenceItem implements Serializable {
             final CustomerAppointment appointment,
             final Long activityStepId,
             final Long productId,
-            final Integer position
-    ) {
+            final Integer position) {
         this.activityStepId = activityStepId;
         this.productId = productId;
         this.appointment = appointment;

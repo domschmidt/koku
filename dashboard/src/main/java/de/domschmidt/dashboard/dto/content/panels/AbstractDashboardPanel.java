@@ -11,5 +11,4 @@ import lombok.experimental.SuperBuilder;
 public abstract class AbstractDashboardPanel implements IDashboardContent {
 
     String id;
-
 }

@@ -9,8 +9,8 @@ import lombok.Data;
 @AllArgsConstructor
 @JsonTypeName("global-event-listener")
 @Builder
-public class KokuBusinessRuleOpenContentCloseGlobalEventListenerDto extends AbstractKokuBusinessRuleOpenContentCloseListenerDto {
+public class KokuBusinessRuleOpenContentCloseGlobalEventListenerDto
+        extends AbstractKokuBusinessRuleOpenContentCloseListenerDto {
 
     String eventName;
-
 }

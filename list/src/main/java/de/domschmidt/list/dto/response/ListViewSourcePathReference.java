@@ -14,5 +14,4 @@ import lombok.experimental.SuperBuilder;
 public class ListViewSourcePathReference extends ListViewReference {
 
     String valuePath;
-
 }

@@ -12,6 +12,9 @@ import de.domschmidt.koku.dto.dashboard.panels.calendar.DashboardAppointmentsPan
 import de.domschmidt.koku.dto.dashboard.panels.text.DashboardTextPanelDto;
 import de.domschmidt.koku.dto.user.KokuUserAppointmentDto;
 import de.domschmidt.listquery.dto.request.EnumSearchOperatorHint;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,10 +23,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
 @RestController
 @RequestMapping("/users/welcome")
 @Slf4j
@@ -31,22 +30,15 @@ import java.util.List;
 public class UserWelcomeController {
 
     @GetMapping()
-    public DashboardViewDto getDashboardView(
-            @AuthenticationPrincipal Jwt jwt
-    ) {
+    public DashboardViewDto getDashboardView(@AuthenticationPrincipal Jwt jwt) {
         final DashboardViewFactory dashboardFactory = new DashboardViewFactory(
                 new DefaultDashboardViewContentIdGenerator(),
-                DashboardGridContainerDto.builder()
-                        .cols(1)
-                        .maxWidthInPx(800)
-                        .build()
-        );
+                DashboardGridContainerDto.builder().cols(1).maxWidthInPx(800).build());
 
         dashboardFactory.addPanel(DashboardTextPanelDto.builder()
                 .headline(String.format("Willkommen zurück, %s! ✨", jwt.getClaimAsString("name")))
                 .color(KokuColorEnum.PINK)
-                .build()
-        );
+                .build());
 
         final List<DashboardAppointmentsPanelListSourceDto> appointmentListSources = List.of(
                 DashboardAppointmentsPanelListSourceDto.builder()
@@ -74,8 +66,7 @@ public class UserWelcomeController {
                         .notesTextFieldSelectionPath(KokuCustomerAppointmentDto.Fields.additionalInfo)
                         .userIdFieldSelectionPath(KokuCustomerAppointmentDto.Fields.userId)
                         .deletedFieldSelectionPath(KokuCustomerAppointmentDto.Fields.deleted)
-                        .build()
-                ,
+                        .build(),
                 DashboardAppointmentsPanelListSourceDto.builder()
                         .sourceUrl("/services/users/users/appointments/query")
                         .idPath(KokuUserAppointmentDto.Fields.id)
@@ -88,8 +79,7 @@ public class UserWelcomeController {
                         .deletedFieldSelectionPath(KokuUserAppointmentDto.Fields.deleted)
                         .sourceItemText("Privater Termin")
                         .sourceItemColor(KokuColorEnum.GREEN)
-                        .build()
-        );
+                        .build());
         final LocalDate now = LocalDate.now();
         dashboardFactory.addPanel(DashboardAppointmentsPanelDto.builder()
                 .headline("Heutige Termine")
@@ -97,26 +87,22 @@ public class UserWelcomeController {
                 .start(now.atTime(LocalTime.MIN))
                 .end(now.atTime(LocalTime.MAX))
                 .listSources(appointmentListSources)
-                .build()
-        );
+                .build());
         dashboardFactory.addPanel(DashboardAppointmentsPanelDto.builder()
                 .headline("Anstehende Termine für Morgen")
                 .emptyMessage("Keine Termine")
                 .start(now.plusDays(1).atTime(LocalTime.MIN))
                 .end(now.plusDays(1).atTime(LocalTime.MAX))
                 .listSources(appointmentListSources)
-                .build()
-        );
+                .build());
         dashboardFactory.addPanel(DashboardAppointmentsPanelDto.builder()
                 .headline("Anstehende Termine für Übermorgen")
                 .emptyMessage("Keine Termine")
                 .start(now.plusDays(2).atTime(LocalTime.MIN))
                 .end(now.plusDays(2).atTime(LocalTime.MAX))
                 .listSources(appointmentListSources)
-                .build()
-        );
+                .build());
 
         return dashboardFactory.create();
     }
-
 }

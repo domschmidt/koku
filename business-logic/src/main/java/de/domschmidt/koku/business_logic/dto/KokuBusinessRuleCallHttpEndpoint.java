@@ -11,5 +11,4 @@ public class KokuBusinessRuleCallHttpEndpoint extends AbstractKokuBusinessRuleEx
 
     String url;
     KokuBusinessRuleCallHttpEndpointMethodEnum method;
-
 }

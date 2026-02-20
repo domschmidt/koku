@@ -1,7 +1,6 @@
 package de.domschmidt.koku.dto;
 
 public enum KokuColorEnum {
-
     PRIMARY,
     SECONDARY,
     ACCENT,
@@ -31,5 +30,4 @@ public enum KokuColorEnum {
     ZINC,
     NEUTRAL,
     STONE,
-
 }

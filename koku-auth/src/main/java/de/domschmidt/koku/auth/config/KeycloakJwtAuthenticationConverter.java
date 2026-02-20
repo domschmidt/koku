@@ -1,5 +1,9 @@
 package de.domschmidt.koku.auth.config;
 
+import static java.util.stream.Collectors.toSet;
+
+import java.util.*;
+import java.util.stream.Stream;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,13 +12,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
-import java.util.*;
-import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toSet;
-
-public class KeycloakJwtAuthenticationConverter
-        implements Converter<Jwt, AbstractAuthenticationToken> {
+public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     @Override
     public AbstractAuthenticationToken convert(Jwt source) {

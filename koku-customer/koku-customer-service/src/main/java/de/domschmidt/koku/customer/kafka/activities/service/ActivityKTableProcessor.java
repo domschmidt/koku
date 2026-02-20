@@ -30,19 +30,15 @@ public class ActivityKTableProcessor {
 
     @Bean
     public KTable<Long, ActivityKafkaDto> activityKTable(StreamsBuilder builder) {
-        return builder
-                .stream(ActivityKafkaDto.TOPIC, Consumed.with(Serdes.Long(), new ActivityKafkaDtoSerdes()))
-                .toTable(Materialized
-                        .<Long, ActivityKafkaDto>as(Stores.inMemoryKeyValueStore(STORE_NAME))
+        return builder.stream(ActivityKafkaDto.TOPIC, Consumed.with(Serdes.Long(), new ActivityKafkaDtoSerdes()))
+                .toTable(Materialized.<Long, ActivityKafkaDto>as(Stores.inMemoryKeyValueStore(STORE_NAME))
                         .withKeySerde(Serdes.Long())
                         .withValueSerde(new ActivityKafkaDtoSerdes()));
     }
 
     public ReadOnlyKeyValueStore<Long, ActivityKafkaDto> getActivities() {
-        return factoryBean.getKafkaStreams()
-                .store(StoreQueryParameters.fromNameAndType(
-                        STORE_NAME,
-                        QueryableStoreTypes.keyValueStore())
-                );
+        return factoryBean
+                .getKafkaStreams()
+                .store(StoreQueryParameters.fromNameAndType(STORE_NAME, QueryableStoreTypes.keyValueStore()));
     }
 }

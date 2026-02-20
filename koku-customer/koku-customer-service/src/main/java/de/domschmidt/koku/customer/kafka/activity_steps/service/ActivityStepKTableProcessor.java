@@ -23,28 +23,25 @@ public class ActivityStepKTableProcessor {
     private final StreamsBuilderFactoryBean factoryBean;
 
     @Autowired
-    public ActivityStepKTableProcessor(
-            final StreamsBuilderFactoryBean factoryBean
-    ) {
+    public ActivityStepKTableProcessor(final StreamsBuilderFactoryBean factoryBean) {
         this.factoryBean = factoryBean;
     }
-    
+
     @Bean
     public KTable<Long, ActivityStepKafkaDto> activityStepKTable(StreamsBuilder streamsBuilder) {
-        return streamsBuilder.stream(ActivityStepKafkaDto.TOPIC,
-                Consumed.with(Serdes.Long(), new ActivityStepKafkaDtoSerdes())
-        ).toTable(Materialized.<Long, ActivityStepKafkaDto>as(Stores.inMemoryKeyValueStore(ActivityStepKTableProcessor.STORE_NAME))
-                .withKeySerde(Serdes.Long())
-                .withValueSerde(new ActivityStepKafkaDtoSerdes())
-        );
+        return streamsBuilder.stream(
+                        ActivityStepKafkaDto.TOPIC, Consumed.with(Serdes.Long(), new ActivityStepKafkaDtoSerdes()))
+                .toTable(Materialized.<Long, ActivityStepKafkaDto>as(
+                                Stores.inMemoryKeyValueStore(ActivityStepKTableProcessor.STORE_NAME))
+                        .withKeySerde(Serdes.Long())
+                        .withValueSerde(new ActivityStepKafkaDtoSerdes()));
     }
 
     public ReadOnlyKeyValueStore<Long, ActivityStepKafkaDto> getActivitySteps() {
-        return factoryBean.getKafkaStreams().store(
-                StoreQueryParameters.fromNameAndType(ActivityStepKTableProcessor.STORE_NAME,
-                        QueryableStoreTypes.<Long, ActivityStepKafkaDto>keyValueStore())
-        );
+        return factoryBean
+                .getKafkaStreams()
+                .store(StoreQueryParameters.fromNameAndType(
+                        ActivityStepKTableProcessor.STORE_NAME,
+                        QueryableStoreTypes.<Long, ActivityStepKafkaDto>keyValueStore()));
     }
-
-
 }

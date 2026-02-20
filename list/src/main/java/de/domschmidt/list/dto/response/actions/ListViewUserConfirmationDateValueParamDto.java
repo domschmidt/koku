@@ -11,5 +11,4 @@ import lombok.experimental.SuperBuilder;
 public class ListViewUserConfirmationDateValueParamDto extends AbstractListViewUserConfirmationParamDto {
 
     ListViewReference valueReference;
-
 }

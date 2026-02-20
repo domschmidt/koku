@@ -16,5 +16,4 @@ public abstract class AbstractCalendarListSourceConfigDto {
     AbstractCalendarItemClickAction clickAction;
     AbstractCalendarItemMoveAction dropAction;
     AbstractCalendarItemResizeAction resizeAction;
-
 }

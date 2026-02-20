@@ -1,13 +1,11 @@
 package de.domschmidt.koku.customer.persistence;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.io.Serializable;
-
 
 @Entity
 @Getter
@@ -20,6 +18,7 @@ public class CustomerAppointmentPromotion implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
     @Version
     Long version;
 
@@ -30,10 +29,7 @@ public class CustomerAppointmentPromotion implements Serializable {
     Integer position;
 
     public CustomerAppointmentPromotion(
-            final CustomerAppointment appointment,
-            final Long promotionId,
-            final Integer position
-    ) {
+            final CustomerAppointment appointment, final Long promotionId, final Integer position) {
         this.appointment = appointment;
         this.promotionId = promotionId;
         this.position = position;

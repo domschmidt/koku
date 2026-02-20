@@ -7,6 +7,5 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 @JsonTypeName("close")
-public class CalendarRoutedContentCloseGlobalEventListenerDto extends AbstractCalendarRoutedContentGlobalEventListenerDto {
-
-}
+public class CalendarRoutedContentCloseGlobalEventListenerDto
+        extends AbstractCalendarRoutedContentGlobalEventListenerDto {}

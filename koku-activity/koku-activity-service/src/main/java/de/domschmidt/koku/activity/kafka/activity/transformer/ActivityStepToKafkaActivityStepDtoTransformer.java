@@ -1,6 +1,5 @@
 package de.domschmidt.koku.activity.kafka.activity.transformer;
 
-
 import de.domschmidt.koku.activity.kafka.dto.ActivityStepKafkaDto;
 import de.domschmidt.koku.activity.persistence.ActivityStep;
 

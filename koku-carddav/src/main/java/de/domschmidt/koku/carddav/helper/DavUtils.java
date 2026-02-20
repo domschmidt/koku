@@ -1,16 +1,15 @@
 package de.domschmidt.koku.carddav.helper;
 
 import de.domschmidt.koku.carddav.DAVConstants;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.List;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Namespace;
 import org.dom4j.QName;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.List;
 
 public final class DavUtils {
 
@@ -38,5 +37,4 @@ public final class DavUtils {
         root.addNamespace("card", DAVConstants.CARDDAV_NAMESPACE);
         return root;
     }
-
 }

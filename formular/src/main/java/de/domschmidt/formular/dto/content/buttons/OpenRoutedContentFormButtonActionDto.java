@@ -1,10 +1,9 @@
 package de.domschmidt.formular.dto.content.buttons;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.List;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @SuperBuilder
 @JsonTypeName("open-routed-content")
@@ -13,5 +12,4 @@ public class OpenRoutedContentFormButtonActionDto extends AbstractFormButtonButt
 
     String route;
     List<AbstractOpenRoutedContentFormButtonActionParamDto> params;
-
 }
