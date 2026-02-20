@@ -7,11 +7,11 @@ import {
   input,
   output,
   signal,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
-import {toObservable} from '@angular/core/rxjs-interop';
-import {ToastService} from '../../toast/toast.service';
-import {KeyValuePipe} from '@angular/common';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { ToastService } from '../../toast/toast.service';
+import { KeyValuePipe } from '@angular/common';
 
 let uniqueId = 0;
 
@@ -19,13 +19,10 @@ let uniqueId = 0;
   selector: 'select-field',
   templateUrl: './select-field.component.html',
   styleUrl: './select-field.component.css',
-  imports: [
-    KeyValuePipe
-  ],
-  standalone: true
+  imports: [KeyValuePipe],
+  standalone: true,
 })
 export class SelectFieldComponent {
-
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
   value = input.required<string, string | number>({
     transform: (v: any) => {
@@ -34,39 +31,43 @@ export class SelectFieldComponent {
       } else {
         return String(v);
       }
-    }
+    },
   });
-  defaultValue = input<string>("");
+  defaultValue = input<string>('');
   name = input.required<string>();
   label = input<string>();
   placeholder = input<string>();
   possibleValues = input<KokuDto.SelectFormularFieldPossibleValue[]>([]);
-  loading = input(false, {transform: booleanAttribute});
-  keepOpenOnSelect = input(false, {transform: booleanAttribute});
-  readonly = input(false, {transform: booleanAttribute});
-  required = input(false, {transform: booleanAttribute});
-  disabled = input(false, {transform: booleanAttribute});
-  valueOnly = input(false, {transform: booleanAttribute});
-  clearOnSelect = input(false, {transform: booleanAttribute});
+  loading = input(false, { transform: booleanAttribute });
+  keepOpenOnSelect = input(false, { transform: booleanAttribute });
+  readonly = input(false, { transform: booleanAttribute });
+  required = input(false, { transform: booleanAttribute });
+  disabled = input(false, { transform: booleanAttribute });
+  valueOnly = input(false, { transform: booleanAttribute });
+  clearOnSelect = input(false, { transform: booleanAttribute });
 
   onChange = output<string | null>();
   onBlur = output<Event>();
   onFocus = output<Event>();
 
-  selectedIdx = computed(() =>
-    this.filteredPossibleValues().findIndex(opt => opt.id === this.selectedId())
-  );
+  selectedIdx = computed(() => this.filteredPossibleValues().findIndex((opt) => opt.id === this.selectedId()));
   selectedId = signal<string | null>(null);
-  searchTerm = signal("");
-  filteredPossibleValues = computed(() =>
-    this.possibleValues().filter(option => {
-      const text = (option.text || "").toLowerCase();
-      const terms = this.searchTerm().toLowerCase().split(/\s+/).filter(t => t);
-      return terms.every(term => text.includes(term));
-    })
-  );
+  searchTerm = signal('');
+  filteredPossibleValues = computed(() => {
+    const terms = this.searchTerm()
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((t) => t);
+    return this.possibleValues().filter((option) => {
+      if (option.disabled) {
+        return false;
+      }
+      const text = (option.text || '').toLowerCase();
+      return terms.every((term) => text.includes(term));
+    });
+  });
   filteredPossibleValuesGrouped = computed(() =>
-    Object.groupBy(this.filteredPossibleValues(), ({category}) => category || '')
+    Object.groupBy(this.filteredPossibleValues(), ({ category }) => category || ''),
   );
   showDropdown = signal<{ direction: 'top' | 'bottom' } | null>(null);
   elementRef = inject(ElementRef);
@@ -77,10 +78,10 @@ export class SelectFieldComponent {
   constructor() {
     toObservable(this.value).subscribe((newValue) => {
       let found = false;
-      for (const possibleValue of (this.possibleValues() || [])) {
+      for (const possibleValue of this.possibleValues() || []) {
         if (possibleValue.id === newValue) {
           this.selectedId.set(possibleValue.id);
-          this.searchTerm.set(possibleValue.text || "");
+          this.searchTerm.set(possibleValue.text || '');
           found = true;
           break;
         }
@@ -136,11 +137,11 @@ export class SelectFieldComponent {
     } else {
       this.showDropdown.set(null);
       if (this.selectedIdx() < 0) {
-        this.searchTerm.set("");
+        this.searchTerm.set('');
         this.onChange.emit(null);
       } else {
         const currentValue = this.filteredPossibleValues()[this.selectedIdx()];
-        this.searchTerm.set(currentValue.text || "");
+        this.searchTerm.set(currentValue.text || '');
       }
     }
     this.onBlur.emit($event);
@@ -165,9 +166,9 @@ export class SelectFieldComponent {
     if (option.disabled !== true) {
       this.onChange.emit(option.id || null);
       if (this.clearOnSelect()) {
-        this.searchTerm.set("");
+        this.searchTerm.set('');
       } else {
-        this.searchTerm.set(option.text || "");
+        this.searchTerm.set(option.text || '');
       }
       if (this.keepOpenOnSelect()) {
         this.searchInput.nativeElement.focus();
@@ -175,7 +176,7 @@ export class SelectFieldComponent {
         this.showDropdown.set(null);
       }
     } else {
-      this.toastService.add("Option deaktiviert! Bitte wähle eine andere Option aus. ", 'error')
+      this.toastService.add('Option deaktiviert! Bitte wähle eine andere Option aus. ', 'error');
     }
   }
 
@@ -190,7 +191,7 @@ export class SelectFieldComponent {
     }
 
     this.showDropdown.set({
-      direction: direction
+      direction: direction,
     });
   }
 }

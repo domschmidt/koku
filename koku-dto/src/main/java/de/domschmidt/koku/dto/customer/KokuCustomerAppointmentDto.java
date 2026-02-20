@@ -31,6 +31,7 @@ public class KokuCustomerAppointmentDto {
     List<KokuCustomerAppointmentTreatmentDto> treatmentSequence;
     List<KokuCustomerAppointmentSoldProductDto> soldProducts;
     List<KokuCustomerAppointmentPromotionDto> promotions;
+    String overallPriceSummary;
     String activityPriceSummary;
     String activityDurationSummary;
     String activitySoldProductSummary;
