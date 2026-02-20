@@ -15,5 +15,4 @@ public class AnnotationsAxesLabelDto {
     ColorsEnumDto borderColor;
     ColorsEnumDto backgroundColor;
     String text;
-
 }

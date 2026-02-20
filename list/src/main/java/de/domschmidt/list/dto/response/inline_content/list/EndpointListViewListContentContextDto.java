@@ -11,5 +11,4 @@ public class EndpointListViewListContentContextDto extends AbstractListViewListC
 
     EndpointListViewContextMethodEnum endpointMethod;
     String endpointUrl;
-
 }

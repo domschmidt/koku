@@ -72,13 +72,6 @@ import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
@@ -86,6 +79,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping()
@@ -101,33 +100,27 @@ public class ActivityController {
     public FormViewDto getFormularView() {
         final FormViewFactory formFactory = new FormViewFactory(
                 new DefaultViewContentIdGenerator(),
-                GridContainer.builder()
-                        .cols(1)
-                        .build()
-        );
+                GridContainer.builder().cols(1).build());
 
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuActivityDto.Fields.name)
                 .label("Name")
                 .required(true)
-                .build()
-        );
+                .build());
 
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuActivityDto.Fields.approximatelyDuration)
                 .type(EnumInputFormularFieldType.TIME)
                 .label("Ungefähre Behandlungsdauer")
                 .required(true)
-                .build()
-        );
+                .build());
 
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuActivityDto.Fields.price)
                 .type(EnumInputFormularFieldType.NUMBER)
                 .label("Preis")
                 .regexp("^\\d{0,19}([\\.]\\d{0,2})?$")
-                .build()
-        );
+                .build());
 
         formFactory.addButton(KokuFormButton.builder()
                 .buttonType(EnumButtonType.SUBMIT)
@@ -138,36 +131,24 @@ public class ActivityController {
                 .dockableSettings(ButtonDockableSettings.builder()
                         .icon("SAVE")
                         .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build()
-                )
+                        .build())
                 .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build()
-        );
+                .build());
 
         return formFactory.create();
     }
 
     @GetMapping("/activities/list")
-    public ListViewDto getListView(
-            @RequestBody(required = false) final ListQuery predicate
-    ) {
-        final ListViewFactory listViewFactory = new ListViewFactory(
-                new DefaultListViewContentIdGenerator(),
-                KokuActivityDto.Fields.id
-        );
+    public ListViewDto getListView(@RequestBody(required = false) final ListQuery predicate) {
+        final ListViewFactory listViewFactory =
+                new ListViewFactory(new DefaultListViewContentIdGenerator(), KokuActivityDto.Fields.id);
 
-        final ListViewSourcePathReference deletedSourcePathRef = listViewFactory.addSourcePath(
-                KokuActivityDto.Fields.deleted
-        );
-        final ListViewSourcePathReference idSourcePathRef = listViewFactory.addSourcePath(
-                KokuActivityDto.Fields.id
-        );
+        final ListViewSourcePathReference deletedSourcePathRef =
+                listViewFactory.addSourcePath(KokuActivityDto.Fields.deleted);
+        final ListViewSourcePathReference idSourcePathRef = listViewFactory.addSourcePath(KokuActivityDto.Fields.id);
         final ListViewFieldReference nameFieldRef = listViewFactory.addField(
                 KokuActivityDto.Fields.name,
-                ListViewInputFieldDto.builder()
-                        .label("Name")
-                        .build()
-        );
+                ListViewInputFieldDto.builder().label("Name").build());
 
         listViewFactory.addFilter(
                 KokuActivityDto.Fields.deleted,
@@ -176,142 +157,116 @@ public class ActivityController {
                         .enabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.TRUE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
-                                .build()
-                        )
+                                .build())
                         .disabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.FALSE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
                                 .build())
                         .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
-                        .build()
-        );
+                        .build());
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("new")
                 .icon("PLUS")
-                .build()
-        );
+                .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
                 .route("new")
                 .text("Neue Tätigkeit")
-                .build()
-        );
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
                 .eventName("activity-created")
                 .idPath(KokuActivityDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuActivityDto.Fields.name, nameFieldRef,
-                        KokuActivityDto.Fields.deleted, deletedSourcePathRef
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route("new")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .title("Neue Tätigkeit")
-                                .content(ListViewFormularContentDto.builder()
-                                        .formularUrl("services/activities/activities/form")
-                                        .submitUrl("services/activities/activities")
-                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
-                                        .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                        .eventName("activity-created")
-                                                        .build(),
-                                                ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                        .route(":activityId/information")
-                                                        .params(Arrays.asList(
-                                                                ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto.builder()
-                                                                        .param(":activityId")
-                                                                        .valuePath(KokuActivityDto.Fields.id)
-                                                                        .build()
-                                                        ))
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                        KokuActivityDto.Fields.deleted, deletedSourcePathRef))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route("new")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .title("Neue Tätigkeit")
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/activities/activities/form")
+                                .submitUrl("services/activities/activities")
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
+                                .maxWidthInPx(800)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("activity-created")
+                                                .build(),
+                                        ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
+                                                .route(":activityId/information")
+                                                .params(Arrays.asList(
+                                                        ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
+                                                                .builder()
+                                                                .param(":activityId")
+                                                                .valuePath(KokuActivityDto.Fields.id)
+                                                                .build()))
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
                 .route(":activityId/information")
-                .params(Arrays.asList(
-                        ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
-                                .param(":activityId")
-                                .valueReference(idSourcePathRef)
-                                .build()
-                ))
-                .build()
-        );
+                .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
+                        .param(":activityId")
+                        .valueReference(idSourcePathRef)
+                        .build()))
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadItemUpdateGlobalEventListenerDto.builder()
                 .eventName("activity-updated")
                 .idPath(KokuActivityDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuActivityDto.Fields.name, nameFieldRef,
-                        KokuActivityDto.Fields.deleted, deletedSourcePathRef
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route(":activityId")
-                        .itemId(":activityId")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .sourceUrl("services/activities/activities/:activityId/summary")
-                                .titlePath(KokuActivitySummaryDto.Fields.summary)
-                                .globalEventListeners(Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
+                        KokuActivityDto.Fields.deleted, deletedSourcePathRef))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route(":activityId")
+                .itemId(":activityId")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .sourceUrl("services/activities/activities/:activityId/summary")
+                        .titlePath(KokuActivitySummaryDto.Fields.summary)
+                        .globalEventListeners(
+                                Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
                                         .eventName("activity-updated")
                                         .idPath(KokuActivityDto.Fields.id)
                                         .titleValuePath(KokuActivityDto.Fields.name)
-                                        .build()
-                                ))
-                                .content(
-                                        ListViewDockContentDto.builder()
-                                                .content(Arrays.asList(
-                                                        ListViewItemInlineDockContentItemDto.builder()
-                                                                .id("information")
-                                                                .route("information")
-                                                                .icon("INFORMATION_CIRCLE")
-                                                                .title("Bearbeiten")
-                                                                .content(ListViewFormularContentDto.builder()
-                                                                        .formularUrl("services/activities/activities/form")
-                                                                        .sourceUrl("services/activities/activities/:activityId")
-                                                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
-                                                                        .maxWidthInPx(800)
-                                                                        .onSaveEvents(Arrays.asList(
-                                                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                                                        .eventName("activity-updated")
-                                                                                        .build()
-                                                                        ))
-                                                                        .build()
-                                                                ).build(),
-
-                                                        ListViewItemInlineDockContentItemDto.builder()
-                                                                .id("pricehistory")
-                                                                .title("Preishistorie")
-                                                                .route("pricehistory")
-                                                                .icon("CHART_BAR")
-                                                                .content(ListViewGridContentDto.builder()
-                                                                        .cols(1)
-                                                                        .content(Arrays.asList(
-                                                                                ListViewChartContentDto.builder()
-                                                                                        .chartUrl("services/activities/activities/:activityId/statistics/pricehistory")
-                                                                                        .build()
-                                                                        ))
-                                                                        .build()
-                                                                )
-                                                                .build()
-                                                )).build()
-
-                                )
-                                .build()
-                        )
-                        .build()
-        );
-
+                                        .build()))
+                        .content(ListViewDockContentDto.builder()
+                                .content(Arrays.asList(
+                                        ListViewItemInlineDockContentItemDto.builder()
+                                                .id("information")
+                                                .route("information")
+                                                .icon("INFORMATION_CIRCLE")
+                                                .title("Bearbeiten")
+                                                .content(ListViewFormularContentDto.builder()
+                                                        .formularUrl("services/activities/activities/form")
+                                                        .sourceUrl("services/activities/activities/:activityId")
+                                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
+                                                        .maxWidthInPx(800)
+                                                        .onSaveEvents(Arrays.asList(
+                                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto
+                                                                        .builder()
+                                                                        .eventName("activity-updated")
+                                                                        .build()))
+                                                        .build())
+                                                .build(),
+                                        ListViewItemInlineDockContentItemDto.builder()
+                                                .id("pricehistory")
+                                                .title("Preishistorie")
+                                                .route("pricehistory")
+                                                .icon("CHART_BAR")
+                                                .content(ListViewGridContentDto.builder()
+                                                        .cols(1)
+                                                        .content(Arrays.asList(ListViewChartContentDto.builder()
+                                                                .chartUrl(
+                                                                        "services/activities/activities/:activityId/statistics/pricehistory")
+                                                                .build()))
+                                                        .build())
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.addGlobalItemStyling(ListViewConditionalItemValueStylingDto.builder()
                 .compareValuePath(KokuActivityDto.Fields.deleted)
@@ -319,200 +274,149 @@ public class ActivityController {
                 .positiveStyling(ListViewItemStylingDto.builder()
                         .lineThrough(true)
                         .opacity((short) 50)
-                        .build()
-                )
-                .build()
-        );
+                        .build())
+                .build());
         listViewFactory.addItemAction(ListViewConditionalItemValueActionDto.builder()
                 .compareValuePath(KokuActivityDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
                         .url("services/activities/activities/:activityId/restore")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":activityId")
-                                        .valueReference(idSourcePathRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":activityId")
+                                .valueReference(idSourcePathRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Tätigkeit wiederherstellen")
                                 .content("Tätigkeit :name wiederherstellen?")
-                                .params(Arrays.asList(
-                                        ListViewUserConfirmationValueParamDto.builder()
-                                                .param(":name")
-                                                .valueReference(nameFieldRef)
-                                                .build()
-                                ))
-                                .build()
-                        )
+                                .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
                                         .text("Tätigkeit :name wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .valueReference(nameFieldRef)
+                                                .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuActivityDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuActivityDto.Fields.deleted, deletedSourcePathRef
-                                        ))
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text("Tätigkeit :name konnte nicht wiederhergestellt werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
+                                        .valueMapping(Map.of(KokuActivityDto.Fields.deleted, deletedSourcePathRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text("Tätigkeit :name konnte nicht wiederhergestellt werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build()))
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
                         .url("services/activities/activities/:activityId")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":activityId")
-                                        .valueReference(idSourcePathRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":activityId")
+                                .valueReference(idSourcePathRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Tätigkeit löschen")
                                 .content("Tätigkeit :name als gelöscht markieren?")
-                                .params(Arrays.asList(
-                                        ListViewUserConfirmationValueParamDto.builder()
-                                                .param(":name")
-                                                .valueReference(nameFieldRef)
-                                                .build()
-                                ))
-                                .build()
-                        )
+                                .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
                                         .text("Tätigkeit :name wurde erfolgreich als gelöscht markiert")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .valueReference(nameFieldRef)
+                                                .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuActivityDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuActivityDto.Fields.deleted, deletedSourcePathRef
-                                        ))
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text("Tätigkeit :name konnte nicht als gelöscht markiert werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
-                        .build()
-                )
-                .build()
-        );
+                                        .valueMapping(Map.of(KokuActivityDto.Fields.deleted, deletedSourcePathRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text("Tätigkeit :name konnte nicht als gelöscht markiert werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build()))
+                        .build())
+                .build());
 
         return listViewFactory.create();
     }
 
     @PostMapping("/activities/query")
-    public ListPage findAll(
-            @RequestBody(required = false) final ListQuery predicate
-    ) {
+    public ListPage findAll(@RequestBody(required = false) final ListQuery predicate) {
         final QActivity qClazz = QActivity.activity;
-        final ListQueryFactory<Activity> listQueryFactory = new ListQueryFactory<>(
-                this.entityManager,
-                qClazz,
-                qClazz.id,
-                predicate
-        );
+        final ListQueryFactory<Activity> listQueryFactory =
+                new ListQueryFactory<>(this.entityManager, qClazz, qClazz.id, predicate);
 
         listQueryFactory.setDefaultOrder(qClazz.name.asc());
 
+        listQueryFactory.addFetchExpr(KokuActivityDto.Fields.id, qClazz.id);
 
-        listQueryFactory.addFetchExpr(
-                KokuActivityDto.Fields.id,
-                qClazz.id
-        );
-
-        listQueryFactory.addFetchExpr(
-                KokuActivityDto.Fields.deleted,
-                qClazz.deleted
-        );
-        listQueryFactory.addFetchExpr(
-                KokuActivityDto.Fields.name,
-                qClazz.name
-        );
-        listQueryFactory.addFetchExpr(
-                KokuActivityDto.Fields.approximatelyDuration,
-                qClazz.approximatelyDuration
-        );
+        listQueryFactory.addFetchExpr(KokuActivityDto.Fields.deleted, qClazz.deleted);
+        listQueryFactory.addFetchExpr(KokuActivityDto.Fields.name, qClazz.name);
+        listQueryFactory.addFetchExpr(KokuActivityDto.Fields.approximatelyDuration, qClazz.approximatelyDuration);
 
         return listQueryFactory.create();
     }
 
     @GetMapping(value = "/activities/{activityId}/statistics/pricehistory")
     public LineChartDto readPriceHistory(@PathVariable("activityId") Long activityId) {
-        final Activity activity = this.activityRepository.findById(activityId)
+        final Activity activity = this.activityRepository
+                .findById(activityId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found"));
 
-        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
-                "dd.MM.yyyy HH:mm 'Uhr'",
-                Locale.GERMAN
-        );
+        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm 'Uhr'", Locale.GERMAN);
 
         return LineChartDto.builder()
                 .title("Preishistorie")
-                .series(List.of(
-                        NumericSeriesDto.builder()
-                                .name("Preis")
-                                .data(activity.getPriceHistory().stream().map(ActivityPriceHistoryEntry::getPrice).toList())
-                                .build()
-                ))
+                .series(List.of(NumericSeriesDto.builder()
+                        .name("Preis")
+                        .data(activity.getPriceHistory().stream()
+                                .map(ActivityPriceHistoryEntry::getPrice)
+                                .toList())
+                        .build()))
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
-                                .categories(activity.getPriceHistory().stream().map(activityPriceHistoryEntry -> {
-                                    return formatter.format(activityPriceHistoryEntry.getRecorded());
-                                }).toList())
-                                .build()
-                        )
-                        .build()
-                )
+                                .categories(activity.getPriceHistory().stream()
+                                        .map(activityPriceHistoryEntry -> {
+                                            return formatter.format(activityPriceHistoryEntry.getRecorded());
+                                        })
+                                        .toList())
+                                .build())
+                        .build())
                 .build();
     }
 
     @GetMapping(value = "/activities/{activityId}")
     public KokuActivityDto read(@PathVariable("activityId") Long activityId) {
-        final Activity activity = this.activityRepository.findById(activityId)
+        final Activity activity = this.activityRepository
+                .findById(activityId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found"));
         return this.transformer.transformToDto(activity);
     }
 
     @GetMapping(value = "/activities/{activityId}/summary")
     public KokuActivitySummaryDto readSummary(@PathVariable("activityId") Long activityId) {
-        final Activity activity = this.activityRepository.findById(activityId)
+        final Activity activity = this.activityRepository
+                .findById(activityId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found"));
         return new ActivityToActivitySummaryDtoTransformer().transformToDto(activity);
     }
@@ -523,34 +427,32 @@ public class ActivityController {
     public KokuActivityDto update(
             @PathVariable("activityId") Long activityId,
             @RequestParam(value = "forceUpdate", required = false) Boolean forceUpdate,
-            @RequestBody KokuActivityDto updatedDto
-    ) {
+            @RequestBody KokuActivityDto updatedDto) {
         final Activity activity = this.entityManager.getReference(Activity.class, activityId);
         if (!Boolean.TRUE.equals(forceUpdate) && !activity.getVersion().equals(updatedDto.getVersion())) {
             throw new KokuBusinessExceptionWithConfirmationMessage(
                     KokuBusinessExceptionWithConfirmationMessageDto.builder()
                             .headline("Konflikt")
-                            .confirmationMessage("die Tätigkeit wurde zwischenzeitlich bearbeitet.\nWillst Du die Speicherung dennoch vornehmen?")
+                            .confirmationMessage("die Tätigkeit wurde zwischenzeitlich bearbeitet.\n"
+                                    + "Willst Du die Speicherung dennoch vornehmen?")
                             .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
                                     .icon("CLOSE")
-                                    .build()
-                            )
+                                    .build())
                             .closeOnClickOutside(true)
                             .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
                                     .text("Trotzdem speichern")
                                     .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format("services/activities/activities/%s?forceUpdate=%s", activityId, Boolean.TRUE))
-                                    .build()
-                            )
+                                    .endpointUrl(String.format(
+                                            "services/activities/activities/%s?forceUpdate=%s",
+                                            activityId, Boolean.TRUE))
+                                    .build())
                             .button(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
-                                    .build()
-                            )
-                            .build()
-            );
+                                    .build())
+                            .build());
         }
         this.transformer.transformToEntity(activity, updatedDto);
         this.entityManager.flush();

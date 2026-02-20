@@ -4,12 +4,11 @@ import de.domschmidt.koku.dto.user.KokuUserAppointmentDto;
 import de.domschmidt.koku.user.persistence.User;
 import de.domschmidt.koku.user.persistence.UserAppointment;
 import jakarta.persistence.EntityManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class UserAppointmentToUserAppointmentDtoTransformer {
@@ -18,9 +17,7 @@ public class UserAppointmentToUserAppointmentDtoTransformer {
     private final EntityManager entityManager;
 
     @Autowired
-    public UserAppointmentToUserAppointmentDtoTransformer(
-            final EntityManager entityManager
-    ) {
+    public UserAppointmentToUserAppointmentDtoTransformer(final EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
@@ -29,24 +26,33 @@ public class UserAppointmentToUserAppointmentDtoTransformer {
                 .id(model.getId())
                 .deleted(model.isDeleted())
                 .version(model.getVersion())
-                .startDate(model.getStartTimestamp() != null ? model.getStartTimestamp().toLocalDate() : null)
-                .startTime(model.getStartTimestamp() != null ? model.getStartTimestamp().toLocalTime() : null)
-                .endDate(model.getEndTimestamp() != null ? model.getEndTimestamp().toLocalDate() : null)
-                .endTime(model.getEndTimestamp() != null ? model.getEndTimestamp().toLocalTime() : null)
+                .startDate(
+                        model.getStartTimestamp() != null
+                                ? model.getStartTimestamp().toLocalDate()
+                                : null)
+                .startTime(
+                        model.getStartTimestamp() != null
+                                ? model.getStartTimestamp().toLocalTime()
+                                : null)
+                .endDate(
+                        model.getEndTimestamp() != null
+                                ? model.getEndTimestamp().toLocalDate()
+                                : null)
+                .endTime(
+                        model.getEndTimestamp() != null
+                                ? model.getEndTimestamp().toLocalTime()
+                                : null)
                 .description(model.getDescription())
                 .userId(model.getUser().getId())
-                .userName(Stream.of(model.getUser().getFirstname(), model.getUser().getLastname())
+                .userName(Stream.of(
+                                model.getUser().getFirstname(), model.getUser().getLastname())
                         .filter(s -> s != null && !s.isEmpty())
-                        .collect(Collectors.joining(" "))
-                )
+                        .collect(Collectors.joining(" ")))
                 .summary(String.format("Privater Termin vom %s", DATE_FORMATTER.format(model.getStartTimestamp())))
                 .build();
     }
 
-    public UserAppointment transformToEntity(
-            final UserAppointment model,
-            final KokuUserAppointmentDto updatedDto
-    ) {
+    public UserAppointment transformToEntity(final UserAppointment model, final KokuUserAppointmentDto updatedDto) {
         if (updatedDto.getStartDate() != null && updatedDto.getStartTime() != null) {
             model.setStartTimestamp(updatedDto.getStartDate().atTime(updatedDto.getStartTime()));
         }
@@ -61,6 +67,4 @@ public class UserAppointmentToUserAppointmentDtoTransformer {
         }
         return model;
     }
-
-
 }

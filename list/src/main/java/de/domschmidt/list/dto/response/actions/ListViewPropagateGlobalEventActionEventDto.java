@@ -10,5 +10,4 @@ import lombok.experimental.SuperBuilder;
 public class ListViewPropagateGlobalEventActionEventDto extends AbstractListViewActionEventDto {
 
     String eventName;
-
 }

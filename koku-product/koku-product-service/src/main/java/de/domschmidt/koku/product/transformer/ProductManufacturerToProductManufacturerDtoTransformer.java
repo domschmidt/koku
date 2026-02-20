@@ -19,9 +19,7 @@ public class ProductManufacturerToProductManufacturerDtoTransformer {
     }
 
     public ProductManufacturer transformToEntity(
-            final ProductManufacturer model,
-            final KokuProductManufacturerDto updatedDto
-    ) {
+            final ProductManufacturer model, final KokuProductManufacturerDto updatedDto) {
 
         if (updatedDto.getName() != null) {
             model.setName(updatedDto.getName());

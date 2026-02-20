@@ -17,21 +17,16 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf((csrf) -> csrf.disable())
                 .sessionManagement((sessionMgmt) -> sessionMgmt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling((exceptionHandling) ->
-                        exceptionHandling.authenticationEntryPoint((req, rsp, e) ->
-                                rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED)
-                        )
-                )
+                .exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(
+                        (req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/error", "/actuator/health").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/error", "/actuator/health")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
                 .oauth2ResourceServer(httpSecurityOAuth2ResourceServerConfigurer ->
                         httpSecurityOAuth2ResourceServerConfigurer.jwt(jwtConfigurer ->
-                                jwtConfigurer.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter())
-                        )
-                );
+                                jwtConfigurer.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter())));
         return http.build();
     }
-
 }

@@ -1,5 +1,7 @@
 package de.domschmidt.koku.customer.controller;
 
+import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
+
 import com.querydsl.core.types.dsl.CaseBuilder;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
@@ -73,19 +75,16 @@ import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
-import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 
 @RequiredArgsConstructor
 @RestController
@@ -101,10 +100,7 @@ public class CustomerController {
     public FormViewDto getFormularView() {
         final FormViewFactory formFactory = new FormViewFactory(
                 new DefaultViewContentIdGenerator(),
-                GridContainer.builder()
-                        .cols(1)
-                        .build()
-        );
+                GridContainer.builder().cols(1).build());
 
         addMainSection(formFactory);
         addLivingSection(formFactory);
@@ -122,43 +118,33 @@ public class CustomerController {
                 .dockableSettings(ButtonDockableSettings.builder()
                         .icon("SAVE")
                         .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build()
-                )
+                        .build())
                 .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build()
-        );
+                .build());
 
         return formFactory.create();
     }
 
     @GetMapping("/customers/list")
     public ListViewDto getListView() {
-        final ListViewFactory listViewFactory = new ListViewFactory(
-                new DefaultListViewContentIdGenerator(),
-                KokuCustomerDto.Fields.id
-        );
+        final ListViewFactory listViewFactory =
+                new ListViewFactory(new DefaultListViewContentIdGenerator(), KokuCustomerDto.Fields.id);
 
         final ListViewFieldReference fullNameWithOnFirstNameBasisFieldRef = listViewFactory.addField(
                 KokuCustomerDto.Fields.fullNameWithOnFirstNameBasis,
-                ListViewInputFieldDto.builder()
-                        .label("Vor- und Nachname")
-                        .build()
-        );
+                ListViewInputFieldDto.builder().label("Vor- und Nachname").build());
         final ListViewFieldReference addressFieldRef = listViewFactory.addField(
                 KokuCustomerDto.Fields.address,
-                ListViewInputFieldDto.builder()
-                        .label("Adresse")
-                        .build()
-        );
+                ListViewInputFieldDto.builder().label("Adresse").build());
         final ListViewFieldReference addressLine2FieldRef = listViewFactory.addField(
                 KokuCustomerDto.Fields.addressLine2,
-                ListViewInputFieldDto.builder()
-                        .label("Adresszeile 2")
-                        .build()
-        );
-        final ListViewSourcePathReference idSourcePathFieldRef = listViewFactory.addSourcePath(KokuCustomerDto.Fields.id);
-        final ListViewSourcePathReference deletedSourceRef = listViewFactory.addSourcePath(KokuCustomerDto.Fields.deleted);
-        final ListViewSourcePathReference initialsSourceRef = listViewFactory.addSourcePath(KokuCustomerDto.Fields.initials);
+                ListViewInputFieldDto.builder().label("Adresszeile 2").build());
+        final ListViewSourcePathReference idSourcePathFieldRef =
+                listViewFactory.addSourcePath(KokuCustomerDto.Fields.id);
+        final ListViewSourcePathReference deletedSourceRef =
+                listViewFactory.addSourcePath(KokuCustomerDto.Fields.deleted);
+        final ListViewSourcePathReference initialsSourceRef =
+                listViewFactory.addSourcePath(KokuCustomerDto.Fields.initials);
 
         listViewFactory.addFilter(
                 KokuCustomerDto.Fields.deleted,
@@ -167,167 +153,146 @@ public class CustomerController {
                         .enabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.TRUE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
-                                .build()
-                        )
+                                .build())
                         .disabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.FALSE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
                                 .build())
                         .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
-                        .build()
-        );
+                        .build());
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("new")
                 .icon("PLUS")
-                .build()
-        );
+                .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
                 .route("new")
                 .text("Neuer Kunde")
-                .build()
-        );
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
                 .eventName("customer-created")
                 .idPath(KokuCustomerDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuCustomerDto.Fields.fullNameWithOnFirstNameBasis, fullNameWithOnFirstNameBasisFieldRef,
                         KokuCustomerDto.Fields.address, addressFieldRef,
-                        KokuCustomerDto.Fields.addressLine2, addressLine2FieldRef
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route("new")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .title("Neuer Kunde")
-                                .content(ListViewFormularContentDto.builder()
-                                        .formularUrl("services/customers/customers/form")
-                                        .submitUrl("services/customers/customers")
-                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
-                                        .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                        .eventName("customer-created")
-                                                        .build(),
-                                                ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                        .route(":customerId/information")
-                                                        .params(Arrays.asList(
-                                                                ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto.builder()
-                                                                        .param(":customerId")
-                                                                        .valuePath(KokuCustomerDto.Fields.id)
-                                                                        .build()
-                                                        ))
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                        KokuCustomerDto.Fields.addressLine2, addressLine2FieldRef))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route("new")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .title("Neuer Kunde")
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/customers/customers/form")
+                                .submitUrl("services/customers/customers")
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
+                                .maxWidthInPx(800)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("customer-created")
+                                                .build(),
+                                        ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
+                                                .route(":customerId/information")
+                                                .params(Arrays.asList(
+                                                        ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
+                                                                .builder()
+                                                                .param(":customerId")
+                                                                .valuePath(KokuCustomerDto.Fields.id)
+                                                                .build()))
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
                 .route(":customerId/information")
                 .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
                         .param(":customerId")
                         .valueReference(idSourcePathFieldRef)
-                        .build()
-                ))
-                .build()
-        );
+                        .build()))
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadItemUpdateGlobalEventListenerDto.builder()
                 .eventName("customer-updated")
                 .idPath(KokuCustomerDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuCustomerDto.Fields.fullNameWithOnFirstNameBasis, fullNameWithOnFirstNameBasisFieldRef,
                         KokuCustomerDto.Fields.address, addressFieldRef,
-                        KokuCustomerDto.Fields.addressLine2, addressLine2FieldRef
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route(":customerId")
-                        .itemId(":customerId")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .sourceUrl("services/customers/customers/:customerId/summary")
-                                .titlePath(KokuCustomerSummaryDto.Fields.fullName)
-                                .globalEventListeners(Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
+                        KokuCustomerDto.Fields.addressLine2, addressLine2FieldRef))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route(":customerId")
+                .itemId(":customerId")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .sourceUrl("services/customers/customers/:customerId/summary")
+                        .titlePath(KokuCustomerSummaryDto.Fields.fullName)
+                        .globalEventListeners(
+                                Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
                                         .eventName("customer-updated")
                                         .idPath(KokuCustomerDto.Fields.id)
                                         .titleValuePath(KokuCustomerDto.Fields.fullNameWithOnFirstNameBasis)
-                                        .build()
-                                ))
-                                .content(ListViewDockContentDto.builder()
-                                        .content(Arrays.asList(
-                                                ListViewItemInlineDockContentItemDto.builder()
-                                                        .id("information")
-                                                        .route("information")
-                                                        .icon("INFORMATION_CIRCLE")
-                                                        .title("Bearbeiten")
-                                                        .content(ListViewFormularContentDto.builder()
-                                                                .formularUrl("services/customers/customers/form")
-                                                                .sourceUrl("services/customers/customers/:customerId")
-                                                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
-                                                                .maxWidthInPx(800)
-                                                                .onSaveEvents(Arrays.asList(
-                                                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                                                .eventName("customer-updated")
-                                                                                .build()
-                                                                ))
-                                                                .build()
-                                                        )
-                                                        .build(),
-                                                ListViewItemInlineDockContentItemDto.builder()
-                                                        .id("appointments")
-                                                        .route("appointments")
-                                                        .icon("CALENDAR")
-                                                        .title("Termine")
-                                                        .content(ListViewListContentDto.builder()
-                                                                .listUrl("services/customers/customers/appointments/list")
-                                                                .sourceUrl("services/customers/customers/:customerId/appointments/query")
-                                                                .build()
-                                                        )
-                                                        .build(),
-                                                ListViewItemInlineDockContentItemDto.builder()
-                                                        .id("documents")
-                                                        .title("Dokumente")
-                                                        .route("documents")
-                                                        .icon("DOCUMENT")
-                                                        .content(ListViewListContentDto.builder()
-                                                                .listUrl("services/files/files/list?customerId=:customerId&contextEndpointUrl=services/customers/customers/:customerId")
-                                                                .sourceUrl("services/files/files/query?customerId=:customerId")
-                                                                .build()
-                                                        )
-                                                        .build(),
-                                                ListViewItemInlineDockContentItemDto.builder()
-                                                        .id("statistics")
-                                                        .title("Statistik")
-                                                        .route("statistics")
-                                                        .icon("CHART_BAR")
-                                                        .content(ListViewGridContentDto.builder()
-                                                                .cols(1)
-                                                                .xl5(2)
-                                                                .content(Arrays.asList(
-                                                                        ListViewChartContentDto.builder()
-                                                                                .chartUrl("services/customers/customers/:customerId/statistics/yearlyvisits")
-                                                                                .build(),
-                                                                        ListViewChartContentDto.builder()
-                                                                                .chartUrl("services/customers/customers/:customerId/statistics/yearlyrevenue")
-                                                                                .build()
-                                                                ))
-                                                                .build()
-                                                        )
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                                        .build()))
+                        .content(ListViewDockContentDto.builder()
+                                .content(Arrays.asList(
+                                        ListViewItemInlineDockContentItemDto.builder()
+                                                .id("information")
+                                                .route("information")
+                                                .icon("INFORMATION_CIRCLE")
+                                                .title("Bearbeiten")
+                                                .content(ListViewFormularContentDto.builder()
+                                                        .formularUrl("services/customers/customers/form")
+                                                        .sourceUrl("services/customers/customers/:customerId")
+                                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
+                                                        .maxWidthInPx(800)
+                                                        .onSaveEvents(Arrays.asList(
+                                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto
+                                                                        .builder()
+                                                                        .eventName("customer-updated")
+                                                                        .build()))
+                                                        .build())
+                                                .build(),
+                                        ListViewItemInlineDockContentItemDto.builder()
+                                                .id("appointments")
+                                                .route("appointments")
+                                                .icon("CALENDAR")
+                                                .title("Termine")
+                                                .content(ListViewListContentDto.builder()
+                                                        .listUrl("services/customers/customers/appointments/list")
+                                                        .sourceUrl(
+                                                                "services/customers/customers/:customerId/appointments/query")
+                                                        .build())
+                                                .build(),
+                                        ListViewItemInlineDockContentItemDto.builder()
+                                                .id("documents")
+                                                .title("Dokumente")
+                                                .route("documents")
+                                                .icon("DOCUMENT")
+                                                .content(ListViewListContentDto.builder()
+                                                        .listUrl(
+                                                                "services/files/files/list?customerId=:customerId&contextEndpointUrl=services/customers/customers/:customerId")
+                                                        .sourceUrl("services/files/files/query?customerId=:customerId")
+                                                        .build())
+                                                .build(),
+                                        ListViewItemInlineDockContentItemDto.builder()
+                                                .id("statistics")
+                                                .title("Statistik")
+                                                .route("statistics")
+                                                .icon("CHART_BAR")
+                                                .content(ListViewGridContentDto.builder()
+                                                        .cols(1)
+                                                        .xl5(2)
+                                                        .content(Arrays.asList(
+                                                                ListViewChartContentDto.builder()
+                                                                        .chartUrl(
+                                                                                "services/customers/customers/:customerId/statistics/yearlyvisits")
+                                                                        .build(),
+                                                                ListViewChartContentDto.builder()
+                                                                        .chartUrl(
+                                                                                "services/customers/customers/:customerId/statistics/yearlyrevenue")
+                                                                        .build()))
+                                                        .build())
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.addGlobalItemStyling(ListViewConditionalItemValueStylingDto.builder()
                 .compareValuePath(KokuCustomerDto.Fields.deleted)
@@ -335,22 +300,18 @@ public class CustomerController {
                 .positiveStyling(ListViewItemStylingDto.builder()
                         .lineThrough(true)
                         .opacity((short) 50)
-                        .build()
-                )
-                .build()
-        );
+                        .build())
+                .build());
         listViewFactory.addItemAction(ListViewConditionalItemValueActionDto.builder()
                 .compareValuePath(KokuCustomerDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
                         .url("services/customers/customers/:customerId/restore")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":customerId")
-                                        .valueReference(idSourcePathFieldRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":customerId")
+                                .valueReference(idSourcePathFieldRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Kunde wiederherstellen")
@@ -358,102 +319,73 @@ public class CustomerController {
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(":name")
                                         .valueReference(fullNameWithOnFirstNameBasisFieldRef)
-                                        .build()
-                                ))
-                                .build()
-                        )
+                                        .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
                                         .text(":name wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(fullNameWithOnFirstNameBasisFieldRef)
-                                                        .build()
-                                        ))
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .valueReference(fullNameWithOnFirstNameBasisFieldRef)
+                                                .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuCustomerDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuCustomerDto.Fields.deleted, deletedSourceRef
-                                        ))
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text(":name konnte nicht wiederhergestellt werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(fullNameWithOnFirstNameBasisFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
+                                        .valueMapping(Map.of(KokuCustomerDto.Fields.deleted, deletedSourceRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text(":name konnte nicht wiederhergestellt werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(fullNameWithOnFirstNameBasisFieldRef)
+                                        .build()))
+                                .build()))
                         .build())
-                .negativeAction(
-                        ListViewCallHttpListItemActionDto.builder()
-                                .icon("TRASH")
-                                .url("services/customers/customers/:customerId")
-                                .params(Arrays.asList(
-                                        ListViewCallHttpListValueActionParamDto.builder()
-                                                .param(":customerId")
-                                                .valueReference(idSourcePathFieldRef)
-                                                .build()
-                                ))
-                                .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
-                                .userConfirmation(ListViewUserConfirmationDto.builder()
-                                        .headline("Kunde löschen")
-                                        .content(":name als gelöscht markieren?")
-                                        .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                .negativeAction(ListViewCallHttpListItemActionDto.builder()
+                        .icon("TRASH")
+                        .url("services/customers/customers/:customerId")
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":customerId")
+                                .valueReference(idSourcePathFieldRef)
+                                .build()))
+                        .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
+                        .userConfirmation(ListViewUserConfirmationDto.builder()
+                                .headline("Kunde löschen")
+                                .content(":name als gelöscht markieren?")
+                                .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(fullNameWithOnFirstNameBasisFieldRef)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                ListViewNotificationEvent.builder()
+                                        .text(":name erfolgreich als gelöscht markiert")
+                                        .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                 .param(":name")
                                                 .valueReference(fullNameWithOnFirstNameBasisFieldRef)
-                                                .build()
-                                        ))
-                                        .build()
-                                )
-
-                                .successEvents(Arrays.asList(
-                                        ListViewNotificationEvent.builder()
-                                                .text(":name erfolgreich als gelöscht markiert")
-                                                .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                                .params(Arrays.asList(
-                                                        ListViewNotificationEventValueParamDto.builder()
-                                                                .param(":name")
-                                                                .valueReference(fullNameWithOnFirstNameBasisFieldRef)
-                                                                .build()
-                                                ))
-                                                .build(),
-                                        ListViewEventPayloadUpdateActionEventDto.builder()
-                                                .idPath(KokuCustomerDto.Fields.id)
-                                                .valueMapping(Map.of(
-                                                        KokuCustomerDto.Fields.deleted, deletedSourceRef
-                                                ))
-                                                .build()
-                                ))
-                                .failEvents(Arrays.asList(
-                                        ListViewNotificationEvent.builder()
-                                                .text(":name konnte nicht als gelöscht markiert werden")
-                                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                                .params(Arrays.asList(
-                                                        ListViewNotificationEventValueParamDto.builder()
-                                                                .param(":name")
-                                                                .valueReference(fullNameWithOnFirstNameBasisFieldRef)
-                                                                .build()
-                                                ))
-                                                .build()
-                                ))
-                                .build()
-                )
-                .build()
-        );
+                                                .build()))
+                                        .build(),
+                                ListViewEventPayloadUpdateActionEventDto.builder()
+                                        .idPath(KokuCustomerDto.Fields.id)
+                                        .valueMapping(Map.of(KokuCustomerDto.Fields.deleted, deletedSourceRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text(":name konnte nicht als gelöscht markiert werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(fullNameWithOnFirstNameBasisFieldRef)
+                                        .build()))
+                                .build()))
+                        .build())
+                .build());
 
         listViewFactory.setItemPreview(ListViewItemPreviewTextDto.builder()
                 .valuePath(KokuCustomerDto.Fields.initials)
-                .build()
-        );
+                .build());
 
         return listViewFactory.create();
     }
@@ -462,181 +394,80 @@ public class CustomerController {
     public ListPage findAll(@RequestBody(required = false) final ListQuery predicate) {
         final QCustomer qClazz = QCustomer.customer;
 
-        final ListQueryFactory<Customer> listQueryFactory = new ListQueryFactory<>(
-                this.entityManager,
-                qClazz,
-                qClazz.id,
-                predicate
-        );
+        final ListQueryFactory<Customer> listQueryFactory =
+                new ListQueryFactory<>(this.entityManager, qClazz, qClazz.id, predicate);
 
         listQueryFactory.setDefaultOrder(qClazz.firstname.asc());
 
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.id,
-                qClazz.id
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.deleted,
-                qClazz.deleted
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.firstName,
-                qClazz.firstname
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.lastName,
-                qClazz.lastname
-        );
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.id, qClazz.id);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.deleted, qClazz.deleted);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.firstName, qClazz.firstname);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.lastName, qClazz.lastname);
         listQueryFactory.addFetchExpr(
                 KokuCustomerDto.Fields.fullName,
-                qClazz.firstname
-                        .concat(" ")
-                        .concat(qClazz.lastname)
-                        .trim()
-        );
+                qClazz.firstname.concat(" ").concat(qClazz.lastname).trim());
         listQueryFactory.addFetchExpr(
                 KokuCustomerDto.Fields.fullNameWithOnFirstNameBasis,
                 qClazz.firstname
                         .concat(" ")
                         .concat(qClazz.lastname)
                         .concat(" ")
-                        .concat(new CaseBuilder().when(qClazz.onFirstnameBasis.eq(Boolean.TRUE)).then("*").otherwise(""))
-                        .trim()
-        );
+                        .concat(new CaseBuilder()
+                                .when(qClazz.onFirstnameBasis.eq(Boolean.TRUE))
+                                .then("*")
+                                .otherwise(""))
+                        .trim());
         listQueryFactory.addFetchExpr(
                 KokuCustomerDto.Fields.initials,
-                qClazz.firstname.substring(0, 1)
-                        .concat(qClazz.lastname.substring(0, 1))
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.email,
-                qClazz.email
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.address,
-                qClazz.address
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.postalCode,
-                qClazz.postalCode
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.city,
-                qClazz.city
-        );
+                qClazz.firstname.substring(0, 1).concat(qClazz.lastname.substring(0, 1)));
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.email, qClazz.email);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.address, qClazz.address);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.postalCode, qClazz.postalCode);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.city, qClazz.city);
         listQueryFactory.addFetchExpr(
                 KokuCustomerDto.Fields.addressLine2,
-                stringTemplate("cast(concat_ws(' ', NULLIF(TRIM({0}), ''), NULLIF(TRIM({1}), '')) as text)",
-                        qClazz.postalCode,
-                        qClazz.city
-                )
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.privateTelephoneNo,
-                qClazz.privateTelephoneNo
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.businessTelephoneNo,
-                qClazz.businessTelephoneNo
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.mobileTelephoneNo,
-                qClazz.mobileTelephoneNo
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.medicalTolerance,
-                qClazz.medicalTolerance
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.additionalInfo,
-                qClazz.additionalInfo
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.birthday,
-                qClazz.birthday
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.onFirstnameBasis,
-                qClazz.onFirstnameBasis
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.hayFever,
-                qClazz.hayFever
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.plasterAllergy,
-                qClazz.plasterAllergy
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.cyanoacrylateAllergy,
-                qClazz.cyanoacrylateAllergy
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.asthma,
-                qClazz.asthma
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.dryEyes,
-                qClazz.dryEyes
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.circulationProblems,
-                qClazz.circulationProblems
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.epilepsy,
-                qClazz.epilepsy
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.diabetes,
-                qClazz.diabetes
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.claustrophobia,
-                qClazz.claustrophobia
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.neurodermatitis,
-                qClazz.neurodermatitis
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.contacts,
-                qClazz.contacts
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.glasses,
-                qClazz.glasses
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.eyeDisease,
-                qClazz.eyeDisease
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.allergy,
-                qClazz.allergy
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.covid19vaccinated,
-                qClazz.covid19vaccinated
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerDto.Fields.covid19boostered,
-                qClazz.covid19boostered
-        );
+                stringTemplate(
+                        "cast(concat_ws(' ', NULLIF(TRIM({0}), ''), NULLIF(TRIM({1}), '')) as text)",
+                        qClazz.postalCode, qClazz.city));
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.privateTelephoneNo, qClazz.privateTelephoneNo);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.businessTelephoneNo, qClazz.businessTelephoneNo);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.mobileTelephoneNo, qClazz.mobileTelephoneNo);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.medicalTolerance, qClazz.medicalTolerance);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.additionalInfo, qClazz.additionalInfo);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.birthday, qClazz.birthday);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.onFirstnameBasis, qClazz.onFirstnameBasis);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.hayFever, qClazz.hayFever);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.plasterAllergy, qClazz.plasterAllergy);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.cyanoacrylateAllergy, qClazz.cyanoacrylateAllergy);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.asthma, qClazz.asthma);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.dryEyes, qClazz.dryEyes);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.circulationProblems, qClazz.circulationProblems);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.epilepsy, qClazz.epilepsy);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.diabetes, qClazz.diabetes);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.claustrophobia, qClazz.claustrophobia);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.neurodermatitis, qClazz.neurodermatitis);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.contacts, qClazz.contacts);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.glasses, qClazz.glasses);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.eyeDisease, qClazz.eyeDisease);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.allergy, qClazz.allergy);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.covid19vaccinated, qClazz.covid19vaccinated);
+        listQueryFactory.addFetchExpr(KokuCustomerDto.Fields.covid19boostered, qClazz.covid19boostered);
 
         return listQueryFactory.create();
     }
 
     @GetMapping(value = "/customers/{id}")
     public KokuCustomerDto read(@PathVariable("id") Long id) {
-        final Customer customer = this.customerRepository.findById(id)
+        final Customer customer = this.customerRepository
+                .findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
         return new CustomerToCustomerDtoTransformer().transformToDto(customer);
     }
 
     @GetMapping(value = "/customers/{id}/summary")
     public KokuCustomerSummaryDto readSummary(@PathVariable("id") Long id) {
-        final Customer customer = this.customerRepository.findById(id)
+        final Customer customer = this.customerRepository
+                .findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
         return new CustomerToCustomerSummaryDtoTransformer().transformToDto(customer);
     }
@@ -647,34 +478,31 @@ public class CustomerController {
     public KokuCustomerDto update(
             @PathVariable("id") Long id,
             @RequestParam(value = "forceUpdate", required = false) Boolean forceUpdate,
-            @RequestBody KokuCustomerDto updatedDto
-    ) {
+            @RequestBody KokuCustomerDto updatedDto) {
         final Customer customer = this.entityManager.getReference(Customer.class, id);
         if (!Boolean.TRUE.equals(forceUpdate) && !customer.getVersion().equals(updatedDto.getVersion())) {
             throw new KokuBusinessExceptionWithConfirmationMessage(
                     KokuBusinessExceptionWithConfirmationMessageDto.builder()
                             .headline("Konflikt")
-                            .confirmationMessage("Der Kunde wurde zwischenzeitlich bearbeitet.\nWillst Du die Speicherung dennoch vornehmen?")
+                            .confirmationMessage("Der Kunde wurde zwischenzeitlich bearbeitet.\n"
+                                    + "Willst Du die Speicherung dennoch vornehmen?")
                             .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
                                     .icon("CLOSE")
-                                    .build()
-                            )
+                                    .build())
                             .closeOnClickOutside(true)
                             .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
                                     .text("Trotzdem speichern")
                                     .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format("services/customers/customers/%s?forceUpdate=%s", id, Boolean.TRUE))
-                                    .build()
-                            )
+                                    .endpointUrl(String.format(
+                                            "services/customers/customers/%s?forceUpdate=%s", id, Boolean.TRUE))
+                                    .build())
                             .button(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
-                                    .build()
-                            )
-                            .build()
-            );
+                                    .build())
+                            .build());
         }
         this.transformer.transformToEntity(customer, updatedDto);
         this.entityManager.flush();
@@ -730,292 +558,201 @@ public class CustomerController {
     }
 
     private static void addIllnessSection(FormViewFactory formFactory) {
-        formFactory.addContainer(FieldsetContainer.builder()
-                .title("Erkrankungen")
-                .build()
-        );
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .xl(3)
-                .build()
-        );
+        formFactory.addContainer(
+                FieldsetContainer.builder().title("Erkrankungen").build());
+        formFactory.addContainer(GridContainer.builder().cols(1).xl(3).build());
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.contacts)
                 .label("Kontaktlinsen")
-                .build()
-        );
+                .build());
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.glasses)
                 .label("Brillenträger")
-                .build()
-        );
+                .build());
 
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.dryEyes)
                 .label("Trockene Augen")
-                .build()
-        );
+                .build());
         formFactory.endContainer();
 
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).build());
 
         formFactory.addField(TextareaFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.eyeDisease)
                 .label("Andere Augenerkrankungen")
-                .build()
-        );
+                .build());
         formFactory.endContainer();
 
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .xl(3)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).xl(3).build());
 
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.asthma)
                 .label("Asthma")
-                .build()
-        );
+                .build());
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.circulationProblems)
                 .label("Kreislaufprobleme")
-                .build()
-        );
+                .build());
 
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.epilepsy)
                 .label("Epilepsie")
-                .build()
-        );
+                .build());
 
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.diabetes)
                 .label("Diabetes")
-                .build()
-        );
+                .build());
 
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.claustrophobia)
                 .label("Klaustrophobie")
-                .build()
-        );
+                .build());
 
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.neurodermatitis)
                 .label("Neurodermitis")
-                .build()
-        );
+                .build());
         formFactory.endContainer();
         formFactory.endContainer();
     }
 
     private static void addAllergySection(FormViewFactory formFactory) {
-        formFactory.addContainer(FieldsetContainer.builder()
-                .title("Allergien")
-                .build()
-        );
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .xl(3)
-                .build()
-        );
+        formFactory.addContainer(FieldsetContainer.builder().title("Allergien").build());
+        formFactory.addContainer(GridContainer.builder().cols(1).xl(3).build());
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.hayFever)
                 .label("Heuschnupfen")
-                .build()
-        );
+                .build());
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.plasterAllergy)
                 .label("Allergie gegen Pflaster")
-                .build()
-        );
+                .build());
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.cyanoacrylateAllergy)
                 .label("Allergie gegen Cyanacrylat")
-                .build()
-        );
+                .build());
         formFactory.endContainer();
 
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).build());
         formFactory.addField(TextareaFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.allergy)
                 .label("Andere Allergien")
-                .build()
-        );
+                .build());
         formFactory.endContainer();
         formFactory.endContainer();
     }
 
     private static void addHealthSection(FormViewFactory formFactory) {
-        formFactory.addContainer(FieldsetContainer.builder()
-                .title("Gesundheit")
-                .build()
-        );
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .xl(3)
-                .build()
-        );
+        formFactory.addContainer(FieldsetContainer.builder().title("Gesundheit").build());
+        formFactory.addContainer(GridContainer.builder().cols(1).xl(3).build());
 
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.covid19vaccinated)
                 .label("Covid 19 geimpft")
-                .build()
-        );
+                .build());
 
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.covid19boostered)
                 .label("Covid 19 geboostert")
-                .build()
-        );
+                .build());
         formFactory.endContainer();
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).build());
 
         formFactory.addField(TextareaFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.medicalTolerance)
                 .label("Medizinische Informationen")
-                .build()
-        );
+                .build());
 
         formFactory.endContainer();
         formFactory.endContainer();
     }
 
     private static void addPhoneSection(FormViewFactory formFactory) {
-        formFactory.addContainer(FieldsetContainer.builder()
-                .title("Erreichbarkeit")
-                .build()
-        );
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .xl(3)
-                .build()
-        );
+        formFactory.addContainer(
+                FieldsetContainer.builder().title("Erreichbarkeit").build());
+        formFactory.addContainer(GridContainer.builder().cols(1).xl(3).build());
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.privateTelephoneNo)
                 .label("Private Telefonnummer")
-                .build()
-        );
+                .build());
 
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.mobileTelephoneNo)
                 .label("Mobile Telefonnummer")
-                .build()
-        );
+                .build());
 
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.businessTelephoneNo)
                 .label("Geschäftliche Telefonnummer")
-                .build()
-        );
+                .build());
 
         formFactory.endContainer();
         formFactory.endContainer();
     }
 
     private static void addLivingSection(FormViewFactory formFactory) {
-        formFactory.addContainer(FieldsetContainer.builder()
-                .title("Wohnsituation")
-                .build()
-        );
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .build()
-        );
+        formFactory.addContainer(
+                FieldsetContainer.builder().title("Wohnsituation").build());
+        formFactory.addContainer(GridContainer.builder().cols(1).build());
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.address)
                 .label("Adresse")
-                .build()
-        );
+                .build());
 
         formFactory.endContainer();
-        formFactory.addContainer(GridContainer.builder()
-                .cols(2)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(2).build());
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.postalCode)
                 .label("Postleitzahl")
-                .build()
-        );
+                .build());
 
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.city)
                 .label("Wohnort")
-                .build()
-        );
+                .build());
 
         formFactory.endContainer();
         formFactory.endContainer();
     }
 
     private static void addMainSection(FormViewFactory formFactory) {
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).build());
         formFactory.addField(CheckboxFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.onFirstnameBasis)
                 .label("Duzen")
-                .build()
-        );
+                .build());
         formFactory.endContainer();
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .xl(2)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).xl(2).build());
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.firstName)
                 .label("Vorname")
                 .required(true)
-                .build()
-        );
+                .build());
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.lastName)
                 .label("Nachname")
                 .required(true)
-                .build()
-        );
+                .build());
         formFactory.endContainer();
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).build());
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.email)
                 .label("Email")
                 .type(EnumInputFormularFieldType.EMAIL)
-                .build()
-        );
+                .build());
         formFactory.endContainer();
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).build());
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.birthday)
                 .label("Geburtstag")
                 .type(EnumInputFormularFieldType.DATE)
-                .build()
-        );
+                .build());
         formFactory.addField(TextareaFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.additionalInfo)
                 .label("Zusätzliche Informationen")
-                .build()
-        );
+                .build());
         formFactory.endContainer();
     }
-
-
 }

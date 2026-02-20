@@ -1,7 +1,6 @@
 package de.domschmidt.koku.dto.list.fields.input;
 
 public enum ListViewInputFieldTypeEnumDto {
-
     TEXT,
     PASSWORD,
     EMAIL,
@@ -14,5 +13,4 @@ public enum ListViewInputFieldTypeEnumDto {
     URL,
     SEARCH,
     TIME,
-
 }

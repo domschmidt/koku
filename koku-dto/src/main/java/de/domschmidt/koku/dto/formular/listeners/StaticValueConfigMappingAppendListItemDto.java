@@ -10,5 +10,4 @@ import lombok.experimental.SuperBuilder;
 public class StaticValueConfigMappingAppendListItemDto extends AbstractConfigMappingAppendListItemDto {
 
     Object value;
-
 }

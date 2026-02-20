@@ -15,5 +15,4 @@ public final class DAVConstants {
     public static final String CARD_PRPOP_ADDRESSBOOK_HOME_SET = "addressbook-home-set";
 
     private DAVConstants() {}
-
 }

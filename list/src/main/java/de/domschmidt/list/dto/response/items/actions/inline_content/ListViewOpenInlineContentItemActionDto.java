@@ -13,5 +13,4 @@ public class ListViewOpenInlineContentItemActionDto extends AbstractListViewItem
 
     AbstractListViewContentDto inlineContent;
     String headerTitle;
-
 }

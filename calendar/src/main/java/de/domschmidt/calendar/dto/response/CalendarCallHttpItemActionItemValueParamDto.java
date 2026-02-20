@@ -7,8 +7,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeName("item-value")
 @Data
-public class CalendarCallHttpItemActionItemValueParamDto extends AbstractCalendarCallHttpItemActionParamDto{
+public class CalendarCallHttpItemActionItemValueParamDto extends AbstractCalendarCallHttpItemActionParamDto {
 
     String valuePath;
-
 }

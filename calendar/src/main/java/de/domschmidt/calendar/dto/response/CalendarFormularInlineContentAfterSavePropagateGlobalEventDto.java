@@ -7,8 +7,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeName("propagate-global-event")
 @Data
-public class CalendarFormularInlineContentAfterSavePropagateGlobalEventDto extends AbstractCalendarItemInlineFormularContentSaveEventDto {
+public class CalendarFormularInlineContentAfterSavePropagateGlobalEventDto
+        extends AbstractCalendarItemInlineFormularContentSaveEventDto {
 
     String eventName;
-
 }

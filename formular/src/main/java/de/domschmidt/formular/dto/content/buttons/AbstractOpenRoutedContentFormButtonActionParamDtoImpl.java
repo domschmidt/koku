@@ -7,8 +7,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeName("event-payload")
 @Data
-public class AbstractOpenRoutedContentFormButtonActionParamDtoImpl extends AbstractOpenRoutedContentFormButtonActionParamDto {
+public class AbstractOpenRoutedContentFormButtonActionParamDtoImpl
+        extends AbstractOpenRoutedContentFormButtonActionParamDto {
 
     String valuePath;
-
 }

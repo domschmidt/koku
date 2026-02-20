@@ -19,5 +19,4 @@ public abstract class AbstractFormField<T> implements IFormFieldDefault<T>, IFor
     IFormFieldSlot prependInner;
     IFormFieldSlot appendInner;
     IFormFieldSlot appendOuter;
-
 }

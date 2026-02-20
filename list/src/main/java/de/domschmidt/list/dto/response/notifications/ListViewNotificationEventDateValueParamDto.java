@@ -11,5 +11,4 @@ import lombok.experimental.SuperBuilder;
 public class ListViewNotificationEventDateValueParamDto extends AbstractListViewNotificationEventParamDto {
 
     ListViewReference valueReference;
-
 }

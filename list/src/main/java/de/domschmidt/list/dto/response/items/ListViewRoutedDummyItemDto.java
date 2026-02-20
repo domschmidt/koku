@@ -10,5 +10,4 @@ import lombok.experimental.SuperBuilder;
 public class ListViewRoutedDummyItemDto extends AbstractListViewRoutedItemDto {
 
     String text;
-
 }

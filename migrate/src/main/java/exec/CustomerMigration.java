@@ -23,7 +23,8 @@ public class CustomerMigration extends BaseMigration {
                 FROM koku.customer
             """, rs -> {
             try {
-                exec("""
+                exec(
+                        """
                         INSERT INTO koku.customer (external_ref, recorded, updated,
                             firstname, lastname, email, address, postal_code, city, private_telephone_no,
                             business_telephone_no, mobile_telephone_no, medical_tolerance, additional_info,
@@ -32,7 +33,7 @@ public class CustomerMigration extends BaseMigration {
                             neurodermatitis, contacts, glasses, covid19vaccinated, covid19boostered,
                             eye_disease, allergy, birthday
                         )
-                        VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, 
+                        VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?,
                             COALESCE(?, ''), COALESCE(?, ''), COALESCE(?, ''), COALESCE(?, ''), COALESCE(?, ''), COALESCE(?, ''), COALESCE(?, ''), COALESCE(?, ''), COALESCE(?, ''), COALESCE(?, ''), COALESCE(?, ''), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, ''), COALESCE(?, ''), ?
                         )
                         ON CONFLICT (external_ref)
@@ -102,9 +103,8 @@ public class CustomerMigration extends BaseMigration {
                         rs.getBoolean("covid19boostered"),
                         rs.getString("eye_disease"),
                         rs.getString("allergy"),
-                        rs.getDate("birthday")
+                        rs.getDate("birthday"));
 
-                );
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

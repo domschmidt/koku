@@ -1,7 +1,6 @@
 package de.domschmidt.listquery.factory;
 
 import de.domschmidt.listquery.factory.query.*;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -30,5 +29,4 @@ public class FilterResolver {
     public static IListFilter resolveFilter(final Class<?> clazz) {
         return FILTERS.get(clazz);
     }
-
 }

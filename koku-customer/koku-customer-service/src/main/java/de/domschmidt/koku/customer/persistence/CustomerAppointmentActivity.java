@@ -1,17 +1,15 @@
 package de.domschmidt.koku.customer.persistence;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 
 @Entity
 @Getter
@@ -24,6 +22,7 @@ public class CustomerAppointmentActivity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
     @Version
     Long version;
 
@@ -38,6 +37,7 @@ public class CustomerAppointmentActivity implements Serializable {
 
     @CreationTimestamp
     LocalDateTime recorded;
+
     @UpdateTimestamp
     LocalDateTime updated;
 
@@ -45,8 +45,7 @@ public class CustomerAppointmentActivity implements Serializable {
             final CustomerAppointment appointment,
             final Long activityId,
             final BigDecimal sellPrice,
-            final Integer position
-    ) {
+            final Integer position) {
         this.appointment = appointment;
         this.activityId = activityId;
         this.sellPrice = sellPrice;

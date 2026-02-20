@@ -16,5 +16,4 @@ public class CustomerAppointmentKafkaMaintenanceCronListenerService {
     public void execute() {
         executor.runMaintenance();
     }
-
 }

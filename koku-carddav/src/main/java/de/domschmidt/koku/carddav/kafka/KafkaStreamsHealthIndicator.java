@@ -21,9 +21,10 @@ public class KafkaStreamsHealthIndicator implements HealthIndicator {
     public Health health() {
         KafkaStreams kafkaStreams = factoryBean.getKafkaStreams();
         if (kafkaStreams == null || kafkaStreams.state() != KafkaStreams.State.RUNNING) {
-            return Health.down().withDetail("kafkaStreamsState", kafkaStreams.state()).build();
+            return Health.down()
+                    .withDetail("kafkaStreamsState", kafkaStreams.state())
+                    .build();
         }
         return Health.up().withDetail("kafkaStreamsState", kafkaStreams.state()).build();
     }
-
 }

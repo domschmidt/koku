@@ -1,19 +1,17 @@
 package de.domschmidt.koku.file.persistence;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 import jakarta.persistence.*;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import static jakarta.persistence.FetchType.LAZY;
-
 
 @Entity
 @Getter
@@ -25,13 +23,17 @@ public class File implements Serializable {
 
     @Id
     UUID id;
+
     boolean deleted;
+
     @Version
     Long version;
 
     String filename;
+
     @Basic(fetch = LAZY)
     byte[] content;
+
     String mimeType;
     long size;
 
@@ -39,6 +41,7 @@ public class File implements Serializable {
 
     @CreationTimestamp
     LocalDateTime recorded;
+
     @UpdateTimestamp
     LocalDateTime updated;
 
@@ -48,8 +51,7 @@ public class File implements Serializable {
             final Long customerId,
             final String mimeType,
             final byte[] content,
-            final long size
-    ) {
+            final long size) {
         this.id = id != null ? id : UUID.randomUUID();
         this.filename = filename;
         this.customerId = customerId;

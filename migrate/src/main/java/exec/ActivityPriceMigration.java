@@ -14,7 +14,8 @@ public class ActivityPriceMigration extends BaseMigration {
 
         read("SELECT id, recorded, updated, price, activity_id FROM koku.activity_price_history", rs -> {
             try {
-                exec("""
+                exec(
+                        """
                         INSERT INTO koku.activity_price_history (external_ref, recorded, updated, price, activity_id)
                         VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, ?, (SELECT ID FROM koku.activity where external_ref = ?))
                         ON CONFLICT (external_ref)
@@ -30,8 +31,7 @@ public class ActivityPriceMigration extends BaseMigration {
                         rs.getTimestamp("updated"),
                         rs.getTimestamp("updated"),
                         rs.getBigDecimal("price"),
-                        rs.getString("activity_id")
-                );
+                        rs.getString("activity_id"));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

@@ -13,11 +13,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-
 @FieldNameConstants
 @JsonTypeName("product")
 public class KokuCustomerAppointmentProductTreatmentDto extends KokuCustomerAppointmentTreatmentDto {
 
     Long productId;
-
 }

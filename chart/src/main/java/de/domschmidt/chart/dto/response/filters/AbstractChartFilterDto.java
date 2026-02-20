@@ -1,6 +1,5 @@
 package de.domschmidt.chart.dto.response.filters;
 
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,5 +14,4 @@ import lombok.experimental.SuperBuilder;
 public abstract class AbstractChartFilterDto {
 
     String queryParamName;
-
 }

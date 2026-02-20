@@ -1,16 +1,13 @@
 package de.domschmidt.koku.promotion.kafka.dto;
 
-
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Getter
 @Setter
 @Builder
-
 @AllArgsConstructor
 @NoArgsConstructor
 public class PromotionKafkaDto {
@@ -35,5 +32,4 @@ public class PromotionKafkaDto {
 
     LocalDateTime updated;
     LocalDateTime recorded;
-
 }

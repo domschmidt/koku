@@ -11,5 +11,4 @@ public abstract class AbstractListViewRoutedContentDto {
 
     String route;
     String itemId;
-
 }

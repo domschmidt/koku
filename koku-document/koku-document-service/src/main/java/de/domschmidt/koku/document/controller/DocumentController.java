@@ -64,15 +64,14 @@ import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
+import java.util.Arrays;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Arrays;
-import java.util.Map;
 
 @RestController
 @RequestMapping()
@@ -88,21 +87,16 @@ public class DocumentController {
     public FormViewDto getFormularView() {
         final FormViewFactory formFactory = new FormViewFactory(
                 new DefaultViewContentIdGenerator(),
-                GridContainer.builder()
-                        .cols(1)
-                        .build()
-        );
+                GridContainer.builder().cols(1).build());
 
         formFactory.addField(InputFormularField.builder()
                 .label("Name")
                 .valuePath(KokuDocumentDto.Fields.name)
                 .required(true)
-                .build()
-        );
+                .build());
         formFactory.addField(DocumentDesignerFormularField.builder()
                 .valuePath(KokuDocumentDto.Fields.template)
-                .build()
-        );
+                .build());
 
         formFactory.addButton(KokuFormButton.builder()
                 .buttonType(EnumButtonType.SUBMIT)
@@ -113,30 +107,25 @@ public class DocumentController {
                 .dockableSettings(ButtonDockableSettings.builder()
                         .icon("SAVE")
                         .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build()
-                )
+                        .build())
                 .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build()
-        );
+                .build());
 
         return formFactory.create();
     }
 
     @GetMapping("/documents/list")
     public ListViewDto getListView() {
-        final ListViewFactory listViewFactory = new ListViewFactory(
-                new DefaultListViewContentIdGenerator(),
-                KokuDocumentDto.Fields.id
-        );
+        final ListViewFactory listViewFactory =
+                new ListViewFactory(new DefaultListViewContentIdGenerator(), KokuDocumentDto.Fields.id);
 
         final ListViewFieldReference nameFieldRef = listViewFactory.addField(
                 KokuDocumentDto.Fields.name,
-                ListViewInputFieldDto.builder()
-                        .label("Name")
-                        .build()
-        );
-        final ListViewSourcePathReference idSourcePathFieldRef = listViewFactory.addSourcePath(KokuDocumentDto.Fields.id);
-        final ListViewSourcePathReference deletedSourceRef = listViewFactory.addSourcePath(KokuDocumentDto.Fields.deleted);
+                ListViewInputFieldDto.builder().label("Name").build());
+        final ListViewSourcePathReference idSourcePathFieldRef =
+                listViewFactory.addSourcePath(KokuDocumentDto.Fields.id);
+        final ListViewSourcePathReference deletedSourceRef =
+                listViewFactory.addSourcePath(KokuDocumentDto.Fields.deleted);
 
         listViewFactory.addFilter(
                 KokuDocumentDto.Fields.deleted,
@@ -145,152 +134,124 @@ public class DocumentController {
                         .enabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.TRUE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
-                                .build()
-                        )
+                                .build())
                         .disabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.FALSE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
                                 .build())
                         .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
-                        .build()
-        );
+                        .build());
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("new")
                 .icon("PLUS")
-                .build()
-        );
+                .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
                 .route("new")
                 .text("Neues Dokument")
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route("new")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .title("Neues Dokument")
-                                .content(ListViewFormularContentDto.builder()
-                                        .formularUrl("services/documents/documents/form")
-                                        .submitUrl("services/documents/documents")
-                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
-                                        .maxWidthInPx(9999)
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route("new")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .title("Neues Dokument")
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/documents/documents/form")
+                                .submitUrl("services/documents/documents")
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
+                                .maxWidthInPx(9999)
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.addItemAction(ListViewItemActionOpenRoutedContentActionDto.builder()
                 .route("duplicate/:documentId")
-                .params(Arrays.asList(
-                        ListViewItemActionOpenRoutedContentActionItemValueParamDto.builder()
-                                .param(":documentId")
-                                .valueReference(idSourcePathFieldRef)
-                                .build()
-                ))
+                .params(Arrays.asList(ListViewItemActionOpenRoutedContentActionItemValueParamDto.builder()
+                        .param(":documentId")
+                        .valueReference(idSourcePathFieldRef)
+                        .build()))
                 .icon("DUPLICATE")
-                .build()
-        );
+                .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
                 .route("duplicate/:documentId")
                 .text("Neues Dokument")
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route("duplicate/:documentId")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .title("Dupliziere Dokument")
-                                .content(ListViewFormularContentDto.builder()
-                                        .formularUrl("services/documents/documents/form")
-                                        .sourceUrl("services/documents/documents/:documentId")
-                                        .submitUrl("services/documents/documents")
-                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
-                                        .maxWidthInPx(9999)
-                                        .onSaveEvents(Arrays.asList(
-                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                        .eventName("document-created")
-                                                        .build(),
-                                                ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                        .route(":documentId")
-                                                        .params(Arrays.asList(
-                                                                ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto.builder()
-                                                                        .param(":documentId")
-                                                                        .valuePath(KokuDocumentDto.Fields.id)
-                                                                        .build()
-                                                        ))
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route("duplicate/:documentId")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .title("Dupliziere Dokument")
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/documents/documents/form")
+                                .sourceUrl("services/documents/documents/:documentId")
+                                .submitUrl("services/documents/documents")
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
+                                .maxWidthInPx(9999)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("document-created")
+                                                .build(),
+                                        ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
+                                                .route(":documentId")
+                                                .params(Arrays.asList(
+                                                        ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
+                                                                .builder()
+                                                                .param(":documentId")
+                                                                .valuePath(KokuDocumentDto.Fields.id)
+                                                                .build()))
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
                 .route(":documentId")
                 .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
                         .param(":documentId")
                         .valueReference(idSourcePathFieldRef)
-                        .build()
-                ))
-                .build()
-        );
+                        .build()))
+                .build());
 
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route(":documentId")
-                        .itemId(":documentId")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .sourceUrl("services/documents/documents/:documentId")
-                                .titlePath(KokuDocumentDto.Fields.name)
-                                .globalEventListeners(Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route(":documentId")
+                .itemId(":documentId")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .sourceUrl("services/documents/documents/:documentId")
+                        .titlePath(KokuDocumentDto.Fields.name)
+                        .globalEventListeners(
+                                Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
                                         .eventName("document-updated")
                                         .idPath(KokuDocumentDto.Fields.id)
                                         .titleValuePath(KokuDocumentDto.Fields.name)
-                                        .build()
-                                ))
-                                .content(ListViewFormularContentDto.builder()
-                                        .formularUrl("services/documents/documents/form")
-                                        .sourceUrl("services/documents/documents/:documentId")
-                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
-                                        .maxWidthInPx(9999)
-                                        .onSaveEvents(Arrays.asList(
-                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                        .eventName("document-updated")
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                                        .build()))
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/documents/documents/form")
+                                .sourceUrl("services/documents/documents/:documentId")
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
+                                .maxWidthInPx(9999)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("document-updated")
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
         listViewFactory.addGlobalItemStyling(ListViewConditionalItemValueStylingDto.builder()
                 .compareValuePath(KokuDocumentDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveStyling(ListViewItemStylingDto.builder()
                         .lineThrough(true)
                         .opacity((short) 50)
-                        .build()
-                )
-                .build()
-        );
+                        .build())
+                .build());
         listViewFactory.addItemAction(ListViewConditionalItemValueActionDto.builder()
                 .compareValuePath(KokuDocumentDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
                         .url("services/documents/documents/:documentId/restore")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":documentId")
-                                        .valueReference(idSourcePathFieldRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":documentId")
+                                .valueReference(idSourcePathFieldRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Kunde wiederherstellen")
@@ -298,114 +259,80 @@ public class DocumentController {
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(":name")
                                         .valueReference(nameFieldRef)
-                                        .build()
-                                ))
-                                .build()
-                        )
+                                        .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
                                         .text(":name wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .valueReference(nameFieldRef)
+                                                .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuDocumentDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuDocumentDto.Fields.deleted, deletedSourceRef
-                                        ))
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text(":name konnte nicht wiederhergestellt werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
+                                        .valueMapping(Map.of(KokuDocumentDto.Fields.deleted, deletedSourceRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text(":name konnte nicht wiederhergestellt werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build()))
                         .build())
-                .negativeAction(
-                        ListViewCallHttpListItemActionDto.builder()
-                                .icon("TRASH")
-                                .url("services/documents/documents/:documentId")
-                                .params(Arrays.asList(
-                                        ListViewCallHttpListValueActionParamDto.builder()
-                                                .param(":documentId")
-                                                .valueReference(idSourcePathFieldRef)
-                                                .build()
-                                ))
-                                .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
-                                .userConfirmation(ListViewUserConfirmationDto.builder()
-                                        .headline("Dokument löschen")
-                                        .content(":name als gelöscht markieren?")
-                                        .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                .negativeAction(ListViewCallHttpListItemActionDto.builder()
+                        .icon("TRASH")
+                        .url("services/documents/documents/:documentId")
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":documentId")
+                                .valueReference(idSourcePathFieldRef)
+                                .build()))
+                        .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
+                        .userConfirmation(ListViewUserConfirmationDto.builder()
+                                .headline("Dokument löschen")
+                                .content(":name als gelöscht markieren?")
+                                .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                ListViewNotificationEvent.builder()
+                                        .text(":name erfolgreich als gelöscht markiert")
+                                        .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                 .param(":name")
                                                 .valueReference(nameFieldRef)
-                                                .build()
-                                        ))
-                                        .build()
-                                )
-
-                                .successEvents(Arrays.asList(
-                                        ListViewNotificationEvent.builder()
-                                                .text(":name erfolgreich als gelöscht markiert")
-                                                .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                                .params(Arrays.asList(
-                                                        ListViewNotificationEventValueParamDto.builder()
-                                                                .param(":name")
-                                                                .valueReference(nameFieldRef)
-                                                                .build()
-                                                ))
-                                                .build(),
-                                        ListViewEventPayloadUpdateActionEventDto.builder()
-                                                .idPath(KokuDocumentDto.Fields.id)
-                                                .valueMapping(Map.of(
-                                                        KokuDocumentDto.Fields.deleted, deletedSourceRef
-                                                ))
-                                                .build()
-                                ))
-                                .failEvents(Arrays.asList(
-                                        ListViewNotificationEvent.builder()
-                                                .text(":name konnte nicht als gelöscht markiert werden")
-                                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                                .params(Arrays.asList(
-                                                        ListViewNotificationEventValueParamDto.builder()
-                                                                .param(":name")
-                                                                .valueReference(nameFieldRef)
-                                                                .build()
-                                                ))
-                                                .build()
-                                ))
-                                .build()
-                )
-                .build()
-        );
+                                                .build()))
+                                        .build(),
+                                ListViewEventPayloadUpdateActionEventDto.builder()
+                                        .idPath(KokuDocumentDto.Fields.id)
+                                        .valueMapping(Map.of(KokuDocumentDto.Fields.deleted, deletedSourceRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text(":name konnte nicht als gelöscht markiert werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build()))
+                        .build())
+                .build());
 
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
                 .eventName("document-created")
                 .idPath(KokuDocumentDto.Fields.id)
-                .valueMapping(Map.of(
-                        KokuDocumentDto.Fields.name, nameFieldRef
-                ))
-                .build()
-        );
+                .valueMapping(Map.of(KokuDocumentDto.Fields.name, nameFieldRef))
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadItemUpdateGlobalEventListenerDto.builder()
                 .eventName("document-updated")
                 .idPath(KokuDocumentDto.Fields.id)
-                .valueMapping(Map.of(
-                        KokuDocumentDto.Fields.name, nameFieldRef
-                ))
-                .build()
-        );
+                .valueMapping(Map.of(KokuDocumentDto.Fields.name, nameFieldRef))
+                .build());
 
         return listViewFactory.create();
     }
@@ -413,20 +340,15 @@ public class DocumentController {
     @GetMapping("/documents/capture/list")
     public ListViewDto getCaptureListView(
             @RequestParam(value = "context", required = false) String context,
-            @RequestParam(value = "submitUrl") String submitUrl
-    ) {
-        final ListViewFactory listViewFactory = new ListViewFactory(
-                new DefaultListViewContentIdGenerator(),
-                KokuDocumentDto.Fields.id
-        );
+            @RequestParam(value = "submitUrl") String submitUrl) {
+        final ListViewFactory listViewFactory =
+                new ListViewFactory(new DefaultListViewContentIdGenerator(), KokuDocumentDto.Fields.id);
 
         final ListViewFieldReference nameFieldRef = listViewFactory.addField(
                 KokuDocumentDto.Fields.name,
-                ListViewInputFieldDto.builder()
-                        .label("Name")
-                        .build()
-        );
-        final ListViewSourcePathReference idSourcePathFieldRef = listViewFactory.addSourcePath(KokuDocumentDto.Fields.id);
+                ListViewInputFieldDto.builder().label("Name").build());
+        final ListViewSourcePathReference idSourcePathFieldRef =
+                listViewFactory.addSourcePath(KokuDocumentDto.Fields.id);
 
         listViewFactory.addFilter(
                 KokuDocumentDto.Fields.deleted,
@@ -435,46 +357,37 @@ public class DocumentController {
                         .enabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.TRUE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
-                                .build()
-                        )
+                                .build())
                         .disabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.FALSE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
                                 .build())
                         .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
-                        .build()
-        );
+                        .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
                 .route(":documentId")
                 .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
                         .param(":documentId")
                         .valueReference(idSourcePathFieldRef)
-                        .build()
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route(":documentId")
-                        .itemId(":documentId")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .sourceUrl("services/documents/documents/:documentId")
-                                .titlePath(KokuDocumentDto.Fields.name)
-                                .content(
-                                        ListViewDocumentFormContentDto.builder()
-                                                .documentUrl("services/documents/documents/:documentId")
-                                                .submitUrl(submitUrl)
-                                                .onSubmitEvents(Arrays.asList(ListViewDocumentFormContentAfterSavePropagateGlobalEventDto.builder()
-                                                        .eventName("document-captured")
-                                                        .build()
-                                                ))
-                                                .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                        .build()))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route(":documentId")
+                .itemId(":documentId")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .sourceUrl("services/documents/documents/:documentId")
+                        .titlePath(KokuDocumentDto.Fields.name)
+                        .content(ListViewDocumentFormContentDto.builder()
+                                .documentUrl("services/documents/documents/:documentId")
+                                .submitUrl(submitUrl)
+                                .onSubmitEvents(Arrays.asList(
+                                        ListViewDocumentFormContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("document-captured")
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
 
         return listViewFactory.create();
     }
@@ -483,34 +396,22 @@ public class DocumentController {
     public ListPage findAll(@RequestBody(required = false) final ListQuery predicate) {
         final QDocument qClazz = QDocument.document;
 
-        final ListQueryFactory<Document> listQueryFactory = new ListQueryFactory<>(
-                this.entityManager,
-                qClazz,
-                qClazz.id,
-                predicate
-        );
+        final ListQueryFactory<Document> listQueryFactory =
+                new ListQueryFactory<>(this.entityManager, qClazz, qClazz.id, predicate);
 
         listQueryFactory.setDefaultOrder(qClazz.recorded.asc());
 
-        listQueryFactory.addFetchExpr(
-                KokuDocumentDto.Fields.id,
-                qClazz.id
-        );
-        listQueryFactory.addFetchExpr(
-                KokuDocumentDto.Fields.name,
-                qClazz.name
-        );
-        listQueryFactory.addFetchExpr(
-                KokuDocumentDto.Fields.deleted,
-                qClazz.deleted
-        );
+        listQueryFactory.addFetchExpr(KokuDocumentDto.Fields.id, qClazz.id);
+        listQueryFactory.addFetchExpr(KokuDocumentDto.Fields.name, qClazz.name);
+        listQueryFactory.addFetchExpr(KokuDocumentDto.Fields.deleted, qClazz.deleted);
 
         return listQueryFactory.create();
     }
 
     @GetMapping(value = "/documents/{id}")
     public KokuDocumentDto read(@PathVariable("id") Long id) {
-        final Document document = this.documentRepository.findById(id)
+        final Document document = this.documentRepository
+                .findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found"));
         return this.transformer.transformToDto(document);
     }
@@ -521,34 +422,31 @@ public class DocumentController {
     public KokuDocumentDto update(
             @PathVariable("id") Long id,
             @RequestParam(value = "forceUpdate", required = false) Boolean forceUpdate,
-            @RequestBody KokuDocumentDto updatedDto
-    ) {
+            @RequestBody KokuDocumentDto updatedDto) {
         final Document document = this.entityManager.getReference(Document.class, id);
         if (!Boolean.TRUE.equals(forceUpdate) && !document.getVersion().equals(updatedDto.getVersion())) {
             throw new KokuBusinessExceptionWithConfirmationMessage(
                     KokuBusinessExceptionWithConfirmationMessageDto.builder()
                             .headline("Konflikt")
-                            .confirmationMessage("Das Dokument wurde zwischenzeitlich bearbeitet.\nWillst Du die Speicherung dennoch vornehmen?")
+                            .confirmationMessage("Das Dokument wurde zwischenzeitlich bearbeitet.\n"
+                                    + "Willst Du die Speicherung dennoch vornehmen?")
                             .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
                                     .icon("CLOSE")
-                                    .build()
-                            )
+                                    .build())
                             .closeOnClickOutside(true)
                             .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
                                     .text("Trotzdem speichern")
                                     .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format("services/documents/documents/%s?forceUpdate=%s", id, Boolean.TRUE))
-                                    .build()
-                            )
+                                    .endpointUrl(String.format(
+                                            "services/documents/documents/%s?forceUpdate=%s", id, Boolean.TRUE))
+                                    .build())
                             .button(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
-                                    .build()
-                            )
-                            .build()
-            );
+                                    .build())
+                            .build());
         }
         this.transformer.transformToEntity(document, updatedDto);
         this.entityManager.flush();
@@ -589,6 +487,4 @@ public class DocumentController {
         final Document savedDocument = this.documentRepository.saveAndFlush(newDocument);
         return this.transformer.transformToDto(savedDocument);
     }
-
-
 }

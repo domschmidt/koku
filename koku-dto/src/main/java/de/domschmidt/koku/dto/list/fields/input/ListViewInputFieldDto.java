@@ -15,10 +15,11 @@ public class ListViewInputFieldDto extends AbstractListViewFieldDto<String> {
 
     @Builder.Default
     ListViewInputFieldTypeEnumDto type = ListViewInputFieldTypeEnumDto.TEXT;
+
     String label;
     KokuRoundedEnum rounded;
     KokuColorEnum backgroundColor;
+
     @Builder.Default
     String defaultValue = "";
-
 }

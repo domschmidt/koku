@@ -9,6 +9,4 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
-public abstract class AbstractListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto {
-
-}
+public abstract class AbstractListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto {}

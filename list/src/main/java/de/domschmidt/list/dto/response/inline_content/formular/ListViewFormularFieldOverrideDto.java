@@ -11,5 +11,4 @@ public abstract class ListViewFormularFieldOverrideDto {
 
     String fieldId;
     Boolean disable;
-
 }

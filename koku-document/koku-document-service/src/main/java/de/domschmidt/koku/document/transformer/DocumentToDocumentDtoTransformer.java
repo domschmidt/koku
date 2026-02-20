@@ -19,10 +19,7 @@ public class DocumentToDocumentDtoTransformer {
                 .build();
     }
 
-    public Document transformToEntity(
-            final Document model,
-            final KokuDocumentDto updatedDto
-    ) {
+    public Document transformToEntity(final Document model, final KokuDocumentDto updatedDto) {
         if (updatedDto.getName() != null) {
             model.setName(updatedDto.getName());
         }

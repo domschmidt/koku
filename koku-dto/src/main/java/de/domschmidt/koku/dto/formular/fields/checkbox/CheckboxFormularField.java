@@ -16,7 +16,7 @@ public class CheckboxFormularField extends AbstractFormField<Boolean> {
     Integer minLength;
     Integer maxLength;
     String regexp;
+
     @Builder.Default
     Boolean defaultValue = Boolean.FALSE;
-
 }

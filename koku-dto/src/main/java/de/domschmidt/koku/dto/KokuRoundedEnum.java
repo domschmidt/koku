@@ -1,7 +1,6 @@
 package de.domschmidt.koku.dto;
 
 public enum KokuRoundedEnum {
-
     XS,
     SM,
     MD,
@@ -10,5 +9,4 @@ public enum KokuRoundedEnum {
     XL2,
     XL3,
     XL4
-
 }

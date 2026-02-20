@@ -13,5 +13,4 @@ public class KokuBusinessExceptionSendToDifferentEndpointButtonDto extends KokuB
     String endpointUrl;
     Boolean showLoadingAnimation;
     Boolean showDisabledState;
-
 }

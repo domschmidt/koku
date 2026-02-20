@@ -15,5 +15,4 @@ public class SelectFormularFieldPossibleValue {
     Boolean disabled;
     KokuColorEnum color;
     String category;
-
 }

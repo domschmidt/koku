@@ -21,5 +21,4 @@ public class FileToFileDtoTransformer {
                 .recorded(model.getRecorded())
                 .build();
     }
-
 }

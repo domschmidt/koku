@@ -2,9 +2,8 @@ package de.domschmidt.koku.promotion.transformer;
 
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
 import de.domschmidt.koku.promotion.persistence.Promotion;
-import org.springframework.stereotype.Component;
-
 import java.time.format.DateTimeFormatter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PromotionToPromotionDtoTransformer {
@@ -30,10 +29,7 @@ public class PromotionToPromotionDtoTransformer {
                 .build();
     }
 
-    public Promotion transformToEntity(
-            final Promotion model,
-            final KokuPromotionDto updatedDto
-    ) {
+    public Promotion transformToEntity(final Promotion model, final KokuPromotionDto updatedDto) {
 
         if (updatedDto.getName() != null) {
             model.setName(updatedDto.getName());

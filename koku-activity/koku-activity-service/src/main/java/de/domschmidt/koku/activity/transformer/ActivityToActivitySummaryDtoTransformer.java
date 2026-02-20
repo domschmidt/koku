@@ -11,5 +11,4 @@ public class ActivityToActivitySummaryDtoTransformer {
                 .summary(model.getName())
                 .build();
     }
-
 }

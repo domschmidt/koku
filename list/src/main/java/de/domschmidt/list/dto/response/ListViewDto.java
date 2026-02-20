@@ -10,12 +10,11 @@ import de.domschmidt.list.dto.response.items.AbstractListViewRoutedItemDto;
 import de.domschmidt.list.dto.response.items.actions.AbstractListViewItemActionDto;
 import de.domschmidt.list.dto.response.items.preview.AbstractListViewItemPreviewDto;
 import de.domschmidt.list.dto.response.items.style.AbstractListViewGlobalItemStylingDto;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -34,5 +33,4 @@ public class ListViewDto {
     AbstractListViewItemPreviewDto itemPreview;
     List<AbstractListViewGlobalEventListenerDto> globalEventListeners = new ArrayList<>();
     List<AbstractListViewGlobalItemStylingDto> globalItemStyling = new ArrayList<>();
-
 }

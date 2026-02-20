@@ -7,5 +7,4 @@ import lombok.experimental.SuperBuilder;
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @SuperBuilder
-public abstract class AbstractFormButtonButtonAction {
-}
+public abstract class AbstractFormButtonButtonAction {}

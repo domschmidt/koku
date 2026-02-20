@@ -11,5 +11,4 @@ public abstract class AbstractListViewActionDto {
 
     String icon;
     Boolean loading;
-
 }

@@ -54,6 +54,11 @@ import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
@@ -64,12 +69,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping()
@@ -85,34 +84,34 @@ public class FileController {
     public FormViewDto getFormularView() {
         final FormViewFactory formFactory = new FormViewFactory(
                 new DefaultViewContentIdGenerator(),
-                GridContainer.builder()
-                        .cols(1)
-                        .build()
-        );
+                GridContainer.builder().cols(1).build());
 
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuFileDto.Fields.filename)
                 .label("Dateiname")
                 .readonly(true)
-                .build()
-        );
+                .build());
         formFactory.addField(SelectFormularField.builder()
                 .valuePath(KokuFileDto.Fields.customerId)
                 .label("Kunde")
                 .possibleValues(StreamSupport.stream(
-                        Spliterators.spliteratorUnknownSize(this.customerKTableProcessor.getCustomers().all(), Spliterator.DISTINCT),
-                        false
-                ).map(customer -> SelectFormularFieldPossibleValue.builder()
-                        .id(customer.key + "")
-                        .text(Stream.of(customer.value.getFirstname(), customer.value.getLastname())
-                                .filter(s -> s != null && !s.isEmpty())
-                                .collect(Collectors.joining(", ")))
-                        .disabled(customer.value.getDeleted())
-                        .build()).toList())
+                                Spliterators.spliteratorUnknownSize(
+                                        this.customerKTableProcessor
+                                                .getCustomers()
+                                                .all(),
+                                        Spliterator.DISTINCT),
+                                false)
+                        .map(customer -> SelectFormularFieldPossibleValue.builder()
+                                .id(customer.key + "")
+                                .text(Stream.of(customer.value.getFirstname(), customer.value.getLastname())
+                                        .filter(s -> s != null && !s.isEmpty())
+                                        .collect(Collectors.joining(", ")))
+                                .disabled(customer.value.getDeleted())
+                                .build())
+                        .toList())
                 .label("Kunde")
                 .readonly(true)
-                .build()
-        );
+                .build());
 
         return formFactory.create();
     }
@@ -121,26 +120,19 @@ public class FileController {
     public ListViewDto getListView(
             @RequestParam(value = "customerId", required = false) Long customerId,
             @RequestParam(value = "contextEndpointUrl", required = false) String contextEndpointUrl,
-            @RequestParam(value = "contextEndpointMethod", required = false) String contextEndpointMethod
-    ) {
-        final ListViewFactory listViewFactory = new ListViewFactory(
-                new DefaultListViewContentIdGenerator(),
-                KokuFileDto.Fields.id
-        );
+            @RequestParam(value = "contextEndpointMethod", required = false) String contextEndpointMethod) {
+        final ListViewFactory listViewFactory =
+                new ListViewFactory(new DefaultListViewContentIdGenerator(), KokuFileDto.Fields.id);
 
         final ListViewFieldReference filenameFieldRef = listViewFactory.addField(
                 KokuFileDto.Fields.filename,
-                ListViewInputFieldDto.builder()
-                        .label("Dateiname")
-                        .build()
-        );
+                ListViewInputFieldDto.builder().label("Dateiname").build());
         final ListViewFieldReference recordedFieldRef = listViewFactory.addField(
                 KokuFileDto.Fields.recorded,
                 ListViewInputFieldDto.builder()
                         .label("Erstelldatum")
                         .type(ListViewInputFieldTypeEnumDto.DATETIME)
-                        .build()
-        );
+                        .build());
         final ListViewSourcePathReference idSourcePathFieldRef = listViewFactory.addSourcePath(KokuFileDto.Fields.id);
         final ListViewSourcePathReference deletedSourceRef = listViewFactory.addSourcePath(KokuFileDto.Fields.deleted);
         listViewFactory.addSourcePath(KokuFileDto.Fields.customerId);
@@ -152,79 +144,68 @@ public class FileController {
                         .enabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.TRUE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
-                                .build()
-                        )
+                                .build())
                         .disabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.FALSE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
                                 .build())
                         .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
-                        .build()
-        );
+                        .build());
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("capture-barcode")
                 .icon("BARCODE")
-                .build()
-        );
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadSearchTermGlobalEventListenerDto.builder()
                 .eventName("barcode-captured")
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route("capture-barcode")
-                        .itemId(":fileId")
-                        .modalContent(ListViewHeaderContentDto.builder()
-                                .title("Barcode Scannen")
-                                .content(ListViewBarcodeContentDto.builder()
-                                        .onCaptureEvents(Arrays.asList(
-                                                ListViewBarcodeContentDtoAfterCapturePropagateGlobalEventDto.builder()
-                                                        .eventName("barcode-captured")
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route("capture-barcode")
+                .itemId(":fileId")
+                .modalContent(ListViewHeaderContentDto.builder()
+                        .title("Barcode Scannen")
+                        .content(ListViewBarcodeContentDto.builder()
+                                .onCaptureEvents(Arrays.asList(
+                                        ListViewBarcodeContentDtoAfterCapturePropagateGlobalEventDto.builder()
+                                                .eventName("barcode-captured")
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("capture")
                 .icon("CAPTURE")
-                .build()
-        );
+                .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
                 .route("capture")
                 .text("Neues Dokument")
-                .build()
-        );
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
                 .eventName("document-captured")
                 .idPath(KokuFileDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuFileDto.Fields.filename, filenameFieldRef,
-                        KokuFileDto.Fields.recorded, recordedFieldRef
-                ))
-                .build()
-        );
+                        KokuFileDto.Fields.recorded, recordedFieldRef))
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadOpenRoutedContentGlobalEventListenerDto.builder()
                 .eventName("document-captured")
                 .route(":fileId")
                 .params(Arrays.asList(ListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto.builder()
                         .param(":fileId")
                         .valuePath(KokuFileDto.Fields.id)
-                        .build()
-                ))
-                .build()
-        );
+                        .build()))
+                .build());
 
         Map<String, AbstractListViewListContentContextDto> context = new HashMap<>();
         if (customerId != null && contextEndpointUrl != null) {
-            context.put("customer",
+            context.put(
+                    "customer",
                     EndpointListViewListContentContextDto.builder()
-                            .endpointMethod(contextEndpointMethod != null ? EndpointListViewContextMethodEnum.valueOf(contextEndpointMethod) : EndpointListViewContextMethodEnum.GET)
+                            .endpointMethod(
+                                    contextEndpointMethod != null
+                                            ? EndpointListViewContextMethodEnum.valueOf(contextEndpointMethod)
+                                            : EndpointListViewContextMethodEnum.GET)
                             .endpointUrl(contextEndpointUrl)
                             .build());
         }
@@ -234,73 +215,59 @@ public class FileController {
             listUrlAppendix.add("customerId=" + customerId);
         }
 
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route("capture")
-                        .itemId(":fileId")
-                        .modalContent(ListViewHeaderContentDto.builder()
-                                .title("Dokument Erfassen")
-                                .content(ListViewListContentDto.builder()
-                                        .listUrl("services/documents/documents/capture/list?submitUrl=services/files/files%3F" + String.join("%26", listUrlAppendix))
-                                        .sourceUrl("services/documents/documents/query")
-                                        .context(context)
-                                        .maxWidthInPx(9999)
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route("capture")
+                .itemId(":fileId")
+                .modalContent(ListViewHeaderContentDto.builder()
+                        .title("Dokument Erfassen")
+                        .content(ListViewListContentDto.builder()
+                                .listUrl("services/documents/documents/capture/list?submitUrl=services/files/files%3F"
+                                        + String.join("%26", listUrlAppendix))
+                                .sourceUrl("services/documents/documents/query")
+                                .context(context)
+                                .maxWidthInPx(9999)
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
                 .route(":fileId")
                 .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
                         .param(":fileId")
                         .valueReference(idSourcePathFieldRef)
-                        .build()
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route(":fileId")
-                        .itemId(":fileId")
-                        .inlineContent(ListViewHeaderContentDto.builder()
+                        .build()))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route(":fileId")
+                .itemId(":fileId")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .sourceUrl("services/files/files/:fileId")
+                        .titlePath(KokuFileDto.Fields.filename)
+                        .content(ListViewFileViewerContentDto.builder()
                                 .sourceUrl("services/files/files/:fileId")
-                                .titlePath(KokuFileDto.Fields.filename)
-                                .content(
-                                        ListViewFileViewerContentDto.builder()
-                                                .sourceUrl("services/files/files/:fileId")
-                                                .fileUrl("services/files/files/:fileId/content")
-                                                .mimeTypeSourcePath(KokuFileDto.Fields.mimeType)
-                                                .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                                .fileUrl("services/files/files/:fileId/content")
+                                .mimeTypeSourcePath(KokuFileDto.Fields.mimeType)
+                                .build())
+                        .build())
+                .build());
         listViewFactory.addGlobalItemStyling(ListViewConditionalItemValueStylingDto.builder()
                 .compareValuePath(KokuFileDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveStyling(ListViewItemStylingDto.builder()
                         .lineThrough(true)
                         .opacity((short) 50)
-                        .build()
-                )
-                .build()
-        );
+                        .build())
+                .build());
         listViewFactory.addItemAction(ListViewConditionalItemValueActionDto.builder()
                 .compareValuePath(KokuFileDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
                         .url("services/files/files/:fileId/restore")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":fileId")
-                                        .valueReference(idSourcePathFieldRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":fileId")
+                                .valueReference(idSourcePathFieldRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Datei wiederherstellen")
@@ -308,116 +275,84 @@ public class FileController {
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(":name")
                                         .valueReference(filenameFieldRef)
-                                        .build()
-                                ))
-                                .build()
-                        )
+                                        .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
                                         .text(":name wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(filenameFieldRef)
-                                                        .build()
-                                        ))
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .valueReference(filenameFieldRef)
+                                                .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuFileDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuFileDto.Fields.deleted, deletedSourceRef
-                                        ))
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text(":name konnte nicht wiederhergestellt werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(filenameFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
+                                        .valueMapping(Map.of(KokuFileDto.Fields.deleted, deletedSourceRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text(":name konnte nicht wiederhergestellt werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(filenameFieldRef)
+                                        .build()))
+                                .build()))
                         .build())
-                .negativeAction(
-                        ListViewCallHttpListItemActionDto.builder()
-                                .icon("TRASH")
-                                .url("services/files/files/:fileId")
-                                .params(Arrays.asList(
-                                        ListViewCallHttpListValueActionParamDto.builder()
-                                                .param(":fileId")
-                                                .valueReference(idSourcePathFieldRef)
-                                                .build()
-                                ))
-                                .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
-                                .userConfirmation(ListViewUserConfirmationDto.builder()
-                                        .headline("Datei löschen")
-                                        .content(":name als gelöscht markieren?")
-                                        .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                .negativeAction(ListViewCallHttpListItemActionDto.builder()
+                        .icon("TRASH")
+                        .url("services/files/files/:fileId")
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":fileId")
+                                .valueReference(idSourcePathFieldRef)
+                                .build()))
+                        .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
+                        .userConfirmation(ListViewUserConfirmationDto.builder()
+                                .headline("Datei löschen")
+                                .content(":name als gelöscht markieren?")
+                                .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(filenameFieldRef)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                ListViewNotificationEvent.builder()
+                                        .text(":name erfolgreich als gelöscht markiert")
+                                        .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                 .param(":name")
                                                 .valueReference(filenameFieldRef)
-                                                .build()
-                                        ))
-                                        .build()
-                                )
-
-                                .successEvents(Arrays.asList(
-                                        ListViewNotificationEvent.builder()
-                                                .text(":name erfolgreich als gelöscht markiert")
-                                                .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                                .params(Arrays.asList(
-                                                        ListViewNotificationEventValueParamDto.builder()
-                                                                .param(":name")
-                                                                .valueReference(filenameFieldRef)
-                                                                .build()
-                                                ))
-                                                .build(),
-                                        ListViewEventPayloadUpdateActionEventDto.builder()
-                                                .idPath(KokuFileDto.Fields.id)
-                                                .valueMapping(Map.of(
-                                                        KokuFileDto.Fields.deleted, deletedSourceRef
-                                                ))
-                                                .build()
-                                ))
-                                .failEvents(Arrays.asList(
-                                        ListViewNotificationEvent.builder()
-                                                .text(":name konnte nicht als gelöscht markiert werden")
-                                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                                .params(Arrays.asList(
-                                                        ListViewNotificationEventValueParamDto.builder()
-                                                                .param(":name")
-                                                                .valueReference(filenameFieldRef)
-                                                                .build()
-                                                ))
-                                                .build()
-                                ))
-                                .build()
-                )
-                .build()
-        );
+                                                .build()))
+                                        .build(),
+                                ListViewEventPayloadUpdateActionEventDto.builder()
+                                        .idPath(KokuFileDto.Fields.id)
+                                        .valueMapping(Map.of(KokuFileDto.Fields.deleted, deletedSourceRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text(":name konnte nicht als gelöscht markiert werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(filenameFieldRef)
+                                        .build()))
+                                .build()))
+                        .build())
+                .build());
 
         return listViewFactory.create();
     }
 
-    @PostMapping(value = {
-            "/files/query",
-    })
+    @PostMapping(
+            value = {
+                "/files/query",
+            })
     public ListPage findAll(
             @RequestParam(value = "customerId", required = false) Long customerId,
-            @RequestBody(required = false) final ListQuery predicate
-    ) {
+            @RequestBody(required = false) final ListQuery predicate) {
         final QFile qClazz = QFile.file;
 
-        final ListQueryFactory<File> listQueryFactory = new ListQueryFactory<>(
-                this.entityManager,
-                qClazz,
-                qClazz.id,
-                predicate
-        );
+        final ListQueryFactory<File> listQueryFactory =
+                new ListQueryFactory<>(this.entityManager, qClazz, qClazz.id, predicate);
 
         if (customerId != null) {
             listQueryFactory.addDefaultFilter(qClazz.customerId.eq(customerId));
@@ -425,38 +360,14 @@ public class FileController {
 
         listQueryFactory.setDefaultOrder(qClazz.recorded.desc());
 
-        listQueryFactory.addFetchExpr(
-                KokuFileDto.Fields.id,
-                qClazz.id
-        );
-        listQueryFactory.addFetchExpr(
-                KokuFileDto.Fields.deleted,
-                qClazz.deleted
-        );
-        listQueryFactory.addFetchExpr(
-                KokuFileDto.Fields.filename,
-                qClazz.filename
-        );
-        listQueryFactory.addFetchExpr(
-                KokuFileDto.Fields.mimeType,
-                qClazz.mimeType
-        );
-        listQueryFactory.addFetchExpr(
-                KokuFileDto.Fields.size,
-                qClazz.size
-        );
-        listQueryFactory.addFetchExpr(
-                KokuFileDto.Fields.customerId,
-                qClazz.customerId
-        );
-        listQueryFactory.addFetchExpr(
-                KokuFileDto.Fields.updated,
-                qClazz.updated
-        );
-        listQueryFactory.addFetchExpr(
-                KokuFileDto.Fields.recorded,
-                qClazz.recorded
-        );
+        listQueryFactory.addFetchExpr(KokuFileDto.Fields.id, qClazz.id);
+        listQueryFactory.addFetchExpr(KokuFileDto.Fields.deleted, qClazz.deleted);
+        listQueryFactory.addFetchExpr(KokuFileDto.Fields.filename, qClazz.filename);
+        listQueryFactory.addFetchExpr(KokuFileDto.Fields.mimeType, qClazz.mimeType);
+        listQueryFactory.addFetchExpr(KokuFileDto.Fields.size, qClazz.size);
+        listQueryFactory.addFetchExpr(KokuFileDto.Fields.customerId, qClazz.customerId);
+        listQueryFactory.addFetchExpr(KokuFileDto.Fields.updated, qClazz.updated);
+        listQueryFactory.addFetchExpr(KokuFileDto.Fields.recorded, qClazz.recorded);
 
         return listQueryFactory.create();
     }
@@ -507,18 +418,10 @@ public class FileController {
     public KokuFileDto create(
             @RequestPart("file") final MultipartFile file,
             @RequestParam(value = "id", required = false) UUID id,
-            @RequestParam(value = "customerId", required = false) Long customerId
-    ) throws IOException {
+            @RequestParam(value = "customerId", required = false) Long customerId)
+            throws IOException {
         final File savedFile = this.fileRepository.saveAndFlush(new File(
-                id,
-                file.getOriginalFilename(),
-                customerId,
-                file.getContentType(),
-                file.getBytes(),
-                file.getSize()
-        ));
+                id, file.getOriginalFilename(), customerId, file.getContentType(), file.getBytes(), file.getSize()));
         return this.transformer.transformToDto(savedFile);
     }
-
-
 }

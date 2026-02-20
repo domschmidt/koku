@@ -9,5 +9,4 @@ public class DashboardTextPanelExplanationItemDto {
 
     String left;
     String right;
-
 }

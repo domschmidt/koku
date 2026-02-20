@@ -27,5 +27,4 @@ public class DashboardAppointmentsPanelListSourceDto {
     Boolean allDay;
     String userIdFieldSelectionPath;
     String deletedFieldSelectionPath;
-
 }

@@ -9,5 +9,4 @@ public class ListViewItemStylingDto {
 
     Short opacity;
     Boolean lineThrough;
-
 }

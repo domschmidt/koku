@@ -1,7 +1,6 @@
 package de.domschmidt.koku.dto.formular.fields.input;
 
 public enum EnumInputFormularFieldType {
-
     TEXT,
     PASSWORD,
     EMAIL,
@@ -14,5 +13,4 @@ public enum EnumInputFormularFieldType {
     URL,
     SEARCH,
     TIME,
-
 }

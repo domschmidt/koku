@@ -1,9 +1,8 @@
 package de.domschmidt.koku.customer.kafka.dto;
 
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.*;
 
 @Getter
 @Setter
@@ -27,5 +26,4 @@ public class CustomerAppointmentKafkaDto {
 
     LocalDateTime updated;
     LocalDateTime recorded;
-
 }

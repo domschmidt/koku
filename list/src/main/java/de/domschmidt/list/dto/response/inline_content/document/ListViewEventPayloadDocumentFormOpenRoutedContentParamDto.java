@@ -7,8 +7,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeName("event-payload")
 @Data
-public class ListViewEventPayloadDocumentFormOpenRoutedContentParamDto extends AbstractListViewInlineDocumentFormAfterSaveParamDto {
+public class ListViewEventPayloadDocumentFormOpenRoutedContentParamDto
+        extends AbstractListViewInlineDocumentFormAfterSaveParamDto {
 
     String valuePath;
-
 }

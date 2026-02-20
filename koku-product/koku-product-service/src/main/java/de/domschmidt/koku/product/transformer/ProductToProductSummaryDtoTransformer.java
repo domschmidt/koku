@@ -11,5 +11,4 @@ public class ProductToProductSummaryDtoTransformer {
                 .summary(model.getName())
                 .build();
     }
-
 }

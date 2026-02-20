@@ -2,69 +2,104 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.2</version>
-        <relativePath/>
-    </parent>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.0.2</version>
+    <relativePath/>
+  </parent>
 
-    <name>Koku</name>
-    <description>Ko(smetikstudio) Ku(nden)</description>
+  <name>Koku</name>
+  <description>Ko(smetikstudio) Ku(nden)</description>
 
-    <groupId>de.domschmidt</groupId>
-    <artifactId>koku</artifactId>
-    <version>0.0.0</version>
-    <packaging>pom</packaging>
+  <groupId>de.domschmidt</groupId>
+  <artifactId>koku</artifactId>
+  <version>0.0.0</version>
+  <packaging>pom</packaging>
 
-    <properties>
-        <jdk.version>21</jdk.version>
+  <properties>
+    <jdk.version>21</jdk.version>
 
-        <maven.compiler.release>${jdk.version}</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>${jdk.version}</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <main.basedir>${project.basedir}</main.basedir>
-        <docker.jre.baseimage>eclipse-temurin:21-jre</docker.jre.baseimage>
-        <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
+    <main.basedir>${project.basedir}</main.basedir>
+    <docker.jre.baseimage>eclipse-temurin:21-jre</docker.jre.baseimage>
+    <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
 
-        <apt-maven-plugin.version>1.1.3</apt-maven-plugin.version>
-        <postgresql.version>42.7.9</postgresql.version>
-        <lombok.version>1.18.42</lombok.version>
-        <ez-vcard.version>0.12.1</ez-vcard.version>
-        <commons-io.version>2.21.0</commons-io.version>
-        <commons-text.version>1.15.0</commons-text.version>
-        <dom4j.version>2.2.0</dom4j.version>
-        <commons-lang3.version>3.20.0</commons-lang3.version>
-        <spring-cloud.version>2025.1.1</spring-cloud.version>
-        <querydsl.version>5.1.0</querydsl.version>
-        <typescript-generator-maven-plugin.version>3.2.1263</typescript-generator-maven-plugin.version>
-        <maven-assembly-plugin.version>3.8.0</maven-assembly-plugin.version>
-    </properties>
+    <apt-maven-plugin.version>1.1.3</apt-maven-plugin.version>
+    <postgresql.version>42.7.9</postgresql.version>
+    <lombok.version>1.18.42</lombok.version>
+    <ez-vcard.version>0.12.1</ez-vcard.version>
+    <commons-io.version>2.21.0</commons-io.version>
+    <commons-text.version>1.15.0</commons-text.version>
+    <dom4j.version>2.2.0</dom4j.version>
+    <commons-lang3.version>3.20.0</commons-lang3.version>
+    <spring-cloud.version>2025.1.1</spring-cloud.version>
+    <querydsl.version>5.1.0</querydsl.version>
+    <typescript-generator-maven-plugin.version>3.2.1263</typescript-generator-maven-plugin.version>
+    <maven-assembly-plugin.version>3.8.0</maven-assembly-plugin.version>
+  </properties>
 
-    <modules>
-        <module>koku-frontend</module>
-        <module>koku-carddav</module>
-        <module>koku-customer</module>
-        <module>koku-product</module>
-        <module>koku-activity</module>
-        <module>koku-promotion</module>
-        <module>koku-document</module>
-        <module>koku-user</module>
-        <module>koku-dto</module>
-        <module>koku-auth</module>
-        <module>koku-file</module>
-        <module>formular</module>
-        <module>business-logic</module>
-        <module>business-exception</module>
-        <module>list</module>
-        <module>list-query</module>
-        <module>calendar</module>
-        <module>chart</module>
-        <module>dashboard</module>
-        <module>migrate</module>
-    </modules>
+  <modules>
+    <module>koku-frontend</module>
+    <module>koku-carddav</module>
+    <module>koku-customer</module>
+    <module>koku-product</module>
+    <module>koku-activity</module>
+    <module>koku-promotion</module>
+    <module>koku-document</module>
+    <module>koku-user</module>
+    <module>koku-dto</module>
+    <module>koku-auth</module>
+    <module>koku-file</module>
+    <module>formular</module>
+    <module>business-logic</module>
+    <module>business-exception</module>
+    <module>list</module>
+    <module>list-query</module>
+    <module>calendar</module>
+    <module>chart</module>
+    <module>dashboard</module>
+    <module>migrate</module>
+  </modules>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>3.2.1</version>
+
+          <configuration>
+            <java>
+              <palantirJavaFormat>
+                <version>2.88.0</version>
+              </palantirJavaFormat>
+            </java>
+          </configuration>
+
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 
 
 </project>

@@ -22,7 +22,7 @@ public abstract class BaseMigration {
 
     protected void read(String query, Consumer<ResultSet> handler, Connection customSource) throws SQLException {
         try (PreparedStatement stmt = customSource.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
+                ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 handler.accept(rs);
             }

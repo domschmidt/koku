@@ -11,5 +11,4 @@ public abstract class KokuBusinessRuleFormularFieldOverrideDto {
 
     String fieldId;
     Boolean disable;
-
 }

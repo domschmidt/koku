@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
-
 @JsonTypeName("text")
 @SuperBuilder
 @Data
-public class ListViewItemPreviewTextDto extends AbstractListViewItemPreviewDto {
-
-}
+public class ListViewItemPreviewTextDto extends AbstractListViewItemPreviewDto {}

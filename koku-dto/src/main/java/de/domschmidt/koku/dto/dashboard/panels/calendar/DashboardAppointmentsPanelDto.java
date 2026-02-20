@@ -2,11 +2,10 @@ package de.domschmidt.koku.dto.dashboard.panels.calendar;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.dashboard.dto.content.panels.AbstractDashboardPanel;
-import lombok.Getter;
-import lombok.experimental.SuperBuilder;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("appointments")
@@ -18,5 +17,4 @@ public class DashboardAppointmentsPanelDto extends AbstractDashboardPanel {
     LocalDateTime start;
     LocalDateTime end;
     List<DashboardAppointmentsPanelListSourceDto> listSources;
-
 }

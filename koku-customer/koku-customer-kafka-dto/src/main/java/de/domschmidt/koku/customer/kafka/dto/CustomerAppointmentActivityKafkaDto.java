@@ -1,8 +1,7 @@
 package de.domschmidt.koku.customer.kafka.dto;
 
-import lombok.*;
-
 import java.math.BigDecimal;
+import lombok.*;
 
 @Getter
 @Setter
@@ -13,5 +12,4 @@ public class CustomerAppointmentActivityKafkaDto {
 
     Long activityId;
     BigDecimal sellPrice;
-
 }

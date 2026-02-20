@@ -2,11 +2,10 @@ package de.domschmidt.koku.customer.transformer;
 
 import de.domschmidt.koku.customer.persistence.Customer;
 import de.domschmidt.koku.dto.customer.KokuCustomerDto;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Component
 public class CustomerToCustomerDtoTransformer {
@@ -18,29 +17,22 @@ public class CustomerToCustomerDtoTransformer {
                 .version(model.getVersion())
                 .firstName(model.getFirstname())
                 .lastName(model.getLastname())
-                .fullName(
-                        Stream.of(model.getFirstname(), model.getLastname())
+                .fullName(Stream.of(model.getFirstname(), model.getLastname())
+                        .filter(s -> s != null && !s.isEmpty())
+                        .collect(Collectors.joining(" ")))
+                .fullNameWithOnFirstNameBasis(Stream.of(model.getFirstname(), model.getLastname())
                                 .filter(s -> s != null && !s.isEmpty())
                                 .collect(Collectors.joining(" "))
-                )
-                .fullNameWithOnFirstNameBasis(
-                        Stream.of(model.getFirstname(), model.getLastname())
-                                .filter(s -> s != null && !s.isEmpty())
-                                .collect(Collectors.joining(" "))
-                                + (model.isOnFirstnameBasis() ? " *" : "")
-                )
-                .initials(
-                        (model.getFirstname() != null ? StringUtils.truncate(model.getFirstname(), 1) : "") +
-                                (model.getLastname() != null ? StringUtils.truncate(model.getLastname(), 1) : "")
-                )
+                        + (model.isOnFirstnameBasis() ? " *" : ""))
+                .initials((model.getFirstname() != null ? StringUtils.truncate(model.getFirstname(), 1) : "")
+                        + (model.getLastname() != null ? StringUtils.truncate(model.getLastname(), 1) : ""))
                 .email(model.getEmail())
                 .address(model.getAddress())
                 .postalCode(model.getPostalCode())
                 .city(model.getCity())
                 .addressLine2(Stream.of(model.getPostalCode(), model.getCity())
                         .filter(s -> s != null && !s.isEmpty())
-                        .collect(Collectors.joining(" "))
-                )
+                        .collect(Collectors.joining(" ")))
                 .privateTelephoneNo(model.getPrivateTelephoneNo())
                 .businessTelephoneNo(model.getBusinessTelephoneNo())
                 .mobileTelephoneNo(model.getMobileTelephoneNo())
@@ -69,10 +61,7 @@ public class CustomerToCustomerDtoTransformer {
                 .build();
     }
 
-    public Customer transformToEntity(
-            final Customer model,
-            final KokuCustomerDto updatedDto
-    ) {
+    public Customer transformToEntity(final Customer model, final KokuCustomerDto updatedDto) {
 
         if (updatedDto.getFirstName() != null) {
             model.setFirstname(updatedDto.getFirstName());

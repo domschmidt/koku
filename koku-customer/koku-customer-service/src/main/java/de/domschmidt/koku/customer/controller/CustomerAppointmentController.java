@@ -1,5 +1,7 @@
 package de.domschmidt.koku.customer.controller;
 
+import static de.domschmidt.koku.customer.persistence.QCustomer.customer;
+
 import com.querydsl.core.Tuple;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
@@ -99,14 +101,6 @@ import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -119,8 +113,13 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import static de.domschmidt.koku.customer.persistence.QCustomer.customer;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping()
@@ -148,8 +147,7 @@ public class CustomerAppointmentController {
             final ProductKTableProcessor productKTableProcessor,
             final ProductManufacturerKTableProcessor productManufacturerKTableProcessor,
             final PromotionKTableProcessor promotionKTableProcessor,
-            final UserKTableProcessor userKTableProcessor
-    ) {
+            final UserKTableProcessor userKTableProcessor) {
         this.entityManager = entityManager;
         this.customerAppointmentRepository = customerAppointmentRepository;
         this.customerAppointmentKafkaService = customerAppointmentKafkaService;
@@ -163,16 +161,12 @@ public class CustomerAppointmentController {
     }
 
     @GetMapping("/customers/appointments/activitysummary")
-    public KokuCustomerActivityPriceSummaryDto getActivitySum(
-            KokuActivityPriceSummaryRequestDto request
-    ) {
+    public KokuCustomerActivityPriceSummaryDto getActivitySum(KokuActivityPriceSummaryRequestDto request) {
         return transformer.transformToActivityPriceSummary(request);
     }
 
     @GetMapping("/customers/appointments/productsummary")
-    public KokuActivitySoldProductPriceSummaryDto getProductSum(
-            KokuActivitySoldProductSummaryRequestDto request
-    ) {
+    public KokuActivitySoldProductPriceSummaryDto getProductSum(KokuActivitySoldProductSummaryRequestDto request) {
         return this.transformer.transformToSoldProductPriceSummary(request);
     }
 
@@ -180,10 +174,7 @@ public class CustomerAppointmentController {
     public FormViewDto getFormularView() {
         final FormViewFactory formFactory = new FormViewFactory(
                 new DefaultViewContentIdGenerator(),
-                GridContainer.builder()
-                        .cols(1)
-                        .build()
-        );
+                GridContainer.builder().cols(1).build());
         final QCustomer qCustomer = customer;
         final List<Customer> customersSnapshot = new JPAQuery<>(this.entityManager)
                 .select(qCustomer)
@@ -193,24 +184,24 @@ public class CustomerAppointmentController {
                 .valuePath(KokuCustomerAppointmentDto.Fields.customerId)
                 .label("Kunde")
                 .id(KokuCustomerAppointmentDto.Fields.customerId)
-                .possibleValues(customersSnapshot.stream().map(customer -> {
-                    return SelectFormularFieldPossibleValue.builder()
-                            .id(customer.getId() + "")
-                            .text(Stream.of(customer.getFirstname(), customer.getLastname())
-                                    .filter(s -> s != null && !s.isEmpty())
-                                    .collect(Collectors.joining(", ")))
-                            .disabled(customer.isDeleted())
-                            .build();
-                }).toList())
+                .possibleValues(customersSnapshot.stream()
+                        .map(customer -> {
+                            return SelectFormularFieldPossibleValue.builder()
+                                    .id(customer.getId() + "")
+                                    .text(Stream.of(customer.getFirstname(), customer.getLastname())
+                                            .filter(s -> s != null && !s.isEmpty())
+                                            .collect(Collectors.joining(", ")))
+                                    .disabled(customer.isDeleted())
+                                    .build();
+                        })
+                        .toList())
                 .appendOuter(KokuFieldSlotButton.builder()
                         .icon("PLUS")
                         .buttonType(EnumButtonType.BUTTON)
                         .title("Neuer Kunde anlegen")
-                        .build()
-                )
+                        .build())
                 .required(true)
-                .build()
-        );
+                .build());
         formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
                 .id("CreateCustomer")
                 .reference(KokuBusinessRuleFieldReferenceDto.builder()
@@ -219,33 +210,26 @@ public class CustomerAppointmentController {
                                 .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
                                 .build())
                         .build())
-                .execution(
-                        KokuBusinessRuleOpenDialogContentDto.builder()
-                                .content(KokuBusinessRuleHeaderContentDto.builder()
-                                        .title("Neuer Kunde")
-                                        .content(
-                                                KokuBusinessRuleFormularContentDto.builder()
-                                                        .formularUrl("services/customers/customers/form")
-                                                        .submitUrl("services/customers/customers")
-                                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
-                                                        .maxWidthInPx(800)
-                                                        .onSaveEvents(Arrays.asList(
-                                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                                        .eventName("customer-created")
-                                                                        .build()
-                                                        ))
-                                                        .build()
-                                        )
-                                        .build()
-                                )
-                                .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                        .eventName("customer-created")
-                                        .build()
-                                )
-                                .build()
-                )
-                .build()
-        );
+                .execution(KokuBusinessRuleOpenDialogContentDto.builder()
+                        .content(KokuBusinessRuleHeaderContentDto.builder()
+                                .title("Neuer Kunde")
+                                .content(KokuBusinessRuleFormularContentDto.builder()
+                                        .formularUrl("services/customers/customers/form")
+                                        .submitUrl("services/customers/customers")
+                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
+                                        .maxWidthInPx(800)
+                                        .onSaveEvents(Arrays.asList(
+                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
+                                                        .builder()
+                                                        .eventName("customer-created")
+                                                        .build()))
+                                        .build())
+                                .build())
+                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
+                                .eventName("customer-created")
+                                .build())
+                        .build())
+                .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("customer-created")
                 .fieldValueMapping(Map.of(
@@ -253,10 +237,8 @@ public class CustomerAppointmentController {
                         FormViewFieldReferenceValueMapping.builder()
                                 .source(FormViewEventPayloadSourcePathFieldUpdateValueSourceDto.builder()
                                         .sourcePath(KokuCustomerDto.Fields.id)
-                                        .build()
-                                )
-                                .build()
-                ))
+                                        .build())
+                                .build()))
                 .configMapping(Map.of(
                         customerSelectionFieldRef,
                         FormViewFieldConfigMapping.builder()
@@ -274,66 +256,53 @@ public class CustomerAppointmentController {
                                                 SourcePathConfigMappingAppendListItemDto.builder()
                                                         .sourcePath(KokuCustomerDto.Fields.deleted)
                                                         .targetPath(SelectFormularFieldPossibleValue.Fields.disabled)
-                                                        .build()
-                                        ))
+                                                        .build()))
                                         .build())
-                                .build()
-                ))
-                .build()
-        );
+                                .build()))
+                .build());
 
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .md(2)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).md(2).build());
         final String dateFieldRef = formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerAppointmentDto.Fields.date)
                 .type(EnumInputFormularFieldType.DATE)
                 .label("Datum")
                 .required(true)
-                .build()
-        );
+                .build());
         final String timeFieldRef = formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerAppointmentDto.Fields.time)
                 .type(EnumInputFormularFieldType.TIME)
                 .label("Zeit")
                 .required(true)
-                .build()
-        );
+                .build());
         formFactory.endContainer();
 
-        formFactory.addContainer(FieldsetContainer.builder()
-                .title("Tätigkeiten")
-                .build()
-        );
+        formFactory.addContainer(
+                FieldsetContainer.builder().title("Tätigkeiten").build());
         final String activityFieldRef = formFactory.addField(MultiSelectWithPricingAdjustmentFormularField.builder()
                 .valuePath(KokuCustomerAppointmentDto.Fields.activities)
                 .idPathMapping(KokuCustomerAppointmentActivityDto.Fields.activityId)
                 .pricePathMapping(KokuCustomerAppointmentActivityDto.Fields.price)
                 .placeholder("Weitere Tätigkeiten...")
-                .possibleValues(
-                        StreamSupport.stream(
-                                        Spliterators.spliteratorUnknownSize(this.activityKTableProcessor.getActivities().all(), Spliterator.DISTINCT),
-                                        false
-                                )
-                                .map(activity -> MultiSelectWithPricingAdjustmentFormularFieldPossibleValue.builder()
-                                        .id(activity.key + "")
-                                        .text(activity.value.getName())
-                                        .disabled(Boolean.TRUE.equals(activity.value.getDeleted()))
-                                        .build()
-                                )
-                                .toList()
-                )
+                .possibleValues(StreamSupport.stream(
+                                Spliterators.spliteratorUnknownSize(
+                                        this.activityKTableProcessor
+                                                .getActivities()
+                                                .all(),
+                                        Spliterator.DISTINCT),
+                                false)
+                        .map(activity -> MultiSelectWithPricingAdjustmentFormularFieldPossibleValue.builder()
+                                .id(activity.key + "")
+                                .text(activity.value.getName())
+                                .disabled(Boolean.TRUE.equals(activity.value.getDeleted()))
+                                .build())
+                        .toList())
                 .appendOuter(KokuFieldSlotButton.builder()
                         .icon("PLUS")
                         .buttonType(EnumButtonType.BUTTON)
                         .title("Neue Tätigkeit anlegen")
-                        .build()
-                )
+                        .build())
                 .uniqueValues(true)
-                .build()
-        );
+                .build());
         formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
                 .id("CreateActivity")
                 .reference(KokuBusinessRuleFieldReferenceDto.builder()
@@ -342,33 +311,26 @@ public class CustomerAppointmentController {
                                 .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
                                 .build())
                         .build())
-                .execution(
-                        KokuBusinessRuleOpenDialogContentDto.builder()
-                                .content(KokuBusinessRuleHeaderContentDto.builder()
-                                        .title("Neue Tätigkeit")
-                                        .content(
-                                                KokuBusinessRuleFormularContentDto.builder()
-                                                        .formularUrl("services/activities/activities/form")
-                                                        .submitUrl("services/activities/activities")
-                                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
-                                                        .maxWidthInPx(800)
-                                                        .onSaveEvents(Arrays.asList(
-                                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                                        .eventName("activity-created")
-                                                                        .build()
-                                                        ))
-                                                        .build()
-                                        )
-                                        .build()
-                                )
-                                .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                        .eventName("activity-created")
-                                        .build()
-                                )
-                                .build()
-                )
-                .build()
-        );
+                .execution(KokuBusinessRuleOpenDialogContentDto.builder()
+                        .content(KokuBusinessRuleHeaderContentDto.builder()
+                                .title("Neue Tätigkeit")
+                                .content(KokuBusinessRuleFormularContentDto.builder()
+                                        .formularUrl("services/activities/activities/form")
+                                        .submitUrl("services/activities/activities")
+                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
+                                        .maxWidthInPx(800)
+                                        .onSaveEvents(Arrays.asList(
+                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
+                                                        .builder()
+                                                        .eventName("activity-created")
+                                                        .build()))
+                                        .build())
+                                .build())
+                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
+                                .eventName("activity-created")
+                                .build())
+                        .build())
+                .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("activity-created")
                 .fieldValueMapping(Map.of(
@@ -378,10 +340,8 @@ public class CustomerAppointmentController {
                                         KokuCustomerAppointmentActivityDto.Fields.activityId,
                                         FormViewEventPayloadSourcePathFieldUpdateValueSourceDto.builder()
                                                 .sourcePath(KokuActivityDto.Fields.id)
-                                                .build()
-                                ))
-                                .build()
-                ))
+                                                .build()))
+                                .build()))
                 .configMapping(Map.of(
                         activityFieldRef,
                         FormViewFieldConfigMapping.builder()
@@ -399,74 +359,73 @@ public class CustomerAppointmentController {
                                                 SourcePathConfigMappingAppendListItemDto.builder()
                                                         .sourcePath(KokuActivityDto.Fields.deleted)
                                                         .targetPath(SelectFormularFieldPossibleValue.Fields.disabled)
-                                                        .build()
-                                        ))
+                                                        .build()))
                                         .build())
-                                .build()
-                ))
-                .build()
-        );
+                                .build()))
+                .build());
 
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .xl2(2)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).xl2(2).build());
 
         final String activityPriceSumStatFieldRef = formFactory.addField(StatFormularField.builder()
                 .title("Tätigkeitskosten")
                 .description("Erwartete Einnahme")
                 .valuePath(KokuCustomerAppointmentDto.Fields.activityPriceSummary)
                 .icon("CURRENCY_EURO")
-                .build()
-        );
+                .build());
         final String activityDurationSumStatFieldRef = formFactory.addField(StatFormularField.builder()
                 .title("Tätigkeitsdauer")
                 .description("Erwartete Dauer")
                 .valuePath(KokuCustomerAppointmentDto.Fields.activityDurationSummary)
                 .icon("CLOCK")
-                .build()
-        );
+                .build());
 
         formFactory.endContainer();
         formFactory.endContainer();
 
         final List<MultiSelectFormularFieldPossibleValue> activityStepAndProductPossibleValuesUnion = new ArrayList<>();
-        activityStepAndProductPossibleValuesUnion.addAll(
-                StreamSupport.stream(
-                        Spliterators.spliteratorUnknownSize(this.activityStepKTableProcessor.getActivitySteps().all(), Spliterator.DISTINCT),
-                        false
-                ).map(activityStep -> {
+        activityStepAndProductPossibleValuesUnion.addAll(StreamSupport.stream(
+                        Spliterators.spliteratorUnknownSize(
+                                this.activityStepKTableProcessor
+                                        .getActivitySteps()
+                                        .all(),
+                                Spliterator.DISTINCT),
+                        false)
+                .map(activityStep -> {
                     return MultiSelectFormularFieldPossibleValue.builder()
                             .id("activity_step_" + activityStep.key)
                             .valueMapping(KokuCustomerAppointmentActivityStepTreatmentDto.builder()
                                     .activityStepId(activityStep.key)
-                                    .build()
-                            )
+                                    .build())
                             .text(activityStep.value.getName())
                             .disabled(Boolean.TRUE.equals(activityStep.value.getDeleted()))
                             .color(KokuColorEnum.SECONDARY)
                             .category("Behandlungsschritte")
                             .build();
-                }).toList()
-        );
+                })
+                .toList());
         activityStepAndProductPossibleValuesUnion.addAll(StreamSupport.stream(
-                        Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
-                        false
-                ).map(product -> {
+                        Spliterators.spliteratorUnknownSize(
+                                this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
+                        false)
+                .map(product -> {
                     return MultiSelectFormularFieldPossibleValue.builder()
                             .id("product_" + product.key)
                             .valueMapping(KokuCustomerAppointmentProductTreatmentDto.builder()
                                     .productId(product.key)
-                                    .build()
-                            )
-                            .text(String.format("%s / %s", this.productManufacturerKTableProcessor.getProductManufacturers().get(product.value.getManufacturerId()).getName(), product.value.getName()))
+                                    .build())
+                            .text(String.format(
+                                    "%s / %s",
+                                    this.productManufacturerKTableProcessor
+                                            .getProductManufacturers()
+                                            .get(product.value.getManufacturerId())
+                                            .getName(),
+                                    product.value.getName()))
                             .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
                             .color(KokuColorEnum.PRIMARY)
                             .category("Produkte")
                             .build();
-                }).toList()
-        );
+                })
+                .toList());
 
         final String treatmentSequenceFieldRef = formFactory.addField(MultiSelectFormularField.builder()
                 .valuePath(KokuCustomerAppointmentDto.Fields.treatmentSequence)
@@ -477,11 +436,9 @@ public class CustomerAppointmentController {
                         .icon("PLUS")
                         .buttonType(EnumButtonType.BUTTON)
                         .title("Neue Behandlung anlegen")
-                        .build()
-                )
+                        .build())
                 .uniqueValues(false)
-                .build()
-        );
+                .build());
         formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
                 .id("CreateTreatment")
                 .reference(KokuBusinessRuleFieldReferenceDto.builder()
@@ -490,65 +447,59 @@ public class CustomerAppointmentController {
                                 .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
                                 .build())
                         .build())
-                .execution(
-                        KokuBusinessRuleOpenDialogContentDto.builder()
-                                .content(KokuBusinessRuleDockContentDto.builder()
-                                        .content(List.of(
-                                                KokuBusinessRuleDockContentItemDto.builder()
-                                                        .id("products")
-                                                        .title("Produkt")
-                                                        .content(KokuBusinessRuleHeaderContentDto.builder()
-                                                                .title("Neues Produkt")
-                                                                .content(
-                                                                        KokuBusinessRuleFormularContentDto.builder()
-                                                                                .formularUrl("services/products/products/form")
-                                                                                .submitUrl("services/products/products")
-                                                                                .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
-                                                                                .maxWidthInPx(800)
-                                                                                .onSaveEvents(Arrays.asList(
-                                                                                        KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                                                                .eventName("treatment-product-created")
-                                                                                                .build()
-                                                                                ))
-                                                                                .build()
-                                                                )
-                                                                .build()
-                                                        ).build(),
-                                                KokuBusinessRuleDockContentItemDto.builder()
-                                                        .id("activitySteps")
-                                                        .title("Behandlungsschritt")
-                                                        .content(KokuBusinessRuleHeaderContentDto.builder()
-                                                                .title("Neuer Behandlungsschritt")
-                                                                .content(KokuBusinessRuleFormularContentDto.builder()
-                                                                        .formularUrl("services/activities/activitysteps/form")
-                                                                        .submitUrl("services/activities/activitysteps")
-                                                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
-                                                                        .maxWidthInPx(800)
-                                                                        .onSaveEvents(Arrays.asList(
-                                                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                                                        .eventName("treatment-activitystep-created")
-                                                                                        .build()
-                                                                        ))
-                                                                        .build()
-                                                                )
-                                                                .build()
-                                                        )
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                        .eventName("treatment-activitystep-created")
-                                        .build()
-                                )
-                                .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                        .eventName("treatment-product-created")
-                                        .build()
-                                )
-                                .build()
-                )
-                .build()
-        );
+                .execution(KokuBusinessRuleOpenDialogContentDto.builder()
+                        .content(KokuBusinessRuleDockContentDto.builder()
+                                .content(List.of(
+                                        KokuBusinessRuleDockContentItemDto.builder()
+                                                .id("products")
+                                                .title("Produkt")
+                                                .content(KokuBusinessRuleHeaderContentDto.builder()
+                                                        .title("Neues Produkt")
+                                                        .content(KokuBusinessRuleFormularContentDto.builder()
+                                                                .formularUrl("services/products/products/form")
+                                                                .submitUrl("services/products/products")
+                                                                .submitMethod(
+                                                                        KokuBusinessRuleFormularActionSubmitMethodEnumDto
+                                                                                .POST)
+                                                                .maxWidthInPx(800)
+                                                                .onSaveEvents(Arrays.asList(
+                                                                        KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
+                                                                                .builder()
+                                                                                .eventName("treatment-product-created")
+                                                                                .build()))
+                                                                .build())
+                                                        .build())
+                                                .build(),
+                                        KokuBusinessRuleDockContentItemDto.builder()
+                                                .id("activitySteps")
+                                                .title("Behandlungsschritt")
+                                                .content(KokuBusinessRuleHeaderContentDto.builder()
+                                                        .title("Neuer Behandlungsschritt")
+                                                        .content(KokuBusinessRuleFormularContentDto.builder()
+                                                                .formularUrl("services/activities/activitysteps/form")
+                                                                .submitUrl("services/activities/activitysteps")
+                                                                .submitMethod(
+                                                                        KokuBusinessRuleFormularActionSubmitMethodEnumDto
+                                                                                .POST)
+                                                                .maxWidthInPx(800)
+                                                                .onSaveEvents(Arrays.asList(
+                                                                        KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
+                                                                                .builder()
+                                                                                .eventName(
+                                                                                        "treatment-activitystep-created")
+                                                                                .build()))
+                                                                .build())
+                                                        .build())
+                                                .build()))
+                                .build())
+                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
+                                .eventName("treatment-activitystep-created")
+                                .build())
+                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
+                                .eventName("treatment-product-created")
+                                .build())
+                        .build())
+                .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("treatment-activitystep-created")
                 .fieldValueMapping(Map.of(
@@ -562,10 +513,8 @@ public class CustomerAppointmentController {
                                         "@type",
                                         FormViewEventPayloadStaticValueFieldUpdateValueSourceDto.builder()
                                                 .value("activity-step")
-                                                .build()
-                                ))
-                                .build()
-                ))
+                                                .build()))
+                                .build()))
                 .configMapping(Map.of(
                         treatmentSequenceFieldRef,
                         FormViewFieldConfigMapping.builder()
@@ -576,10 +525,10 @@ public class CustomerAppointmentController {
                                                         .targetPath(MultiSelectFormularFieldPossibleValue.Fields.id)
                                                         .transformPattern("activity_step_{id}")
                                                         .transformPatternParameters(Map.of(
-                                                                "{id}", StringTransformationSourcePathPatternParam.builder()
+                                                                "{id}",
+                                                                StringTransformationSourcePathPatternParam.builder()
                                                                         .sourcePath(KokuActivityStepDto.Fields.id)
-                                                                        .build()
-                                                        ))
+                                                                        .build()))
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
                                                         .sourcePath(KokuActivityStepDto.Fields.name)
@@ -587,26 +536,33 @@ public class CustomerAppointmentController {
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
                                                         .sourcePath(KokuActivityStepDto.Fields.deleted)
-                                                        .targetPath(MultiSelectFormularFieldPossibleValue.Fields.disabled)
+                                                        .targetPath(
+                                                                MultiSelectFormularFieldPossibleValue.Fields.disabled)
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
                                                         .sourcePath(KokuActivityStepDto.Fields.id)
-                                                        .targetPath(MultiSelectFormularFieldPossibleValue.Fields.valueMapping + '.' + KokuCustomerAppointmentActivityStepTreatmentDto.Fields.activityStepId)
+                                                        .targetPath(
+                                                                MultiSelectFormularFieldPossibleValue.Fields
+                                                                                .valueMapping
+                                                                        + '.'
+                                                                        + KokuCustomerAppointmentActivityStepTreatmentDto
+                                                                                .Fields.activityStepId)
                                                         .build(),
                                                 StaticValueConfigMappingAppendListItemDto.builder()
                                                         .value("activity-step")
-                                                        .targetPath(MultiSelectFormularFieldPossibleValue.Fields.valueMapping + ".@type")
+                                                        .targetPath(
+                                                                MultiSelectFormularFieldPossibleValue.Fields
+                                                                                .valueMapping
+                                                                        + ".@type")
                                                         .build(),
                                                 StaticValueConfigMappingAppendListItemDto.builder()
                                                         .value("Behandlungsschritte")
-                                                        .targetPath(MultiSelectFormularFieldPossibleValue.Fields.category)
-                                                        .build()
-                                        ))
+                                                        .targetPath(
+                                                                MultiSelectFormularFieldPossibleValue.Fields.category)
+                                                        .build()))
                                         .build())
-                                .build()
-                ))
-                .build()
-        );
+                                .build()))
+                .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("treatment-product-created")
                 .fieldValueMapping(Map.of(
@@ -620,10 +576,8 @@ public class CustomerAppointmentController {
                                         "@type",
                                         FormViewEventPayloadStaticValueFieldUpdateValueSourceDto.builder()
                                                 .value("product")
-                                                .build()
-                                ))
-                                .build()
-                ))
+                                                .build()))
+                                .build()))
                 .configMapping(Map.of(
                         treatmentSequenceFieldRef,
                         FormViewFieldConfigMapping.builder()
@@ -634,76 +588,94 @@ public class CustomerAppointmentController {
                                                         .targetPath(MultiSelectFormularFieldPossibleValue.Fields.id)
                                                         .transformPattern("product_{id}")
                                                         .transformPatternParameters(Map.of(
-                                                                "{id}", StringTransformationSourcePathPatternParam.builder()
+                                                                "{id}",
+                                                                StringTransformationSourcePathPatternParam.builder()
                                                                         .sourcePath(KokuProductDto.Fields.id)
-                                                                        .build()
-                                                        ))
+                                                                        .build()))
                                                         .build(),
                                                 StringTransformationConfigMappingAppendListItemDto.builder()
                                                         .targetPath(MultiSelectFormularFieldPossibleValue.Fields.text)
                                                         .transformPattern("{manufacturerName} / {productName}")
                                                         .transformPatternParameters(Map.of(
-                                                                "{manufacturerName}", StringTransformationSourcePathPatternParam.builder()
-                                                                        .sourcePath(KokuProductDto.Fields.manufacturerName)
-                                                                        .build(),
-                                                                "{productName}", StringTransformationSourcePathPatternParam.builder()
-                                                                        .sourcePath(KokuProductDto.Fields.name)
-                                                                        .build()
-                                                        ))
+                                                                "{manufacturerName}",
+                                                                        StringTransformationSourcePathPatternParam
+                                                                                .builder()
+                                                                                .sourcePath(
+                                                                                        KokuProductDto.Fields
+                                                                                                .manufacturerName)
+                                                                                .build(),
+                                                                "{productName}",
+                                                                        StringTransformationSourcePathPatternParam
+                                                                                .builder()
+                                                                                .sourcePath(KokuProductDto.Fields.name)
+                                                                                .build()))
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
                                                         .sourcePath(KokuProductDto.Fields.deleted)
-                                                        .targetPath(MultiSelectFormularFieldPossibleValue.Fields.disabled)
+                                                        .targetPath(
+                                                                MultiSelectFormularFieldPossibleValue.Fields.disabled)
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
                                                         .sourcePath(KokuProductDto.Fields.id)
-                                                        .targetPath(MultiSelectFormularFieldPossibleValue.Fields.valueMapping + '.' + KokuCustomerAppointmentProductTreatmentDto.Fields.productId)
+                                                        .targetPath(
+                                                                MultiSelectFormularFieldPossibleValue.Fields
+                                                                                .valueMapping
+                                                                        + '.'
+                                                                        + KokuCustomerAppointmentProductTreatmentDto
+                                                                                .Fields.productId)
                                                         .build(),
                                                 StaticValueConfigMappingAppendListItemDto.builder()
                                                         .value("product")
-                                                        .targetPath(MultiSelectFormularFieldPossibleValue.Fields.valueMapping + ".@type")
+                                                        .targetPath(
+                                                                MultiSelectFormularFieldPossibleValue.Fields
+                                                                                .valueMapping
+                                                                        + ".@type")
                                                         .build(),
                                                 StaticValueConfigMappingAppendListItemDto.builder()
                                                         .value("Produkte")
-                                                        .targetPath(MultiSelectFormularFieldPossibleValue.Fields.category)
-                                                        .build()
-                                        ))
+                                                        .targetPath(
+                                                                MultiSelectFormularFieldPossibleValue.Fields.category)
+                                                        .build()))
                                         .build())
-                                .build()
-                ))
-                .build()
-        );
+                                .build()))
+                .build());
 
-        formFactory.addContainer(FieldsetContainer.builder()
-                .title("Produkte")
-                .build()
-        );
+        formFactory.addContainer(FieldsetContainer.builder().title("Produkte").build());
         String soldProductsFieldRef = formFactory.addField(MultiSelectWithPricingAdjustmentFormularField.builder()
                 .valuePath(KokuCustomerAppointmentDto.Fields.soldProducts)
                 .placeholder("Weitere Produkte...")
                 .possibleValues(StreamSupport.stream(
-                                Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
-                                false
-                        )
-                        .sorted(Comparator.comparing(longProductKafkaDtoKeyValue -> longProductKafkaDtoKeyValue.value.getManufacturerId()))
+                                Spliterators.spliteratorUnknownSize(
+                                        this.productKTableProcessor
+                                                .getProducts()
+                                                .all(),
+                                        Spliterator.DISTINCT),
+                                false)
+                        .sorted(Comparator.comparing(
+                                longProductKafkaDtoKeyValue -> longProductKafkaDtoKeyValue.value.getManufacturerId()))
                         .map(product -> {
                             return MultiSelectWithPricingAdjustmentFormularFieldPossibleValue.builder()
                                     .id(product.key + "")
-                                    .text(String.format("%s / %s", this.productManufacturerKTableProcessor.getProductManufacturers().get(product.value.getManufacturerId()).getName(), product.value.getName()))
+                                    .text(String.format(
+                                            "%s / %s",
+                                            this.productManufacturerKTableProcessor
+                                                    .getProductManufacturers()
+                                                    .get(product.value.getManufacturerId())
+                                                    .getName(),
+                                            product.value.getName()))
                                     .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
                                     .build();
-                        }).toList())
+                        })
+                        .toList())
                 .idPathMapping(KokuCustomerAppointmentSoldProductDto.Fields.productId)
                 .pricePathMapping(KokuCustomerAppointmentSoldProductDto.Fields.price)
                 .appendOuter(KokuFieldSlotButton.builder()
                         .icon("PLUS")
                         .buttonType(EnumButtonType.BUTTON)
                         .title("Neues Produkt anlegen")
-                        .build()
-                )
+                        .build())
                 .uniqueValues(false)
-                .build()
-        );
+                .build());
         formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
                 .id("CreateProduct")
                 .reference(KokuBusinessRuleFieldReferenceDto.builder()
@@ -712,33 +684,26 @@ public class CustomerAppointmentController {
                                 .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
                                 .build())
                         .build())
-                .execution(
-                        KokuBusinessRuleOpenDialogContentDto.builder()
-                                .content(KokuBusinessRuleHeaderContentDto.builder()
-                                        .title("Neues Produkt")
-                                        .content(
-                                                KokuBusinessRuleFormularContentDto.builder()
-                                                        .formularUrl("services/products/products/form")
-                                                        .submitUrl("services/products/products")
-                                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
-                                                        .maxWidthInPx(800)
-                                                        .onSaveEvents(Arrays.asList(
-                                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                                        .eventName("product-created")
-                                                                        .build()
-                                                        ))
-                                                        .build()
-                                        )
-                                        .build()
-                                )
-                                .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                        .eventName("product-created")
-                                        .build()
-                                )
-                                .build()
-                )
-                .build()
-        );
+                .execution(KokuBusinessRuleOpenDialogContentDto.builder()
+                        .content(KokuBusinessRuleHeaderContentDto.builder()
+                                .title("Neues Produkt")
+                                .content(KokuBusinessRuleFormularContentDto.builder()
+                                        .formularUrl("services/products/products/form")
+                                        .submitUrl("services/products/products")
+                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
+                                        .maxWidthInPx(800)
+                                        .onSaveEvents(Arrays.asList(
+                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
+                                                        .builder()
+                                                        .eventName("product-created")
+                                                        .build()))
+                                        .build())
+                                .build())
+                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
+                                .eventName("product-created")
+                                .build())
+                        .build())
+                .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("product-created")
                 .fieldValueMapping(Map.of(
@@ -748,10 +713,8 @@ public class CustomerAppointmentController {
                                         KokuCustomerAppointmentSoldProductDto.Fields.productId,
                                         FormViewEventPayloadSourcePathFieldUpdateValueSourceDto.builder()
                                                 .sourcePath(KokuProductDto.Fields.id)
-                                                .build()
-                                ))
-                                .build()
-                ))
+                                                .build()))
+                                .build()))
                 .configMapping(Map.of(
                         soldProductsFieldRef,
                         FormViewFieldConfigMapping.builder()
@@ -769,27 +732,19 @@ public class CustomerAppointmentController {
                                                 SourcePathConfigMappingAppendListItemDto.builder()
                                                         .sourcePath(KokuProductDto.Fields.deleted)
                                                         .targetPath(SelectFormularFieldPossibleValue.Fields.disabled)
-                                                        .build()
-                                        ))
+                                                        .build()))
                                         .build())
-                                .build()
-                ))
-                .build()
-        );
+                                .build()))
+                .build());
 
-        formFactory.addContainer(GridContainer.builder()
-                .cols(1)
-                .xl2(2)
-                .build()
-        );
+        formFactory.addContainer(GridContainer.builder().cols(1).xl2(2).build());
 
         final String productPriceSumStatFieldRef = formFactory.addField(StatFormularField.builder()
                 .title("Produktkosten")
                 .description("Erwartete Einnahme")
                 .valuePath(KokuCustomerAppointmentDto.Fields.activitySoldProductSummary)
                 .icon("CURRENCY_EURO")
-                .build()
-        );
+                .build());
 
         formFactory.endContainer();
         formFactory.endContainer();
@@ -799,25 +754,28 @@ public class CustomerAppointmentController {
                 .label("Aktionen")
                 .placeholder("Weitere Aktionen...")
                 .possibleValues(StreamSupport.stream(
-                        Spliterators.spliteratorUnknownSize(this.promotionKTableProcessor.getPromotions().all(), Spliterator.DISTINCT),
-                        false
-                ).map(promotion -> {
-                    return MultiSelectFormularFieldPossibleValue.builder()
-                            .id(promotion.key + "")
-                            .text(promotion.value.getName())
-                            .disabled(Boolean.TRUE.equals(promotion.value.getDeleted()))
-                            .build();
-                }).toList())
+                                Spliterators.spliteratorUnknownSize(
+                                        this.promotionKTableProcessor
+                                                .getPromotions()
+                                                .all(),
+                                        Spliterator.DISTINCT),
+                                false)
+                        .map(promotion -> {
+                            return MultiSelectFormularFieldPossibleValue.builder()
+                                    .id(promotion.key + "")
+                                    .text(promotion.value.getName())
+                                    .disabled(Boolean.TRUE.equals(promotion.value.getDeleted()))
+                                    .build();
+                        })
+                        .toList())
                 .idPathMapping(KokuCustomerAppointmentPromotionDto.Fields.promotionId)
                 .appendOuter(KokuFieldSlotButton.builder()
                         .icon("PLUS")
                         .buttonType(EnumButtonType.BUTTON)
                         .title("Neue Aktion anlegen")
-                        .build()
-                )
+                        .build())
                 .uniqueValues(true)
-                .build()
-        );
+                .build());
         formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
                 .id("CreatePromotion")
                 .reference(KokuBusinessRuleFieldReferenceDto.builder()
@@ -826,33 +784,26 @@ public class CustomerAppointmentController {
                                 .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
                                 .build())
                         .build())
-                .execution(
-                        KokuBusinessRuleOpenDialogContentDto.builder()
-                                .content(KokuBusinessRuleHeaderContentDto.builder()
-                                        .title("Neue Aktion")
-                                        .content(
-                                                KokuBusinessRuleFormularContentDto.builder()
-                                                        .formularUrl("services/promotions/promotions/form")
-                                                        .submitUrl("services/promotions/promotions")
-                                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
-                                                        .maxWidthInPx(800)
-                                                        .onSaveEvents(Arrays.asList(
-                                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                                        .eventName("promotion-created")
-                                                                        .build()
-                                                        ))
-                                                        .build()
-                                        )
-                                        .build()
-                                )
-                                .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                        .eventName("promotion-created")
-                                        .build()
-                                )
-                                .build()
-                )
-                .build()
-        );
+                .execution(KokuBusinessRuleOpenDialogContentDto.builder()
+                        .content(KokuBusinessRuleHeaderContentDto.builder()
+                                .title("Neue Aktion")
+                                .content(KokuBusinessRuleFormularContentDto.builder()
+                                        .formularUrl("services/promotions/promotions/form")
+                                        .submitUrl("services/promotions/promotions")
+                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
+                                        .maxWidthInPx(800)
+                                        .onSaveEvents(Arrays.asList(
+                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
+                                                        .builder()
+                                                        .eventName("promotion-created")
+                                                        .build()))
+                                        .build())
+                                .build())
+                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
+                                .eventName("promotion-created")
+                                .build())
+                        .build())
+                .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("promotion-created")
                 .fieldValueMapping(Map.of(
@@ -862,10 +813,8 @@ public class CustomerAppointmentController {
                                         KokuCustomerAppointmentPromotionDto.Fields.promotionId,
                                         FormViewEventPayloadSourcePathFieldUpdateValueSourceDto.builder()
                                                 .sourcePath(KokuPromotionDto.Fields.id)
-                                                .build()
-                                ))
-                                .build()
-                ))
+                                                .build()))
+                                .build()))
                 .configMapping(Map.of(
                         promotionFieldRef,
                         FormViewFieldConfigMapping.builder()
@@ -882,40 +831,37 @@ public class CustomerAppointmentController {
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
                                                         .sourcePath(KokuPromotionDto.Fields.deleted)
-                                                        .targetPath(MultiSelectFormularFieldPossibleValue.Fields.disabled)
-                                                        .build()
-                                        ))
+                                                        .targetPath(
+                                                                MultiSelectFormularFieldPossibleValue.Fields.disabled)
+                                                        .build()))
                                         .build())
-                                .build()
-                ))
-                .build()
-        );
+                                .build()))
+                .build());
 
         formFactory.addField(TextareaFormularField.builder()
                 .label("Zusätzliche Informationen")
                 .valuePath(KokuCustomerAppointmentDto.Fields.additionalInfo)
-                .build()
-        );
+                .build());
 
         formFactory.addField(SelectFormularField.builder()
                 .valuePath(KokuCustomerAppointmentDto.Fields.userId)
                 .label("Bedienung")
-                .possibleValues(this.userKTableProcessor.getUsers().values().stream().map(user -> {
-                    return SelectFormularFieldPossibleValue.builder()
-                            .id(user.getId())
-                            .text(
-                                    String.join(
-                                            " ",
-                                            Objects.toString(user.getFirstname(), ""),
-                                            Objects.toString(user.getLastname(), "")
-                                    ).trim()
-                            )
-                            .disabled(Boolean.TRUE.equals(user.getDeleted()))
-                            .build();
-                }).toList())
-                .defaultValue(SecurityContextHolder.getContext().getAuthentication().getName())
-                .build()
-        );
+                .possibleValues(this.userKTableProcessor.getUsers().values().stream()
+                        .map(user -> {
+                            return SelectFormularFieldPossibleValue.builder()
+                                    .id(user.getId())
+                                    .text(String.join(
+                                                    " ",
+                                                    Objects.toString(user.getFirstname(), ""),
+                                                    Objects.toString(user.getLastname(), ""))
+                                            .trim())
+                                    .disabled(Boolean.TRUE.equals(user.getDeleted()))
+                                    .build();
+                        })
+                        .toList())
+                .defaultValue(
+                        SecurityContextHolder.getContext().getAuthentication().getName())
+                .build());
 
         formFactory.addButton(KokuFormButton.builder()
                 .buttonType(EnumButtonType.SUBMIT)
@@ -926,11 +872,9 @@ public class CustomerAppointmentController {
                 .dockableSettings(ButtonDockableSettings.builder()
                         .icon("SAVE")
                         .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build()
-                )
+                        .build())
                 .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build()
-        );
+                .build());
 
         formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
                 .id("ActivitySummary")
@@ -968,14 +912,11 @@ public class CustomerAppointmentController {
                         .resultValuePath(KokuCustomerActivityPriceSummaryDto.Fields.durationSum)
                         .loadingAnimation(true)
                         .build())
-                .execution(
-                        KokuBusinessRuleCallHttpEndpoint.builder()
-                                .url("services/customers/customers/appointments/activitysummary")
-                                .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
-                                .build()
-                )
-                .build()
-        );
+                .execution(KokuBusinessRuleCallHttpEndpoint.builder()
+                        .url("services/customers/customers/appointments/activitysummary")
+                        .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
+                        .build())
+                .build());
 
         formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
                 .id("ProductSummary")
@@ -1007,58 +948,46 @@ public class CustomerAppointmentController {
                         .resultValuePath(KokuActivitySoldProductPriceSummaryDto.Fields.priceSum)
                         .loadingAnimation(true)
                         .build())
-                .execution(
-                        KokuBusinessRuleCallHttpEndpoint.builder()
-                                .url("services/customers/customers/appointments/productsummary")
-                                .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
-                                .build()
-                )
-                .build()
-        );
+                .execution(KokuBusinessRuleCallHttpEndpoint.builder()
+                        .url("services/customers/customers/appointments/productsummary")
+                        .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
+                        .build())
+                .build());
 
         return formFactory.create();
     }
 
     @GetMapping("/customers/appointments/list")
     public ListViewDto getListView() {
-        final ListViewFactory listViewFactory = new ListViewFactory(
-                new DefaultListViewContentIdGenerator(),
-                KokuCustomerAppointmentDto.Fields.id
-        );
+        final ListViewFactory listViewFactory =
+                new ListViewFactory(new DefaultListViewContentIdGenerator(), KokuCustomerAppointmentDto.Fields.id);
 
-        final ListViewSourcePathReference customerIdSourcePathRef = listViewFactory.addSourcePath(
-                KokuCustomerAppointmentDto.Fields.customerId
-        );
-        final ListViewSourcePathReference idSourcePathRef = listViewFactory.addSourcePath(
-                KokuCustomerAppointmentDto.Fields.id
-        );
+        final ListViewSourcePathReference customerIdSourcePathRef =
+                listViewFactory.addSourcePath(KokuCustomerAppointmentDto.Fields.customerId);
+        final ListViewSourcePathReference idSourcePathRef =
+                listViewFactory.addSourcePath(KokuCustomerAppointmentDto.Fields.id);
 
-        final ListViewSourcePathReference customerNamePathRef = listViewFactory.addSourcePath(
-                KokuCustomerAppointmentDto.Fields.customerName
-        );
+        final ListViewSourcePathReference customerNamePathRef =
+                listViewFactory.addSourcePath(KokuCustomerAppointmentDto.Fields.customerName);
         final ListViewFieldReference shortSummaryFieldRef = listViewFactory.addField(
                 KokuCustomerAppointmentDto.Fields.shortSummaryText,
-                ListViewInputFieldDto.builder()
-                        .label("Zusammenfassung")
-                        .build()
-        );
+                ListViewInputFieldDto.builder().label("Zusammenfassung").build());
         final ListViewFieldReference activitySummarySnapshotField = listViewFactory.addField(
                 KokuCustomerAppointmentDto.Fields.activitySummarySnapshot,
                 ListViewInputFieldDto.builder()
                         .label("Aktivitäten")
                         .rounded(KokuRoundedEnum.XL)
                         .backgroundColor(KokuColorEnum.PRIMARY)
-                        .build()
-        );
+                        .build());
         final ListViewFieldReference soldProductSummarySnapshotField = listViewFactory.addField(
                 KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot,
                 ListViewInputFieldDto.builder()
                         .label("Verkaufte Produkte")
                         .rounded(KokuRoundedEnum.XL)
                         .backgroundColor(KokuColorEnum.ACCENT)
-                        .build()
-        );
-        final ListViewSourcePathReference deletedSourcePathRef = listViewFactory.addSourcePath(KokuCustomerAppointmentDto.Fields.deleted);
+                        .build());
+        final ListViewSourcePathReference deletedSourcePathRef =
+                listViewFactory.addSourcePath(KokuCustomerAppointmentDto.Fields.deleted);
 
         listViewFactory.addFilter(
                 KokuCustomerAppointmentDto.Fields.deleted,
@@ -1067,26 +996,22 @@ public class CustomerAppointmentController {
                         .enabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.TRUE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
-                                .build()
-                        )
+                                .build())
                         .disabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.FALSE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
                                 .build())
                         .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
-                        .build()
-        );
+                        .build());
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("new")
                 .icon("PLUS")
-                .build()
-        );
+                .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
                 .route("new")
                 .text("Neuer Kundentermin")
-                .build()
-        );
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
                 .eventName("customer-appointment-created")
                 .idPath(KokuCustomerAppointmentDto.Fields.id)
@@ -1094,126 +1019,101 @@ public class CustomerAppointmentController {
                         KokuCustomerAppointmentDto.Fields.shortSummaryText, shortSummaryFieldRef,
                         KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef,
                         KokuCustomerAppointmentDto.Fields.activitySummarySnapshot, activitySummarySnapshotField,
-                        KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot, soldProductSummarySnapshotField
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route("new")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .title("Neuer Kundentermin")
-                                .content(ListViewFormularContentDto.builder()
-                                        .formularUrl("services/customers/customers/appointments/form")
-                                        .submitUrl("services/customers/customers/appointments")
-                                        .fieldOverrides(Arrays.asList(
-                                                ListViewRouteBasedFormularFieldOverrideDto.builder()
-                                                        .routeParam(":customerId")
-                                                        .fieldId(KokuCustomerAppointmentDto.Fields.customerId)
-                                                        .disable(true)
-                                                        .build()
-                                        ))
-                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
-                                        .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                        .eventName("customer-appointment-created")
-                                                        .build(),
-                                                ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                        .route(":appointmentId")
-                                                        .params(Arrays.asList(
-                                                                ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto.builder()
-                                                                        .param(":appointmentId")
-                                                                        .valuePath(KokuCustomerAppointmentDto.Fields.id)
-                                                                        .build()
-                                                        ))
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                        KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot, soldProductSummarySnapshotField))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route("new")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .title("Neuer Kundentermin")
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/customers/customers/appointments/form")
+                                .submitUrl("services/customers/customers/appointments")
+                                .fieldOverrides(Arrays.asList(ListViewRouteBasedFormularFieldOverrideDto.builder()
+                                        .routeParam(":customerId")
+                                        .fieldId(KokuCustomerAppointmentDto.Fields.customerId)
+                                        .disable(true)
+                                        .build()))
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
+                                .maxWidthInPx(800)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("customer-appointment-created")
+                                                .build(),
+                                        ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
+                                                .route(":appointmentId")
+                                                .params(Arrays.asList(
+                                                        ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
+                                                                .builder()
+                                                                .param(":appointmentId")
+                                                                .valuePath(KokuCustomerAppointmentDto.Fields.id)
+                                                                .build()))
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
                 .route(":appointmentId")
-                .params(Arrays.asList(
-                        ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
-                                .param(":appointmentId")
-                                .valueReference(idSourcePathRef)
-                                .build()
-                ))
-                .build()
-        );
+                .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
+                        .param(":appointmentId")
+                        .valueReference(idSourcePathRef)
+                        .build()))
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadItemUpdateGlobalEventListenerDto.builder()
                 .eventName("customer-appointment-updated")
                 .idPath(KokuCustomerAppointmentDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuCustomerAppointmentDto.Fields.shortSummaryText, shortSummaryFieldRef,
                         KokuCustomerAppointmentDto.Fields.activitySummarySnapshot, activitySummarySnapshotField,
-                        KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot, soldProductSummarySnapshotField
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route(":appointmentId")
-                        .itemId(":appointmentId")
-                        .inlineContent(
-                                ListViewHeaderContentDto.builder()
-                                        .sourceUrl("services/customers/customers/appointments/:appointmentId/summary")
-                                        .titlePath(KokuCustomerAppointmentSummaryDto.Fields.appointmentSummary)
-                                        .globalEventListeners(Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
+                        KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot, soldProductSummarySnapshotField))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route(":appointmentId")
+                .itemId(":appointmentId")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .sourceUrl("services/customers/customers/appointments/:appointmentId/summary")
+                        .titlePath(KokuCustomerAppointmentSummaryDto.Fields.appointmentSummary)
+                        .globalEventListeners(
+                                Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
+                                        .eventName("customer-appointment-updated")
+                                        .idPath(KokuCustomerAppointmentDto.Fields.id)
+                                        .titleValuePath(KokuCustomerAppointmentDto.Fields.longSummaryText)
+                                        .build()))
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/customers/customers/appointments/form")
+                                .sourceUrl("services/customers/customers/appointments/:appointmentId")
+                                .fieldOverrides(Arrays.asList(ListViewRouteBasedFormularFieldOverrideDto.builder()
+                                        .routeParam(":customerId")
+                                        .fieldId(KokuCustomerAppointmentDto.Fields.customerId)
+                                        .disable(true)
+                                        .build()))
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
+                                .maxWidthInPx(800)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
                                                 .eventName("customer-appointment-updated")
-                                                .idPath(KokuCustomerAppointmentDto.Fields.id)
-                                                .titleValuePath(KokuCustomerAppointmentDto.Fields.longSummaryText)
-                                                .build()
-                                        ))
-                                        .content(ListViewFormularContentDto.builder()
-                                                .formularUrl("services/customers/customers/appointments/form")
-                                                .sourceUrl("services/customers/customers/appointments/:appointmentId")
-                                                .fieldOverrides(Arrays.asList(
-                                                        ListViewRouteBasedFormularFieldOverrideDto.builder()
-                                                                .routeParam(":customerId")
-                                                                .fieldId(KokuCustomerAppointmentDto.Fields.customerId)
-                                                                .disable(true)
-                                                                .build()
-                                                ))
-                                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
-                                                .maxWidthInPx(800)
-                                                .onSaveEvents(Arrays.asList(
-                                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                                .eventName("customer-appointment-updated")
-                                                                .build()
-                                                ))
-                                                .build())
-                                        .build()
-                        )
-                        .build()
-        );
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
         listViewFactory.addGlobalItemStyling(ListViewConditionalItemValueStylingDto.builder()
                 .compareValuePath(KokuCustomerAppointmentDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveStyling(ListViewItemStylingDto.builder()
                         .lineThrough(true)
                         .opacity((short) 50)
-                        .build()
-                )
-                .build()
-        );
+                        .build())
+                .build());
         listViewFactory.addItemAction(ListViewConditionalItemValueActionDto.builder()
                 .compareValuePath(KokuCustomerAppointmentDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
                         .url("services/customers/customers/appointments/:appointmentId/restore")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":appointmentId")
-                                        .valueReference(idSourcePathRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":appointmentId")
+                                .valueReference(idSourcePathRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Termin wiederherstellen")
@@ -1226,10 +1126,8 @@ public class CustomerAppointmentController {
                                         ListViewUserConfirmationDateValueParamDto.builder()
                                                 .param(":date")
                                                 .valueReference(shortSummaryFieldRef)
-                                                .build()
-                                ))
-                                .build()
-                        )
+                                                .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
                                         .text("Termin von :name am :date wurde erfolgreich wiederhergestellt")
@@ -1242,45 +1140,37 @@ public class CustomerAppointmentController {
                                                 ListViewNotificationEventDateValueParamDto.builder()
                                                         .param(":date")
                                                         .valueReference(shortSummaryFieldRef)
-                                                        .build()
-                                        ))
+                                                        .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuCustomerAppointmentDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef
-                                        ))
+                                        .valueMapping(
+                                                Map.of(KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef))
                                         .build(),
                                 ListViewPropagateGlobalEventActionEventDto.builder()
                                         .eventName("customer-appointment-updated")
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text("Termin von :name am :date konnte nicht wiederhergestellt werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(customerNamePathRef)
-                                                        .build(),
-                                                ListViewNotificationEventDateValueParamDto.builder()
-                                                        .param(":date")
-                                                        .valueReference(shortSummaryFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text("Termin von :name am :date konnte nicht wiederhergestellt" + " werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(
+                                        ListViewNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .valueReference(customerNamePathRef)
+                                                .build(),
+                                        ListViewNotificationEventDateValueParamDto.builder()
+                                                .param(":date")
+                                                .valueReference(shortSummaryFieldRef)
+                                                .build()))
+                                .build()))
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
                         .url("services/customers/customers/appointments/:appointmentId")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":appointmentId")
-                                        .valueReference(idSourcePathRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":appointmentId")
+                                .valueReference(idSourcePathRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Termin löschen")
@@ -1293,13 +1183,11 @@ public class CustomerAppointmentController {
                                         ListViewUserConfirmationDateValueParamDto.builder()
                                                 .param(":date")
                                                 .valueReference(shortSummaryFieldRef)
-                                                .build()
-                                ))
-                                .build()
-                        )
+                                                .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Termin von :name am :date wurde erfolgreich als gelöscht markiert")
+                                        .text("Termin von :name am :date wurde erfolgreich als gelöscht" + " markiert")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(
                                                 ListViewNotificationEventValueParamDto.builder()
@@ -1309,185 +1197,129 @@ public class CustomerAppointmentController {
                                                 ListViewNotificationEventDateValueParamDto.builder()
                                                         .param(":date")
                                                         .valueReference(shortSummaryFieldRef)
-                                                        .build()
-                                        ))
+                                                        .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuCustomerAppointmentDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef
-                                        ))
+                                        .valueMapping(
+                                                Map.of(KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef))
                                         .build(),
                                 ListViewPropagateGlobalEventActionEventDto.builder()
                                         .eventName("customer-appointment-updated")
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text("Termin von :name am :date konnte nicht als gelöscht markiert werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(customerNamePathRef)
-                                                        .build(),
-                                                ListViewNotificationEventDateValueParamDto.builder()
-                                                        .param(":date")
-                                                        .valueReference(shortSummaryFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
-                        .build()
-                )
-                .build()
-        );
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text("Termin von :name am :date konnte nicht als gelöscht markiert" + " werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(
+                                        ListViewNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .valueReference(customerNamePathRef)
+                                                .build(),
+                                        ListViewNotificationEventDateValueParamDto.builder()
+                                                .param(":date")
+                                                .valueReference(shortSummaryFieldRef)
+                                                .build()))
+                                .build()))
+                        .build())
+                .build());
 
         return listViewFactory.create();
     }
 
-    @PostMapping(value = {
-            "/customers/{customerId}/appointments/query",
-            "/customers/appointments/query"
-    })
+    @PostMapping(value = {"/customers/{customerId}/appointments/query", "/customers/appointments/query"})
     public ListPage findAll(
             @PathVariable(value = "customerId", required = false) Long requestedCustomerId,
-            @RequestBody(required = false) final ListQuery predicate
-    ) {
+            @RequestBody(required = false) final ListQuery predicate) {
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
-        final ListQueryFactory<CustomerAppointment> listQueryFactory = new ListQueryFactory<>(
-                this.entityManager,
-                qClazz,
-                qClazz.id,
-                predicate
-        );
+        final ListQueryFactory<CustomerAppointment> listQueryFactory =
+                new ListQueryFactory<>(this.entityManager, qClazz, qClazz.id, predicate);
 
         if (requestedCustomerId != null) {
             listQueryFactory.addDefaultFilter(qClazz.customer.id.eq(requestedCustomerId));
         }
         listQueryFactory.setDefaultOrder(qClazz.start.desc());
 
-        listQueryFactory.addFetchExpr(
-                KokuCustomerAppointmentDto.Fields.id,
-                qClazz.id
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerAppointmentDto.Fields.deleted,
-                qClazz.deleted
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerAppointmentDto.Fields.customerId,
-                qClazz.customer.id
-        );
+        listQueryFactory.addFetchExpr(KokuCustomerAppointmentDto.Fields.id, qClazz.id);
+        listQueryFactory.addFetchExpr(KokuCustomerAppointmentDto.Fields.deleted, qClazz.deleted);
+        listQueryFactory.addFetchExpr(KokuCustomerAppointmentDto.Fields.customerId, qClazz.customer.id);
         listQueryFactory.addFetchExpr(
                 KokuCustomerAppointmentDto.Fields.shortSummaryText,
-                StringExpressions.lpad(qClazz.start.dayOfMonth().stringValue(), 2, '0').append(".")
-                        .append(StringExpressions.lpad(qClazz.start.month().stringValue(), 2, '0')).append(".")
+                StringExpressions.lpad(qClazz.start.dayOfMonth().stringValue(), 2, '0')
+                        .append(".")
+                        .append(StringExpressions.lpad(qClazz.start.month().stringValue(), 2, '0'))
+                        .append(".")
                         .append(StringExpressions.lpad(qClazz.start.year().stringValue(), 4, '0'))
                         .append(" um ")
-                        .append(StringExpressions.lpad(Expressions.stringTemplate(
-                                "to_char({0}, 'HH24')",
-                                qClazz.start
-                        ), 2, '0')).append(":")
+                        .append(StringExpressions.lpad(
+                                Expressions.stringTemplate("to_char({0}, 'HH24')", qClazz.start), 2, '0'))
+                        .append(":")
                         .append(StringExpressions.lpad(qClazz.start.minute().stringValue(), 2, '0'))
-                        .append(" Uhr")
-        );
+                        .append(" Uhr"));
         listQueryFactory.addFetchExpr(
                 KokuCustomerAppointmentDto.Fields.longSummaryText,
-                StringExpressions.lpad(qClazz.start.dayOfMonth().stringValue(), 2, '0').prepend("Kundentermin am ").append(".")
-                        .append(StringExpressions.lpad(qClazz.start.month().stringValue(), 2, '0')).append(".")
+                StringExpressions.lpad(qClazz.start.dayOfMonth().stringValue(), 2, '0')
+                        .prepend("Kundentermin am ")
+                        .append(".")
+                        .append(StringExpressions.lpad(qClazz.start.month().stringValue(), 2, '0'))
+                        .append(".")
                         .append(StringExpressions.lpad(qClazz.start.year().stringValue(), 4, '0'))
                         .append(" um ")
-                        .append(StringExpressions.lpad(Expressions.stringTemplate(
-                                "to_char({0}, 'HH24')",
-                                qClazz.start
-                        ), 2, '0')).append(":")
+                        .append(StringExpressions.lpad(
+                                Expressions.stringTemplate("to_char({0}, 'HH24')", qClazz.start), 2, '0'))
+                        .append(":")
                         .append(StringExpressions.lpad(qClazz.start.minute().stringValue(), 2, '0'))
-                        .append(" Uhr")
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerAppointmentDto.Fields.description,
-                qClazz.description
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerAppointmentDto.Fields.version,
-                qClazz.version
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerAppointmentDto.Fields.additionalInfo,
-                qClazz.additionalInfo
-        );
+                        .append(" Uhr"));
+        listQueryFactory.addFetchExpr(KokuCustomerAppointmentDto.Fields.description, qClazz.description);
+        listQueryFactory.addFetchExpr(KokuCustomerAppointmentDto.Fields.version, qClazz.version);
+        listQueryFactory.addFetchExpr(KokuCustomerAppointmentDto.Fields.additionalInfo, qClazz.additionalInfo);
 
-        final StringExpression firstAndLastnameAndOnFirstnameBasisSignExpr = qClazz.customer.firstname
+        final StringExpression firstAndLastnameAndOnFirstnameBasisSignExpr = qClazz.customer
+                .firstname
                 .concat(" ")
                 .concat(qClazz.customer.lastname)
                 .concat(" ")
-                .concat(new CaseBuilder().when(qClazz.customer.onFirstnameBasis.eq(Boolean.TRUE)).then("*").otherwise(""))
+                .concat(new CaseBuilder()
+                        .when(qClazz.customer.onFirstnameBasis.eq(Boolean.TRUE))
+                        .then("*")
+                        .otherwise(""))
                 .trim();
         listQueryFactory.addFetchExpr(
-                KokuCustomerAppointmentDto.Fields.customerName,
-                firstAndLastnameAndOnFirstnameBasisSignExpr
-        );
+                KokuCustomerAppointmentDto.Fields.customerName, firstAndLastnameAndOnFirstnameBasisSignExpr);
         listQueryFactory.addFetchExpr(
                 KokuCustomerAppointmentDto.Fields.date,
-                Expressions.dateTemplate(
-                        LocalDate.class,
-                        "DATE({0})",
-                        qClazz.start
-                )
-        );
+                Expressions.dateTemplate(LocalDate.class, "DATE({0})", qClazz.start));
         listQueryFactory.addFetchExpr(
                 KokuCustomerAppointmentDto.Fields.time,
-                Expressions.timeTemplate(
-                        LocalTime.class,
-                        "cast({0} as time)",
-                        qClazz.start
-                )
-        );
+                Expressions.timeTemplate(LocalTime.class, "cast({0} as time)", qClazz.start));
         listQueryFactory.addFetchExpr(
                 KokuCustomerAppointmentDto.Fields.approximatelyEndDate,
                 Expressions.dateTemplate(
-                        LocalDate.class,
-                        "DATE({0})",
-                        qClazz.calculatedEndSnapshot.coalesce(qClazz.start)
-                )
-        );
+                        LocalDate.class, "DATE({0})", qClazz.calculatedEndSnapshot.coalesce(qClazz.start)));
         listQueryFactory.addFetchExpr(
                 KokuCustomerAppointmentDto.Fields.approximatelyEndTime,
                 Expressions.timeTemplate(
-                        LocalTime.class,
-                        "cast({0} as time)",
-                        qClazz.calculatedEndSnapshot.coalesce(qClazz.start)
-                )
-        );
+                        LocalTime.class, "cast({0} as time)", qClazz.calculatedEndSnapshot.coalesce(qClazz.start)));
         listQueryFactory.addFetchExpr(
-                KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot,
-                qClazz.soldProductsSummarySnapshot
-        );
+                KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot, qClazz.soldProductsSummarySnapshot);
         listQueryFactory.addFetchExpr(
-                KokuCustomerAppointmentDto.Fields.activitySummarySnapshot,
-                qClazz.activitiesSummarySnapshot
-        );
-        listQueryFactory.addFetchExpr(
-                KokuCustomerAppointmentDto.Fields.userId,
-                qClazz.userId
-        );
+                KokuCustomerAppointmentDto.Fields.activitySummarySnapshot, qClazz.activitiesSummarySnapshot);
+        listQueryFactory.addFetchExpr(KokuCustomerAppointmentDto.Fields.userId, qClazz.userId);
 
         return listQueryFactory.create();
     }
 
     @GetMapping(value = "/customers/appointments/{appointmentId}")
-    public KokuCustomerAppointmentDto readAppointment(
-            @PathVariable("appointmentId") Long appointmentId) {
-        final CustomerAppointment customerAppointment = this.customerAppointmentRepository.findById(appointmentId)
+    public KokuCustomerAppointmentDto readAppointment(@PathVariable("appointmentId") Long appointmentId) {
+        final CustomerAppointment customerAppointment = this.customerAppointmentRepository
+                .findById(appointmentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment not found"));
         return this.transformer.transformToDto(customerAppointment);
     }
 
     @GetMapping(value = "/customers/appointments/{appointmentId}/summary")
-    public KokuCustomerAppointmentSummaryDto readAppointmentSummary(
-            @PathVariable("appointmentId") Long appointmentId) {
-        final CustomerAppointment customerAppointment = this.customerAppointmentRepository.findById(appointmentId)
+    public KokuCustomerAppointmentSummaryDto readAppointmentSummary(@PathVariable("appointmentId") Long appointmentId) {
+        final CustomerAppointment customerAppointment = this.customerAppointmentRepository
+                .findById(appointmentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment not found"));
         return this.transformer.transformToSummaryDto(customerAppointment);
     }
@@ -1498,34 +1330,36 @@ public class CustomerAppointmentController {
     public KokuCustomerAppointmentDto update(
             @PathVariable("appointmentId") Long appointmentId,
             @RequestParam(value = "forceUpdate", required = false) Boolean forceUpdate,
-            @Validated @RequestBody KokuCustomerAppointmentDto updatedDto
-    ) throws ActivityIdNotFoundException, ProductIdNotFoundException, UserIdNotFoundException, ActivityStepIdNotFoundException, PromotionIdNotFoundException {
-        final CustomerAppointment customerAppointment = this.entityManager.getReference(CustomerAppointment.class, appointmentId);
-        if (!Boolean.TRUE.equals(forceUpdate) && !customerAppointment.getVersion().equals(updatedDto.getVersion())) {
+            @Validated @RequestBody KokuCustomerAppointmentDto updatedDto)
+            throws ActivityIdNotFoundException, ProductIdNotFoundException, UserIdNotFoundException,
+                    ActivityStepIdNotFoundException, PromotionIdNotFoundException {
+        final CustomerAppointment customerAppointment =
+                this.entityManager.getReference(CustomerAppointment.class, appointmentId);
+        if (!Boolean.TRUE.equals(forceUpdate)
+                && !customerAppointment.getVersion().equals(updatedDto.getVersion())) {
             throw new KokuBusinessExceptionWithConfirmationMessage(
                     KokuBusinessExceptionWithConfirmationMessageDto.builder()
                             .headline("Konflikt")
-                            .confirmationMessage("Der Kundentermin wurde zwischenzeitlich bearbeitet.\nWillst Du die Speicherung dennoch vornehmen?")
+                            .confirmationMessage("Der Kundentermin wurde zwischenzeitlich bearbeitet.\n"
+                                    + "Willst Du die Speicherung dennoch vornehmen?")
                             .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
                                     .icon("CLOSE")
-                                    .build()
-                            )
+                                    .build())
                             .closeOnClickOutside(true)
                             .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
                                     .text("Trotzdem speichern")
                                     .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format("services/customers/customers/appointments/%s?forceUpdate=%s", appointmentId, Boolean.TRUE))
-                                    .build()
-                            )
+                                    .endpointUrl(String.format(
+                                            "services/customers/customers/appointments/%s?forceUpdate=%s",
+                                            appointmentId, Boolean.TRUE))
+                                    .build())
                             .button(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
-                                    .build()
-                            )
-                            .build()
-            );
+                                    .build())
+                            .build());
         }
         this.transformer.transformToEntity(customerAppointment, updatedDto);
         this.entityManager.flush();
@@ -1537,7 +1371,8 @@ public class CustomerAppointmentController {
     @ResponseStatus(HttpStatus.OK)
     @Transactional
     public KokuCustomerAppointmentDto delete(@PathVariable("appointmentId") Long appointmentId) {
-        final CustomerAppointment customerAppointment = this.entityManager.getReference(CustomerAppointment.class, appointmentId);
+        final CustomerAppointment customerAppointment =
+                this.entityManager.getReference(CustomerAppointment.class, appointmentId);
         if (customerAppointment.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointment is not deletable");
         }
@@ -1551,7 +1386,8 @@ public class CustomerAppointmentController {
     @ResponseStatus(HttpStatus.OK)
     @Transactional
     public KokuCustomerAppointmentDto restore(@PathVariable("appointmentId") Long appointmentId) {
-        final CustomerAppointment customerAppointment = this.entityManager.getReference(CustomerAppointment.class, appointmentId);
+        final CustomerAppointment customerAppointment =
+                this.entityManager.getReference(CustomerAppointment.class, appointmentId);
         if (!customerAppointment.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointment is not restorable");
         }
@@ -1564,9 +1400,13 @@ public class CustomerAppointmentController {
     @PostMapping("/customers/appointments")
     @ResponseStatus(HttpStatus.CREATED)
     @Transactional
-    public KokuCustomerAppointmentDto create(@Validated @RequestBody KokuCustomerAppointmentDto newDto) throws ActivityIdNotFoundException, ProductIdNotFoundException, UserIdNotFoundException, ActivityStepIdNotFoundException, PromotionIdNotFoundException {
-        final CustomerAppointment newCustomerAppointment = this.transformer.transformToEntity(new CustomerAppointment(), newDto);
-        final CustomerAppointment savedCustomerAppointment = this.customerAppointmentRepository.saveAndFlush(newCustomerAppointment);
+    public KokuCustomerAppointmentDto create(@Validated @RequestBody KokuCustomerAppointmentDto newDto)
+            throws ActivityIdNotFoundException, ProductIdNotFoundException, UserIdNotFoundException,
+                    ActivityStepIdNotFoundException, PromotionIdNotFoundException {
+        final CustomerAppointment newCustomerAppointment =
+                this.transformer.transformToEntity(new CustomerAppointment(), newDto);
+        final CustomerAppointment savedCustomerAppointment =
+                this.customerAppointmentRepository.saveAndFlush(newCustomerAppointment);
         sendCustomerAppointmentUpdate(savedCustomerAppointment);
         return this.transformer.transformToDto(savedCustomerAppointment);
     }
@@ -1580,34 +1420,41 @@ public class CustomerAppointmentController {
         }
     }
 
-
     @GetMapping(value = "/appointments/statistics")
     public BarChartDto getAppointmentStatistics(
             @RequestParam(value = "start", required = false) final YearMonth startFilterRaw,
-            @RequestParam(value = "end", required = false) final YearMonth endFilterRaw
-    ) {
-        final LocalDateTime startFilter = startFilterRaw != null ? startFilterRaw.atDay(1).atStartOfDay() : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
-        final LocalDateTime endFilter = endFilterRaw != null ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX) : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
+            @RequestParam(value = "end", required = false) final YearMonth endFilterRaw) {
+        final LocalDateTime startFilter = startFilterRaw != null
+                ? startFilterRaw.atDay(1).atStartOfDay()
+                : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
+        final LocalDateTime endFilter = endFilterRaw != null
+                ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX)
+                : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
 
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
         final NumberExpression<BigDecimal> activitiesRevenueSnapshotSum = qClazz.activitiesRevenueSnapshot.sum();
         final NumberExpression<BigDecimal> soldProductsRevenueSnapshotSum = qClazz.soldProductsRevenueSnapshot.sum();
         final Map<YearMonth, Tuple> transform = new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
-                .select(qClazz.start.yearMonth().stringValue(), activitiesRevenueSnapshotSum, soldProductsRevenueSnapshotSum)
-                .from(qClazz)
-                .where(
-                        qClazz.start.goe(startFilter)
-                                .and(qClazz.start.year().loe(endFilter.getYear()).and(qClazz.start.month().loe(endFilter.getMonthValue())))
-                                .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
-                .groupBy(qClazz.start.yearMonth())
-                .transform(GroupBy.groupBy(qClazz.start.yearMonth().stringValue()).as(
-                        Projections.tuple(activitiesRevenueSnapshotSum, soldProductsRevenueSnapshotSum)
-                )).entrySet().stream()
-                .collect(Collectors.toMap(
-                        entry -> YearMonth.parse(entry.getKey(), YEAR_MONTH_DATETIME_FORMATTER),
-                        Map.Entry::getValue
-                ));
+                        .select(
+                                qClazz.start.yearMonth().stringValue(),
+                                activitiesRevenueSnapshotSum,
+                                soldProductsRevenueSnapshotSum)
+                        .from(qClazz)
+                        .where(qClazz.start
+                                .goe(startFilter)
+                                .and(qClazz.start
+                                        .year()
+                                        .loe(endFilter.getYear())
+                                        .and(qClazz.start.month().loe(endFilter.getMonthValue())))
+                                .and(qClazz.deleted.ne(Boolean.TRUE)))
+                        .groupBy(qClazz.start.yearMonth())
+                        .transform(GroupBy.groupBy(qClazz.start.yearMonth().stringValue())
+                                .as(Projections.tuple(activitiesRevenueSnapshotSum, soldProductsRevenueSnapshotSum)))
+                        .entrySet()
+                        .stream()
+                        .collect(Collectors.toMap(
+                                entry -> YearMonth.parse(entry.getKey(), YEAR_MONTH_DATETIME_FORMATTER),
+                                Map.Entry::getValue));
 
         YearMonth currentMonth = YearMonth.from(startFilter);
         final YearMonth lastMonth = YearMonth.from(endFilter);
@@ -1625,32 +1472,39 @@ public class CustomerAppointmentController {
                         .type(EnumInputChartFilterType.MONTH)
                         .label("Von")
                         .queryParamName("start")
-                        .build()
-                )
+                        .build())
                 .filter(InputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
                         .type(EnumInputChartFilterType.MONTH)
                         .label("Bis")
                         .queryParamName("end")
-                        .build()
-                )
+                        .build())
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
-                                .categories(allMonthsBetweenQuery.stream().map(month -> month.format(DateTimeFormatter.ofPattern("MMM yyyy"))).toList())
-                                .build()
-                        )
-                        .build()
-                )
+                                .categories(allMonthsBetweenQuery.stream()
+                                        .map(month -> month.format(DateTimeFormatter.ofPattern("MMM yyyy")))
+                                        .toList())
+                                .build())
+                        .build())
                 .series(List.of(
                         NumericSeriesDto.builder()
                                 .name("Tätigkeitsumsatz")
-                                .data(allMonthsBetweenQuery.stream().map(transform::get).map(tuple -> tuple != null ? tuple.get(activitiesRevenueSnapshotSum) : BigDecimal.ZERO).toList())
+                                .data(allMonthsBetweenQuery.stream()
+                                        .map(transform::get)
+                                        .map(tuple -> tuple != null
+                                                ? tuple.get(activitiesRevenueSnapshotSum)
+                                                : BigDecimal.ZERO)
+                                        .toList())
                                 .build(),
                         NumericSeriesDto.builder()
                                 .name("Produktumsatz")
-                                .data(allMonthsBetweenQuery.stream().map(transform::get).map(tuple -> tuple != null ? tuple.get(soldProductsRevenueSnapshotSum) : BigDecimal.ZERO).toList())
-                                .build()
-                ))
+                                .data(allMonthsBetweenQuery.stream()
+                                        .map(transform::get)
+                                        .map(tuple -> tuple != null
+                                                ? tuple.get(soldProductsRevenueSnapshotSum)
+                                                : BigDecimal.ZERO)
+                                        .toList())
+                                .build()))
                 .stacked(true)
                 .showTotals(true)
                 .build();
@@ -1665,9 +1519,7 @@ public class CustomerAppointmentController {
         final Map<Integer, Long> visitsPerYear = new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
                 .select(countExpr, yearExpr)
                 .from(qClazz)
-                .where(qClazz.customer.id.eq(customerId)
-                        .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
+                .where(qClazz.customer.id.eq(customerId).and(qClazz.deleted.ne(Boolean.TRUE)))
                 .groupBy(yearExpr)
                 .transform(GroupBy.groupBy(yearExpr).as(countExpr));
 
@@ -1675,16 +1527,17 @@ public class CustomerAppointmentController {
                 .title("Besuche")
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
-                                .categories(visitsPerYear.keySet().stream().map(year -> String.format("%s", year)).toList())
-                                .build()
-                        )
-                        .build()
-                )
+                                .categories(visitsPerYear.keySet().stream()
+                                        .map(year -> String.format("%s", year))
+                                        .toList())
+                                .build())
+                        .build())
                 .series(List.of(NumericSeriesDto.builder()
                         .name("Besuche")
-                        .data(visitsPerYear.values().stream().map(BigDecimal::new).toList())
-                        .build()
-                ))
+                        .data(visitsPerYear.values().stream()
+                                .map(BigDecimal::new)
+                                .toList())
+                        .build()))
                 .showTotals(true)
                 .build();
     }
@@ -1692,21 +1545,26 @@ public class CustomerAppointmentController {
     @GetMapping(value = "/products/statistics")
     public BarChartDto getProductRevenue(
             @RequestParam(value = "start", required = false) final YearMonth startFilterRaw,
-            @RequestParam(value = "end", required = false) final YearMonth endFilterRaw
-    ) {
-        final LocalDateTime startFilter = startFilterRaw != null ? startFilterRaw.atDay(1).atStartOfDay() : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
-        final LocalDateTime endFilter = endFilterRaw != null ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX) : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
+            @RequestParam(value = "end", required = false) final YearMonth endFilterRaw) {
+        final LocalDateTime startFilter = startFilterRaw != null
+                ? startFilterRaw.atDay(1).atStartOfDay()
+                : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
+        final LocalDateTime endFilter = endFilterRaw != null
+                ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX)
+                : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
 
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
 
         final List<CustomerAppointment> allAppointments = new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
                 .select(qClazz)
                 .from(qClazz)
-                .where(
-                        qClazz.start.goe(startFilter)
-                                .and(qClazz.start.year().loe(endFilter.getYear()).and(qClazz.start.month().loe(endFilter.getMonthValue())))
-                                .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
+                .where(qClazz.start
+                        .goe(startFilter)
+                        .and(qClazz.start
+                                .year()
+                                .loe(endFilter.getYear())
+                                .and(qClazz.start.month().loe(endFilter.getMonthValue())))
+                        .and(qClazz.deleted.ne(Boolean.TRUE)))
                 .fetch();
 
         final Map<Long, Long> salesPerProduct = new HashMap<>();
@@ -1714,11 +1572,13 @@ public class CustomerAppointmentController {
 
         for (final CustomerAppointment customerAppointment : allAppointments) {
             for (final CustomerAppointmentSoldProduct soldProduct : customerAppointment.getSoldProducts()) {
-                salesPerProduct.put(soldProduct.getProductId(), salesPerProduct.getOrDefault(soldProduct.getProductId(), 0L) + 1);
-                revenuePerProduct.put(soldProduct.getProductId(),
-                        revenuePerProduct.getOrDefault(soldProduct.getProductId(), BigDecimal.ZERO)
-                                .add(soldProduct.getFinalPriceSnapshot())
-                );
+                salesPerProduct.put(
+                        soldProduct.getProductId(), salesPerProduct.getOrDefault(soldProduct.getProductId(), 0L) + 1);
+                revenuePerProduct.put(
+                        soldProduct.getProductId(),
+                        revenuePerProduct
+                                .getOrDefault(soldProduct.getProductId(), BigDecimal.ZERO)
+                                .add(soldProduct.getFinalPriceSnapshot()));
             }
         }
 
@@ -1729,65 +1589,80 @@ public class CustomerAppointmentController {
                         .type(EnumInputChartFilterType.MONTH)
                         .label("Von")
                         .queryParamName("start")
-                        .build()
-                )
+                        .build())
                 .filter(InputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
                         .type(EnumInputChartFilterType.MONTH)
                         .label("Bis")
                         .queryParamName("end")
-                        .build()
-                )
+                        .build())
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
                                 .categories(StreamSupport.stream(
-                                                Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
-                                                false
-                                        ).filter(productKafkaDto ->
-                                                BigDecimal.ZERO.compareTo(revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO)) != 0
-                                                        || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L
-                                        )
-                                        .map(product -> String.format("%s / %s", this.productManufacturerKTableProcessor.getProductManufacturers().get(product.value.getManufacturerId()).getName(), product.value.getName()).trim()).toList())
-                                .build()
-                        )
-                        .y(YAxisDto.builder()
-                                .text("Umsatz (€)")
-                                .build()
-                        )
-                        .y(YAxisDto.builder()
-                                .opposite(true)
-                                .text("Verkäufe")
-                                .build()
-                        )
-                        .build()
-                )
+                                                Spliterators.spliteratorUnknownSize(
+                                                        this.productKTableProcessor
+                                                                .getProducts()
+                                                                .all(),
+                                                        Spliterator.DISTINCT),
+                                                false)
+                                        .filter(productKafkaDto ->
+                                                BigDecimal.ZERO.compareTo(revenuePerProduct.getOrDefault(
+                                                                        productKafkaDto.key, BigDecimal.ZERO))
+                                                                != 0
+                                                        || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L)
+                                        .map(product -> String.format(
+                                                        "%s / %s",
+                                                        this.productManufacturerKTableProcessor
+                                                                .getProductManufacturers()
+                                                                .get(product.value.getManufacturerId())
+                                                                .getName(),
+                                                        product.value.getName())
+                                                .trim())
+                                        .toList())
+                                .build())
+                        .y(YAxisDto.builder().text("Umsatz (€)").build())
+                        .y(YAxisDto.builder().opposite(true).text("Verkäufe").build())
+                        .build())
                 .series(List.of(
                         NumericSeriesDto.builder()
                                 .name("Umsatz (€)")
                                 .data(StreamSupport.stream(
-                                        Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
-                                        false
-                                ).filter(productKafkaDto ->
-                                        BigDecimal.ZERO.compareTo(revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO)) != 0
-                                                || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L
-                                ).map(productKafkaDto -> {
-                                    return revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO);
-                                }).toList())
+                                                Spliterators.spliteratorUnknownSize(
+                                                        this.productKTableProcessor
+                                                                .getProducts()
+                                                                .all(),
+                                                        Spliterator.DISTINCT),
+                                                false)
+                                        .filter(productKafkaDto ->
+                                                BigDecimal.ZERO.compareTo(revenuePerProduct.getOrDefault(
+                                                                        productKafkaDto.key, BigDecimal.ZERO))
+                                                                != 0
+                                                        || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L)
+                                        .map(productKafkaDto -> {
+                                            return revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO);
+                                        })
+                                        .toList())
                                 .build(),
                         NumericSeriesDto.builder()
                                 .name("Verkäufe")
                                 .data(StreamSupport.stream(
-                                                Spliterators.spliteratorUnknownSize(this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
-                                                false
-                                        ).filter(productKafkaDto ->
-                                                BigDecimal.ZERO.compareTo(revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO)) != 0
-                                                        || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L
-                                        )
+                                                Spliterators.spliteratorUnknownSize(
+                                                        this.productKTableProcessor
+                                                                .getProducts()
+                                                                .all(),
+                                                        Spliterator.DISTINCT),
+                                                false)
+                                        .filter(productKafkaDto ->
+                                                BigDecimal.ZERO.compareTo(revenuePerProduct.getOrDefault(
+                                                                        productKafkaDto.key, BigDecimal.ZERO))
+                                                                != 0
+                                                        || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L)
                                         .map(productKafkaDto -> {
-                                            return BigDecimal.valueOf(salesPerProduct.getOrDefault(productKafkaDto.key, 0L));
-                                        }).toList())
-                                .build()
-                ))
+                                            return BigDecimal.valueOf(
+                                                    salesPerProduct.getOrDefault(productKafkaDto.key, 0L));
+                                        })
+                                        .toList())
+                                .build()))
                 .stacked(true)
                 .build();
     }
@@ -1795,21 +1670,26 @@ public class CustomerAppointmentController {
     @GetMapping(value = "/activities/statistics")
     public BarChartDto getActivityRevenue(
             @RequestParam(value = "start", required = false) final YearMonth startFilterRaw,
-            @RequestParam(value = "end", required = false) final YearMonth endFilterRaw
-    ) {
-        final LocalDateTime startFilter = startFilterRaw != null ? startFilterRaw.atDay(1).atStartOfDay() : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
-        final LocalDateTime endFilter = endFilterRaw != null ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX) : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
+            @RequestParam(value = "end", required = false) final YearMonth endFilterRaw) {
+        final LocalDateTime startFilter = startFilterRaw != null
+                ? startFilterRaw.atDay(1).atStartOfDay()
+                : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
+        final LocalDateTime endFilter = endFilterRaw != null
+                ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX)
+                : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
 
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
 
         final List<CustomerAppointment> allAppointments = new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
                 .select(qClazz)
                 .from(qClazz)
-                .where(
-                        qClazz.start.goe(startFilter)
-                                .and(qClazz.start.year().loe(endFilter.getYear()).and(qClazz.start.month().loe(endFilter.getMonthValue())))
-                                .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
+                .where(qClazz.start
+                        .goe(startFilter)
+                        .and(qClazz.start
+                                .year()
+                                .loe(endFilter.getYear())
+                                .and(qClazz.start.month().loe(endFilter.getMonthValue())))
+                        .and(qClazz.deleted.ne(Boolean.TRUE)))
                 .fetch();
 
         final Map<Long, Long> applicationsPerActivity = new HashMap<>();
@@ -1817,11 +1697,14 @@ public class CustomerAppointmentController {
 
         for (final CustomerAppointment customerAppointment : allAppointments) {
             for (final CustomerAppointmentActivity activity : customerAppointment.getActivities()) {
-                applicationsPerActivity.put(activity.getActivityId(), applicationsPerActivity.getOrDefault(activity.getActivityId(), 0L) + 1);
-                revenuePerActivity.put(activity.getActivityId(),
-                        revenuePerActivity.getOrDefault(activity.getActivityId(), BigDecimal.ZERO)
-                                .add(activity.getFinalPriceSnapshot())
-                );
+                applicationsPerActivity.put(
+                        activity.getActivityId(),
+                        applicationsPerActivity.getOrDefault(activity.getActivityId(), 0L) + 1);
+                revenuePerActivity.put(
+                        activity.getActivityId(),
+                        revenuePerActivity
+                                .getOrDefault(activity.getActivityId(), BigDecimal.ZERO)
+                                .add(activity.getFinalPriceSnapshot()));
             }
         }
 
@@ -1832,62 +1715,69 @@ public class CustomerAppointmentController {
                         .type(EnumInputChartFilterType.MONTH)
                         .label("Von")
                         .queryParamName("start")
-                        .build()
-                )
+                        .build())
                 .filter(InputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
                         .type(EnumInputChartFilterType.MONTH)
                         .label("Bis")
                         .queryParamName("end")
-                        .build()
-                )
+                        .build())
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
-                                .categories(
-                                        StreamSupport.stream(
-                                                        Spliterators.spliteratorUnknownSize(this.activityKTableProcessor.getActivities().all(), Spliterator.DISTINCT),
-                                                        false
-                                                ).filter(activityKafkaDto ->
-                                                        BigDecimal.ZERO.compareTo(revenuePerActivity.getOrDefault(activityKafkaDto.key, BigDecimal.ZERO)) != 0
-                                                                || applicationsPerActivity.getOrDefault(activityKafkaDto.key, 0L) != 0L
-                                                ).map(activity -> String.format("%s", activity.value.getName()))
-                                                .toList()
-                                )
-                                .build()
-                        )
-                        .y(YAxisDto.builder()
-                                .text("Umsatz (€)")
-                                .build()
-                        )
-                        .y(YAxisDto.builder()
-                                .opposite(true)
-                                .text("Anwendungen")
-                                .build()
-                        )
-                        .build()
-                )
+                                .categories(StreamSupport.stream(
+                                                Spliterators.spliteratorUnknownSize(
+                                                        this.activityKTableProcessor
+                                                                .getActivities()
+                                                                .all(),
+                                                        Spliterator.DISTINCT),
+                                                false)
+                                        .filter(activityKafkaDto -> BigDecimal.ZERO.compareTo(
+                                                                revenuePerActivity.getOrDefault(
+                                                                        activityKafkaDto.key, BigDecimal.ZERO))
+                                                        != 0
+                                                || applicationsPerActivity.getOrDefault(activityKafkaDto.key, 0L) != 0L)
+                                        .map(activity -> String.format("%s", activity.value.getName()))
+                                        .toList())
+                                .build())
+                        .y(YAxisDto.builder().text("Umsatz (€)").build())
+                        .y(YAxisDto.builder().opposite(true).text("Anwendungen").build())
+                        .build())
                 .series(List.of(
                         NumericSeriesDto.builder()
                                 .name("Umsatz (€)")
                                 .data(StreamSupport.stream(
-                                        Spliterators.spliteratorUnknownSize(this.activityKTableProcessor.getActivities().all(), Spliterator.DISTINCT),
-                                        false
-                                ).filter(activityKafkaDto ->
-                                        BigDecimal.ZERO.compareTo(revenuePerActivity.getOrDefault(activityKafkaDto.key, BigDecimal.ZERO)) != 0
-                                                || applicationsPerActivity.getOrDefault(activityKafkaDto.key, 0L) != 0L
-                                ).map(activity -> revenuePerActivity.getOrDefault(activity.key, BigDecimal.ZERO)).toList())
+                                                Spliterators.spliteratorUnknownSize(
+                                                        this.activityKTableProcessor
+                                                                .getActivities()
+                                                                .all(),
+                                                        Spliterator.DISTINCT),
+                                                false)
+                                        .filter(activityKafkaDto -> BigDecimal.ZERO.compareTo(
+                                                                revenuePerActivity.getOrDefault(
+                                                                        activityKafkaDto.key, BigDecimal.ZERO))
+                                                        != 0
+                                                || applicationsPerActivity.getOrDefault(activityKafkaDto.key, 0L) != 0L)
+                                        .map(activity -> revenuePerActivity.getOrDefault(activity.key, BigDecimal.ZERO))
+                                        .toList())
                                 .build(),
                         NumericSeriesDto.builder()
                                 .name("Anwendungen")
                                 .data(StreamSupport.stream(
-                                        Spliterators.spliteratorUnknownSize(this.activityKTableProcessor.getActivities().all(), Spliterator.DISTINCT),
-                                        false
-                                ).filter(activityKafkaDto ->
-                                        BigDecimal.ZERO.compareTo(revenuePerActivity.getOrDefault(activityKafkaDto.key, BigDecimal.ZERO)) != 0
-                                                || applicationsPerActivity.getOrDefault(activityKafkaDto.key, 0L) != 0L
-                                ).map(activity -> BigDecimal.valueOf(applicationsPerActivity.getOrDefault(activity.key, 0L))).toList())
-                                .build()
-                ))
+                                                Spliterators.spliteratorUnknownSize(
+                                                        this.activityKTableProcessor
+                                                                .getActivities()
+                                                                .all(),
+                                                        Spliterator.DISTINCT),
+                                                false)
+                                        .filter(activityKafkaDto -> BigDecimal.ZERO.compareTo(
+                                                                revenuePerActivity.getOrDefault(
+                                                                        activityKafkaDto.key, BigDecimal.ZERO))
+                                                        != 0
+                                                || applicationsPerActivity.getOrDefault(activityKafkaDto.key, 0L) != 0L)
+                                        .map(activity -> BigDecimal.valueOf(
+                                                applicationsPerActivity.getOrDefault(activity.key, 0L)))
+                                        .toList())
+                                .build()))
                 .stacked(true)
                 .build();
     }
@@ -1895,10 +1785,13 @@ public class CustomerAppointmentController {
     @GetMapping(value = "/customers/statistics")
     public BarChartDto getCustomerStatistics(
             @RequestParam(value = "start", required = false) final YearMonth startFilterRaw,
-            @RequestParam(value = "end", required = false) final YearMonth endFilterRaw
-    ) {
-        final LocalDateTime startFilter = startFilterRaw != null ? startFilterRaw.atDay(1).atStartOfDay() : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
-        final LocalDateTime endFilter = endFilterRaw != null ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX) : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
+            @RequestParam(value = "end", required = false) final YearMonth endFilterRaw) {
+        final LocalDateTime startFilter = startFilterRaw != null
+                ? startFilterRaw.atDay(1).atStartOfDay()
+                : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
+        final LocalDateTime endFilter = endFilterRaw != null
+                ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX)
+                : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
 
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
         final NumberExpression<BigDecimal> soldProductsRevenueSnapshotSum = qClazz.soldProductsRevenueSnapshot.sum();
@@ -1906,25 +1799,27 @@ public class CustomerAppointmentController {
         final Map<Customer, Tuple> statisticsPerCustomer = new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
                 .select(qClazz.customer, soldProductsRevenueSnapshotSum, activitiesRevenueSnapshotSum)
                 .from(qClazz)
-                .where(
-                        qClazz.start.goe(startFilter)
-                                .and(qClazz.start.year().loe(endFilter.getYear()).and(qClazz.start.month().loe(endFilter.getMonthValue())))
-                                .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
+                .where(qClazz.start
+                        .goe(startFilter)
+                        .and(qClazz.start
+                                .year()
+                                .loe(endFilter.getYear())
+                                .and(qClazz.start.month().loe(endFilter.getMonthValue())))
+                        .and(qClazz.deleted.ne(Boolean.TRUE)))
                 .groupBy(qClazz.customer)
-                .transform(GroupBy.groupBy(qClazz.customer).as(Projections.tuple(
-                        soldProductsRevenueSnapshotSum,
-                        activitiesRevenueSnapshotSum
-                )));
+                .transform(GroupBy.groupBy(qClazz.customer)
+                        .as(Projections.tuple(soldProductsRevenueSnapshotSum, activitiesRevenueSnapshotSum)));
 
         final Map<Customer, Long> visitsPerCustomer = new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
                 .select(qClazz.customer, qClazz.count())
                 .from(qClazz)
-                .where(
-                        qClazz.start.goe(startFilter)
-                                .and(qClazz.start.year().loe(endFilter.getYear()).and(qClazz.start.month().loe(endFilter.getMonthValue())))
-                                .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
+                .where(qClazz.start
+                        .goe(startFilter)
+                        .and(qClazz.start
+                                .year()
+                                .loe(endFilter.getYear())
+                                .and(qClazz.start.month().loe(endFilter.getMonthValue())))
+                        .and(qClazz.deleted.ne(Boolean.TRUE)))
                 .groupBy(qClazz.customer)
                 .transform(GroupBy.groupBy(qClazz.customer).as(qClazz.count()));
 
@@ -1935,63 +1830,65 @@ public class CustomerAppointmentController {
                         .type(EnumInputChartFilterType.MONTH)
                         .label("Von")
                         .queryParamName("start")
-                        .build()
-                )
+                        .build())
                 .filter(InputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
                         .type(EnumInputChartFilterType.MONTH)
                         .label("Bis")
                         .queryParamName("end")
-                        .build()
-                )
+                        .build())
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
-                                .categories(statisticsPerCustomer.keySet().stream().map(customer -> String.format("%s %s", customer.getFirstname(), customer.getLastname()).trim()).toList())
-                                .build()
-                        )
+                                .categories(statisticsPerCustomer.keySet().stream()
+                                        .map(customer -> String.format(
+                                                        "%s %s", customer.getFirstname(), customer.getLastname())
+                                                .trim())
+                                        .toList())
+                                .build())
                         .y(YAxisDto.builder()
                                 .text("Umsatz (€)")
-                                .seriesName(List.of(
-                                        "Tätigkeiten (€)",
-                                        "Produkte (€)"
-                                ))
-                                .build()
-                        )
+                                .seriesName(List.of("Tätigkeiten (€)", "Produkte (€)"))
+                                .build())
                         .y(YAxisDto.builder()
                                 .opposite(true)
                                 .text("Besuche")
-                                .seriesName(List.of(
-                                        "Besuche"
-                                ))
-                                .build()
-                        )
-                        .build()
-                )
+                                .seriesName(List.of("Besuche"))
+                                .build())
+                        .build())
                 .series(List.of(
                         NumericSeriesDto.builder()
                                 .name("Tätigkeiten (€)")
                                 .group("revenue")
-                                .data(statisticsPerCustomer.keySet().stream().map(customer -> {
-                                    final Tuple statisticsCurrentCustomer = statisticsPerCustomer.get(customer);
-                                    return statisticsCurrentCustomer != null ? statisticsCurrentCustomer.get(activitiesRevenueSnapshotSum) : BigDecimal.ZERO;
-                                }).toList())
+                                .data(statisticsPerCustomer.keySet().stream()
+                                        .map(customer -> {
+                                            final Tuple statisticsCurrentCustomer = statisticsPerCustomer.get(customer);
+                                            return statisticsCurrentCustomer != null
+                                                    ? statisticsCurrentCustomer.get(activitiesRevenueSnapshotSum)
+                                                    : BigDecimal.ZERO;
+                                        })
+                                        .toList())
                                 .build(),
                         NumericSeriesDto.builder()
                                 .name("Produkte (€)")
                                 .group("revenue")
-                                .data(statisticsPerCustomer.keySet().stream().map(customer -> {
-                                    final Tuple statisticsCurrentCustomer = statisticsPerCustomer.get(customer);
-                                    return statisticsCurrentCustomer != null ? statisticsCurrentCustomer.get(soldProductsRevenueSnapshotSum) : BigDecimal.ZERO;
-                                }).toList())
+                                .data(statisticsPerCustomer.keySet().stream()
+                                        .map(customer -> {
+                                            final Tuple statisticsCurrentCustomer = statisticsPerCustomer.get(customer);
+                                            return statisticsCurrentCustomer != null
+                                                    ? statisticsCurrentCustomer.get(soldProductsRevenueSnapshotSum)
+                                                    : BigDecimal.ZERO;
+                                        })
+                                        .toList())
                                 .build(),
                         NumericSeriesDto.builder()
                                 .name("Besuche")
-                                .data(visitsPerCustomer.keySet().stream().map(customer -> {
-                                    final Long count = visitsPerCustomer.get(customer);
-                                    return count != null ? BigDecimal.valueOf(count) : BigDecimal.ZERO;
-                                }).toList())
-                                .build()
-                ))
+                                .data(visitsPerCustomer.keySet().stream()
+                                        .map(customer -> {
+                                            final Long count = visitsPerCustomer.get(customer);
+                                            return count != null ? BigDecimal.valueOf(count) : BigDecimal.ZERO;
+                                        })
+                                        .toList())
+                                .build()))
                 .stacked(true)
                 .build();
     }
@@ -2004,35 +1901,37 @@ public class CustomerAppointmentController {
         final Map<Integer, Tuple> revenuesPerYear = new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
                 .select(qClazz.start.year(), activityRevenueSnapshotSum, soldProductsRevenueSnapshotSum)
                 .from(qClazz)
-                .where(qClazz.customer.id.eq(customerId)
-                        .and(qClazz.deleted.ne(Boolean.TRUE)))
+                .where(qClazz.customer.id.eq(customerId).and(qClazz.deleted.ne(Boolean.TRUE)))
                 .groupBy(qClazz.start.year())
-                .transform(GroupBy.groupBy(qClazz.start.year()).as(Projections.tuple(activityRevenueSnapshotSum, soldProductsRevenueSnapshotSum)));
+                .transform(GroupBy.groupBy(qClazz.start.year())
+                        .as(Projections.tuple(activityRevenueSnapshotSum, soldProductsRevenueSnapshotSum)));
 
         return BarChartDto.builder()
                 .title("Umsätze")
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
-                                .categories(revenuesPerYear.keySet().stream().map(year -> String.format("%s", year)).toList())
-                                .build()
-                        )
-                        .build()
-                )
+                                .categories(revenuesPerYear.keySet().stream()
+                                        .map(year -> String.format("%s", year))
+                                        .toList())
+                                .build())
+                        .build())
                 .series(List.of(
                         NumericSeriesDto.builder()
                                 .name("Tätigkeitsumsatz")
-                                .data(revenuesPerYear.values().stream().map(tuple -> tuple.get(activityRevenueSnapshotSum)).toList())
+                                .data(revenuesPerYear.values().stream()
+                                        .map(tuple -> tuple.get(activityRevenueSnapshotSum))
+                                        .toList())
                                 .build(),
                         NumericSeriesDto.builder()
                                 .name("Produktumsatz")
-                                .data(revenuesPerYear.values().stream().map(tuple -> tuple.get(soldProductsRevenueSnapshotSum)).toList())
-                                .build()
-                ))
+                                .data(revenuesPerYear.values().stream()
+                                        .map(tuple -> tuple.get(soldProductsRevenueSnapshotSum))
+                                        .toList())
+                                .build()))
                 .stacked(true)
                 .showTotals(true)
                 .build();
     }
-
 
     @GetMapping("/customers/dashboard/appointments")
     public DashboardTextPanelDto getAppointmentDashboardContent() {
@@ -2043,26 +1942,32 @@ public class CustomerAppointmentController {
         final Long countAllAppointmentsThisMonth = new JPAQuery<>(this.entityManager)
                 .select(qClazz.count())
                 .from(qClazz)
-                .where(
-                        qClazz.start.goe(currentMonth.atDay(1).atTime(LocalTime.MIN))
-                                .and(qClazz.start.loe(currentMonth.atEndOfMonth().atTime(LocalTime.MAX)))
-                                .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
+                .where(qClazz.start
+                        .goe(currentMonth.atDay(1).atTime(LocalTime.MIN))
+                        .and(qClazz.start.loe(currentMonth.atEndOfMonth().atTime(LocalTime.MAX)))
+                        .and(qClazz.deleted.ne(Boolean.TRUE)))
                 .fetchOne();
         final Long countPassedAppointmentsThisMonth = new JPAQuery<>(this.entityManager)
                 .select(qClazz.count())
                 .from(qClazz)
-                .where(
-                        qClazz.start.goe(currentMonth.atDay(1).atTime(LocalTime.MIN))
-                                .and(qClazz.start.loe(now))
-                                .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
+                .where(qClazz.start
+                        .goe(currentMonth.atDay(1).atTime(LocalTime.MIN))
+                        .and(qClazz.start.loe(now))
+                        .and(qClazz.deleted.ne(Boolean.TRUE)))
                 .fetchOne();
         return DashboardTextPanelDto.builder()
                 .color(KokuColorEnum.PURPLE)
                 .headline(String.valueOf(countAllAppointmentsThisMonth))
-                .subHeadline("Termine " + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN) + " " + currentMonth.getYear() + "  \uD83D\uDCC5")
-                .progress((short) (countAllAppointmentsThisMonth != 0L ? Math.round((float) countPassedAppointmentsThisMonth * 100 / countAllAppointmentsThisMonth) : 0))
+                .subHeadline("Termine "
+                        + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
+                        + " "
+                        + currentMonth.getYear()
+                        + "  \uD83D\uDCC5")
+                .progress((short)
+                        (countAllAppointmentsThisMonth != 0L
+                                ? Math.round(
+                                        (float) countPassedAppointmentsThisMonth * 100 / countAllAppointmentsThisMonth)
+                                : 0))
                 .progressDetails(List.of(
                         DashboardTextPanelProgressDetailsDto.builder()
                                 .headline(String.valueOf(countPassedAppointmentsThisMonth))
@@ -2073,17 +1978,16 @@ public class CustomerAppointmentController {
                                 .headline(new JPAQuery<>(this.entityManager)
                                         .select(qClazz.count().stringValue())
                                         .from(qClazz)
-                                        .where(
-                                                qClazz.start.goe(now)
-                                                        .and(qClazz.start.loe(currentMonth.atEndOfMonth().atTime(LocalTime.MAX)))
-                                                        .and(qClazz.deleted.ne(Boolean.TRUE))
-                                        )
-                                        .fetchOne()
-                                )
+                                        .where(qClazz.start
+                                                .goe(now)
+                                                .and(qClazz.start.loe(currentMonth
+                                                        .atEndOfMonth()
+                                                        .atTime(LocalTime.MAX)))
+                                                .and(qClazz.deleted.ne(Boolean.TRUE)))
+                                        .fetchOne())
                                 .subHeadline("Offen ⏳")
                                 .headlineColor(KokuColorEnum.YELLOW)
-                                .build()
-                ))
+                                .build()))
                 .build();
     }
 
@@ -2096,64 +2000,65 @@ public class CustomerAppointmentController {
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
         final NumberExpression<BigDecimal> activitiesRevenueSnapshotSum = qClazz.activitiesRevenueSnapshot.sum();
         final NumberExpression<BigDecimal> soldProductsRevenueSnapshotSum = qClazz.soldProductsRevenueSnapshot.sum();
-        final NumberExpression<BigDecimal> sum = activitiesRevenueSnapshotSum.coalesce(BigDecimal.ZERO).add(soldProductsRevenueSnapshotSum.coalesce(BigDecimal.ZERO));
+        final NumberExpression<BigDecimal> sum = activitiesRevenueSnapshotSum
+                .coalesce(BigDecimal.ZERO)
+                .add(soldProductsRevenueSnapshotSum.coalesce(BigDecimal.ZERO));
         final Map<YearMonth, BigDecimal> sums = new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
-                .select(qClazz.start.yearMonth().stringValue(), sum)
-                .from(qClazz)
-                .where(
-                        qClazz.start.goe(lastYear.atMonth(1).atDay(1).atTime(LocalTime.MIN))
-                                .and(qClazz.start.loe(currentYear.atMonth(12).atEndOfMonth().atTime(LocalTime.MAX)))
-                                .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
-                .groupBy(qClazz.start.yearMonth())
-                .transform(GroupBy.groupBy(qClazz.start.yearMonth().stringValue()).as(
-                        sum
-                )).entrySet().stream()
-                .collect(Collectors.toMap(
-                        entry -> YearMonth.parse(entry.getKey(), YEAR_MONTH_DATETIME_FORMATTER),
-                        Map.Entry::getValue
-                ));
+                        .select(qClazz.start.yearMonth().stringValue(), sum)
+                        .from(qClazz)
+                        .where(qClazz.start
+                                .goe(lastYear.atMonth(1).atDay(1).atTime(LocalTime.MIN))
+                                .and(qClazz.start.loe(
+                                        currentYear.atMonth(12).atEndOfMonth().atTime(LocalTime.MAX)))
+                                .and(qClazz.deleted.ne(Boolean.TRUE)))
+                        .groupBy(qClazz.start.yearMonth())
+                        .transform(GroupBy.groupBy(qClazz.start.yearMonth().stringValue())
+                                .as(sum))
+                        .entrySet()
+                        .stream()
+                        .collect(Collectors.toMap(
+                                entry -> YearMonth.parse(entry.getKey(), YEAR_MONTH_DATETIME_FORMATTER),
+                                Map.Entry::getValue));
 
         return LineChartDto.builder()
                 .title("Umsatzübersicht \uD83D\uDCCA")
                 .series(List.of(
                         NumericSeriesDto.builder()
                                 .name("Umsatz " + currentYear.getValue())
-                                .data(Arrays.stream(Month.values()).map(month -> {
-                                    BigDecimal result = sums.get(currentYear.atMonth(month));
-                                    return result != null ? result : BigDecimal.ZERO;
-                                }).toList())
+                                .data(Arrays.stream(Month.values())
+                                        .map(month -> {
+                                            BigDecimal result = sums.get(currentYear.atMonth(month));
+                                            return result != null ? result : BigDecimal.ZERO;
+                                        })
+                                        .toList())
                                 .build(),
                         NumericSeriesDto.builder()
                                 .name("Umsatz " + lastYear.getValue())
-                                .data(Arrays.stream(Month.values()).map(month -> {
-                                    BigDecimal result = sums.get(lastYear.atMonth(month));
-                                    return result != null ? result : BigDecimal.ZERO;
-                                }).toList())
-                                .build()
-                ))
+                                .data(Arrays.stream(Month.values())
+                                        .map(month -> {
+                                            BigDecimal result = sums.get(lastYear.atMonth(month));
+                                            return result != null ? result : BigDecimal.ZERO;
+                                        })
+                                        .toList())
+                                .build()))
                 .annotations(AnnotationsDto.builder()
-                        .xasis(List.of(
-                                AnnotationsAxesDto.builder()
-                                        .x(Month.from(now).getDisplayName(TextStyle.SHORT, Locale.GERMAN))
+                        .xasis(List.of(AnnotationsAxesDto.builder()
+                                .x(Month.from(now).getDisplayName(TextStyle.SHORT, Locale.GERMAN))
+                                .borderColor(ColorsEnumDto.YELLOW)
+                                .label(AnnotationsAxesLabelDto.builder()
                                         .borderColor(ColorsEnumDto.YELLOW)
-                                        .label(AnnotationsAxesLabelDto.builder()
-                                                .borderColor(ColorsEnumDto.YELLOW)
-                                                .backgroundColor(ColorsEnumDto.YELLOW)
-                                                .text("Aktueller Monat")
-                                                .build()
-                                        )
-                                        .build()
-                        ))
-                        .build()
-                )
+                                        .backgroundColor(ColorsEnumDto.YELLOW)
+                                        .text("Aktueller Monat")
+                                        .build())
+                                .build()))
+                        .build())
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
-                                .categories(Arrays.stream(Month.values()).map(month -> month.getDisplayName(TextStyle.SHORT, Locale.GERMAN)).toList())
-                                .build()
-                        )
-                        .build()
-                )
+                                .categories(Arrays.stream(Month.values())
+                                        .map(month -> month.getDisplayName(TextStyle.SHORT, Locale.GERMAN))
+                                        .toList())
+                                .build())
+                        .build())
                 .build();
     }
 
@@ -2164,41 +2069,53 @@ public class CustomerAppointmentController {
 
         final BigDecimal overallRevenueThisMonth = getOverallRevenue(
                 currentMonth.atDay(1).atTime(LocalTime.MIN),
-                currentMonth.atEndOfMonth().atTime(LocalTime.MAX)
-        );
-        final BigDecimal achievedRevenueThisMonth = getOverallRevenue(
-                currentMonth.atDay(1).atTime(LocalTime.MIN),
-                now
-        );
+                currentMonth.atEndOfMonth().atTime(LocalTime.MAX));
+        final BigDecimal achievedRevenueThisMonth =
+                getOverallRevenue(currentMonth.atDay(1).atTime(LocalTime.MIN), now);
         YearMonth lastMonth = currentMonth.minusMonths(1);
         final BigDecimal overallRevenueLastMonth = getOverallRevenue(
                 lastMonth.atDay(1).atTime(LocalTime.MIN),
-                lastMonth.atEndOfMonth().atTime(LocalTime.MAX)
-        );
+                lastMonth.atEndOfMonth().atTime(LocalTime.MAX));
         YearMonth sameMonthLastYear = currentMonth.minusYears(1);
         final BigDecimal overallRevenueSameMonthLastYear = getOverallRevenue(
                 sameMonthLastYear.atDay(1).atTime(LocalTime.MIN),
-                sameMonthLastYear.atEndOfMonth().atTime(LocalTime.MAX)
-        );
+                sameMonthLastYear.atEndOfMonth().atTime(LocalTime.MAX));
 
         return DashboardTextPanelDto.builder()
                 .color(KokuColorEnum.BLUE)
                 .topHeadline("Monatsumsatz")
                 .headline(NumberFormat.getCurrencyInstance(Locale.GERMANY).format(overallRevenueThisMonth))
-                .subHeadline("Umsatz " + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN) + " " + currentMonth.getYear() + " \uD83D\uDCB0")
-                .progress(BigDecimal.ZERO.compareTo(overallRevenueThisMonth) != 0 ? achievedRevenueThisMonth.multiply(BigDecimal.valueOf(100)).divide(overallRevenueThisMonth, 0, RoundingMode.HALF_UP).shortValue() : 0)
+                .subHeadline("Umsatz "
+                        + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
+                        + " "
+                        + currentMonth.getYear()
+                        + " \uD83D\uDCB0")
+                .progress(
+                        BigDecimal.ZERO.compareTo(overallRevenueThisMonth) != 0
+                                ? achievedRevenueThisMonth
+                                        .multiply(BigDecimal.valueOf(100))
+                                        .divide(overallRevenueThisMonth, 0, RoundingMode.HALF_UP)
+                                        .shortValue()
+                                : 0)
                 .progressDetails(List.of(
                         DashboardTextPanelProgressDetailsDto.builder()
-                                .headline(calculatedFormattedDifference(overallRevenueThisMonth, overallRevenueLastMonth))
-                                .subHeadline("vs. " + lastMonth.getMonth().getDisplayName(TextStyle.SHORT, Locale.GERMAN) + " " + currentMonth.getYear())
+                                .headline(
+                                        calculatedFormattedDifference(overallRevenueThisMonth, overallRevenueLastMonth))
+                                .subHeadline("vs. "
+                                        + lastMonth.getMonth().getDisplayName(TextStyle.SHORT, Locale.GERMAN)
+                                        + " "
+                                        + currentMonth.getYear())
                                 .headlineColor(KokuColorEnum.GREEN)
                                 .build(),
                         DashboardTextPanelProgressDetailsDto.builder()
-                                .headline(calculatedFormattedDifference(overallRevenueThisMonth, overallRevenueSameMonthLastYear))
-                                .subHeadline("vs. " + sameMonthLastYear.getMonth().getDisplayName(TextStyle.SHORT, Locale.GERMAN) + " " + sameMonthLastYear.getYear())
+                                .headline(calculatedFormattedDifference(
+                                        overallRevenueThisMonth, overallRevenueSameMonthLastYear))
+                                .subHeadline("vs. "
+                                        + sameMonthLastYear.getMonth().getDisplayName(TextStyle.SHORT, Locale.GERMAN)
+                                        + " "
+                                        + sameMonthLastYear.getYear())
                                 .headlineColor(KokuColorEnum.YELLOW)
-                                .build()
-                ))
+                                .build()))
                 .build();
     }
 
@@ -2209,16 +2126,13 @@ public class CustomerAppointmentController {
 
         final BigDecimal overallRevenuePlanned = getOverallRevenue(
                 currentMonth.plusMonths(1).atDay(1).atTime(LocalTime.MIN),
-                currentMonth.plusMonths(1).plusYears(1).atEndOfMonth().atTime(LocalTime.MAX)
-        );
+                currentMonth.plusMonths(1).plusYears(1).atEndOfMonth().atTime(LocalTime.MAX));
         final BigDecimal overallRevenueNextMonth = getOverallRevenue(
                 currentMonth.plusMonths(1).atDay(1).atTime(LocalTime.MIN),
-                currentMonth.plusMonths(1).atEndOfMonth().atTime(LocalTime.MAX)
-        );
+                currentMonth.plusMonths(1).atEndOfMonth().atTime(LocalTime.MAX));
         final BigDecimal overallRevenueNextNextMonth = getOverallRevenue(
                 currentMonth.plusMonths(2).atDay(1).atTime(LocalTime.MIN),
-                currentMonth.plusMonths(2).atEndOfMonth().atTime(LocalTime.MAX)
-        );
+                currentMonth.plusMonths(2).atEndOfMonth().atTime(LocalTime.MAX));
 
         return DashboardTextPanelDto.builder()
                 .topHeadline("Umsatzerwartungen")
@@ -2227,13 +2141,14 @@ public class CustomerAppointmentController {
                 .explanations(List.of(
                         DashboardTextPanelExplanationItemDto.builder()
                                 .left("Nächster Monat")
-                                .right(NumberFormat.getCurrencyInstance(Locale.GERMANY).format(overallRevenueNextMonth))
+                                .right(NumberFormat.getCurrencyInstance(Locale.GERMANY)
+                                        .format(overallRevenueNextMonth))
                                 .build(),
                         DashboardTextPanelExplanationItemDto.builder()
                                 .left("Übernächster Monat")
-                                .right(NumberFormat.getCurrencyInstance(Locale.GERMANY).format(overallRevenueNextNextMonth))
-                                .build()
-                ))
+                                .right(NumberFormat.getCurrencyInstance(Locale.GERMANY)
+                                        .format(overallRevenueNextNextMonth))
+                                .build()))
                 .build();
     }
 
@@ -2244,23 +2159,28 @@ public class CustomerAppointmentController {
 
         final Map<Long, Integer> productUsages = getProductUsages(
                 currentMonth.atDay(1).atTime(LocalTime.MIN),
-                currentMonth.atEndOfMonth().atTime(LocalTime.MAX)
-        );
+                currentMonth.atEndOfMonth().atTime(LocalTime.MAX));
 
-        final Map.Entry<Long, Integer> maxEntry = productUsages.entrySet()
-                .stream()
+        final Map.Entry<Long, Integer> maxEntry = productUsages.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .orElse(null); // null, falls Map leer
 
         String name = "?";
         if (maxEntry != null) {
-            name = this.productKTableProcessor.getProducts().get(maxEntry.getKey()).getName();
+            name = this.productKTableProcessor
+                    .getProducts()
+                    .get(maxEntry.getKey())
+                    .getName();
         }
 
         return DashboardTextPanelDto.builder()
                 .color(KokuColorEnum.PINK)
                 .headline(name)
-                .subHeadline("Top Produkt im " + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN) + " " + currentMonth.getYear() + " \uD83D\uDC84")
+                .subHeadline("Top Produkt im "
+                        + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
+                        + " "
+                        + currentMonth.getYear()
+                        + " \uD83D\uDC84")
                 .build();
     }
 
@@ -2271,23 +2191,28 @@ public class CustomerAppointmentController {
 
         final Map<Long, Integer> activityUsages = getActivityUsages(
                 currentMonth.atDay(1).atTime(LocalTime.MIN),
-                currentMonth.atEndOfMonth().atTime(LocalTime.MAX)
-        );
+                currentMonth.atEndOfMonth().atTime(LocalTime.MAX));
 
-        final Map.Entry<Long, Integer> maxEntry = activityUsages.entrySet()
-                .stream()
+        final Map.Entry<Long, Integer> maxEntry = activityUsages.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .orElse(null); // null, falls Map leer
 
         String name = "?";
         if (maxEntry != null) {
-            name = this.activityKTableProcessor.getActivities().get(maxEntry.getKey()).getName();
+            name = this.activityKTableProcessor
+                    .getActivities()
+                    .get(maxEntry.getKey())
+                    .getName();
         }
 
         return DashboardTextPanelDto.builder()
                 .color(KokuColorEnum.TEAL)
                 .headline(name)
-                .subHeadline("Top Dienstleistung im " + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN) + " " + currentMonth.getYear() + " ✂\uFE0F")
+                .subHeadline("Top Dienstleistung im "
+                        + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
+                        + " "
+                        + currentMonth.getYear()
+                        + " ✂\uFE0F")
                 .build();
     }
 
@@ -2303,13 +2228,16 @@ public class CustomerAppointmentController {
                 .headline(String.valueOf(new JPAQuery<>(this.entityManager)
                         .select(qClazz.count())
                         .from(qClazz)
-                        .where(
-                                qClazz.recorded.goe(currentMonth.atDay(1).atTime(LocalTime.MIN))
-                                        .and(qClazz.recorded.loe(currentMonth.atEndOfMonth().atTime(LocalTime.MAX)))
-                        )
-                        .fetchOne())
-                )
-                .subHeadline("Neukunden im " + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN) + " " + currentMonth.getYear() + " \uD83C\uDF89")
+                        .where(qClazz.recorded
+                                .goe(currentMonth.atDay(1).atTime(LocalTime.MIN))
+                                .and(qClazz.recorded.loe(
+                                        currentMonth.atEndOfMonth().atTime(LocalTime.MAX))))
+                        .fetchOne()))
+                .subHeadline("Neukunden im "
+                        + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
+                        + " "
+                        + currentMonth.getYear()
+                        + " \uD83C\uDF89")
                 .build();
     }
 
@@ -2320,22 +2248,21 @@ public class CustomerAppointmentController {
 
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
 
-        final NumberExpression<BigDecimal> sum = qClazz.activitiesRevenueSnapshot.sum().coalesce(BigDecimal.ZERO).add(qClazz.soldProductsRevenueSnapshot.sum().coalesce(BigDecimal.ZERO));
+        final NumberExpression<BigDecimal> sum = qClazz.activitiesRevenueSnapshot
+                .sum()
+                .coalesce(BigDecimal.ZERO)
+                .add(qClazz.soldProductsRevenueSnapshot.sum().coalesce(BigDecimal.ZERO));
         final Map<Customer, BigDecimal> revenuePerCustomer = new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
                 .select(qClazz.customer, sum)
                 .from(qClazz)
-                .where(
-                        qClazz.start.goe(currentMonth.atDay(1).atTime(LocalTime.MIN))
-                                .and(qClazz.start.loe(currentMonth.atEndOfMonth().atTime(LocalTime.MAX)))
-                                .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
+                .where(qClazz.start
+                        .goe(currentMonth.atDay(1).atTime(LocalTime.MIN))
+                        .and(qClazz.start.loe(currentMonth.atEndOfMonth().atTime(LocalTime.MAX)))
+                        .and(qClazz.deleted.ne(Boolean.TRUE)))
                 .groupBy(qClazz.customer)
-                .transform(GroupBy.groupBy(qClazz.customer).as(
-                        sum
-                ));
+                .transform(GroupBy.groupBy(qClazz.customer).as(sum));
 
-        final Map.Entry<Customer, BigDecimal> maxEntry = revenuePerCustomer.entrySet()
-                .stream()
+        final Map.Entry<Customer, BigDecimal> maxEntry = revenuePerCustomer.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .orElse(null); // null, falls Map leer
 
@@ -2352,7 +2279,11 @@ public class CustomerAppointmentController {
                 .color(KokuColorEnum.YELLOW)
                 .topHeadline(name)
                 .headline(revenue)
-                .subHeadline("Top Kunde im " + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN) + " " + currentMonth.getYear() + " \uD83D\uDC8E")
+                .subHeadline("Top Kunde im "
+                        + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
+                        + " "
+                        + currentMonth.getYear()
+                        + " \uD83D\uDC8E")
                 .build();
     }
 
@@ -2360,104 +2291,73 @@ public class CustomerAppointmentController {
     public DashboardViewDto getDashboardView() {
         final DashboardViewFactory dashboardFactory = new DashboardViewFactory(
                 new DefaultDashboardViewContentIdGenerator(),
-                DashboardGridContainerDto.builder()
-                        .cols(1)
-                        .build()
-        );
+                DashboardGridContainerDto.builder().cols(1).build());
 
-        dashboardFactory.addContainer(DashboardGridContainerDto.builder()
-                .cols(1)
-                .md(2)
-                .build()
-        );
+        dashboardFactory.addContainer(
+                DashboardGridContainerDto.builder().cols(1).md(2).build());
 
         dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
                 .sourceUrl("services/customers/customers/dashboard/revenues/current")
-                .build()
-        );
+                .build());
         dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
                 .sourceUrl("services/customers/customers/dashboard/revenues/preview")
-                .build()
-        );
+                .build());
         dashboardFactory.endContainer();
 
-        dashboardFactory.addContainer(DashboardGridContainerDto.builder()
-                .cols(1)
-                .md(2)
-                .xl2(3)
-                .build()
-        );
+        dashboardFactory.addContainer(
+                DashboardGridContainerDto.builder().cols(1).md(2).xl2(3).build());
 
         dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
                 .sourceUrl("services/customers/customers/dashboard/topproduct")
-                .build()
-        );
+                .build());
         dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
                 .sourceUrl("services/customers/customers/dashboard/topactivity")
-                .build()
-        );
+                .build());
         dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
                 .sourceUrl("services/customers/customers/dashboard/newcustomers")
-                .build()
-        );
+                .build());
         dashboardFactory.endContainer();
 
-        dashboardFactory.addContainer(DashboardGridContainerDto.builder()
-                .cols(1)
-                .md(2)
-                .build()
-        );
+        dashboardFactory.addContainer(
+                DashboardGridContainerDto.builder().cols(1).md(2).build());
 
         dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
                 .sourceUrl("services/customers/customers/dashboard/appointments")
-                .build()
-        );
+                .build());
         dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
                 .sourceUrl("services/customers/customers/dashboard/topcustomers")
-                .build()
-        );
+                .build());
 
         dashboardFactory.endContainer();
 
         dashboardFactory.addPanel(DashboardAsyncChartPanelDto.builder()
                 .chartUrl("services/customers/customers/dashboard/revenueschart")
-                .build()
-        );
+                .build());
 
         return dashboardFactory.create();
     }
 
-    private BigDecimal getOverallRevenue(
-            final LocalDateTime from,
-            final LocalDateTime to
-    ) {
+    private BigDecimal getOverallRevenue(final LocalDateTime from, final LocalDateTime to) {
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
 
         final NumberExpression<BigDecimal> soldProductsRevenueSnapshotSum = qClazz.soldProductsRevenueSnapshot.sum();
         final NumberExpression<BigDecimal> activitiesRevenueSnapshotSum = qClazz.activitiesRevenueSnapshot.sum();
         return new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
-                .select(soldProductsRevenueSnapshotSum.coalesce(BigDecimal.ZERO).add(activitiesRevenueSnapshotSum.coalesce(BigDecimal.ZERO)))
+                .select(soldProductsRevenueSnapshotSum
+                        .coalesce(BigDecimal.ZERO)
+                        .add(activitiesRevenueSnapshotSum.coalesce(BigDecimal.ZERO)))
                 .from(qClazz)
-                .where(
-                        qClazz.start.goe(from).and(qClazz.start.loe(to))
-                                .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
+                .where(qClazz.start.goe(from).and(qClazz.start.loe(to)).and(qClazz.deleted.ne(Boolean.TRUE)))
                 .fetchOne();
     }
 
-    private Map<Long, Integer> getProductUsages(
-            final LocalDateTime from,
-            final LocalDateTime to
-    ) {
+    private Map<Long, Integer> getProductUsages(final LocalDateTime from, final LocalDateTime to) {
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
 
         final List<CustomerAppointment> appointments = new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
                 .select(qClazz)
                 .from(qClazz)
-                .where(
-                        qClazz.start.goe(from).and(qClazz.start.loe(to))
-                                .and(qClazz.deleted.ne(Boolean.TRUE))
-                )
+                .where(qClazz.start.goe(from).and(qClazz.start.loe(to)).and(qClazz.deleted.ne(Boolean.TRUE)))
                 .fetch();
 
         final Map<Long, Integer> productUsages = new HashMap<>();
@@ -2474,18 +2374,13 @@ public class CustomerAppointmentController {
         return productUsages;
     }
 
-    private Map<Long, Integer> getActivityUsages(
-            final LocalDateTime from,
-            final LocalDateTime to
-    ) {
+    private Map<Long, Integer> getActivityUsages(final LocalDateTime from, final LocalDateTime to) {
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
 
         final List<CustomerAppointment> appointments = new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
                 .select(qClazz)
                 .from(qClazz)
-                .where(qClazz.start.goe(from).and(qClazz.start.loe(to)
-                        .and(qClazz.deleted.ne(Boolean.TRUE))
-                ))
+                .where(qClazz.start.goe(from).and(qClazz.start.loe(to).and(qClazz.deleted.ne(Boolean.TRUE))))
                 .fetch();
 
         final Map<Long, Integer> activityUsages = new HashMap<>();
@@ -2502,18 +2397,13 @@ public class CustomerAppointmentController {
         return activityUsages;
     }
 
-    static String calculatedFormattedDifference(
-            final BigDecimal neu,
-            final BigDecimal alt
-    ) {
+    static String calculatedFormattedDifference(final BigDecimal neu, final BigDecimal alt) {
         String formatted;
         if (alt.compareTo(BigDecimal.ZERO) == 0) {
             formatted = "?%";
         } else {
             BigDecimal differenz = neu.subtract(alt);
-            BigDecimal prozent = differenz
-                    .divide(alt, 10, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100));
+            BigDecimal prozent = differenz.divide(alt, 10, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
 
             BigDecimal gerundet = prozent.setScale(0, RoundingMode.HALF_UP);
 
@@ -2528,5 +2418,4 @@ public class CustomerAppointmentController {
         }
         return formatted;
     }
-
 }

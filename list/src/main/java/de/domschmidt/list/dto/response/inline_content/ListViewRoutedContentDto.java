@@ -13,5 +13,4 @@ public class ListViewRoutedContentDto extends AbstractListViewRoutedContentDto {
 
     AbstractListViewContentDto inlineContent;
     AbstractListViewContentDto modalContent;
-
 }

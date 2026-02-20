@@ -3,10 +3,9 @@ package de.domschmidt.list.dto.response.inline_content.formular;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.list.dto.response.actions.AbstractListViewContentDto;
 import de.domschmidt.list.dto.response.items.actions.ListViewFormularActionSubmitMethodEnumDto;
+import java.util.List;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @SuperBuilder
 @JsonTypeName("formular")
@@ -20,5 +19,4 @@ public class ListViewFormularContentDto extends AbstractListViewContentDto {
     Integer maxWidthInPx;
     List<AbstractListViewItemInlineFormularContentSaveEventDto> onSaveEvents;
     List<ListViewFormularFieldOverrideDto> fieldOverrides;
-
 }

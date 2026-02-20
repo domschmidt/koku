@@ -13,5 +13,4 @@ public abstract class AbstractDashboardContainer implements IDashboardContent {
     String id;
 
     public abstract void addContent(IDashboardContent content);
-
 }

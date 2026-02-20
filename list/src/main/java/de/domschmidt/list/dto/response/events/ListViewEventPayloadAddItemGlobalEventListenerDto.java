@@ -2,10 +2,9 @@ package de.domschmidt.list.dto.response.events;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.list.dto.response.ListViewReference;
+import java.util.Map;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
-
-import java.util.Map;
 
 @SuperBuilder
 @JsonTypeName("item-add")
@@ -14,5 +13,4 @@ public class ListViewEventPayloadAddItemGlobalEventListenerDto extends AbstractL
 
     String idPath;
     Map<String, ListViewReference> valueMapping;
-
 }

@@ -13,5 +13,4 @@ public class KokuActivitySummaryDto {
     Long id;
 
     String summary;
-
 }

@@ -9,10 +9,8 @@ public class KokuBusinessExceptionWithConfirmationMessage extends RuntimeExcepti
     private final KokuBusinessExceptionWithConfirmationMessageDto confirmationMessage;
 
     public KokuBusinessExceptionWithConfirmationMessage(
-            final KokuBusinessExceptionWithConfirmationMessageDto confirmationMessage
-    ) {
+            final KokuBusinessExceptionWithConfirmationMessageDto confirmationMessage) {
         super(confirmationMessage.getConfirmationMessage());
         this.confirmationMessage = confirmationMessage;
     }
-
 }

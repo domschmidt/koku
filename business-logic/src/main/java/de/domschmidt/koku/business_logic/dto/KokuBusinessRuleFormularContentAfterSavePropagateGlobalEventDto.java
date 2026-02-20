@@ -7,8 +7,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeName("propagate-global-event")
 @Data
-public class KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto extends AbstractKokuBusinessRuleFormularContentSaveEventDto {
+public class KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
+        extends AbstractKokuBusinessRuleFormularContentSaveEventDto {
 
     String eventName;
-
 }

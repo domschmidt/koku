@@ -13,5 +13,4 @@ public abstract class AbstractFormContainer implements IFormularContent {
     String id;
 
     public abstract void addContent(IFormularContent content);
-
 }

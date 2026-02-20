@@ -1,6 +1,5 @@
 package de.domschmidt.koku.promotion.kafka.promotion.transformer;
 
-
 import de.domschmidt.koku.promotion.kafka.dto.PromotionKafkaDto;
 import de.domschmidt.koku.promotion.persistence.Promotion;
 

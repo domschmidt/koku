@@ -7,5 +7,4 @@ public final class APIConstants {
     public static final String ADDRESSBOOK_PATH = "/addressbook";
 
     private APIConstants() {}
-
 }

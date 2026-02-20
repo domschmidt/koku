@@ -7,8 +7,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeName("propagate-global-event")
 @Data
-public class ListViewInlineDocumentFormAfterSavePropagateGlobalEventDto extends AbstractListViewDocumentFormContentDtoSaveEventDto {
+public class ListViewInlineDocumentFormAfterSavePropagateGlobalEventDto
+        extends AbstractListViewDocumentFormContentDtoSaveEventDto {
 
     String eventName;
-
 }

@@ -10,5 +10,4 @@ import lombok.experimental.SuperBuilder;
 public class CalendarOpenRoutedContentActionDto extends AbstractCalendarActionDto {
 
     String route;
-
 }

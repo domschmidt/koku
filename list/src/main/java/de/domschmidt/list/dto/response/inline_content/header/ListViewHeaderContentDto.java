@@ -2,12 +2,11 @@ package de.domschmidt.list.dto.response.inline_content.header;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.list.dto.response.actions.AbstractListViewContentDto;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SuperBuilder
 @JsonTypeName("header")
@@ -23,5 +22,4 @@ public class ListViewHeaderContentDto extends AbstractListViewContentDto {
 
     @Builder.Default
     List<AbstractListViewInlineHeaderContentGlobalEventListenersDto> globalEventListeners = new ArrayList<>();
-
 }

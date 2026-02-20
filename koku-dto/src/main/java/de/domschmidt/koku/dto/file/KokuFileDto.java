@@ -1,10 +1,9 @@
 package de.domschmidt.koku.dto.file;
 
-import lombok.*;
-import lombok.experimental.FieldNameConstants;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.*;
+import lombok.experimental.FieldNameConstants;
 
 @Getter
 @Setter
@@ -24,5 +23,4 @@ public class KokuFileDto {
 
     LocalDateTime updated;
     LocalDateTime recorded;
-
 }

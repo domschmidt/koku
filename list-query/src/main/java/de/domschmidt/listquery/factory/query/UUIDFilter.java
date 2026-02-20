@@ -26,7 +26,10 @@ public class UUIDFilter implements IListFilter {
 
     @Override
     public BooleanExpression buildSearchExpression(final Expression<?> expr, final QueryPredicate query) {
-        if (query == null || query.getSearchExpression() == null || query.getSearchExpression().isEmpty() || !(expr instanceof ComparableExpression)) {
+        if (query == null
+                || query.getSearchExpression() == null
+                || query.getSearchExpression().isEmpty()
+                || !(expr instanceof ComparableExpression)) {
             return null;
         }
 

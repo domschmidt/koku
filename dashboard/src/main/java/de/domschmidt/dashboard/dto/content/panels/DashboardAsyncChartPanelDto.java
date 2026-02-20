@@ -1,6 +1,5 @@
 package de.domschmidt.dashboard.dto.content.panels;
 
-
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -11,5 +10,4 @@ import lombok.experimental.SuperBuilder;
 public class DashboardAsyncChartPanelDto extends AbstractDashboardPanel {
 
     String chartUrl;
-
 }

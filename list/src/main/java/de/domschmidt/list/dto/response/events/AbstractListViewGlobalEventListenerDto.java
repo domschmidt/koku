@@ -14,5 +14,4 @@ import lombok.experimental.SuperBuilder;
 public abstract class AbstractListViewGlobalEventListenerDto {
 
     String eventName;
-
 }

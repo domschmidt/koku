@@ -7,6 +7,4 @@ import lombok.experimental.SuperBuilder;
 @Data
 @JsonTypeName("reload")
 @SuperBuilder
-public class FormButtonReloadAction extends AbstractFormButtonButtonAction {
-
-}
+public class FormButtonReloadAction extends AbstractFormButtonButtonAction {}

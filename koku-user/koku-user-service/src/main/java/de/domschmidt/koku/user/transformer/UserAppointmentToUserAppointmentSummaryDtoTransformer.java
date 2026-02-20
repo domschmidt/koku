@@ -2,7 +2,6 @@ package de.domschmidt.koku.user.transformer;
 
 import de.domschmidt.koku.dto.user.KokuUserAppointmentSummaryDto;
 import de.domschmidt.koku.user.persistence.UserAppointment;
-
 import java.time.format.DateTimeFormatter;
 
 public class UserAppointmentToUserAppointmentSummaryDtoTransformer {
@@ -15,5 +14,4 @@ public class UserAppointmentToUserAppointmentSummaryDtoTransformer {
                 .summary(String.format("Privater Termin vom %s", DATE_FORMATTER.format(model.getStartTimestamp())))
                 .build();
     }
-
 }

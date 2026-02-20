@@ -7,8 +7,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeName("propagate-global-event")
 @Data
-public class ListViewBarcodeContentDtoAfterCapturePropagateGlobalEventDto extends AbstractListViewBarcodeContentDtoCaptureEventDto {
+public class ListViewBarcodeContentDtoAfterCapturePropagateGlobalEventDto
+        extends AbstractListViewBarcodeContentDtoCaptureEventDto {
 
     String eventName;
-
 }

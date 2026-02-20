@@ -7,5 +7,4 @@ import lombok.Data;
 public class DashboardViewDto {
 
     IDashboardContent contentRoot;
-
 }

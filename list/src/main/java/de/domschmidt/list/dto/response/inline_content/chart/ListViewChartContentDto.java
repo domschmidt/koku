@@ -11,5 +11,4 @@ import lombok.experimental.SuperBuilder;
 public class ListViewChartContentDto extends AbstractListViewContentDto {
 
     String chartUrl;
-
 }

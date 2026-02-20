@@ -7,6 +7,7 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.stereotype.Component;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j

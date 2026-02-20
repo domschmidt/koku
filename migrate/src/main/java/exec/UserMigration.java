@@ -1,9 +1,8 @@
 package exec;
 
-import org.apache.commons.io.IOUtils;
-
 import java.sql.Connection;
 import java.util.Map;
+import org.apache.commons.io.IOUtils;
 
 public class UserMigration extends BaseMigration {
 
@@ -19,7 +18,7 @@ public class UserMigration extends BaseMigration {
         System.out.println("Migrating User...");
 
         read("""
-                     SELECT usr.id, usr.recorded, usr.updated, usr.deleted, usr.username, details.avatar_base64, details.firstname, details.lastname 
+                     SELECT usr.id, usr.recorded, usr.updated, usr.deleted, usr.username, details.avatar_base64, details.firstname, details.lastname
                      FROM koku.user usr
                      LEFT OUTER JOIN koku.user_details details ON (details.id = usr.user_details_id);
                 """, rs -> {
@@ -28,11 +27,13 @@ public class UserMigration extends BaseMigration {
                 String mappedUserId = this.userMapping.get(originUserId);
                 if (mappedUserId != null) {
                     String avatarResult = null;
-                    String avatarBase64Raw = IOUtils.toString(rs.getClob("avatar_base64").getCharacterStream());
+                    String avatarBase64Raw =
+                            IOUtils.toString(rs.getClob("avatar_base64").getCharacterStream());
                     if (avatarBase64Raw != null && !avatarBase64Raw.trim().isEmpty()) {
                         avatarResult = String.format("data:image/png;base64,%s", avatarBase64Raw);
                     }
-                    exec("""
+                    exec(
+                            """
                                     INSERT INTO koku.user (id, external_ref, recorded, updated, deleted, firstname, lastname, fullname, avatar_base64)
                                     VALUES (?, ?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, ?, ?, ?, ?, ?)
                                     ON CONFLICT (external_ref)
@@ -55,9 +56,9 @@ public class UserMigration extends BaseMigration {
                             rs.getBoolean("deleted"),
                             rs.getString("firstname"),
                             rs.getString("lastname"),
-                            String.format("%s %s", rs.getString("firstname"), rs.getString("lastname")).trim(),
-                            avatarResult
-                    );
+                            String.format("%s %s", rs.getString("firstname"), rs.getString("lastname"))
+                                    .trim(),
+                            avatarResult);
                 } else {
                     System.err.printf("%s is not available in user mapping", originUserId);
                 }

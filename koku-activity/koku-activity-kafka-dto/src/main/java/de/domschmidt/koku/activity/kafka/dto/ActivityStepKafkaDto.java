@@ -1,10 +1,8 @@
 package de.domschmidt.koku.activity.kafka.dto;
 
-
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.*;
 
 @Getter
 @Setter
@@ -25,5 +23,4 @@ public class ActivityStepKafkaDto {
 
     LocalDateTime updated;
     LocalDateTime recorded;
-
 }

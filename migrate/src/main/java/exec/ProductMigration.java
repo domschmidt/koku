@@ -14,7 +14,8 @@ public class ProductMigration extends BaseMigration {
 
         read("SELECT id, recorded, updated, deleted, description, manufacturer_id FROM koku.product", rs -> {
             try {
-                exec("""
+                exec(
+                        """
                         INSERT INTO koku.product (external_ref, recorded, updated, deleted, name, manufacturer_id)
                         VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, ?, ?, (SELECT ID FROM koku.product_manufacturer where external_ref = ?))
                         ON CONFLICT (external_ref)
@@ -32,8 +33,7 @@ public class ProductMigration extends BaseMigration {
                         rs.getTimestamp("updated"),
                         rs.getBoolean("deleted"),
                         rs.getString("description"),
-                        rs.getString("manufacturer_id")
-                );
+                        rs.getString("manufacturer_id"));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

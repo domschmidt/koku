@@ -6,10 +6,9 @@ import de.domschmidt.formular.dto.content.fields.slots.IFormFieldSlot;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
 import de.domschmidt.koku.dto.formular.buttons.EnumLinkTarget;
+import java.util.List;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @Data
 @SuperBuilder
@@ -27,5 +26,4 @@ public class KokuFieldSlotButton implements IFormFieldSlot {
     Boolean dockable;
     ButtonDockableSettings dockableSettings;
     List<EnumButtonStyle> styles;
-
 }

@@ -15,5 +15,4 @@ import lombok.experimental.SuperBuilder;
 public class ListViewFieldReference extends ListViewReference {
 
     String fieldId;
-
 }

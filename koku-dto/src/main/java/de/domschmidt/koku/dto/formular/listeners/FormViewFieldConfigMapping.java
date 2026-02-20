@@ -9,5 +9,4 @@ public class FormViewFieldConfigMapping {
 
     String targetConfigPath;
     AbstractConfigMappingDto valueMapping;
-
 }

@@ -11,9 +11,9 @@ public class ActivityStepKafkaDtoSerdes extends Serdes.WrapperSerde<ActivityStep
     }
 
     private static JacksonJsonDeserializer<ActivityStepKafkaDto> getDeserializer() {
-        final JacksonJsonDeserializer<ActivityStepKafkaDto> activityStepDtoJsonDeserializer = new JacksonJsonDeserializer<>(ActivityStepKafkaDto.class);
+        final JacksonJsonDeserializer<ActivityStepKafkaDto> activityStepDtoJsonDeserializer =
+                new JacksonJsonDeserializer<>(ActivityStepKafkaDto.class);
         activityStepDtoJsonDeserializer.setUseTypeHeaders(false);
         return activityStepDtoJsonDeserializer;
     }
-
 }

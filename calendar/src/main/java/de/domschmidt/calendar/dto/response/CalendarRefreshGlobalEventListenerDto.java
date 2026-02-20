@@ -7,6 +7,4 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 @JsonTypeName("refresh")
-public class CalendarRefreshGlobalEventListenerDto extends AbstractCalendarGlobalEventListenerDto {
-
-}
+public class CalendarRefreshGlobalEventListenerDto extends AbstractCalendarGlobalEventListenerDto {}

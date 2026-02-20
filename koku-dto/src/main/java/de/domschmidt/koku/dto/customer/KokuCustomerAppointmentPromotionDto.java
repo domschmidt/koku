@@ -14,5 +14,4 @@ import lombok.experimental.SuperBuilder;
 public class KokuCustomerAppointmentPromotionDto {
 
     Long promotionId;
-
 }

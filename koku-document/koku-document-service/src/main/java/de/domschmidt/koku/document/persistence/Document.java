@@ -1,6 +1,8 @@
 package de.domschmidt.koku.document.persistence;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,10 +12,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
 
 @Entity
 @Getter
@@ -27,8 +25,10 @@ public class Document implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
     boolean deleted;
     String name;
+
     @Version
     Long version;
 
@@ -37,7 +37,7 @@ public class Document implements Serializable {
 
     @CreationTimestamp
     LocalDateTime recorded;
+
     @UpdateTimestamp
     LocalDateTime updated;
-
 }

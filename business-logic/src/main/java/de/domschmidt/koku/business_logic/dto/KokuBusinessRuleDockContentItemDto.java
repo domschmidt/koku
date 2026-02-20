@@ -12,5 +12,4 @@ public class KokuBusinessRuleDockContentItemDto {
     String route;
     String icon;
     AbstractKokuBusinessRuleContentDto content;
-
 }

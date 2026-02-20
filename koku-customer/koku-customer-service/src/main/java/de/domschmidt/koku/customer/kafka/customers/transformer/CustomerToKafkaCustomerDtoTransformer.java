@@ -2,7 +2,6 @@ package de.domschmidt.koku.customer.kafka.customers.transformer;
 
 import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
 import de.domschmidt.koku.customer.persistence.Customer;
-
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

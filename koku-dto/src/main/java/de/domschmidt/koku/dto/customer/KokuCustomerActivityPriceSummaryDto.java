@@ -10,11 +10,9 @@ import lombok.experimental.FieldNameConstants;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 @FieldNameConstants
 public class KokuCustomerActivityPriceSummaryDto {
 
     String priceSum;
     String durationSum;
-
 }

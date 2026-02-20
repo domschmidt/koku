@@ -7,7 +7,6 @@ import de.domschmidt.formular.dto.content.containers.AbstractFormContainer;
 import de.domschmidt.formular.dto.content.fields.AbstractFormField;
 import de.domschmidt.formular.dto.content.layouts.AbstractFormLayout;
 import de.domschmidt.koku.business_logic.dto.KokuBusinessRuleDto;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,10 +23,7 @@ public class FormViewFactory {
     private final List<KokuBusinessRuleDto> businessRules = new ArrayList<>();
     private final List<AbstractFormViewGlobalEventListenerDto> globalEventListeners = new ArrayList<>();
 
-    public FormViewFactory(
-            final IFormViewContentIdGenerator idGenerator,
-            final AbstractFormContainer rootContainer
-    ) {
+    public FormViewFactory(final IFormViewContentIdGenerator idGenerator, final AbstractFormContainer rootContainer) {
         this.idGenerator = idGenerator;
         rootContainer.setId(this.idGenerator.generateUniqueId(rootContainer.getId(), "container"));
         this.containerStack.add(rootContainer);
@@ -73,9 +69,7 @@ public class FormViewFactory {
         return this.containerStack.peek();
     }
 
-    public void addGlobalEventListener(
-            final AbstractFormViewGlobalEventListenerDto listener
-    ) {
+    public void addGlobalEventListener(final AbstractFormViewGlobalEventListenerDto listener) {
         this.globalEventListeners.add(listener);
     }
 
@@ -88,5 +82,4 @@ public class FormViewFactory {
 
         return result;
     }
-
 }

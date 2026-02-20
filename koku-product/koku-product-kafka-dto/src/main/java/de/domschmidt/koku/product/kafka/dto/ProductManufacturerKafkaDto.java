@@ -1,14 +1,11 @@
 package de.domschmidt.koku.product.kafka.dto;
 
-
-import lombok.*;
-
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Getter
 @Setter
 @Builder
-
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductManufacturerKafkaDto {
@@ -23,5 +20,4 @@ public class ProductManufacturerKafkaDto {
 
     LocalDateTime updated;
     LocalDateTime recorded;
-
 }

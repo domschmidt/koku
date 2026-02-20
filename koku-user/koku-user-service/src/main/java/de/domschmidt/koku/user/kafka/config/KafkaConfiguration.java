@@ -12,5 +12,4 @@ public class KafkaConfiguration {
 
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapAddress;
-
 }

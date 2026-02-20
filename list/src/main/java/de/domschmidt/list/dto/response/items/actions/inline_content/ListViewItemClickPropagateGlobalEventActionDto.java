@@ -11,5 +11,4 @@ import lombok.experimental.SuperBuilder;
 public class ListViewItemClickPropagateGlobalEventActionDto extends AbstractListViewItemClickActionDto {
 
     String eventName;
-
 }

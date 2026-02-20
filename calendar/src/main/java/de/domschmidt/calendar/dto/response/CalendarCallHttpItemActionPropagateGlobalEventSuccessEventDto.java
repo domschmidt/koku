@@ -7,8 +7,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeName("propagate-global-event")
 @Data
-public class CalendarCallHttpItemActionPropagateGlobalEventSuccessEventDto extends AbstractCalendarCallHttpItemActionSuccessEventDto {
+public class CalendarCallHttpItemActionPropagateGlobalEventSuccessEventDto
+        extends AbstractCalendarCallHttpItemActionSuccessEventDto {
 
     String eventName;
-
 }

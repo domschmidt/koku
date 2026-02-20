@@ -12,15 +12,10 @@ public class KokuCustomerAppointmentPromotionDomain {
     Long promotionId;
 
     public static KokuCustomerAppointmentPromotionDomain fromDto(final KokuCustomerAppointmentPromotionDto dto) {
-        return new KokuCustomerAppointmentPromotionDomain(
-                dto.getPromotionId()
-        );
+        return new KokuCustomerAppointmentPromotionDomain(dto.getPromotionId());
     }
 
     public static KokuCustomerAppointmentPromotionDomain fromEntity(final CustomerAppointmentPromotion entity) {
-        return new KokuCustomerAppointmentPromotionDomain(
-                entity.getPromotionId()
-        );
+        return new KokuCustomerAppointmentPromotionDomain(entity.getPromotionId());
     }
-
 }

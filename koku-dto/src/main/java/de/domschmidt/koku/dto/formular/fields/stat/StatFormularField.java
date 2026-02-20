@@ -13,8 +13,9 @@ public class StatFormularField extends AbstractFormField<String> {
 
     String title;
     String description;
+
     @Builder.Default
     String defaultValue = "";
-    String icon;
 
+    String icon;
 }

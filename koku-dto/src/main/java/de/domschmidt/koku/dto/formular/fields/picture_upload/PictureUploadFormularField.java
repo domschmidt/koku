@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 public class PictureUploadFormularField extends AbstractFormField<String> {
 
     String label;
+
     @Builder.Default
     String defaultValue = "";
-
 }

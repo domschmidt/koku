@@ -1,11 +1,10 @@
 package de.domschmidt.koku.business_exception.dto;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.List;
 import lombok.Data;
 import lombok.Singular;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @Data
 @SuperBuilder
@@ -19,5 +18,4 @@ public class KokuBusinessExceptionWithConfirmationMessageDto extends KokuBusines
 
     @Singular
     List<KokuBusinessExceptionButtonDto> buttons;
-
 }

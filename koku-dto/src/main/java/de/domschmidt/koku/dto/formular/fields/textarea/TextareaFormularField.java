@@ -16,7 +16,7 @@ public class TextareaFormularField extends AbstractFormField<String> {
     Integer minLength;
     Integer maxLength;
     String regexp;
+
     @Builder.Default
     String defaultValue = "";
-
 }

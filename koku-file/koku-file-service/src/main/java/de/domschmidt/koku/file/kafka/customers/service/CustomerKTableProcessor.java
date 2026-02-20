@@ -23,27 +23,24 @@ public class CustomerKTableProcessor {
     private final StreamsBuilderFactoryBean factoryBean;
 
     @Autowired
-    public CustomerKTableProcessor(
-            final StreamsBuilderFactoryBean factoryBean
-    ) {
+    public CustomerKTableProcessor(final StreamsBuilderFactoryBean factoryBean) {
         this.factoryBean = factoryBean;
     }
 
     @Bean
     public KTable<Long, CustomerKafkaDto> customerKTable(StreamsBuilder streamsBuilder) {
-        return streamsBuilder.stream(CustomerKafkaDto.TOPIC,
-                Consumed.with(Serdes.Long(), new CustomerKafkaDtoSerdes())
-        ).toTable(Materialized.<Long, CustomerKafkaDto>as(Stores.inMemoryKeyValueStore(CustomerKTableProcessor.STORE_NAME))
-                .withKeySerde(Serdes.Long())
-                .withValueSerde(new CustomerKafkaDtoSerdes())
-        );
+        return streamsBuilder.stream(CustomerKafkaDto.TOPIC, Consumed.with(Serdes.Long(), new CustomerKafkaDtoSerdes()))
+                .toTable(Materialized.<Long, CustomerKafkaDto>as(
+                                Stores.inMemoryKeyValueStore(CustomerKTableProcessor.STORE_NAME))
+                        .withKeySerde(Serdes.Long())
+                        .withValueSerde(new CustomerKafkaDtoSerdes()));
     }
 
     public ReadOnlyKeyValueStore<Long, CustomerKafkaDto> getCustomers() {
-        return factoryBean.getKafkaStreams().store(
-                StoreQueryParameters.fromNameAndType(CustomerKTableProcessor.STORE_NAME,
-                        QueryableStoreTypes.<Long, CustomerKafkaDto>keyValueStore())
-        );
+        return factoryBean
+                .getKafkaStreams()
+                .store(StoreQueryParameters.fromNameAndType(
+                        CustomerKTableProcessor.STORE_NAME,
+                        QueryableStoreTypes.<Long, CustomerKafkaDto>keyValueStore()));
     }
-
 }

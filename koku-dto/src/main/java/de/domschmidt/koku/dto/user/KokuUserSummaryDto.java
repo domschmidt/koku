@@ -1,6 +1,5 @@
 package de.domschmidt.koku.dto.user;
 
-
 import lombok.*;
 import lombok.experimental.FieldNameConstants;
 
@@ -9,12 +8,10 @@ import lombok.experimental.FieldNameConstants;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 @FieldNameConstants
 public class KokuUserSummaryDto {
 
     String id;
 
     String summary;
-
 }

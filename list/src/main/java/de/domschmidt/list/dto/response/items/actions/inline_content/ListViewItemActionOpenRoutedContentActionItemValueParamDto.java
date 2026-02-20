@@ -8,8 +8,8 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 @JsonTypeName("value")
-public class ListViewItemActionOpenRoutedContentActionItemValueParamDto extends AbstractListViewItemActionOpenRoutedContentActionParamDto {
+public class ListViewItemActionOpenRoutedContentActionItemValueParamDto
+        extends AbstractListViewItemActionOpenRoutedContentActionParamDto {
 
     ListViewReference valueReference;
-
 }

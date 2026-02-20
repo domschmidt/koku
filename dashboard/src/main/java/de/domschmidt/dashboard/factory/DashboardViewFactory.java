@@ -3,7 +3,6 @@ package de.domschmidt.dashboard.factory;
 import de.domschmidt.dashboard.dto.DashboardViewDto;
 import de.domschmidt.dashboard.dto.content.containers.AbstractDashboardContainer;
 import de.domschmidt.dashboard.dto.content.panels.AbstractDashboardPanel;
-
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -15,9 +14,7 @@ public class DashboardViewFactory {
     private final HashMap<String, AbstractDashboardContainer> containers = new HashMap<>();
 
     public DashboardViewFactory(
-            final IDashboardViewContentIdGenerator idGenerator,
-            final AbstractDashboardContainer rootContainer
-    ) {
+            final IDashboardViewContentIdGenerator idGenerator, final AbstractDashboardContainer rootContainer) {
         this.idGenerator = idGenerator;
         rootContainer.setId(this.idGenerator.generateUniqueId(rootContainer.getId(), "container"));
         this.containerStack.add(rootContainer);
@@ -53,5 +50,4 @@ public class DashboardViewFactory {
 
         return result;
     }
-
 }

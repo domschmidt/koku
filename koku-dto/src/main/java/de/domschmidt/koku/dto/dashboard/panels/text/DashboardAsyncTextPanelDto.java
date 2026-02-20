@@ -11,5 +11,4 @@ import lombok.experimental.SuperBuilder;
 public class DashboardAsyncTextPanelDto extends AbstractDashboardPanel {
 
     String sourceUrl;
-
 }

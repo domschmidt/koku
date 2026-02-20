@@ -7,6 +7,4 @@ import lombok.experimental.SuperBuilder;
 @JsonTypeName("avatar")
 @SuperBuilder
 @Data
-public class ListViewItemPreviewAvatarDto extends AbstractListViewItemPreviewDto {
-
-}
+public class ListViewItemPreviewAvatarDto extends AbstractListViewItemPreviewDto {}

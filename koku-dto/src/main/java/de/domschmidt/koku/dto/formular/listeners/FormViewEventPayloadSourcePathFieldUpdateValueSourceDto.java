@@ -9,8 +9,8 @@ import lombok.experimental.SuperBuilder;
 @JsonTypeName("source-path")
 @Getter
 @FieldNameConstants
-public class FormViewEventPayloadSourcePathFieldUpdateValueSourceDto extends AbstractFormViewEventPayloadFieldUpdateValueSource {
+public class FormViewEventPayloadSourcePathFieldUpdateValueSourceDto
+        extends AbstractFormViewEventPayloadFieldUpdateValueSource {
 
     String sourcePath;
-
 }

@@ -8,15 +8,15 @@ public class DefaultViewContentIdGenerator implements IFormViewContentIdGenerato
 
     Set<String> knownNames = new HashSet<>();
 
-    public String generateUniqueId(
-            final String initialProposal,
-            final String prefix
-    ) {
+    public String generateUniqueId(final String initialProposal, final String prefix) {
         String proposal = initialProposal;
         if (proposal == null) {
             proposal = prefix + "-" + UUID.randomUUID();
         } else if (knownNames.contains(proposal)) {
-            throw new IllegalArgumentException("Proposal " + proposal + " already exists. If you specify your own id, please make sure to set them uniquely.");
+            throw new IllegalArgumentException("Proposal "
+                    + proposal
+                    + " already exists. If you specify your own id, please make sure to set them"
+                    + " uniquely.");
         }
 
         String result = proposal;
@@ -26,5 +26,4 @@ public class DefaultViewContentIdGenerator implements IFormViewContentIdGenerato
         knownNames.add(result);
         return result;
     }
-
 }

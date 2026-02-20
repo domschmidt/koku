@@ -7,9 +7,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeName("event-payload")
 @Data
-public class CalendarEventPayloadHeaderInlineContentGlobalEventListenersDto extends AbstractCalendarHeaderInlineContentGlobalEventListenersDto {
+public class CalendarEventPayloadHeaderInlineContentGlobalEventListenersDto
+        extends AbstractCalendarHeaderInlineContentGlobalEventListenersDto {
 
     String idPath;
     String titleValuePath;
-
 }

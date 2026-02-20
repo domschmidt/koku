@@ -1,10 +1,9 @@
 package de.domschmidt.koku.dto.formular.listeners;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.Map;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
-
-import java.util.Map;
 
 @Data
 @SuperBuilder
@@ -13,5 +12,4 @@ public class StringTransformationConfigMappingAppendListItemDto extends Abstract
 
     String transformPattern;
     Map<String, AbstractStringTransformationPatternParam> transformPatternParameters;
-
 }

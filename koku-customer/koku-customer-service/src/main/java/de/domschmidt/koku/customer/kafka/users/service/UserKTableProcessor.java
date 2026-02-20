@@ -2,6 +2,8 @@ package de.domschmidt.koku.customer.kafka.users.service;
 
 import de.domschmidt.koku.user.kafka.dto.UserKafkaDto;
 import de.domschmidt.koku.user.kafka.dto.UserKafkaDtoSerdes;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StoreQueryParameters;
@@ -17,9 +19,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Component
 public class UserKTableProcessor {
 
@@ -27,33 +26,30 @@ public class UserKTableProcessor {
     private final StreamsBuilderFactoryBean factoryBean;
 
     @Autowired
-    public UserKTableProcessor(
-            final StreamsBuilderFactoryBean factoryBean
-    ) {
+    public UserKTableProcessor(final StreamsBuilderFactoryBean factoryBean) {
         this.factoryBean = factoryBean;
     }
 
     @Bean
     public KTable<String, UserKafkaDto> userKTable(StreamsBuilder streamsBuilder) {
-        return streamsBuilder.stream(UserKafkaDto.TOPIC,
-                Consumed.with(Serdes.String(), new UserKafkaDtoSerdes())
-        ).toTable(Materialized.<String, UserKafkaDto>as(Stores.inMemoryKeyValueStore(UserKTableProcessor.STORE_NAME))
-                .withKeySerde(Serdes.String())
-                .withValueSerde(new UserKafkaDtoSerdes())
-        );
+        return streamsBuilder.stream(UserKafkaDto.TOPIC, Consumed.with(Serdes.String(), new UserKafkaDtoSerdes()))
+                .toTable(Materialized.<String, UserKafkaDto>as(
+                                Stores.inMemoryKeyValueStore(UserKTableProcessor.STORE_NAME))
+                        .withKeySerde(Serdes.String())
+                        .withValueSerde(new UserKafkaDtoSerdes()));
     }
 
     public Map<String, UserKafkaDto> getUsers() {
         final Map<String, UserKafkaDto> result = new HashMap<>();
-        final KeyValueIterator<String, UserKafkaDto> userStore = factoryBean.getKafkaStreams().store(
-                StoreQueryParameters.fromNameAndType(UserKTableProcessor.STORE_NAME,
-                        QueryableStoreTypes.<String, UserKafkaDto>keyValueStore())
-        ).all();
+        final KeyValueIterator<String, UserKafkaDto> userStore = factoryBean
+                .getKafkaStreams()
+                .store(StoreQueryParameters.fromNameAndType(
+                        UserKTableProcessor.STORE_NAME, QueryableStoreTypes.<String, UserKafkaDto>keyValueStore()))
+                .all();
         while (userStore.hasNext()) {
             final KeyValue<String, UserKafkaDto> currentUser = userStore.next();
             result.put(currentUser.key, currentUser.value);
         }
         return result;
     }
-
 }

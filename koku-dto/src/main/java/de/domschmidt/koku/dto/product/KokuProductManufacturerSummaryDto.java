@@ -14,5 +14,4 @@ public class KokuProductManufacturerSummaryDto {
     Long id;
 
     String summary;
-
 }

@@ -9,6 +9,4 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @SuperBuilder
-public abstract class AbstractKokuBusinessRuleOpenContentCloseListenerDto {
-
-}
+public abstract class AbstractKokuBusinessRuleOpenContentCloseListenerDto {}

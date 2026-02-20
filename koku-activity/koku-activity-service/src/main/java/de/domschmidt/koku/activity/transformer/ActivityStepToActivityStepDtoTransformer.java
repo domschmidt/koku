@@ -18,10 +18,7 @@ public class ActivityStepToActivityStepDtoTransformer {
                 .build();
     }
 
-    public ActivityStep transformToEntity(
-            final ActivityStep model,
-            final KokuActivityStepDto updatedDto
-    ) {
+    public ActivityStep transformToEntity(final ActivityStep model, final KokuActivityStepDto updatedDto) {
 
         if (updatedDto.getName() != null) {
             model.setName(updatedDto.getName());

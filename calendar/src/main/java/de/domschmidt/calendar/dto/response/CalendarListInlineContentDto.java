@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
-
 @SuperBuilder
 @JsonTypeName("list")
 @Data
@@ -14,5 +13,4 @@ public class CalendarListInlineContentDto extends AbstractCalendarInlineContentD
     String sourceUrl;
     Integer maxWidthInPx;
     String title;
-
 }

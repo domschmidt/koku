@@ -8,6 +8,4 @@ import lombok.experimental.SuperBuilder;
 @JsonTypeName("select-user")
 @SuperBuilder
 @Data
-public class CalendarUserSelectionActionDto extends AbstractCalendarActionDto {
-
-}
+public class CalendarUserSelectionActionDto extends AbstractCalendarActionDto {}

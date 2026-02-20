@@ -6,6 +6,13 @@ import de.domschmidt.koku.carddav.helper.DavUtils;
 import de.domschmidt.koku.carddav.kafka.customers.service.CustomerKTableProcessor;
 import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.StreamSupport;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -22,14 +29,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.StreamSupport;
-
 @RestController
 @RequestMapping(APIConstants.ADDRESSBOOK_PATH)
 @Slf4j
@@ -40,33 +39,41 @@ public class AddressBookController {
 
     @Data
     @Builder
-    private static class AddressBookInfoRequest {
+    private static class AddressBookInfoRequest {}
 
-    }
+    private static final Map<String, Map<String, BiConsumer<AddressBookInfoRequest, Element>>>
+            ADDRESS_BOOK_PROPS_RESOLVER = Map.of(
+                    DAVConstants.DAV_NAMESPACE,
+                    Map.of(
+                            DAVConstants.DAV_PROP_DISPLAYNAME,
+                                    (addressBookInfoRequest, outputRoot) -> {
+                                        final Element outputNode =
+                                                outputRoot.addElement("d:" + DAVConstants.DAV_PROP_DISPLAYNAME);
+                                        outputNode.setText("KoKu Address Book");
+                                    },
+                            DAVConstants.DAV_PROP_RESOURCETYPE,
+                                    (addressBookInfoRequest, outputRoot) -> {
+                                        final Element outputNode =
+                                                outputRoot.addElement("d:" + DAVConstants.DAV_PROP_RESOURCETYPE);
+                                        outputNode.addElement("d:collection");
+                                        outputNode.addElement("card:addressbook");
+                                    },
+                            DAVConstants.DAV_PROP_CURRENT_USER_PRINCIPAL,
+                                    (addressBookInfoRequest, outputRoot) -> {
+                                        final Element outputNode = outputRoot.addElement(
+                                                "d:" + DAVConstants.DAV_PROP_CURRENT_USER_PRINCIPAL);
+                                        final Element hrefNode = outputNode.addElement("d:href");
+                                        hrefNode.setText(
+                                                APIConstants.API_BASEPATH + APIConstants.PRINCIPALS_PATH + "/koku/");
+                                    }));
 
-    private static final Map<String, Map<String, BiConsumer<AddressBookInfoRequest, Element>>> ADDRESS_BOOK_PROPS_RESOLVER = Map.of(
-            DAVConstants.DAV_NAMESPACE, Map.of(
-                    DAVConstants.DAV_PROP_DISPLAYNAME, (addressBookInfoRequest, outputRoot) -> {
-                        final Element outputNode = outputRoot.addElement("d:" + DAVConstants.DAV_PROP_DISPLAYNAME);
-                        outputNode.setText("KoKu Address Book");
-                    },
-                    DAVConstants.DAV_PROP_RESOURCETYPE, (addressBookInfoRequest, outputRoot) -> {
-                        final Element outputNode = outputRoot.addElement("d:" + DAVConstants.DAV_PROP_RESOURCETYPE);
-                        outputNode.addElement("d:collection");
-                        outputNode.addElement("card:addressbook");
-                    },
-                    DAVConstants.DAV_PROP_CURRENT_USER_PRINCIPAL, (addressBookInfoRequest, outputRoot) -> {
-                        final Element outputNode = outputRoot.addElement("d:" + DAVConstants.DAV_PROP_CURRENT_USER_PRINCIPAL);
-                        final Element hrefNode = outputNode.addElement("d:href");
-                        hrefNode.setText(APIConstants.API_BASEPATH + APIConstants.PRINCIPALS_PATH + "/koku/");
-                    }
-            )
-    );
-
-    @RequestMapping(consumes = {
-            MediaType.APPLICATION_XML_VALUE,
-            MediaType.TEXT_XML_VALUE,
-    }, produces = MediaType.APPLICATION_XML_VALUE, path = "/{userName}")
+    @RequestMapping(
+            consumes = {
+                MediaType.APPLICATION_XML_VALUE,
+                MediaType.TEXT_XML_VALUE,
+            },
+            produces = MediaType.APPLICATION_XML_VALUE,
+            path = "/{userName}")
     @ResponseStatus(HttpStatus.MULTI_STATUS)
     public String propfindOrReportRequest(final HttpServletRequest request, final @PathVariable String userName) {
         final Document result = DocumentHelper.createDocument();
@@ -83,11 +90,13 @@ public class AddressBookController {
                     final List<Element> notFoundProps = new ArrayList<>();
                     final List<BiConsumer<AddressBookInfoRequest, Element>> resolvedPropGenerators = new ArrayList<>();
                     for (final Element requestedPropElement : requestedProps) {
-                        final Map<String, BiConsumer<AddressBookInfoRequest, Element>> nameSpaceSpecificPropResolvers = ADDRESS_BOOK_PROPS_RESOLVER.get(requestedPropElement.getNamespaceURI());
+                        final Map<String, BiConsumer<AddressBookInfoRequest, Element>> nameSpaceSpecificPropResolvers =
+                                ADDRESS_BOOK_PROPS_RESOLVER.get(requestedPropElement.getNamespaceURI());
                         if (nameSpaceSpecificPropResolvers == null) {
                             notFoundProps.add((Element) requestedPropElement.clone());
                         } else {
-                            final BiConsumer<AddressBookInfoRequest, Element> propResolver = nameSpaceSpecificPropResolvers.get(requestedPropElement.getName());
+                            final BiConsumer<AddressBookInfoRequest, Element> propResolver =
+                                    nameSpaceSpecificPropResolvers.get(requestedPropElement.getName());
                             if (propResolver == null) {
                                 notFoundProps.add((Element) requestedPropElement.clone());
                             } else {
@@ -95,7 +104,12 @@ public class AddressBookController {
                             }
                         }
                     }
-                    appendResponse(multiStatusResponse, APIConstants.API_BASEPATH + APIConstants.ADDRESSBOOK_PATH + "/" + userName + "/", resolvedPropGenerators, AddressBookInfoRequest.builder().build(), notFoundProps);
+                    appendResponse(
+                            multiStatusResponse,
+                            APIConstants.API_BASEPATH + APIConstants.ADDRESSBOOK_PATH + "/" + userName + "/",
+                            resolvedPropGenerators,
+                            AddressBookInfoRequest.builder().build(),
+                            notFoundProps);
                 }
 
                 if (NumberUtils.isCreatable(depthHeader) && Integer.parseInt(depthHeader) >= 1) {
@@ -103,16 +117,25 @@ public class AddressBookController {
                     final Set<Long> contactFilter = parseContactFilter(document);
                     if (contactFilter != null && !contactFilter.isEmpty()) {
                         filteredContacts = StreamSupport.stream(
-                                        Spliterators.spliteratorUnknownSize(this.customerKTableProcessor.getCustomers().all(), Spliterator.DISTINCT),
-                                        false
-                                ).filter(customer -> contactFilter.contains(customer.key))
-                                .map(entry -> entry.value).toList();
+                                        Spliterators.spliteratorUnknownSize(
+                                                this.customerKTableProcessor
+                                                        .getCustomers()
+                                                        .all(),
+                                                Spliterator.DISTINCT),
+                                        false)
+                                .filter(customer -> contactFilter.contains(customer.key))
+                                .map(entry -> entry.value)
+                                .toList();
                     } else {
                         filteredContacts = StreamSupport.stream(
-                                        Spliterators.spliteratorUnknownSize(this.customerKTableProcessor.getCustomers().all(), Spliterator.DISTINCT),
-                                        false
-                                )
-                                .map(entry -> entry.value).toList();
+                                        Spliterators.spliteratorUnknownSize(
+                                                this.customerKTableProcessor
+                                                        .getCustomers()
+                                                        .all(),
+                                                Spliterator.DISTINCT),
+                                        false)
+                                .map(entry -> entry.value)
+                                .toList();
                     }
 
                     for (final CustomerKafkaDto currentContact : filteredContacts) {
@@ -140,50 +163,67 @@ public class AddressBookController {
     private static class AddressBookContactsRequest {
 
         CustomerKafkaDto contact;
-
     }
 
-    private static final Map<String, Map<String, BiConsumer<AddressBookContactsRequest, Element>>> ADDRESS_BOOK_QUERY_PROPS_RESOLVER = Map.of(
-            DAVConstants.DAV_NAMESPACE, Map.of(
-                    DAVConstants.DAV_PROP_GETETAG, (addressBookItem, outputRoot) -> {
-                        Element etagElement = outputRoot.addElement("d:" + DAVConstants.DAV_PROP_GETETAG);
-                        etagElement.setText("&quot;" + addressBookItem.hashCode() + "&quot;");
-                    }
-            ),
-            DAVConstants.CARDDAV_NAMESPACE, Map.of(
-                    DAVConstants.CARD_PROP_ADDRESS_DATA, (addressBookItem, outputRoot) -> {
-                        Element addressDataElement = outputRoot.addElement("card:" + DAVConstants.CARD_PROP_ADDRESS_DATA);
-                        StringBuilder result = new StringBuilder();
-                        final CustomerKafkaDto currentContact = addressBookItem.getContact();
-                        result.append("BEGIN:VCARD&#13;\n");
-                        result.append("VERSION:3.0&#13;\n");
-                        result.append("PRODID:-//KoKu//KoKu Carddav//DE&#13;\n");
-                        result.append("N:").append(StringUtils.defaultString(currentContact.getLastname())).append(";").append(StringUtils.defaultString(currentContact.getFirstname())).append(";;;&#13;\n");
-                        result.append("FN:").append(StringUtils.defaultString(currentContact.getFullname())).append("&#13;\n");
-                        if (StringUtils.isNotBlank(currentContact.getBusinessTelephoneNo())) {
-                            result.append("TEL;TYPE=work:").append(currentContact.getBusinessTelephoneNo()).append("&#13;\n");
-                        }
-                        if (StringUtils.isNotBlank(currentContact.getMobileTelephoneNo())) {
-                            result.append("TEL;TYPE=cell:").append(currentContact.getMobileTelephoneNo()).append("&#13;\n");
-                        }
-                        if (StringUtils.isNotBlank(currentContact.getPrivateTelephoneNo())) {
-                            result.append("TEL;TYPE=home:").append(currentContact.getPrivateTelephoneNo()).append("&#13;\n");
-                        }
-                        if (StringUtils.isNotBlank(currentContact.getEmail())) {
-                            result.append("EMAIL:").append(currentContact.getEmail()).append("&#13;\n");
-                        }
-                        result.append("UID:").append(currentContact.getId()).append("&#13;\n");
-                        result.append("REV:").append(currentContact.getUpdated().format(DateTimeFormatter.BASIC_ISO_DATE)).append("&#13;\n");
-                        result.append("END:VCARD&#13;\n");
-                        addressDataElement.setText(result.toString());
-                    }
-            )
-    );
+    private static final Map<String, Map<String, BiConsumer<AddressBookContactsRequest, Element>>>
+            ADDRESS_BOOK_QUERY_PROPS_RESOLVER = Map.of(
+                    DAVConstants.DAV_NAMESPACE,
+                            Map.of(DAVConstants.DAV_PROP_GETETAG, (addressBookItem, outputRoot) -> {
+                                Element etagElement = outputRoot.addElement("d:" + DAVConstants.DAV_PROP_GETETAG);
+                                etagElement.setText("&quot;" + addressBookItem.hashCode() + "&quot;");
+                            }),
+                    DAVConstants.CARDDAV_NAMESPACE,
+                            Map.of(DAVConstants.CARD_PROP_ADDRESS_DATA, (addressBookItem, outputRoot) -> {
+                                Element addressDataElement =
+                                        outputRoot.addElement("card:" + DAVConstants.CARD_PROP_ADDRESS_DATA);
+                                StringBuilder result = new StringBuilder();
+                                final CustomerKafkaDto currentContact = addressBookItem.getContact();
+                                result.append("BEGIN:VCARD&#13;\n");
+                                result.append("VERSION:3.0&#13;\n");
+                                result.append("PRODID:-//KoKu//KoKu Carddav//DE&#13;\n");
+                                result.append("N:")
+                                        .append(StringUtils.defaultString(currentContact.getLastname()))
+                                        .append(";")
+                                        .append(StringUtils.defaultString(currentContact.getFirstname()))
+                                        .append(";;;&#13;\n");
+                                result.append("FN:")
+                                        .append(StringUtils.defaultString(currentContact.getFullname()))
+                                        .append("&#13;\n");
+                                if (StringUtils.isNotBlank(currentContact.getBusinessTelephoneNo())) {
+                                    result.append("TEL;TYPE=work:")
+                                            .append(currentContact.getBusinessTelephoneNo())
+                                            .append("&#13;\n");
+                                }
+                                if (StringUtils.isNotBlank(currentContact.getMobileTelephoneNo())) {
+                                    result.append("TEL;TYPE=cell:")
+                                            .append(currentContact.getMobileTelephoneNo())
+                                            .append("&#13;\n");
+                                }
+                                if (StringUtils.isNotBlank(currentContact.getPrivateTelephoneNo())) {
+                                    result.append("TEL;TYPE=home:")
+                                            .append(currentContact.getPrivateTelephoneNo())
+                                            .append("&#13;\n");
+                                }
+                                if (StringUtils.isNotBlank(currentContact.getEmail())) {
+                                    result.append("EMAIL:")
+                                            .append(currentContact.getEmail())
+                                            .append("&#13;\n");
+                                }
+                                result.append("UID:")
+                                        .append(currentContact.getId())
+                                        .append("&#13;\n");
+                                result.append("REV:")
+                                        .append(currentContact.getUpdated().format(DateTimeFormatter.BASIC_ISO_DATE))
+                                        .append("&#13;\n");
+                                result.append("END:VCARD&#13;\n");
+                                addressDataElement.setText(result.toString());
+                            }));
 
     private Set<Long> parseContactFilter(final Document document) {
         final Set<Long> contactFilter;
 
-        final List<Element> hrefs = document.getRootElement().elements(new QName("href", Namespace.get(DAVConstants.DAV_NAMESPACE)));
+        final List<Element> hrefs =
+                document.getRootElement().elements(new QName("href", Namespace.get(DAVConstants.DAV_NAMESPACE)));
         if (hrefs != null && !hrefs.isEmpty()) {
             contactFilter = new HashSet<>();
             for (final Element hrefElement : hrefs) {
@@ -205,15 +245,21 @@ public class AddressBookController {
         return contactFilter;
     }
 
-    private static void buildAddressBookResponse(CustomerKafkaDto resolvedCustomer, List<Element> requestedProps, Element multiStatusResponse, final String userName) {
+    private static void buildAddressBookResponse(
+            CustomerKafkaDto resolvedCustomer,
+            List<Element> requestedProps,
+            Element multiStatusResponse,
+            final String userName) {
         final List<Element> notFoundProps = new ArrayList<>();
         final List<BiConsumer<AddressBookContactsRequest, Element>> resolvedPropGenerators = new ArrayList<>();
         for (final Element requestedPropElement : requestedProps) {
-            final Map<String, BiConsumer<AddressBookContactsRequest, Element>> nameSpaceSpecificPropResolvers = ADDRESS_BOOK_QUERY_PROPS_RESOLVER.get(requestedPropElement.getNamespaceURI());
+            final Map<String, BiConsumer<AddressBookContactsRequest, Element>> nameSpaceSpecificPropResolvers =
+                    ADDRESS_BOOK_QUERY_PROPS_RESOLVER.get(requestedPropElement.getNamespaceURI());
             if (nameSpaceSpecificPropResolvers == null) {
                 notFoundProps.add((Element) requestedPropElement.clone());
             } else {
-                final BiConsumer<AddressBookContactsRequest, Element> propResolver = nameSpaceSpecificPropResolvers.get(requestedPropElement.getName());
+                final BiConsumer<AddressBookContactsRequest, Element> propResolver =
+                        nameSpaceSpecificPropResolvers.get(requestedPropElement.getName());
                 if (propResolver == null) {
                     notFoundProps.add((Element) requestedPropElement.clone());
                 } else {
@@ -221,12 +267,26 @@ public class AddressBookController {
                 }
             }
         }
-        appendResponse(multiStatusResponse, APIConstants.API_BASEPATH + APIConstants.ADDRESSBOOK_PATH + "/" + userName + "/" + resolvedCustomer.getId() + ".vcf", resolvedPropGenerators, AddressBookContactsRequest.builder()
-                .contact(resolvedCustomer)
-                .build(), notFoundProps);
+        appendResponse(
+                multiStatusResponse,
+                APIConstants.API_BASEPATH
+                        + APIConstants.ADDRESSBOOK_PATH
+                        + "/"
+                        + userName
+                        + "/"
+                        + resolvedCustomer.getId()
+                        + ".vcf",
+                resolvedPropGenerators,
+                AddressBookContactsRequest.builder().contact(resolvedCustomer).build(),
+                notFoundProps);
     }
 
-    private static <T> void appendResponse(final Element root, final String responseHref, List<BiConsumer<T, Element>> resolvedPropGenerators, final T propRequest, List<Element> notFoundProps) {
+    private static <T> void appendResponse(
+            final Element root,
+            final String responseHref,
+            List<BiConsumer<T, Element>> resolvedPropGenerators,
+            final T propRequest,
+            List<Element> notFoundProps) {
         Element response = root.addElement("d:response");
         Element href = response.addElement("d:href");
         href.setText(responseHref);
@@ -248,6 +308,4 @@ public class AddressBookController {
             }
         }
     }
-
-
 }

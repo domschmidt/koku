@@ -62,17 +62,16 @@ import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 @RestController
 @RequestMapping()
@@ -88,17 +87,13 @@ public class ActivityStepController {
     public FormViewDto getFormularView() {
         final FormViewFactory formFactory = new FormViewFactory(
                 new DefaultViewContentIdGenerator(),
-                GridContainer.builder()
-                        .cols(1)
-                        .build()
-        );
+                GridContainer.builder().cols(1).build());
 
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuActivityStepDto.Fields.name)
                 .label("Name")
                 .required(true)
-                .build()
-        );
+                .build());
 
         formFactory.addButton(KokuFormButton.builder()
                 .buttonType(EnumButtonType.SUBMIT)
@@ -109,35 +104,25 @@ public class ActivityStepController {
                 .dockableSettings(ButtonDockableSettings.builder()
                         .icon("SAVE")
                         .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build()
-                )
+                        .build())
                 .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build()
-        );
+                .build());
 
         return formFactory.create();
     }
 
-
     @GetMapping("/activitysteps/list")
     public ListViewDto getListView() {
-        final ListViewFactory listViewFactory = new ListViewFactory(
-                new DefaultListViewContentIdGenerator(),
-                KokuActivityStepDto.Fields.id
-        );
+        final ListViewFactory listViewFactory =
+                new ListViewFactory(new DefaultListViewContentIdGenerator(), KokuActivityStepDto.Fields.id);
 
-        final ListViewSourcePathReference idSourcePathRef = listViewFactory.addSourcePath(
-                KokuActivityStepDto.Fields.id
-        );
-        final ListViewSourcePathReference deletedSourcePathRef = listViewFactory.addSourcePath(
-                KokuActivityStepDto.Fields.deleted
-        );
+        final ListViewSourcePathReference idSourcePathRef =
+                listViewFactory.addSourcePath(KokuActivityStepDto.Fields.id);
+        final ListViewSourcePathReference deletedSourcePathRef =
+                listViewFactory.addSourcePath(KokuActivityStepDto.Fields.deleted);
         final ListViewFieldReference nameFieldRef = listViewFactory.addField(
                 KokuActivityStepDto.Fields.name,
-                ListViewInputFieldDto.builder()
-                        .label("Name")
-                        .build()
-        );
+                ListViewInputFieldDto.builder().label("Name").build());
 
         listViewFactory.addFilter(
                 KokuActivityStepDto.Fields.deleted,
@@ -146,279 +131,212 @@ public class ActivityStepController {
                         .enabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.TRUE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
-                                .build()
-                        )
+                                .build())
                         .disabledPredicate(QueryPredicate.builder()
                                 .searchExpression(Boolean.FALSE.toString())
                                 .searchOperator(EnumSearchOperator.EQ)
                                 .build())
                         .defaultState(ListViewToggleFilterDefaultStateEnum.DISABLED)
-                        .build()
-        );
+                        .build());
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
                 .route("new")
                 .icon("PLUS")
-                .build()
-        );
+                .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
                 .route("new")
                 .text("Neuer Behandlungsschritt")
-                .build()
-        );
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
                 .eventName("activitystep-created")
                 .idPath(KokuActivityStepDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuActivityStepDto.Fields.name, nameFieldRef,
-                        KokuActivityStepDto.Fields.deleted, deletedSourcePathRef
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route("new")
-                        .inlineContent(ListViewHeaderContentDto.builder()
-                                .title("Neuer Behandlungsschritt")
-                                .content(ListViewFormularContentDto.builder()
-                                        .formularUrl("services/activities/activitysteps/form")
-                                        .submitUrl("services/activities/activitysteps")
-                                        .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
-                                        .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                        .eventName("activitystep-created")
-                                                        .build(),
-                                                ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                        .route(":activityStepId")
-                                                        .params(Arrays.asList(
-                                                                ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto.builder()
-                                                                        .param(":activityStepId")
-                                                                        .valuePath(KokuActivityStepDto.Fields.id)
-                                                                        .build()
-                                                        ))
-                                                        .build()
-                                        ))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build()
-        );
+                        KokuActivityStepDto.Fields.deleted, deletedSourcePathRef))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route("new")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .title("Neuer Behandlungsschritt")
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/activities/activitysteps/form")
+                                .submitUrl("services/activities/activitysteps")
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
+                                .maxWidthInPx(800)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("activitystep-created")
+                                                .build(),
+                                        ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
+                                                .route(":activityStepId")
+                                                .params(Arrays.asList(
+                                                        ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
+                                                                .builder()
+                                                                .param(":activityStepId")
+                                                                .valuePath(KokuActivityStepDto.Fields.id)
+                                                                .build()))
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
                 .route(":activityStepId")
-                .params(Arrays.asList(
-                        ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
-                                .param(":activityStepId")
-                                .valueReference(idSourcePathRef)
-                                .build()
-                ))
-                .build()
-        );
+                .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
+                        .param(":activityStepId")
+                        .valueReference(idSourcePathRef)
+                        .build()))
+                .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadItemUpdateGlobalEventListenerDto.builder()
                 .eventName("activitystep-updated")
                 .idPath(KokuActivityStepDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuActivityStepDto.Fields.name, nameFieldRef,
-                        KokuActivityStepDto.Fields.deleted, deletedSourcePathRef
-                ))
-                .build()
-        );
-        listViewFactory.addRoutedContent(
-                ListViewRoutedContentDto.builder()
-                        .route(":activityStepId")
-                        .itemId(":activityStepId")
-                        .inlineContent(
-                                ListViewHeaderContentDto.builder()
-                                        .sourceUrl("services/activities/activitysteps/:activityStepId/summary")
-                                        .titlePath(KokuActivityStepSummaryDto.Fields.summary)
-                                        .globalEventListeners(Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
+                        KokuActivityStepDto.Fields.deleted, deletedSourcePathRef))
+                .build());
+        listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
+                .route(":activityStepId")
+                .itemId(":activityStepId")
+                .inlineContent(ListViewHeaderContentDto.builder()
+                        .sourceUrl("services/activities/activitysteps/:activityStepId/summary")
+                        .titlePath(KokuActivityStepSummaryDto.Fields.summary)
+                        .globalEventListeners(
+                                Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
+                                        .eventName("activitystep-updated")
+                                        .idPath(KokuActivityStepDto.Fields.id)
+                                        .titleValuePath(KokuActivityStepDto.Fields.name)
+                                        .build()))
+                        .content(ListViewFormularContentDto.builder()
+                                .formularUrl("services/activities/activitysteps/form")
+                                .sourceUrl("services/activities/activitysteps/:activityStepId")
+                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
+                                .maxWidthInPx(800)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
                                                 .eventName("activitystep-updated")
-                                                .idPath(KokuActivityStepDto.Fields.id)
-                                                .titleValuePath(KokuActivityStepDto.Fields.name)
-                                                .build()
-                                        ))
-                                        .content(ListViewFormularContentDto.builder()
-                                                .formularUrl("services/activities/activitysteps/form")
-                                                .sourceUrl("services/activities/activitysteps/:activityStepId")
-                                                .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
-                                                .maxWidthInPx(800)
-                                                .onSaveEvents(Arrays.asList(
-                                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                                .eventName("activitystep-updated")
-                                                                .build()
-                                                ))
-                                                .build())
-                                        .build()
-                        )
-                        .build()
-        );
+                                                .build()))
+                                .build())
+                        .build())
+                .build());
         listViewFactory.addGlobalItemStyling(ListViewConditionalItemValueStylingDto.builder()
                 .compareValuePath(KokuActivityStepDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveStyling(ListViewItemStylingDto.builder()
                         .lineThrough(true)
                         .opacity((short) 50)
-                        .build()
-                )
-                .build()
-        );
+                        .build())
+                .build());
         listViewFactory.addItemAction(ListViewConditionalItemValueActionDto.builder()
                 .compareValuePath(KokuActivityStepDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
                         .url("services/activities/activitysteps/:activityStepId/restore")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":activityStepId")
-                                        .valueReference(idSourcePathRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":activityStepId")
+                                .valueReference(idSourcePathRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Behandlungsschritt wiederherstellen")
                                 .content("Behandlungsschritt :name wiederherstellen?")
-                                .params(Arrays.asList(
-                                        ListViewUserConfirmationValueParamDto.builder()
-                                                .param(":name")
-                                                .valueReference(nameFieldRef)
-                                                .build()
-                                ))
-                                .build()
-                        )
+                                .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
                                         .text("Behandlungsschritt :name wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .valueReference(nameFieldRef)
+                                                .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuActivityStepDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuActivityStepDto.Fields.deleted, deletedSourcePathRef
-                                        ))
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text("Behandlungsschritt :name konnte nicht wiederhergestellt werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
+                                        .valueMapping(Map.of(KokuActivityStepDto.Fields.deleted, deletedSourcePathRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text("Behandlungsschritt :name konnte nicht wiederhergestellt" + " werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build()))
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
                         .url("services/activities/activitysteps/:activityStepId")
-                        .params(Arrays.asList(
-                                ListViewCallHttpListValueActionParamDto.builder()
-                                        .param(":activityStepId")
-                                        .valueReference(idSourcePathRef)
-                                        .build()
-                        ))
+                        .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
+                                .param(":activityStepId")
+                                .valueReference(idSourcePathRef)
+                                .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Behandlungsschritt löschen")
                                 .content("Behandlungsschritt :name als gelöscht markieren?")
-                                .params(Arrays.asList(
-                                        ListViewUserConfirmationValueParamDto.builder()
-                                                .param(":name")
-                                                .valueReference(nameFieldRef)
-                                                .build()
-                                ))
-                                .build()
-                        )
+                                .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Behandlungsschritt :name wurde erfolgreich als gelöscht markiert")
+                                        .text("Behandlungsschritt :name wurde erfolgreich als gelöscht" + " markiert")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
+                                        .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .valueReference(nameFieldRef)
+                                                .build()))
                                         .build(),
                                 ListViewEventPayloadUpdateActionEventDto.builder()
                                         .idPath(KokuActivityStepDto.Fields.id)
-                                        .valueMapping(Map.of(
-                                                KokuActivityStepDto.Fields.deleted, deletedSourcePathRef
-                                        ))
-                                        .build()
-                        ))
-                        .failEvents(Arrays.asList(
-                                ListViewNotificationEvent.builder()
-                                        .text("Behandlungsschritt :name konnte nicht als gelöscht markiert werden")
-                                        .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                        .params(Arrays.asList(
-                                                ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
-                                                        .valueReference(nameFieldRef)
-                                                        .build()
-                                        ))
-                                        .build()
-                        ))
-                        .build()
-                )
-                .build()
-        );
+                                        .valueMapping(Map.of(KokuActivityStepDto.Fields.deleted, deletedSourcePathRef))
+                                        .build()))
+                        .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
+                                .text("Behandlungsschritt :name konnte nicht als gelöscht markiert" + " werden")
+                                .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .valueReference(nameFieldRef)
+                                        .build()))
+                                .build()))
+                        .build())
+                .build());
 
         return listViewFactory.create();
     }
 
-
     @PostMapping("/activitysteps/query")
-    public ListPage findAll(
-            @RequestBody(required = false) final ListQuery predicate
-    ) {
+    public ListPage findAll(@RequestBody(required = false) final ListQuery predicate) {
         final QActivityStep qClazz = QActivityStep.activityStep;
-        final ListQueryFactory<ActivityStep> listQueryFactory = new ListQueryFactory<>(
-                this.entityManager,
-                qClazz,
-                qClazz.id,
-                predicate
-        );
+        final ListQueryFactory<ActivityStep> listQueryFactory =
+                new ListQueryFactory<>(this.entityManager, qClazz, qClazz.id, predicate);
 
         listQueryFactory.setDefaultOrder(qClazz.name.asc());
 
-        listQueryFactory.addFetchExpr(
-                KokuActivityStepDto.Fields.id,
-                qClazz.id
-        );
-        listQueryFactory.addFetchExpr(
-                KokuActivityStepDto.Fields.deleted,
-                qClazz.deleted
-        );
-        listQueryFactory.addFetchExpr(
-                KokuActivityStepDto.Fields.name,
-                qClazz.name
-        );
+        listQueryFactory.addFetchExpr(KokuActivityStepDto.Fields.id, qClazz.id);
+        listQueryFactory.addFetchExpr(KokuActivityStepDto.Fields.deleted, qClazz.deleted);
+        listQueryFactory.addFetchExpr(KokuActivityStepDto.Fields.name, qClazz.name);
 
         return listQueryFactory.create();
     }
 
     @GetMapping(value = "/activitysteps/{activityStepId}")
     public KokuActivityStepDto read(@PathVariable("activityStepId") Long activityStepId) {
-        final ActivityStep activityStep = this.activityStepRepository.findById(activityStepId)
+        final ActivityStep activityStep = this.activityStepRepository
+                .findById(activityStepId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ActivityStep not found"));
         return this.transformer.transformToDto(activityStep);
     }
 
     @GetMapping(value = "/activitysteps/{activityStepId}/summary")
     public KokuActivityStepSummaryDto readSummary(@PathVariable("activityStepId") Long activityStepId) {
-        final ActivityStep activityStep = this.activityStepRepository.findById(activityStepId)
+        final ActivityStep activityStep = this.activityStepRepository
+                .findById(activityStepId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ActivityStep not found"));
         return new ActivityStepToActivityStepSummaryDtoTransformer().transformToDto(activityStep);
     }
@@ -429,34 +347,32 @@ public class ActivityStepController {
     public KokuActivityStepDto update(
             @PathVariable("activityStepId") Long activityStepId,
             @RequestParam(value = "forceUpdate", required = false) Boolean forceUpdate,
-            @RequestBody KokuActivityStepDto updatedDto
-    ) {
+            @RequestBody KokuActivityStepDto updatedDto) {
         final ActivityStep activityStep = this.entityManager.getReference(ActivityStep.class, activityStepId);
         if (!Boolean.TRUE.equals(forceUpdate) && !activityStep.getVersion().equals(updatedDto.getVersion())) {
             throw new KokuBusinessExceptionWithConfirmationMessage(
                     KokuBusinessExceptionWithConfirmationMessageDto.builder()
                             .headline("Konflikt")
-                            .confirmationMessage("der Behandlungsschritt wurde zwischenzeitlich bearbeitet.\nWillst Du die Speicherung dennoch vornehmen?")
+                            .confirmationMessage("der Behandlungsschritt wurde zwischenzeitlich bearbeitet.\n"
+                                    + "Willst Du die Speicherung dennoch vornehmen?")
                             .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
                                     .icon("CLOSE")
-                                    .build()
-                            )
+                                    .build())
                             .closeOnClickOutside(true)
                             .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
                                     .text("Trotzdem speichern")
                                     .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format("services/activities/activitysteps/%s?forceUpdate=%s", activityStepId, Boolean.TRUE))
-                                    .build()
-                            )
+                                    .endpointUrl(String.format(
+                                            "services/activities/activitysteps/%s?forceUpdate=%s",
+                                            activityStepId, Boolean.TRUE))
+                                    .build())
                             .button(KokuBusinessExceptionCloseButtonDto.builder()
                                     .text("Abbrechen")
                                     .title("Abbruch")
-                                    .build()
-                            )
-                            .build()
-            );
+                                    .build())
+                            .build());
         }
         this.transformer.transformToEntity(activityStep, updatedDto);
         this.entityManager.flush();

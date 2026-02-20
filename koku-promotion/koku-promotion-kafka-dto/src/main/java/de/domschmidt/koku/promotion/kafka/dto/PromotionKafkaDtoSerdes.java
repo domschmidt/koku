@@ -11,9 +11,9 @@ public class PromotionKafkaDtoSerdes extends Serdes.WrapperSerde<PromotionKafkaD
     }
 
     private static JacksonJsonDeserializer<PromotionKafkaDto> getDeserializer() {
-        final JacksonJsonDeserializer<PromotionKafkaDto> promotionDtoJsonDeserializer = new JacksonJsonDeserializer<>(PromotionKafkaDto.class);
+        final JacksonJsonDeserializer<PromotionKafkaDto> promotionDtoJsonDeserializer =
+                new JacksonJsonDeserializer<>(PromotionKafkaDto.class);
         promotionDtoJsonDeserializer.setUseTypeHeaders(false);
         return promotionDtoJsonDeserializer;
     }
-
 }

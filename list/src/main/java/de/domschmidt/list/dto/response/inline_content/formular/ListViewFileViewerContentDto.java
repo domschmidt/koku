@@ -13,5 +13,4 @@ public class ListViewFileViewerContentDto extends AbstractListViewContentDto {
     String sourceUrl;
     String fileUrl;
     String mimeTypeSourcePath;
-
 }

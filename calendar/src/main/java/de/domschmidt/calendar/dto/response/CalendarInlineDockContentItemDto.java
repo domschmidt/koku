@@ -12,5 +12,4 @@ public class CalendarInlineDockContentItemDto {
     String route;
     String icon;
     AbstractCalendarInlineContentDto content;
-
 }

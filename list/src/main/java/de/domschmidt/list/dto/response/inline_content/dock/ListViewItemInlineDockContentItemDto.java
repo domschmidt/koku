@@ -13,5 +13,4 @@ public class ListViewItemInlineDockContentItemDto {
     String route;
     String icon;
     AbstractListViewContentDto content;
-
 }
