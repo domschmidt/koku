@@ -1,3 +1,10 @@
+## [2.2.6](https://github.com/domschmidt/koku/compare/v2.2.5...v2.2.6) (2026-02-20)
+
+
+### Bug Fixes
+
+* **formatting:** add gjf + eslint ([8e24a92](https://github.com/domschmidt/koku/commit/8e24a92eb696519c53fc5d0b281cb4cab528eeff))
+
 ## [2.2.5](https://github.com/domschmidt/koku/compare/v2.2.4...v2.2.5) (2026-02-07)
 
 
