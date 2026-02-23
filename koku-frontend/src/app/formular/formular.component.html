@@ -1,7 +1,5 @@
 @if (formularData(); as formularData) {
-  <form class="flex flex-col w-full h-full m-auto overflow-auto"
-        (submit)="$event.preventDefault(); submit()">
-
+  <form class="flex flex-col w-full h-full m-auto overflow-auto" (submit)="$event.preventDefault(); submit()">
     @if (formularData.contentRoot; as contentRoot) {
       <div class="px-4 pt-4 pb-2 w-full h-full overflow-auto">
         <div
@@ -23,6 +21,5 @@
     }
 
     <button type="submit" class="hidden"></button>
-
   </form>
 }

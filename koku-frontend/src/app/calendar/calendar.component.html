@@ -2,32 +2,34 @@
   <progress class="progress w-full h-[1px] flex" [class.invisible]="!loading()"></progress>
 
   <div class="flex justify-between w-full left-0 right-0 m-auto p-2 bg-base-100">
-
     <div class="join min-w-58">
       <button class="btn join-item" (click)="calendarComponent()?.getApi()?.prev()">«</button>
       @switch (viewMode()) {
-        @case ("DAY") {
-          <input class="input join-item"
-                 type="date"
-                 placeholder="Datum"
-                 (change)="dateChanged($event)"
-                 [value]="formatDate(currentStartDate(), viewMode())"
+        @case ('DAY') {
+          <input
+            class="input join-item"
+            type="date"
+            placeholder="Datum"
+            (change)="dateChanged($event)"
+            [value]="formatDate(currentStartDate(), viewMode())"
           />
         }
-        @case ("WEEK") {
-          <input class="input join-item"
-                 type="week"
-                 placeholder="Woche"
-                 (change)="dateChanged($event)"
-                 [value]="formatDate(currentStartDate(), viewMode())"
+        @case ('WEEK') {
+          <input
+            class="input join-item"
+            type="week"
+            placeholder="Woche"
+            (change)="dateChanged($event)"
+            [value]="formatDate(currentStartDate(), viewMode())"
           />
         }
-        @case ("MONTH") {
-          <input class="input join-item"
-                 type="month"
-                 placeholder="Monat"
-                 (change)="dateChanged($event)"
-                 [value]="formatDate(currentStartDate(), viewMode())"
+        @case ('MONTH') {
+          <input
+            class="input join-item"
+            type="month"
+            placeholder="Monat"
+            (change)="dateChanged($event)"
+            [value]="formatDate(currentStartDate(), viewMode())"
           />
         }
       }
@@ -36,24 +38,27 @@
 
     <div class="flex gap-2 items-center">
       <div class="join">
-        <button class="join-item btn"
-                (click)="changeViewMode('DAY')"
-                [class.btn-active]="viewMode() === 'DAY'"
-                [class.btn-neutral]="viewMode() !== 'DAY'"
+        <button
+          class="join-item btn"
+          (click)="changeViewMode('DAY')"
+          [class.btn-active]="viewMode() === 'DAY'"
+          [class.btn-neutral]="viewMode() !== 'DAY'"
         >
           <koku-icon name="CALENDAR_DAY"></koku-icon>
         </button>
-        <button class="join-item btn"
-                (click)="changeViewMode('WEEK')"
-                [class.btn-active]="viewMode() === 'WEEK'"
-                [class.btn-neutral]="viewMode() !== 'WEEK'"
+        <button
+          class="join-item btn"
+          (click)="changeViewMode('WEEK')"
+          [class.btn-active]="viewMode() === 'WEEK'"
+          [class.btn-neutral]="viewMode() !== 'WEEK'"
         >
           <koku-icon name="CALENDAR_WEEK"></koku-icon>
         </button>
-        <button class="join-item btn"
-                (click)="changeViewMode('MONTH')"
-                [class.btn-active]="viewMode() === 'MONTH'"
-                [class.btn-neutral]="viewMode() !== 'MONTH'"
+        <button
+          class="join-item btn"
+          (click)="changeViewMode('MONTH')"
+          [class.btn-active]="viewMode() === 'MONTH'"
+          [class.btn-neutral]="viewMode() !== 'MONTH'"
         >
           <koku-icon name="CALENDAR_DAYS"></koku-icon>
         </button>
@@ -61,18 +66,17 @@
     </div>
   </div>
   <div class="flex-1 overflow-auto pb-22">
-    <full-calendar [options]="fullCalendarOptions()"
-                   #calendar>
-    </full-calendar>
+    <full-calendar [options]="fullCalendarOptions()" #calendar></full-calendar>
   </div>
 
   @if (calendarActions(); as calendarActions) {
     <div class="join p-4 absolute bottom-0 right-0 z-1">
       @for (actionEntry of calendarActions | keyvalue; track actionEntry.key) {
-        <button class="join-item btn btn-xl btn-circle btn-accent"
-                [title]="actionEntry.value.title"
-                [class.skeleton]="actionEntry.value.loading"
-                (click)="calendarActionClicked(actionEntry.value)"
+        <button
+          class="join-item btn btn-xl btn-circle btn-accent"
+          [title]="actionEntry.value.title"
+          [class.skeleton]="actionEntry.value.loading"
+          (click)="calendarActionClicked(actionEntry.value)"
         >
           @if (actionEntry.value.icon) {
             <koku-icon [name]="actionEntry.value.icon"></koku-icon>
@@ -91,13 +95,23 @@
         @for (listSource of config.listSources; track listSource.id) {
           @if (listSource.id; as listSourceId) {
             @if (listSource.activateToggleIcon; as toggleIcon) {
-              <button class="join-item btn btn-accent btn-xl"
-                      [class.btn-active]="!hiddenSources().has(listSourceId)"
-                      [class.btn-neutral]="hiddenSources().has(listSourceId)"
-                      [title]="listSource.name + (hiddenSources().has(listSourceId) ? ' anzeigen' : ' ausblenden')"
-                      (click)="sourceToggled(listSourceId)"
+              <button
+                class="join-item btn btn-accent btn-xl"
+                [class.btn-active]="!hiddenSources().has(listSourceId)"
+                [class.btn-neutral]="hiddenSources().has(listSourceId)"
+                [title]="listSource.name + (hiddenSources().has(listSourceId) ? ' anzeigen' : ' ausblenden')"
+                (click)="sourceToggled(listSourceId)"
               >
-                <koku-icon [name]="toggleIcon"></koku-icon>
+                <div
+                  class="border-solid border-b-4"
+                  [ngClass]="
+                    !hiddenSources().has(listSourceId) && listSource.sourceItemColor
+                      ? sourceItemBorderColors[listSource.sourceItemColor]
+                      : 'border-transparent'
+                  "
+                >
+                  <koku-icon [name]="toggleIcon"></koku-icon>
+                </div>
               </button>
             }
           }
@@ -106,4 +120,3 @@
     </div>
   </div>
 </div>
-

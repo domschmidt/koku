@@ -1,10 +1,7 @@
-import {convertToString} from './convertToString';
+import { convertToString } from './convertToString';
 
-export function flattenToArrayOfObjects(
-  input: unknown,
-  prefix = ''
-): { [key: string]: string }[] {
-  const result: { [key: string]: string }[] = [];
+export function flattenToArrayOfObjects(input: unknown, prefix = ''): Record<string, string>[] {
+  const result: Record<string, string>[] = [];
 
   if (Array.isArray(input)) {
     input.forEach((val, idx) => {

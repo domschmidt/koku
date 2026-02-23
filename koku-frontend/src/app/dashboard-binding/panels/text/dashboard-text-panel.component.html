@@ -4,29 +4,20 @@
     [class]="content._cardColor"
   >
     @if (content.topHeadline; as topHeadline) {
-      <div
-        class="text-xl font-semibold"
-        [class]="content._topHeadlineColor">{{ topHeadline }}
-      </div>
+      <div class="text-xl font-semibold" [class]="content._topHeadlineColor">{{ topHeadline }}</div>
     }
     @if (content.headline; as headline) {
-      <div
-        class="text-2xl font-bold"
-        [class]="content._headlineColor">{{ headline }}
-      </div>
+      <div class="text-2xl font-bold" [class]="content._headlineColor">{{ headline }}</div>
     }
     @if (content.subHeadline; as subHeadline) {
-      <div class="text-sm"
-           [class]="content._subHeadlineColor">{{ subHeadline }}
-      </div>
+      <div class="text-sm" [class]="content._subHeadlineColor">{{ subHeadline }}</div>
     }
 
     @if (content.progressDetails) {
       <div class="flex justify-between w-full text-sm">
         @for (progressDetail of content.progressDetails; track $index) {
           <div class="flex flex-col items-center">
-          <span class="font-semibold"
-                [class]="progressDetail._headlineColor">{{ progressDetail.headline }}</span>
+            <span class="font-semibold" [class]="progressDetail._headlineColor">{{ progressDetail.headline }}</span>
             <span class="text-gray-400 dark:text-gray-100">{{ progressDetail.subHeadline }}</span>
           </div>
         }
@@ -45,13 +36,8 @@
     }
 
     @if (content.progress !== undefined) {
-      <div
-        class="w-full h-2 rounded-full"
-        [class]="content._progressColor">
-        <div
-          class="h-2 rounded-full"
-          [style.width.%]="content.progress"
-          [class]="content._progressBarColor"></div>
+      <div class="w-full h-2 rounded-full" [class]="content._progressColor">
+        <div class="h-2 rounded-full" [style.width.%]="content.progress" [class]="content._progressBarColor"></div>
       </div>
     }
   </div>

@@ -1,27 +1,32 @@
 @for (entry of modalService.renderedModals() | keyvalue; track entry.key) {
   @if (entry.value; as modal) {
-    <dialog class="modal modal-open"
-            (click)="handleBackdropClick($event, modal)">
-      <div class="modal-box"
-           [class.h-full]="modal.fullscreen"
-           [class.w-full]="modal.fullscreen"
-           [class.max-md:rounded-none]="modal.fullscreen"
-           [class.max-md:max-w-none]="modal.fullscreen"
-           [class.max-md:max-h-screen]="modal.fullscreen"
-           [class.min-md:max-h-[calc(100vh-96px)]]="modal.fullscreen"
-           [class.min-md:max-w-[calc(100vw-96px)]]="modal.fullscreen"
-           [class.p-0]="modal.fullscreen"
-           [style.max-width.px]="modal.maxWidthInPx"
+    <dialog class="modal modal-open" (click)="handleBackdropClick($event, modal)">
+      <div
+        class="modal-box"
+        [class.h-full]="modal.fullscreen"
+        [class.w-full]="modal.fullscreen"
+        [class.max-md:rounded-none]="modal.fullscreen"
+        [class.max-md:max-w-none]="modal.fullscreen"
+        [class.max-md:max-h-screen]="modal.fullscreen"
+        [class.min-md:max-h-[calc(100vh-96px)]]="modal.fullscreen"
+        [class.min-md:max-w-[calc(100vw-96px)]]="modal.fullscreen"
+        [class.p-0]="modal.fullscreen"
+        [style.max-width.px]="modal.maxWidthInPx"
       >
         @if (modal.headline) {
           <h3 class="text-lg font-bold">{{ modal.headline }}</h3>
         }
         @if (modal.dynamicContent; as dynamicContent) {
           @if ((modal.dynamicContentSetup || {})[dynamicContent['@type']]; as contentRegistry) {
-            <ndc-dynamic [ndcDynamicComponent]="contentRegistry.componentType"
-                         [ndcDynamicInputs]="{}"
-                         [ngComponentOutletNdcDynamicInputs]="contentRegistry.inputBindings ? contentRegistry.inputBindings(this, modal, dynamicContent) : {}"
-                         [ngComponentOutletNdcDynamicOutputs]="contentRegistry.outputBindings ? contentRegistry.outputBindings(this, modal, dynamicContent) : {}"
+            <ndc-dynamic
+              [ndcDynamicComponent]="contentRegistry.componentType"
+              [ndcDynamicInputs]="{}"
+              [ngComponentOutletNdcDynamicInputs]="
+                contentRegistry.inputBindings ? contentRegistry.inputBindings(this, modal, dynamicContent) : {}
+              "
+              [ngComponentOutletNdcDynamicOutputs]="
+                contentRegistry.outputBindings ? contentRegistry.outputBindings(this, modal, dynamicContent) : {}
+              "
             ></ndc-dynamic>
           }
         } @else if (modal.content) {

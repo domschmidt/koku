@@ -4,11 +4,16 @@
       <div role="tablist" class="tabs tabs-sm tabs-border w-full overflow-x-auto overflow-y-clip flex-nowrap px-3">
         @for (currentRouteChildren of activatedRoute.routeConfig?.children; track $index) {
           @if (currentRouteChildren.path) {
-            <a #rla="routerLinkActive"
-               [routerLink]="currentRouteChildren.path"
-               [class.tab-active]="rla.isActive"
-               role="tab" class="tab"
-               routerLinkActive> {{ currentRouteChildren.title }} </a>
+            <a
+              #rla="routerLinkActive"
+              [routerLink]="currentRouteChildren.path"
+              [class.tab-active]="rla.isActive"
+              role="tab"
+              class="tab"
+              routerLinkActive
+            >
+              {{ currentRouteChildren.title }}
+            </a>
           }
         }
       </div>
@@ -17,5 +22,4 @@
   <div class="flex-1 overflow-auto">
     <router-outlet></router-outlet>
   </div>
-
 </div>

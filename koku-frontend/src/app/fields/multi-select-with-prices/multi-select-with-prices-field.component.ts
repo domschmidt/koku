@@ -1,41 +1,36 @@
-import {booleanAttribute, Component, input, output, signal} from '@angular/core';
-import {toObservable} from '@angular/core/rxjs-interop';
-import {get} from '../../utils/get';
-import {MultiSelectFieldComponent} from '../multi-select/multi-select-field.component';
-import {InputFieldComponent} from '../input/input-field.component';
-import {IconComponent} from '../../icon/icon.component';
-import {moveItemInArray} from '@angular/cdk/drag-drop';
+import { booleanAttribute, Component, input, output, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { get } from '../../utils/get';
+import { MultiSelectFieldComponent } from '../multi-select/multi-select-field.component';
+import { InputFieldComponent } from '../input/input-field.component';
+import { IconComponent } from '../../icon/icon.component';
+import { moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'multi-select-with-prices-field',
   templateUrl: './multi-select-with-prices-field.component.html',
   styleUrl: './multi-select-with-prices-field.component.css',
-  imports: [
-    MultiSelectFieldComponent,
-    InputFieldComponent,
-    IconComponent
-  ],
-  standalone: true
+  imports: [MultiSelectFieldComponent, InputFieldComponent, IconComponent],
+  standalone: true,
 })
 export class MultiSelectWithPricesFieldComponent {
-
-  value = input.required<{ [key: string]: any }[]>();
+  value = input.required<Record<string, any>[]>();
   defaultValue = input<any[]>([]);
   name = input.required<string>();
   label = input<string>();
   placeholder = input<string>();
   possibleValues = input<KokuDto.SelectFormularFieldPossibleValue[]>([]);
-  loading = input(false, {transform: booleanAttribute});
-  readonly = input(false, {transform: booleanAttribute});
-  required = input(false, {transform: booleanAttribute});
-  disabled = input(false, {transform: booleanAttribute});
-  valueOnly = input(false, {transform: booleanAttribute});
+  loading = input(false, { transform: booleanAttribute });
+  readonly = input(false, { transform: booleanAttribute });
+  required = input(false, { transform: booleanAttribute });
+  disabled = input(false, { transform: booleanAttribute });
+  valueOnly = input(false, { transform: booleanAttribute });
   idPathMapping = input.required<string>();
   pricePathMapping = input.required<string>();
-  uniqueValues = input(false, {transform: booleanAttribute});
+  uniqueValues = input(false, { transform: booleanAttribute });
 
   priceModal = signal<{
-    item: { [key: string]: any };
+    item: Record<string, any>;
     useDefaultPrice: boolean;
     price: number;
   } | null>(null);
@@ -43,7 +38,7 @@ export class MultiSelectWithPricesFieldComponent {
   selectionValues = signal<any[]>([]);
   // selectionIdx = signal<{ [key: string]: { [key: string]: any } }>({});
 
-  onChange = output<{ [key: string]: any }[] | null>();
+  onChange = output<Record<string, any>[] | null>();
   onBlur = output<Event>();
   onFocus = output<Event>();
 
@@ -69,7 +64,7 @@ export class MultiSelectWithPricesFieldComponent {
     });
   }
 
-  onSelectItemClick(payload: { event: Event, id: string, pos: number }) {
+  onSelectItemClick(payload: { event: Event; id: string; pos: number }) {
     const selectedItem = this.selectionValues()[payload.pos];
     if (!selectedItem) {
       throw new Error(`Selected item with pos ${payload.pos} not found`);
@@ -78,7 +73,7 @@ export class MultiSelectWithPricesFieldComponent {
     this.priceModal.set({
       useDefaultPrice: price === null || price === undefined,
       price: price,
-      item: selectedItem
+      item: selectedItem,
     });
   }
 
@@ -95,7 +90,9 @@ export class MultiSelectWithPricesFieldComponent {
       const selectionValuesSnapshot = this.selectionValues();
       const itemIdx = selectionValuesSnapshot.indexOf(priceModalSnapshot.item);
       if (itemIdx >= 0) {
-        selectionValuesSnapshot[itemIdx][this.pricePathMapping()] = priceModalSnapshot.useDefaultPrice ? undefined : priceModalSnapshot.price
+        selectionValuesSnapshot[itemIdx][this.pricePathMapping()] = priceModalSnapshot.useDefaultPrice
+          ? undefined
+          : priceModalSnapshot.price;
       }
       this.selectionValues.set(selectionValuesSnapshot);
       this.emitChange();
@@ -110,8 +107,8 @@ export class MultiSelectWithPricesFieldComponent {
   onSelectionDeleted($event: { position: number; id: string }) {
     const selectionIdsSnapshot = this.selectionIds();
     const selectionValuesSnapshot = this.selectionValues();
-    selectionIdsSnapshot.splice($event.position, 1)
-    selectionValuesSnapshot.splice($event.position, 1)
+    selectionIdsSnapshot.splice($event.position, 1);
+    selectionValuesSnapshot.splice($event.position, 1);
     this.selectionIds.set(selectionIdsSnapshot);
     this.selectionValues.set(selectionValuesSnapshot);
     this.emitChange();

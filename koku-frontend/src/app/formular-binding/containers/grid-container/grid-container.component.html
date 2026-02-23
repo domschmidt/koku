@@ -1,67 +1,67 @@
 @if (content(); as content) {
-
-  <div class="grid
-              grid-cols-{{content.cols}}
-              @sm:grid-cols-{{content.sm}}
-              @md:grid-cols-{{content.md}}
-              @lg:grid-cols-{{content.lg}}
-              @xl:grid-cols-{{content.xl}}
-              @2xl:grid-cols-{{content.xl2}}
+  <div
+    class="grid
+              grid-cols-{{ content.cols }}
+              @sm:grid-cols-{{ content.sm }}
+              @md:grid-cols-{{ content.md }}
+              @lg:grid-cols-{{ content.lg }}
+              @xl:grid-cols-{{ content.xl }}
+              @2xl:grid-cols-{{ content.xl2 }}
               gap-2
-              ">
+              "
+  >
     @if (content.content; as contents) {
       @for (content of contents; track content.id) {
         @if (content.id) {
-
-          @if (contentSetup().fieldRegistry[content['@type']]; ) {
-            <div field-renderer
-                 [content]="fieldRegister()[content.id].config"
-                 [fieldRegister]="fieldRegister()"
-                 [loading]="loading()"
-                 [submitting]="submitting()"
-                 [contentSetup]="contentSetup()"
-                 [context]="context()"
-            >
-            </div>
+          @if (contentSetup().fieldRegistry[content['@type']]) {
+            <div
+              field-renderer
+              [content]="fieldRegister()[content.id].config"
+              [fieldRegister]="fieldRegister()"
+              [loading]="loading()"
+              [submitting]="submitting()"
+              [contentSetup]="contentSetup()"
+              [context]="context()"
+            ></div>
           }
 
-          @if (contentSetup().buttonRegistry[content['@type']]; ) {
-            <div button-renderer
-                 [content]="buttonRegister()[content.id || ''].config"
-                 [buttonRegister]="buttonRegister()"
-                 [loading]="loading()"
-                 [submitting]="submitting()"
-                 [contentSetup]="contentSetup()"
-                 [buttonDockOutlet]="buttonDockOutlet()"
-            >
-            </div>
+          @if (contentSetup().buttonRegistry[content['@type']]) {
+            <div
+              button-renderer
+              [content]="buttonRegister()[content.id || ''].config"
+              [buttonRegister]="buttonRegister()"
+              [loading]="loading()"
+              [submitting]="submitting()"
+              [contentSetup]="contentSetup()"
+              [buttonDockOutlet]="buttonDockOutlet()"
+            ></div>
           }
 
-          @if (contentSetup().containerRegistry[content['@type']]; ) {
-            <div container-renderer
-                 [content]="$any(content)"
-                 [fieldRegister]="fieldRegister()"
-                 [containerRegister]="containerRegister()"
-                 [buttonRegister]="buttonRegister()"
-                 [layoutRegister]="layoutRegister()"
-                 [loading]="loading()"
-                 [submitting]="submitting()"
-                 [contentSetup]="contentSetup()"
-                 [buttonDockOutlet]="buttonDockOutlet()"
-                 [context]="context()"
-            >
-            </div>
+          @if (contentSetup().containerRegistry[content['@type']]) {
+            <div
+              container-renderer
+              [content]="$any(content)"
+              [fieldRegister]="fieldRegister()"
+              [containerRegister]="containerRegister()"
+              [buttonRegister]="buttonRegister()"
+              [layoutRegister]="layoutRegister()"
+              [loading]="loading()"
+              [submitting]="submitting()"
+              [contentSetup]="contentSetup()"
+              [buttonDockOutlet]="buttonDockOutlet()"
+              [context]="context()"
+            ></div>
           }
 
-          @if (contentSetup().layoutRegistry[content['@type']]; ) {
-            <div layout-renderer
-                 [content]="$any(content)"
-                 [layoutRegister]="layoutRegister()"
-                 [loading]="loading()"
-                 [submitting]="submitting()"
-                 [contentSetup]="contentSetup()"
-            >
-            </div>
+          @if (contentSetup().layoutRegistry[content['@type']]) {
+            <div
+              layout-renderer
+              [content]="$any(content)"
+              [layoutRegister]="layoutRegister()"
+              [loading]="loading()"
+              [submitting]="submitting()"
+              [contentSetup]="contentSetup()"
+            ></div>
           }
         }
       }

@@ -1,29 +1,24 @@
-import {Component, inject, input, OnDestroy, output, signal} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {CalendarInlineContentComponent} from '../calendar-inline-content/calendar-inline-content.component';
-import {IconComponent} from '../../icon/icon.component';
-import {OutletDirective} from '../../portal/outlet.directive';
-import {CalendarContentSetup} from '../../calendar/calendar.component';
-import {toObservable} from '@angular/core/rxjs-interop';
-import {get} from '../../utils/get';
-import {GLOBAL_EVENT_BUS} from '../../events/global-events';
-import {UNIQUE_REF_GENERATOR} from '../../utils/uniqueRef';
-
+import { Component, inject, input, OnDestroy, output, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { CalendarInlineContentComponent } from '../calendar-inline-content/calendar-inline-content.component';
+import { IconComponent } from '../../icon/icon.component';
+import { OutletDirective } from '../../portal/outlet.directive';
+import { CalendarContentSetup } from '../../calendar/calendar.component';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { get } from '../../utils/get';
+import { GLOBAL_EVENT_BUS } from '../../events/global-events';
+import { UNIQUE_REF_GENERATOR } from '../../utils/uniqueRef';
 
 @Component({
   selector: '[calendar-inline-header-container],calendar-inline-header-container',
-  imports: [
-    CalendarInlineContentComponent,
-    IconComponent,
-    OutletDirective
-  ],
+  imports: [CalendarInlineContentComponent, IconComponent, OutletDirective],
   templateUrl: './calendar-inline-header-container.component.html',
-  styleUrl: './calendar-inline-header-container.component.css'
+  styleUrl: './calendar-inline-header-container.component.css',
 })
 export class CalendarInlineHeaderContainerComponent implements OnDestroy {
   content = input.required<KokuDto.CalendarHeaderInlineContentDto>();
   contentSetup = input.required<CalendarContentSetup>();
-  urlSegments = input<{ [key: string]: string } | null>(null);
+  urlSegments = input<Record<string, string> | null>(null);
   sourceUrl = input<string>();
   titlePath = input<string>();
   title = input<string>();
@@ -59,25 +54,30 @@ export class CalendarInlineHeaderContainerComponent implements OnDestroy {
         if (!currentEventListener.eventName) {
           throw new Error('Missing eventName in Global Listener Configuration');
         }
-        GLOBAL_EVENT_BUS.addGlobalEventListener(String(this.componentRef), currentEventListener.eventName, (eventPayload) => {
-          switch (currentEventListener['@type']) {
-            case "event-payload": {
-              const castedEventListener = currentEventListener as KokuDto.ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto;
+        GLOBAL_EVENT_BUS.addGlobalEventListener(
+          String(this.componentRef),
+          currentEventListener.eventName,
+          (eventPayload) => {
+            switch (currentEventListener['@type']) {
+              case 'event-payload': {
+                const castedEventListener =
+                  currentEventListener as KokuDto.ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto;
 
-              if (!castedEventListener.idPath) {
-                throw new Error('Missing idPath configuration in EventListener');
-              }
+                if (!castedEventListener.idPath) {
+                  throw new Error('Missing idPath configuration in EventListener');
+                }
 
-              if (castedEventListener.titleValuePath) {
-                this.loadedTitle.set(String(get(eventPayload, castedEventListener.titleValuePath, '')));
+                if (castedEventListener.titleValuePath) {
+                  this.loadedTitle.set(String(get(eventPayload, castedEventListener.titleValuePath, '')));
+                }
+                break;
               }
-              break;
+              default: {
+                throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
+              }
             }
-            default: {
-              throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
-            }
-          }
-        });
+          },
+        );
       }
     });
   }
@@ -97,5 +97,4 @@ export class CalendarInlineHeaderContainerComponent implements OnDestroy {
   clearGlobalEventListeners() {
     GLOBAL_EVENT_BUS.removeGlobalEventListener(this.componentRef);
   }
-
 }

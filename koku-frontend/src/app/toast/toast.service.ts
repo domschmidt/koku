@@ -1,6 +1,6 @@
-import {Injectable, signal} from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
-type ToastButtonType = {
+interface ToastButtonType {
   uid: number;
   text: string;
   title: string;
@@ -9,37 +9,36 @@ type ToastButtonType = {
   type?: 'primary' | 'secondary' | 'accent' | 'info' | 'success' | 'warning' | 'error';
   progressAnimationDurationMillis?: number;
   onClick: (event: Event, toast: ToastType, button: ToastButtonType) => void;
-};
+}
 
 export type ToastTypeUnion = 'outline' | 'dash' | 'soft' | 'info' | 'success' | 'warning' | 'error';
 
 interface ToastType {
   uid: number;
   message: string;
-  type: ToastTypeUnion,
-  close: () => void,
-  buttons: ToastButtonType[]
+  type: ToastTypeUnion;
+  close: () => void;
+  buttons: ToastButtonType[];
 }
 
 const DEFAULT_DURATION_MS = 5000;
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ToastService {
-
   private toastUid = 0;
   private buttonUid = 0;
   values = signal<ToastType[]>([]);
 
   add(message: string, type: ToastTypeUnion = 'success', buttons?: ToastButtonType[], durationMillis?: number) {
     const defaultCloseButton: ToastButtonType = {
-      title: "Schließen",
-      text: "Schließen",
+      title: 'Schließen',
+      text: 'Schließen',
       uid: this.buttonUid++,
       progressAnimationDurationMillis: durationMillis === undefined ? DEFAULT_DURATION_MS : undefined,
-      type: "primary",
-      onClick: (event: Event, toast: ToastType, button: ToastButtonType) => {
+      type: 'primary',
+      onClick: (event: Event, toast: ToastType) => {
         toast.close();
       },
     };
@@ -50,7 +49,7 @@ export class ToastService {
       buttons: buttons || [defaultCloseButton],
       close: () => {
         this.close(newToast);
-      }
+      },
     };
     this.values.set([...this.values(), newToast]);
     if (durationMillis === undefined) {
@@ -66,5 +65,4 @@ export class ToastService {
       this.values.set([...toastSnapshot]);
     }
   }
-
 }

@@ -1,4 +1,4 @@
-import {Font, getDefaultFont} from '@pdfme/common';
+import { Font, getDefaultFont } from '@pdfme/common';
 
 export const getFontsData = (): Font => ({
   ...getDefaultFont(),
@@ -13,5 +13,5 @@ export const getFontsData = (): Font => ({
   NotoSansJP: {
     fallback: false,
     data: 'https://fonts.gstatic.com/s/notosansjp/v53/-F6jfjtqLzI2JPCgQBnw7HFyzSD-AsregP8VFBEj75vY0rw-oME.ttf',
-  }
+  },
 });

@@ -1,6 +1,5 @@
 class GlobalEvents {
-
-  registeredListeners: {[key: string] : {[key: string] : (payload: any) => void}} = {};
+  registeredListeners: Record<string, Record<string, (payload: any) => void>> = {};
 
   public addGlobalEventListener(uniqueComponentRef: string, eventName: string, cb: (payload: any) => void) {
     if (!this.registeredListeners[uniqueComponentRef]) {
@@ -20,7 +19,6 @@ class GlobalEvents {
       }
     }
   }
-
 }
 
 export const GLOBAL_EVENT_BUS = new GlobalEvents();

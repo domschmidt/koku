@@ -3,224 +3,239 @@ import {
   ListContentSetup,
   ListFieldRegistrationType,
   ListFilterSetup,
-  ListItemSetup
+  ListItemSetup,
 } from '../list/list.component';
-import {InputFieldComponent} from '../fields/input/input-field.component';
-import {PictureUploadComponent} from '../fields/picture-upload/picture-upload.component';
-import {ListItemComponent} from '../list/list-item/list-item.component';
-import {ListItemPreviewComponent} from '../list/list-item-preview/list-item-preview.component';
-import {AvatarComponent} from '../avatar/avatar.component';
-import {ListInlineContentComponent} from '../list/list-inline-content/list-inline-content.component';
-import {FORMULAR_CONTENT_SETUP} from '../formular-binding/registry';
-import {TextareaFieldComponent} from '../fields/textarea/textarea-field.component';
-import {CheckboxFieldComponent} from '../fields/checkbox/checkbox-field.component';
-import {ListDockContainerComponent} from './containers/dock-container/list-dock-container.component';
-import {ListFormularContainerComponent} from './containers/formular-container/list-formular-container.component';
-import {ListInlineListContainerComponent} from './containers/list-container/list-inline-list-container.component';
-import {FormularFieldOverride} from '../formular/formular.component';
-import {ListHeaderContainerComponent} from './containers/header-container/list-header-container.component';
-import {TextCircleComponent} from '../text-circle/text-circle.component';
-import {ListItemActionComponent} from '../list/list-item-action/list-item-action.component';
-import {ButtonActionComponent} from './actions/button-action/button-action.component';
-import {signal} from '@angular/core';
-import {ConditionActionComponent} from './actions/condition-action/condition-action.component';
-import {get} from '../utils/get';
-import {ToastTypeUnion} from '../toast/toast.service';
-import {set} from '../utils/set';
-import {ListGridContainerComponent} from './containers/grid-container/list-grid-container.component';
-import {ListChartContainerComponent} from './containers/chart-container/list-chart-container.component';
-import {CHART_CONTENT_SETUP} from '../chart-binding/registry';
-import {ModalContentSetup, RenderedModalType} from '../modal/modal.type';
-import {ModalComponent} from '../modal/modal.component';
-import {DocumentFormFieldComponent} from '../fields/document/document-form/document-form-field.component';
-import {FileViewerComponent} from '../fields/file-viewer/file-viewer.component';
-import {GLOBAL_EVENT_BUS} from '../events/global-events';
-import {BarcodeCaptureComponent} from '../fields/barcode-capture/barcode-capture.component';
-import {ListFilterComponent} from '../list/list-filter/list-filter.component';
-import {ToggleFilterComponent, ToggleFilterTriState} from './filters/toggle/toggle-filter.component';
+import { InputFieldComponent } from '../fields/input/input-field.component';
+import { PictureUploadComponent } from '../fields/picture-upload/picture-upload.component';
+import { ListItemComponent } from '../list/list-item/list-item.component';
+import { ListItemPreviewComponent } from '../list/list-item-preview/list-item-preview.component';
+import { AvatarComponent } from '../avatar/avatar.component';
+import { ListInlineContentComponent } from '../list/list-inline-content/list-inline-content.component';
+import { FORMULAR_CONTENT_SETUP } from '../formular-binding/registry';
+import { TextareaFieldComponent } from '../fields/textarea/textarea-field.component';
+import { CheckboxFieldComponent } from '../fields/checkbox/checkbox-field.component';
+import { ListDockContainerComponent } from './containers/dock-container/list-dock-container.component';
+import { ListFormularContainerComponent } from './containers/formular-container/list-formular-container.component';
+import { ListInlineListContainerComponent } from './containers/list-container/list-inline-list-container.component';
+import { FormularFieldOverride } from '../formular/formular.component';
+import { ListHeaderContainerComponent } from './containers/header-container/list-header-container.component';
+import { TextCircleComponent } from '../text-circle/text-circle.component';
+import { ListItemActionComponent } from '../list/list-item-action/list-item-action.component';
+import { ButtonActionComponent } from './actions/button-action/button-action.component';
+import { signal } from '@angular/core';
+import { ConditionActionComponent } from './actions/condition-action/condition-action.component';
+import { get } from '../utils/get';
+import { ToastTypeUnion } from '../toast/toast.service';
+import { set } from '../utils/set';
+import { ListGridContainerComponent } from './containers/grid-container/list-grid-container.component';
+import { ListChartContainerComponent } from './containers/chart-container/list-chart-container.component';
+import { CHART_CONTENT_SETUP } from '../chart-binding/registry';
+import { ModalContentSetup, RenderedModalType } from '../modal/modal.type';
+import { ModalComponent } from '../modal/modal.component';
+import { DocumentFormFieldComponent } from '../fields/document/document-form/document-form-field.component';
+import { FileViewerComponent } from '../fields/file-viewer/file-viewer.component';
+import { GLOBAL_EVENT_BUS } from '../events/global-events';
+import { BarcodeCaptureComponent } from '../fields/barcode-capture/barcode-capture.component';
+import { ListFilterComponent } from '../list/list-filter/list-filter.component';
+import { ToggleFilterComponent, ToggleFilterTriState } from './filters/toggle/toggle-filter.component';
 
 const ROUNDED_MAPPING: Partial<Record<KokuDto.KokuRoundedEnum, string>> = {
-  'SM': 'rounded-sm',
-  'MD': 'rounded-md',
-  'LG': 'rounded-lg',
-  'XL': 'rounded-xl',
-  'XL2': 'rounded-2xl',
-  'XL3': 'rounded-3xl',
-  'XL4': 'rounded-4xl'
-}
+  SM: 'rounded-sm',
+  MD: 'rounded-md',
+  LG: 'rounded-lg',
+  XL: 'rounded-xl',
+  XL2: 'rounded-2xl',
+  XL3: 'rounded-3xl',
+  XL4: 'rounded-4xl',
+};
 const COLOR_MAPPING: Partial<Record<KokuDto.KokuColorEnum, string>> = {
-  "PRIMARY": "bg-primary text-primary-content",
-  "SECONDARY": "bg-secondary text-secondary-content",
-  "ACCENT": "bg-accent text-accent-content",
-  "INFO": "bg-info text-info-content",
-  "SUCCESS": "bg-success text-success-content",
-  "WARNING": "bg-warning text-warning-content",
-  "ERROR": "bg-error text-error-content",
-  "RED": "bg-red",
-  "ORANGE": "bg-orange",
-  "AMBER": "bg-amber",
-  "YELLOW": "bg-yellow",
-  "LIME": "bg-lime",
-  "GREEN": "bg-green",
-  "EMERALD": "bg-emerald",
-  "TEAL": "bg-teal",
-  "CYAN": "bg-cyan",
-  "SKY": "bg-sky",
-  "BLUE": "bg-blue",
-  "INDIGO": "bg-indigo",
-  "VIOLET": "bg-violet",
-  "PURPLE": "bg-purple",
-  "FUCHSIA": "bg-fuchsia",
-  "PINK": "bg-pink",
-  "ROSE": "bg-rose",
-  "SLATE": "bg-slate",
-  "GRAY": "bg-gray",
-  "ZINC": "bg-zinc",
-  "NEUTRAL": "bg-neutral text-neutral-content",
-  "STONE": "bg-stone",
+  PRIMARY: 'bg-primary text-primary-content',
+  SECONDARY: 'bg-secondary text-secondary-content',
+  ACCENT: 'bg-accent text-accent-content',
+  INFO: 'bg-info text-info-content',
+  SUCCESS: 'bg-success text-success-content',
+  WARNING: 'bg-warning text-warning-content',
+  ERROR: 'bg-error text-error-content',
+  RED: 'bg-red',
+  ORANGE: 'bg-orange',
+  AMBER: 'bg-amber',
+  YELLOW: 'bg-yellow',
+  LIME: 'bg-lime',
+  GREEN: 'bg-green',
+  EMERALD: 'bg-emerald',
+  TEAL: 'bg-teal',
+  CYAN: 'bg-cyan',
+  SKY: 'bg-sky',
+  BLUE: 'bg-blue',
+  INDIGO: 'bg-indigo',
+  VIOLET: 'bg-violet',
+  PURPLE: 'bg-purple',
+  FUCHSIA: 'bg-fuchsia',
+  PINK: 'bg-pink',
+  ROSE: 'bg-rose',
+  SLATE: 'bg-slate',
+  GRAY: 'bg-gray',
+  ZINC: 'bg-zinc',
+  NEUTRAL: 'bg-neutral text-neutral-content',
+  STONE: 'bg-stone',
 };
 
 const FIELD_INITIALIZER = (listContent: KokuDto.AbstractListViewFieldDto<any>, value: any) => {
   const result: ListFieldRegistrationType = {
     value: signal(value !== undefined ? value : listContent.defaultValue),
-    config: listContent
-  }
+    config: listContent,
+  };
   return result;
-}
+};
 
-const FIELD_REGISTRY: Partial<Record<KokuDto.AbstractListViewFieldDto<any>["@type"], {
-  componentType: any;
-  stateInitializer: (listContent: KokuDto.AbstractListViewFieldDto<any>, value: any) => ListFieldRegistrationType,
-  inputBindings?(instance: ListItemComponent, key: string, listContent: KokuDto.AbstractListViewFieldDto<any>): {
-    [key: string]: any
-  }
-  outputBindings?(instance: ListItemComponent, key: string, listContent: KokuDto.AbstractListViewFieldDto<any>): {
-    [key: string]: any
-  }
-}
->> = {
-  "picture-upload": {
+const FIELD_REGISTRY: Partial<
+  Record<
+    KokuDto.AbstractListViewFieldDto<any>['@type'],
+    {
+      componentType: any;
+      stateInitializer: (listContent: KokuDto.AbstractListViewFieldDto<any>, value: any) => ListFieldRegistrationType;
+      inputBindings?(
+        instance: ListItemComponent,
+        key: string,
+        listContent: KokuDto.AbstractListViewFieldDto<any>,
+      ): Record<string, any>;
+      outputBindings?(
+        instance: ListItemComponent,
+        key: string,
+        listContent: KokuDto.AbstractListViewFieldDto<any>,
+      ): Record<string, any>;
+    }
+  >
+> = {
+  'picture-upload': {
     componentType: PictureUploadComponent,
     stateInitializer: FIELD_INITIALIZER,
-    inputBindings(instance: ListItemComponent, key: string, listContent: KokuDto.ListViewPictureUploadFieldDto): {
-      [p: string]: any
-    } {
-      return {}
+    inputBindings(): Record<string, any> {
+      return {};
     },
-    outputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewPictureUploadFieldDto) => {
+    outputBindings: (instance: ListItemComponent, key: string) => {
       return {
         onChange: (data: any) => instance.fieldEventBus(key, 'onChange', data),
-      }
-    }
+      };
+    },
   },
-  "input": {
+  input: {
     componentType: InputFieldComponent,
     stateInitializer: FIELD_INITIALIZER,
     inputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewInputFieldDto) => {
-
       const clss = [
         listContent.rounded && 'p-1 my-1',
         listContent.rounded && ROUNDED_MAPPING[listContent.rounded],
-        listContent.backgroundColor && COLOR_MAPPING[listContent.backgroundColor]
+        listContent.backgroundColor && COLOR_MAPPING[listContent.backgroundColor],
       ];
 
       return {
-        ...(listContent.type && {type: listContent.type}),
+        ...(listContent.type && { type: listContent.type }),
         valueOnly: true,
-        cls: clss.join(' ')
-      }
+        cls: clss.join(' '),
+      };
     },
-    outputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewInputFieldDto) => {
+    outputBindings: (instance: ListItemComponent, key: string) => {
       return {
         onChange: (data: any) => instance.fieldEventBus(key, 'onChange', data),
         onInput: (data: any) => instance.fieldEventBus(key, 'onInput', data),
         onBlur: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
         onFocus: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
-      }
-    }
+      };
+    },
   },
-  "textarea": {
+  textarea: {
     componentType: TextareaFieldComponent,
     stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewTextareaFieldDto) => {
+    inputBindings: () => {
       return {
-        valueOnly: true
-      }
+        valueOnly: true,
+      };
     },
-    outputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewTextareaFieldDto) => {
+    outputBindings: (instance: ListItemComponent, key: string) => {
       return {
         onChange: (data: any) => instance.fieldEventBus(key, 'onChange', data),
         onInput: (data: any) => instance.fieldEventBus(key, 'onInput', data),
         onBlur: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
         onFocus: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
-      }
-    }
+      };
+    },
   },
-  "checkbox": {
+  checkbox: {
     componentType: CheckboxFieldComponent,
     stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewCheckboxFieldDto) => {
+    inputBindings: () => {
       return {
-        valueOnly: true
-      }
+        valueOnly: true,
+      };
     },
-    outputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewCheckboxFieldDto) => {
+    outputBindings: (instance: ListItemComponent, key: string) => {
       return {
         onChange: (data: any) => instance.fieldEventBus(key, 'onChange', data),
         onInput: (data: any) => instance.fieldEventBus(key, 'onInput', data),
         onBlur: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
         onFocus: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
-      }
-    }
+      };
+    },
   },
 };
 
-const PREVIEW_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemPreviewDto["@type"], {
-  componentType: any;
-  inputBindings?(instance: ListItemPreviewComponent, listPreviewContent: KokuDto.AbstractListViewItemPreviewDto): {
-    [key: string]: any
-  }
-  outputBindings?(instance: ListItemPreviewComponent, listPreviewContent: KokuDto.AbstractListViewItemPreviewDto): {
-    [key: string]: any
-  }
-}
->> = {
-  "avatar": {
+const PREVIEW_REGISTRY: Partial<
+  Record<
+    KokuDto.AbstractListViewItemPreviewDto['@type'],
+    {
+      componentType: any;
+      inputBindings?(
+        instance: ListItemPreviewComponent,
+        listPreviewContent: KokuDto.AbstractListViewItemPreviewDto,
+      ): Record<string, any>;
+      outputBindings?(
+        instance: ListItemPreviewComponent,
+        listPreviewContent: KokuDto.AbstractListViewItemPreviewDto,
+      ): Record<string, any>;
+    }
+  >
+> = {
+  avatar: {
     componentType: AvatarComponent,
-    inputBindings(instance: ListItemPreviewComponent, listPreviewContent: KokuDto.ListViewItemPreviewAvatarDto): {
-      [p: string]: any
-    } {
-      return {}
-    }
+    inputBindings(): Record<string, any> {
+      return {};
+    },
   },
-  "text": {
+  text: {
     componentType: TextCircleComponent,
-    inputBindings(instance: ListItemPreviewComponent, listPreviewContent: KokuDto.ListViewItemPreviewTextDto): {
-      [p: string]: any
-    } {
-      return {}
-    }
+    inputBindings(): Record<string, any> {
+      return {};
+    },
   },
 };
 
-const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractListViewContentDto["@type"] | string, {
-  componentType: any;
-  inputBindings?(instance: ListInlineContentComponent, inlineContent: KokuDto.AbstractListViewContentDto): {
-    [key: string]: any
-  }
-  outputBindings?(instance: ListInlineContentComponent, inlineContent: KokuDto.AbstractListViewContentDto): {
-    [key: string]: any
-  }
-}>> = {
-  "formular": {
+const INLINE_CONTENT_REGISTRY: Partial<
+  Record<
+    KokuDto.AbstractListViewContentDto['@type'] | string,
+    {
+      componentType: any;
+      inputBindings?(
+        instance: ListInlineContentComponent,
+        inlineContent: KokuDto.AbstractListViewContentDto,
+      ): Record<string, any>;
+      outputBindings?(
+        instance: ListInlineContentComponent,
+        inlineContent: KokuDto.AbstractListViewContentDto,
+      ): Record<string, any>;
+    }
+  >
+> = {
+  formular: {
     componentType: ListFormularContainerComponent,
-    inputBindings(instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewFormularContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ListInlineContentComponent,
+      inlineContent: KokuDto.ListViewFormularContentDto,
+    ): Record<string, any> {
       let formularUrl = inlineContent.formularUrl || '';
       let sourceUrl = inlineContent.sourceUrl || '';
       const fieldOverrides: FormularFieldOverride[] = [];
-      for (const currentFieldOverride of (inlineContent.fieldOverrides || [])) {
+      for (const currentFieldOverride of inlineContent.fieldOverrides || []) {
         if (currentFieldOverride.fieldId !== undefined) {
           if (currentFieldOverride['@type'] === 'route-based-override') {
             const castedFieldOverride = currentFieldOverride as KokuDto.ListViewRouteBasedFormularFieldOverrideDto;
@@ -229,7 +244,7 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractListViewContentDto
               fieldOverrides.push({
                 fieldId: currentFieldOverride.fieldId,
                 disable: currentFieldOverride.disable === true,
-                value: newFieldValue
+                value: newFieldValue,
               });
             }
           }
@@ -241,35 +256,36 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractListViewContentDto
       }
 
       return {
-        'formularUrl': formularUrl,
-        'sourceUrl': sourceUrl,
-        'urlSegments': instance.urlSegments(),
-        'submitUrl': inlineContent.submitUrl || sourceUrl,
-        'maxWidth': inlineContent.maxWidthInPx + 'px',
-        'submitMethod': inlineContent.submitMethod,
-        'onSaveEvents': inlineContent.onSaveEvents,
-        'contentSetup': FORMULAR_CONTENT_SETUP,
-        'fieldOverrides': fieldOverrides,
-        'buttonDockOutlet': instance.buttonDockOutlet(),
-        'context': instance.context(),
-      }
+        formularUrl: formularUrl,
+        sourceUrl: sourceUrl,
+        urlSegments: instance.urlSegments(),
+        submitUrl: inlineContent.submitUrl || sourceUrl,
+        maxWidth: inlineContent.maxWidthInPx + 'px',
+        submitMethod: inlineContent.submitMethod,
+        onSaveEvents: inlineContent.onSaveEvents,
+        contentSetup: FORMULAR_CONTENT_SETUP,
+        fieldOverrides: fieldOverrides,
+        buttonDockOutlet: instance.buttonDockOutlet(),
+        context: instance.context(),
+      };
     },
-    outputBindings: (instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewFormularContentDto) => {
+    outputBindings: (instance: ListInlineContentComponent) => {
       return {
         onClose: () => {
-          instance.closeInlineContent()
+          instance.closeInlineContent();
         },
         onOpenRoutedContent: (routes: string[]) => {
-          instance.openRoutedContent(routes)
+          instance.openRoutedContent(routes);
         },
-      }
-    }
+      };
+    },
   },
-  "document-form": {
+  'document-form': {
     componentType: DocumentFormFieldComponent,
-    inputBindings(instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewDocumentFormContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ListInlineContentComponent,
+      inlineContent: KokuDto.ListViewDocumentFormContentDto,
+    ): Record<string, any> {
       let documentUrl = inlineContent.documentUrl || '';
       let submitUrl = inlineContent.submitUrl || '';
       for (const [segment, value] of Object.entries(instance.urlSegments() || {})) {
@@ -278,19 +294,20 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractListViewContentDto
       }
 
       return {
-        'documentUrl': documentUrl,
-        'submitUrl': submitUrl,
-        'buttonDockOutlet': instance.buttonDockOutlet(),
-        'context': instance.context(),
-      }
+        documentUrl: documentUrl,
+        submitUrl: submitUrl,
+        buttonDockOutlet: instance.buttonDockOutlet(),
+        context: instance.context(),
+      };
     },
     outputBindings: (instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewDocumentFormContentDto) => {
       return {
         onSubmit: (payload: any) => {
           for (const currentOnSubmitEvent of inlineContent.onSubmitEvents || []) {
             switch (currentOnSubmitEvent['@type']) {
-              case "propagate-global-event": {
-                const castedEventJob = currentOnSubmitEvent as KokuDto.ListViewInlineFormularContentAfterSavePropagateGlobalEventDto;
+              case 'propagate-global-event': {
+                const castedEventJob =
+                  currentOnSubmitEvent as KokuDto.ListViewInlineFormularContentAfterSavePropagateGlobalEventDto;
                 if (!castedEventJob.eventName) {
                   throw new Error(`Missing eventName in saveEvent`);
                 }
@@ -303,14 +320,15 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractListViewContentDto
             }
           }
         },
-      }
-    }
+      };
+    },
   },
-  "file-viewer": {
+  'file-viewer': {
     componentType: FileViewerComponent,
-    inputBindings(instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewFileViewerContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ListInlineContentComponent,
+      inlineContent: KokuDto.ListViewFileViewerContentDto,
+    ): Record<string, any> {
       let sourceUrl = inlineContent.sourceUrl || '';
       let fileUrl = inlineContent.fileUrl || '';
       for (const [segment, value] of Object.entries(instance.urlSegments() || {})) {
@@ -319,144 +337,147 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractListViewContentDto
       }
 
       return {
-        'sourceUrl': sourceUrl,
-        'fileUrl': fileUrl,
-        'mimeTypeSourcePath': inlineContent.mimeTypeSourcePath,
-        'buttonDockOutlet': instance.buttonDockOutlet(),
-      }
+        sourceUrl: sourceUrl,
+        fileUrl: fileUrl,
+        mimeTypeSourcePath: inlineContent.mimeTypeSourcePath,
+        buttonDockOutlet: instance.buttonDockOutlet(),
+      };
     },
-    outputBindings: (instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewFileViewerContentDto) => {
-      return {}
-    }
+    outputBindings: () => {
+      return {};
+    },
   },
-  "dock": {
+  dock: {
     componentType: ListDockContainerComponent,
-    inputBindings(instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewDockContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ListInlineContentComponent,
+      inlineContent: KokuDto.ListViewDockContentDto,
+    ): Record<string, any> {
       return {
-        'content': inlineContent.content,
-        'contentSetup': LIST_CONTENT_SETUP,
-        'urlSegments': instance.urlSegments(),
-        'buttonDockOutlet': instance.buttonDockOutlet(),
-        'parentRoutePath': instance.parentRoutePath(),
-        'context': instance.context(),
-      }
+        content: inlineContent.content,
+        contentSetup: LIST_CONTENT_SETUP,
+        urlSegments: instance.urlSegments(),
+        buttonDockOutlet: instance.buttonDockOutlet(),
+        parentRoutePath: instance.parentRoutePath(),
+        context: instance.context(),
+      };
     },
-    outputBindings: (instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewDockContentDto) => {
+    outputBindings: (instance: ListInlineContentComponent) => {
       return {
         onClose: () => {
-          instance.closeInlineContent()
+          instance.closeInlineContent();
         },
         onOpenRoutedContent: (routes: string[]) => {
-          instance.openRoutedContent(routes)
+          instance.openRoutedContent(routes);
         },
-      }
-    }
+      };
+    },
   },
-  "header": {
+  header: {
     componentType: ListHeaderContainerComponent,
-    inputBindings(instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewHeaderContentDto): {
-      [key: string]: any
-    } {
-      let segmentMapping: { [key: string]: string } = {...(instance.urlSegments() || {})};
+    inputBindings(
+      instance: ListInlineContentComponent,
+      inlineContent: KokuDto.ListViewHeaderContentDto,
+    ): Record<string, any> {
+      const segmentMapping: Record<string, string> = { ...(instance.urlSegments() || {}) };
       let sourceUrl = undefined;
       if (inlineContent.sourceUrl) {
         const mappedSourceParts: string[] = [];
-        for (const currentRoutePathToMatch of inlineContent.sourceUrl.split("/")) {
-          if (currentRoutePathToMatch.indexOf(":") === 0) {
+        for (const currentRoutePathToMatch of inlineContent.sourceUrl.split('/')) {
+          if (currentRoutePathToMatch.indexOf(':') === 0) {
             mappedSourceParts.push(segmentMapping[currentRoutePathToMatch]);
           } else {
             mappedSourceParts.push(currentRoutePathToMatch);
           }
         }
-        sourceUrl = mappedSourceParts.join("/");
+        sourceUrl = mappedSourceParts.join('/');
       }
 
       return {
-        'content': inlineContent,
-        'sourceUrl': sourceUrl,
-        'titlePath': inlineContent.titlePath,
-        'title': inlineContent.title,
-        'contentSetup': LIST_CONTENT_SETUP,
-        'urlSegments': segmentMapping,
-        'parentRoutePath': instance.parentRoutePath(),
-        'context': instance.context(),
-      }
+        content: inlineContent,
+        sourceUrl: sourceUrl,
+        titlePath: inlineContent.titlePath,
+        title: inlineContent.title,
+        contentSetup: LIST_CONTENT_SETUP,
+        urlSegments: segmentMapping,
+        parentRoutePath: instance.parentRoutePath(),
+        context: instance.context(),
+      };
     },
-    outputBindings: (instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewHeaderContentDto) => {
+    outputBindings: (instance: ListInlineContentComponent) => {
       return {
         onClose: () => {
-          instance.closeInlineContent()
+          instance.closeInlineContent();
         },
         onOpenRoutedContent: (routes: string[]) => {
-          instance.openRoutedContent(routes)
+          instance.openRoutedContent(routes);
         },
-      }
-    }
+      };
+    },
   },
-  "grid": {
+  grid: {
     componentType: ListGridContainerComponent,
-    inputBindings(instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewGridContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ListInlineContentComponent,
+      inlineContent: KokuDto.ListViewGridContentDto,
+    ): Record<string, any> {
       return {
-        'content': inlineContent,
-        'contentSetup': LIST_CONTENT_SETUP,
-        'urlSegments': instance.urlSegments(),
-        'parentRoutePath': instance.parentRoutePath()
-      }
+        content: inlineContent,
+        contentSetup: LIST_CONTENT_SETUP,
+        urlSegments: instance.urlSegments(),
+        parentRoutePath: instance.parentRoutePath(),
+      };
     },
-    outputBindings: (instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewGridContentDto) => {
+    outputBindings: (instance: ListInlineContentComponent) => {
       return {
         onClose: () => {
-          instance.closeInlineContent()
+          instance.closeInlineContent();
         },
         onOpenRoutedContent: (routes: string[]) => {
-          instance.openRoutedContent(routes)
+          instance.openRoutedContent(routes);
         },
-      }
-    }
+      };
+    },
   },
-  "chart": {
+  chart: {
     componentType: ListChartContainerComponent,
-    inputBindings(instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewChartContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ListInlineContentComponent,
+      inlineContent: KokuDto.ListViewChartContentDto,
+    ): Record<string, any> {
       let chartUrl = inlineContent.chartUrl || '';
       for (const [segment, value] of Object.entries(instance.urlSegments() || {})) {
         chartUrl = chartUrl.replace(segment, value);
       }
 
       return {
-        'chartUrl': chartUrl,
-        'urlSegments': instance.urlSegments(),
-        'chartContentSetup': CHART_CONTENT_SETUP,
-      }
+        chartUrl: chartUrl,
+        urlSegments: instance.urlSegments(),
+        chartContentSetup: CHART_CONTENT_SETUP,
+      };
     },
-    outputBindings: (instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewChartContentDto) => {
-      return {}
-    }
+    outputBindings: () => {
+      return {};
+    },
   },
-  "barcode": {
+  barcode: {
     componentType: BarcodeCaptureComponent,
-    inputBindings(instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewBarcodeContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(instance: ListInlineContentComponent): Record<string, any> {
       return {
-        'title': 'Termine',
-        'contentSetup': LIST_CONTENT_SETUP,
-        'urlSegments': instance.urlSegments(),
-        'parentRoutePath': instance.parentRoutePath(),
-      }
+        title: 'Termine',
+        contentSetup: LIST_CONTENT_SETUP,
+        urlSegments: instance.urlSegments(),
+        parentRoutePath: instance.parentRoutePath(),
+      };
     },
     outputBindings: (instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewBarcodeContentDto) => {
       return {
         afterCapture: (capturedValue: string) => {
           for (const currentEvent of inlineContent.onCaptureEvents || []) {
             switch (currentEvent['@type']) {
-              case "propagate-global-event": {
-                const castedEvent = currentEvent as KokuDto.ListViewBarcodeContentDtoAfterCapturePropagateGlobalEventDto;
+              case 'propagate-global-event': {
+                const castedEvent =
+                  currentEvent as KokuDto.ListViewBarcodeContentDtoAfterCapturePropagateGlobalEventDto;
                 if (!castedEvent.eventName) {
                   throw new Error(`Missing eventName`);
                 }
@@ -466,15 +487,16 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractListViewContentDto
             }
           }
           instance.onClose.emit();
-        }
-      }
-    }
+        },
+      };
+    },
   },
-  "list": {
+  list: {
     componentType: ListInlineListContainerComponent,
-    inputBindings(instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewListContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ListInlineContentComponent,
+      inlineContent: KokuDto.ListViewListContentDto,
+    ): Record<string, any> {
       let listUrl = inlineContent.listUrl || '';
       for (const [segment, value] of Object.entries(instance.urlSegments() || {})) {
         listUrl = listUrl.replace(segment, value);
@@ -485,39 +507,40 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<KokuDto.AbstractListViewContentDto
       }
 
       return {
-        'title': 'Termine',
-        'listUrl': listUrl,
-        'sourceUrl': sourceUrl,
-        'contentSetup': LIST_CONTENT_SETUP,
-        'urlSegments': instance.urlSegments(),
-        'parentRoutePath': instance.parentRoutePath(),
-        'contextMapping': inlineContent.context,
-      }
+        title: 'Termine',
+        listUrl: listUrl,
+        sourceUrl: sourceUrl,
+        contentSetup: LIST_CONTENT_SETUP,
+        urlSegments: instance.urlSegments(),
+        parentRoutePath: instance.parentRoutePath(),
+        contextMapping: inlineContent.context,
+      };
     },
-    outputBindings: (instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewListContentDto) => {
+    outputBindings: (instance: ListInlineContentComponent) => {
       return {
         onClose: () => {
-          instance.closeInlineContent()
+          instance.closeInlineContent();
         },
         onOpenRoutedContent: (routes: string[]) => {
-          instance.openRoutedContent(routes)
+          instance.openRoutedContent(routes);
         },
-      }
-    }
+      };
+    },
   },
 };
 
 const MODAL_REGISTRY: ModalContentSetup = {
-
-  "formular": {
+  formular: {
     componentType: ListFormularContainerComponent,
-    inputBindings(instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewFormularContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ModalComponent,
+      modal: RenderedModalType,
+      modalContent: KokuDto.ListViewFormularContentDto,
+    ): Record<string, any> {
       let formularUrl = modalContent.formularUrl || '';
       let sourceUrl = modalContent.sourceUrl || '';
       const fieldOverrides: FormularFieldOverride[] = [];
-      for (const currentFieldOverride of (modalContent.fieldOverrides || [])) {
+      for (const currentFieldOverride of modalContent.fieldOverrides || []) {
         if (currentFieldOverride.fieldId !== undefined) {
           if (currentFieldOverride['@type'] === 'route-based-override') {
             const castedFieldOverride = currentFieldOverride as KokuDto.ListViewRouteBasedFormularFieldOverrideDto;
@@ -526,7 +549,7 @@ const MODAL_REGISTRY: ModalContentSetup = {
               fieldOverrides.push({
                 fieldId: currentFieldOverride.fieldId,
                 disable: currentFieldOverride.disable === true,
-                value: newFieldValue
+                value: newFieldValue,
               });
             }
           }
@@ -538,19 +561,19 @@ const MODAL_REGISTRY: ModalContentSetup = {
       }
 
       return {
-        'formularUrl': formularUrl,
-        'sourceUrl': sourceUrl,
-        'urlSegments': modal.urlSegments,
-        'submitUrl': modalContent.submitUrl || sourceUrl,
-        'maxWidth': modalContent.maxWidthInPx + 'px',
-        'submitMethod': modalContent.submitMethod,
-        'onSaveEvents': modalContent.onSaveEvents,
-        'contentSetup': FORMULAR_CONTENT_SETUP,
-        'fieldOverrides': fieldOverrides,
+        formularUrl: formularUrl,
+        sourceUrl: sourceUrl,
+        urlSegments: modal.urlSegments,
+        submitUrl: modalContent.submitUrl || sourceUrl,
+        maxWidth: modalContent.maxWidthInPx + 'px',
+        submitMethod: modalContent.submitMethod,
+        onSaveEvents: modalContent.onSaveEvents,
+        contentSetup: FORMULAR_CONTENT_SETUP,
+        fieldOverrides: fieldOverrides,
         // 'buttonDockOutlet': instance.buttonDockOutlet()
-      }
+      };
     },
-    outputBindings: (instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewFormularContentDto) => {
+    outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
         onClose: () => {
           if (modal.onCloseRequested) {
@@ -559,26 +582,28 @@ const MODAL_REGISTRY: ModalContentSetup = {
             modal.close();
           }
         },
-        onOpenRoutedContent: (routes: string[]) => {
+        onOpenRoutedContent: () => {
           // instance.openRoutedContent(routes)
         },
-      }
-    }
+      };
+    },
   },
-  "dock": {
+  dock: {
     componentType: ListDockContainerComponent,
-    inputBindings(instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewDockContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ModalComponent,
+      modal: RenderedModalType,
+      modalContent: KokuDto.ListViewDockContentDto,
+    ): Record<string, any> {
       return {
-        'content': modalContent.content,
-        'contentSetup': LIST_CONTENT_SETUP,
-        'urlSegments': modal.urlSegments,
+        content: modalContent.content,
+        contentSetup: LIST_CONTENT_SETUP,
+        urlSegments: modal.urlSegments,
         // 'buttonDockOutlet': instance.buttonDockOutlet(),
-        'parentRoutePath': modal.parentRoutePath
-      }
+        parentRoutePath: modal.parentRoutePath,
+      };
     },
-    outputBindings: (instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewDockContentDto) => {
+    outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
         onClose: () => {
           if (modal.onCloseRequested) {
@@ -587,42 +612,44 @@ const MODAL_REGISTRY: ModalContentSetup = {
             modal.close();
           }
         },
-        onOpenRoutedContent: (routes: string[]) => {
+        onOpenRoutedContent: () => {
           // instance.openRoutedContent(routes)
         },
-      }
-    }
+      };
+    },
   },
-  "header": {
+  header: {
     componentType: ListHeaderContainerComponent,
-    inputBindings(instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewHeaderContentDto): {
-      [key: string]: any
-    } {
-      let segmentMapping: { [key: string]: string } = {...(modal.urlSegments || {})};
+    inputBindings(
+      instance: ModalComponent,
+      modal: RenderedModalType,
+      modalContent: KokuDto.ListViewHeaderContentDto,
+    ): Record<string, any> {
+      const segmentMapping: Record<string, string> = { ...(modal.urlSegments || {}) };
       let sourceUrl = undefined;
       if (modalContent.sourceUrl) {
         const mappedSourceParts: string[] = [];
-        for (const currentRoutePathToMatch of modalContent.sourceUrl.split("/")) {
-          if (currentRoutePathToMatch.indexOf(":") === 0) {
+        for (const currentRoutePathToMatch of modalContent.sourceUrl.split('/')) {
+          if (currentRoutePathToMatch.indexOf(':') === 0) {
             mappedSourceParts.push(segmentMapping[currentRoutePathToMatch]);
           } else {
             mappedSourceParts.push(currentRoutePathToMatch);
           }
         }
-        sourceUrl = mappedSourceParts.join("/");
+        sourceUrl = mappedSourceParts.join('/');
       }
 
       return {
-        'content': modalContent,
-        'sourceUrl': sourceUrl,
-        'titlePath': modalContent.titlePath,
-        'title': modalContent.title,
-        'contentSetup': LIST_CONTENT_SETUP,
-        'urlSegments': segmentMapping,
-        'parentRoutePath': modal.parentRoutePath
-      }
+        content: modalContent,
+        sourceUrl: sourceUrl,
+        titlePath: modalContent.titlePath,
+        title: modalContent.title,
+        contentSetup: LIST_CONTENT_SETUP,
+        urlSegments: segmentMapping,
+        parentRoutePath: modal.parentRoutePath,
+      };
     },
-    outputBindings: (instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewHeaderContentDto) => {
+    outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
         onClose: () => {
           if (modal.onCloseRequested) {
@@ -631,25 +658,27 @@ const MODAL_REGISTRY: ModalContentSetup = {
             modal.close();
           }
         },
-        onOpenRoutedContent: (routes: string[]) => {
+        onOpenRoutedContent: () => {
           // instance.openRoutedContent(routes)
         },
-      }
-    }
+      };
+    },
   },
-  "grid": {
+  grid: {
     componentType: ListGridContainerComponent,
-    inputBindings(instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewGridContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ModalComponent,
+      modal: RenderedModalType,
+      modalContent: KokuDto.ListViewGridContentDto,
+    ): Record<string, any> {
       return {
-        'content': modalContent,
-        'contentSetup': LIST_CONTENT_SETUP,
-        'urlSegments': modal.urlSegments,
-        'parentRoutePath': modal.parentRoutePath
-      }
+        content: modalContent,
+        contentSetup: LIST_CONTENT_SETUP,
+        urlSegments: modal.urlSegments,
+        parentRoutePath: modal.parentRoutePath,
+      };
     },
-    outputBindings: (instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewGridContentDto) => {
+    outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
         onClose: () => {
           if (modal.onCloseRequested) {
@@ -658,37 +687,41 @@ const MODAL_REGISTRY: ModalContentSetup = {
             modal.close();
           }
         },
-        onOpenRoutedContent: (routes: string[]) => {
+        onOpenRoutedContent: () => {
           // instance.openRoutedContent(routes)
         },
-      }
-    }
+      };
+    },
   },
-  "chart": {
+  chart: {
     componentType: ListChartContainerComponent,
-    inputBindings(instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewChartContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ModalComponent,
+      modal: RenderedModalType,
+      modalContent: KokuDto.ListViewChartContentDto,
+    ): Record<string, any> {
       let chartUrl = modalContent.chartUrl || '';
       for (const [segment, value] of Object.entries(modal.urlSegments || {})) {
         chartUrl = chartUrl.replace(segment, value);
       }
 
       return {
-        'chartUrl': chartUrl,
-        'urlSegments': modal.urlSegments,
-        'chartContentSetup': CHART_CONTENT_SETUP,
-      }
+        chartUrl: chartUrl,
+        urlSegments: modal.urlSegments,
+        chartContentSetup: CHART_CONTENT_SETUP,
+      };
     },
-    outputBindings: (instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewChartContentDto) => {
-      return {}
-    }
+    outputBindings: () => {
+      return {};
+    },
   },
-  "list": {
+  list: {
     componentType: ListInlineListContainerComponent,
-    inputBindings(instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewListContentDto): {
-      [key: string]: any
-    } {
+    inputBindings(
+      instance: ModalComponent,
+      modal: RenderedModalType,
+      modalContent: KokuDto.ListViewListContentDto,
+    ): Record<string, any> {
       let listUrl = modalContent.listUrl || '';
       for (const [segment, value] of Object.entries(modal.urlSegments || {})) {
         listUrl = listUrl.replace(segment, value);
@@ -699,15 +732,15 @@ const MODAL_REGISTRY: ModalContentSetup = {
       }
 
       return {
-        'title': 'Termine',
-        'listUrl': listUrl,
-        'sourceUrl': sourceUrl,
-        'contentSetup': LIST_CONTENT_SETUP,
-        'urlSegments': modal.urlSegments,
-        'parentRoutePath': modal.parentRoutePath
-      }
+        title: 'Termine',
+        listUrl: listUrl,
+        sourceUrl: sourceUrl,
+        contentSetup: LIST_CONTENT_SETUP,
+        urlSegments: modal.urlSegments,
+        parentRoutePath: modal.parentRoutePath,
+      };
     },
-    outputBindings: (instance: ModalComponent, modal: RenderedModalType, modalContent: KokuDto.ListViewListContentDto) => {
+    outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
         onClose: () => {
           if (modal.onCloseRequested) {
@@ -716,29 +749,34 @@ const MODAL_REGISTRY: ModalContentSetup = {
             modal.close();
           }
         },
-        onOpenRoutedContent: (routes: string[]) => {
+        onOpenRoutedContent: () => {
           // instance.openRoutedContent(routes)
         },
-      }
-    }
+      };
+    },
   },
 };
 
-const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@type"] | string, {
-  componentType: any;
-  inputBindings?(instance: ListItemActionComponent, inlineContent: KokuDto.AbstractListViewItemActionDto): {
-    [key: string]: any
-  }
-  outputBindings?(instance: ListItemActionComponent, inlineContent: KokuDto.AbstractListViewItemActionDto): {
-    [key: string]: any
-  }
-}>> = {
-  "http-call": {
+const ACTION_REGISTRY: Partial<
+  Record<
+    KokuDto.AbstractListViewItemActionDto['@type'] | string,
+    {
+      componentType: any;
+      inputBindings?(
+        instance: ListItemActionComponent,
+        inlineContent: KokuDto.AbstractListViewItemActionDto,
+      ): Record<string, any>;
+      outputBindings?(
+        instance: ListItemActionComponent,
+        inlineContent: KokuDto.AbstractListViewItemActionDto,
+      ): Record<string, any>;
+    }
+  >
+> = {
+  'http-call': {
     componentType: ButtonActionComponent,
-    inputBindings(instance: ListItemActionComponent, action: KokuDto.ListViewCallHttpListItemActionDto): {
-      [key: string]: any
-    } {
-      return {}
+    inputBindings(): Record<string, any> {
+      return {};
     },
     outputBindings: (instance: ListItemActionComponent, action: KokuDto.ListViewCallHttpListItemActionDto) => {
       return {
@@ -751,11 +789,11 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
               for (const currentParam of action.params || []) {
                 if (currentParam.param) {
                   switch (currentParam['@type']) {
-                    case "value": {
+                    case 'value': {
                       const castedCurrentParam = currentParam as KokuDto.ListViewCallHttpListValueActionParamDto;
                       if (castedCurrentParam.valueReference) {
                         switch (castedCurrentParam.valueReference['@type']) {
-                          case "field-reference": {
+                          case 'field-reference': {
                             const castedReference = castedCurrentParam.valueReference as KokuDto.ListViewFieldReference;
                             if (!castedReference.fieldId) {
                               throw new Error('Missing fieldId in FieldReference');
@@ -764,19 +802,25 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                             if (!field) {
                               throw new Error('FieldReference not resolvable');
                             }
-                            url = url.replaceAll(currentParam.param, field.value())
+                            url = url.replaceAll(currentParam.param, field.value());
                             break;
                           }
-                          case "source-path-reference": {
-                            const castedReference = castedCurrentParam.valueReference as KokuDto.ListViewSourcePathReference;
+                          case 'source-path-reference': {
+                            const castedReference =
+                              castedCurrentParam.valueReference as KokuDto.ListViewSourcePathReference;
                             if (!castedReference.valuePath) {
                               throw new Error('Missing valuePath in FieldReference');
                             }
-                            url = url.replaceAll(currentParam.param, get(instance.register().source(), castedReference.valuePath))
+                            url = url.replaceAll(
+                              currentParam.param,
+                              get(instance.register().source(), castedReference.valuePath),
+                            );
                             break;
                           }
                           default: {
-                            throw new Error(`Unknown value reference type: ${castedCurrentParam.valueReference['@type']}`);
+                            throw new Error(
+                              `Unknown value reference type: ${castedCurrentParam.valueReference['@type']}`,
+                            );
                           }
                         }
                       } else {
@@ -790,14 +834,15 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                   }
                 }
               }
-              return instance.httpClient.request<{ [key: string]: any }>(action.method, url);
+              return instance.httpClient.request<Record<string, any>>(action.method, url);
             } else {
               throw new Error('http-call configuration is missing url and/or method');
             }
-          }
-          const executeEvents = (events: KokuDto.AbstractListViewActionEventDto[], eventPayload: {
-            [key: string]: any
-          } = {}) => {
+          };
+          const executeEvents = (
+            events: KokuDto.AbstractListViewActionEventDto[],
+            eventPayload: Record<string, any> = {},
+          ) => {
             for (const currentEvent of events || []) {
               switch (currentEvent['@type']) {
                 case 'reload': {
@@ -809,7 +854,7 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                   if (!castedEvent.idPath) {
                     throw new Error('Missing id in event payload update');
                   }
-                  const listRegisterIdx: { [key: string]: ListItemSetup } = {};
+                  const listRegisterIdx: Record<string, ListItemSetup> = {};
                   for (const currentEntry of instance.listRegister()) {
                     if (currentEntry.id !== undefined && currentEntry.id !== null) {
                       listRegisterIdx[currentEntry.id] = currentEntry;
@@ -818,11 +863,13 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                   const item = listRegisterIdx[String(get(eventPayload, castedEvent.idPath, ''))];
                   // it might be possible that the item is (currently) not shown. in this case, we cannot update the list.
                   if (item !== undefined) {
-                    for (const [currentMappingPath, listViewReference] of Object.entries(castedEvent.valueMapping || {})) {
+                    for (const [currentMappingPath, listViewReference] of Object.entries(
+                      castedEvent.valueMapping || {},
+                    )) {
                       const mappablePayloadValue = get(eventPayload, currentMappingPath);
                       if (mappablePayloadValue !== undefined) {
                         switch (listViewReference['@type']) {
-                          case "field-reference": {
+                          case 'field-reference': {
                             const castedReference = listViewReference as KokuDto.ListViewFieldReference;
                             if (!castedReference.fieldId) {
                               throw new Error('Missing fieldId in FieldReference');
@@ -834,13 +881,13 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                             field.value.set(mappablePayloadValue);
                             break;
                           }
-                          case "source-path-reference": {
+                          case 'source-path-reference': {
                             const castedReference = listViewReference as KokuDto.ListViewSourcePathReference;
                             if (!castedReference.valuePath) {
                               throw new Error('Missing valuePath in FieldReference');
                             }
                             const itemSourceSnapshot = {
-                              ...item.source()
+                              ...item.source(),
                             };
                             set(itemSourceSnapshot, castedReference.valuePath, mappablePayloadValue);
                             item.source.set(itemSourceSnapshot);
@@ -867,11 +914,11 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                       throw new Error(`Missing param`);
                     }
                     switch (currentParam['@type']) {
-                      case "value": {
+                      case 'value': {
                         const castedParam = currentParam as KokuDto.ListViewCallHttpListValueActionParamDto;
                         if (castedParam.valueReference) {
                           switch (castedParam.valueReference['@type']) {
-                            case "field-reference": {
+                            case 'field-reference': {
                               const castedReference = castedParam.valueReference as KokuDto.ListViewFieldReference;
                               if (!castedReference.fieldId) {
                                 throw new Error('Missing fieldId in FieldReference');
@@ -880,15 +927,18 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                               if (!field) {
                                 throw new Error('FieldReference not resolvable');
                               }
-                              notificationText = notificationText.replaceAll(currentParam.param, field.value())
+                              notificationText = notificationText.replaceAll(currentParam.param, field.value());
                               break;
                             }
-                            case "source-path-reference": {
+                            case 'source-path-reference': {
                               const castedReference = castedParam.valueReference as KokuDto.ListViewSourcePathReference;
                               if (!castedReference.valuePath) {
                                 throw new Error('Missing valuePath in FieldReference');
                               }
-                              notificationText = notificationText.replaceAll(currentParam.param, get(instance.register().source(), castedReference.valuePath))
+                              notificationText = notificationText.replaceAll(
+                                currentParam.param,
+                                get(instance.register().source(), castedReference.valuePath),
+                              );
                               break;
                             }
                             default: {
@@ -900,11 +950,11 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                         }
                         break;
                       }
-                      case "date-value": {
+                      case 'date-value': {
                         const castedParam = currentParam as KokuDto.ListViewCallHttpListValueActionParamDto;
                         if (castedParam.valueReference) {
                           switch (castedParam.valueReference['@type']) {
-                            case "field-reference": {
+                            case 'field-reference': {
                               const castedReference = castedParam.valueReference as KokuDto.ListViewFieldReference;
                               if (!castedReference.fieldId) {
                                 throw new Error('Missing fieldId in FieldReference');
@@ -913,15 +963,18 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                               if (!field) {
                                 throw new Error('FieldReference not resolvable');
                               }
-                              notificationText = notificationText.replaceAll(currentParam.param, field.value())
+                              notificationText = notificationText.replaceAll(currentParam.param, field.value());
                               break;
                             }
-                            case "source-path-reference": {
+                            case 'source-path-reference': {
                               const castedReference = castedParam.valueReference as KokuDto.ListViewSourcePathReference;
                               if (!castedReference.valuePath) {
                                 throw new Error('Missing valuePath in FieldReference');
                               }
-                              notificationText = notificationText.replaceAll(currentParam.param, get(instance.register().source(), castedReference.valuePath))
+                              notificationText = notificationText.replaceAll(
+                                currentParam.param,
+                                get(instance.register().source(), castedReference.valuePath),
+                              );
                               break;
                             }
                             default: {
@@ -941,11 +994,11 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                   let serenity: ToastTypeUnion = 'info';
                   if (castedEvent.serenity) {
                     switch (castedEvent.serenity) {
-                      case "SUCCESS": {
+                      case 'SUCCESS': {
                         serenity = 'success';
                         break;
                       }
-                      case "ERROR": {
+                      case 'ERROR': {
                         serenity = 'error';
                         break;
                       }
@@ -956,7 +1009,7 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                   instance.toastService.add(notificationText, serenity);
                   break;
                 }
-                case "propagate-global-event": {
+                case 'propagate-global-event': {
                   const castedEvent = currentEvent as KokuDto.ListViewPropagateGlobalEventActionEventDto;
                   if (!castedEvent.eventName) {
                     throw new Error('Missing eventName');
@@ -969,7 +1022,7 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                 }
               }
             }
-          }
+          };
 
           if (action.userConfirmation) {
             let headline = action.userConfirmation.headline || '';
@@ -980,11 +1033,11 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                 throw new Error(`Missing param`);
               }
               switch (currentParam['@type']) {
-                case "value": {
+                case 'value': {
                   const castedParam = currentParam as KokuDto.ListViewCallHttpListValueActionParamDto;
                   if (castedParam.valueReference) {
                     switch (castedParam.valueReference['@type']) {
-                      case "field-reference": {
+                      case 'field-reference': {
                         const castedReference = castedParam.valueReference as KokuDto.ListViewFieldReference;
                         if (!castedReference.fieldId) {
                           throw new Error('Missing fieldId in FieldReference');
@@ -993,17 +1046,23 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                         if (!field) {
                           throw new Error('FieldReference not resolvable');
                         }
-                        headline = headline.replaceAll(currentParam.param, field.value())
-                        content = content.replaceAll(currentParam.param, field.value())
+                        headline = headline.replaceAll(currentParam.param, field.value());
+                        content = content.replaceAll(currentParam.param, field.value());
                         break;
                       }
-                      case "source-path-reference": {
+                      case 'source-path-reference': {
                         const castedReference = castedParam.valueReference as KokuDto.ListViewSourcePathReference;
                         if (!castedReference.valuePath) {
                           throw new Error('Missing valuePath in FieldReference');
                         }
-                        headline = headline.replaceAll(currentParam.param, get(instance.register().source(), castedReference.valuePath))
-                        content = content.replaceAll(currentParam.param, get(instance.register().source(), castedReference.valuePath))
+                        headline = headline.replaceAll(
+                          currentParam.param,
+                          get(instance.register().source(), castedReference.valuePath),
+                        );
+                        content = content.replaceAll(
+                          currentParam.param,
+                          get(instance.register().source(), castedReference.valuePath),
+                        );
                         break;
                       }
                       default: {
@@ -1016,11 +1075,11 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
 
                   break;
                 }
-                case "date-value": {
+                case 'date-value': {
                   const castedParam = currentParam as KokuDto.ListViewCallHttpListValueActionParamDto;
                   if (castedParam.valueReference) {
                     switch (castedParam.valueReference['@type']) {
-                      case "field-reference": {
+                      case 'field-reference': {
                         const castedReference = castedParam.valueReference as KokuDto.ListViewFieldReference;
                         if (!castedReference.fieldId) {
                           throw new Error('Missing fieldId in FieldReference');
@@ -1029,17 +1088,23 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                         if (!field) {
                           throw new Error('FieldReference not resolvable');
                         }
-                        headline = headline.replaceAll(currentParam.param, field.value())
-                        content = content.replaceAll(currentParam.param, field.value())
+                        headline = headline.replaceAll(currentParam.param, field.value());
+                        content = content.replaceAll(currentParam.param, field.value());
                         break;
                       }
-                      case "source-path-reference": {
+                      case 'source-path-reference': {
                         const castedReference = castedParam.valueReference as KokuDto.ListViewSourcePathReference;
                         if (!castedReference.valuePath) {
                           throw new Error('Missing valuePath in FieldReference');
                         }
-                        headline = headline.replaceAll(currentParam.param, get(instance.register().source(), castedReference.valuePath))
-                        content = content.replaceAll(currentParam.param, get(instance.register().source(), castedReference.valuePath))
+                        headline = headline.replaceAll(
+                          currentParam.param,
+                          get(instance.register().source(), castedReference.valuePath),
+                        );
+                        content = content.replaceAll(
+                          currentParam.param,
+                          get(instance.register().source(), castedReference.valuePath),
+                        );
                         break;
                       }
                       default: {
@@ -1055,42 +1120,45 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                   throw new Error(`Unknown param type ${currentParam['@type']}`);
                 }
               }
-
             }
 
             const confirmationModal = instance.modalService.add({
               headline: headline,
               content: content,
-              buttons: [{
-                text: 'Abbrechen',
-                styles: ['OUTLINE'],
-                onClick: () => {
-                  confirmationModal.close();
-                }
-              }, {
-                text: 'Bestätigen',
-                onClick: (event, modal, button) => {
-                  button.loading = true;
-                  button.disabled = true;
+              buttons: [
+                {
+                  text: 'Abbrechen',
+                  styles: ['OUTLINE'],
+                  onClick: () => {
+                    confirmationModal.close();
+                  },
+                },
+                {
+                  text: 'Bestätigen',
+                  onClick: (event, modal, button) => {
+                    button.loading = true;
+                    button.disabled = true;
 
-                  callAction().subscribe({
-                    next: (rawValue) => {
-                      executeEvents(action.successEvents || [], rawValue);
-                      button.loading = false;
-                      button.disabled = false;
-                      confirmationModal.close();
-                    }, error: () => {
-                      executeEvents(action.failEvents || []);
-                      button.loading = false;
-                      button.disabled = false;
-                      confirmationModal.update(modal);
-                    }
-                  })
-                }
-              }],
+                    callAction().subscribe({
+                      next: (rawValue) => {
+                        executeEvents(action.successEvents || [], rawValue);
+                        button.loading = false;
+                        button.disabled = false;
+                        confirmationModal.close();
+                      },
+                      error: () => {
+                        executeEvents(action.failEvents || []);
+                        button.loading = false;
+                        button.disabled = false;
+                        confirmationModal.update(modal);
+                      },
+                    });
+                  },
+                },
+              ],
               clickOutside: () => {
                 confirmationModal.close();
-              }
+              },
             });
           } else {
             callAction().subscribe({
@@ -1099,32 +1167,28 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
               },
               error: () => {
                 executeEvents(action.failEvents || []);
-              }
+              },
             });
           }
         },
-      }
-    }
-  },
-  "condition": {
-    componentType: ConditionActionComponent,
-    inputBindings(instance: ListItemActionComponent, action: KokuDto.ListViewConditionalItemValueActionDto): {
-      [key: string]: any
-    } {
-      return {
-        'parent': instance,
-      }
+      };
     },
-    outputBindings: (instance: ListItemActionComponent, action: KokuDto.ListViewConditionalItemValueActionDto) => {
-      return {}
-    }
   },
-  "open-inline-content": {
+  condition: {
+    componentType: ConditionActionComponent,
+    inputBindings(instance: ListItemActionComponent): Record<string, any> {
+      return {
+        parent: instance,
+      };
+    },
+    outputBindings: () => {
+      return {};
+    },
+  },
+  'open-inline-content': {
     componentType: ButtonActionComponent,
-    inputBindings(instance: ListItemActionComponent, action: KokuDto.ListViewOpenInlineContentItemActionDto): {
-      [key: string]: any
-    } {
-      return {}
+    inputBindings(): Record<string, any> {
+      return {};
     },
     outputBindings: (instance: ListItemActionComponent, action: KokuDto.ListViewOpenInlineContentItemActionDto) => {
       return {
@@ -1134,38 +1198,39 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
             instance.onOpenInlineContent.emit({
               content: action.inlineContent,
               id: instance.register().id,
-              urlSegments: null
+              urlSegments: null,
             });
           }
         },
-      }
-    }
-  },
-  "open-routed-content": {
-    componentType: ButtonActionComponent,
-    inputBindings(instance: ListItemActionComponent, action: KokuDto.ListViewOpenInlineContentItemActionDto): {
-      [key: string]: any
-    } {
-      return {}
+      };
     },
-    outputBindings: (instance: ListItemActionComponent, action: KokuDto.ListViewItemActionOpenRoutedContentActionDto) => {
+  },
+  'open-routed-content': {
+    componentType: ButtonActionComponent,
+    inputBindings(): Record<string, any> {
+      return {};
+    },
+    outputBindings: (
+      instance: ListItemActionComponent,
+      action: KokuDto.ListViewItemActionOpenRoutedContentActionDto,
+    ) => {
       return {
         onClick: (event: MouseEvent) => {
           event.stopPropagation();
           if (action.route) {
-
             let route = action.route;
             for (const currentParam of action.params || []) {
               if (currentParam.param) {
                 switch (currentParam['@type']) {
-                  case "value": {
-                    const castedCurrentParam = currentParam as KokuDto.ListViewItemActionOpenRoutedContentActionItemValueParamDto;
+                  case 'value': {
+                    const castedCurrentParam =
+                      currentParam as KokuDto.ListViewItemActionOpenRoutedContentActionItemValueParamDto;
 
                     if (!castedCurrentParam.valueReference) {
                       throw new Error('Missing valueReference in FieldReference');
                     }
                     switch (castedCurrentParam.valueReference['@type']) {
-                      case "field-reference": {
+                      case 'field-reference': {
                         const castedReference = castedCurrentParam.valueReference as KokuDto.ListViewFieldReference;
                         if (!castedReference.fieldId) {
                           throw new Error('Missing fieldId in FieldReference');
@@ -1174,15 +1239,19 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
                         if (!field) {
                           throw new Error('FieldReference not resolvable');
                         }
-                        route = route.replaceAll(currentParam.param, field.value())
+                        route = route.replaceAll(currentParam.param, field.value());
                         break;
                       }
-                      case "source-path-reference": {
-                        const castedReference = castedCurrentParam.valueReference as KokuDto.ListViewSourcePathReference;
+                      case 'source-path-reference': {
+                        const castedReference =
+                          castedCurrentParam.valueReference as KokuDto.ListViewSourcePathReference;
                         if (!castedReference.valuePath) {
                           throw new Error('Missing valuePath in FieldReference');
                         }
-                        route = route.replaceAll(currentParam.param, get(instance.register().source(), castedReference.valuePath))
+                        route = route.replaceAll(
+                          currentParam.param,
+                          get(instance.register().source(), castedReference.valuePath),
+                        );
                         break;
                       }
                     }
@@ -1193,22 +1262,21 @@ const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto["@ty
               }
             }
 
-            instance.onOpenRoutedContent.emit(
-              route.split('/')
-            );
+            instance.onOpenRoutedContent.emit(route.split('/'));
           }
         },
-      }
-    }
+      };
+    },
   },
 };
 const STYLING_REGISTRY: ItemStylingSetup = {
-  "condition": {
-    itemClasses(stylingDefinition: KokuDto.ListViewConditionalItemValueStylingDto, source: {
-      [p: string]: any
-    }): string[] {
+  condition: {
+    itemClasses(
+      stylingDefinition: KokuDto.ListViewConditionalItemValueStylingDto,
+      source: Record<string, any>,
+    ): string[] {
       let matchesCondition = false;
-      let currentValue = get(source, stylingDefinition.compareValuePath || '', null)
+      const currentValue = get(source, stylingDefinition.compareValuePath || '', null);
       for (const currentPositiveCompareValue of stylingDefinition.expectedValues || []) {
         if (currentValue == currentPositiveCompareValue) {
           matchesCondition = true;
@@ -1227,11 +1295,11 @@ const STYLING_REGISTRY: ItemStylingSetup = {
         result.push(`line-through`);
       }
       return result;
-    }
-  }
+    },
+  },
 };
 const FILTER_REGISTRY: ListFilterSetup = {
-  "toggle": {
+  toggle: {
     componentType: ToggleFilterComponent,
     stateInitializer: (filter: KokuDto.ListViewToggleFilterDto) => {
       let result: KokuDto.QueryPredicate[] = [];
@@ -1240,19 +1308,19 @@ const FILTER_REGISTRY: ListFilterSetup = {
         const defaultState = filter.defaultState;
         if (defaultState) {
           switch (defaultState) {
-            case "DISABLED": {
+            case 'DISABLED': {
               if (filter.disabledPredicates) {
                 result = filter.disabledPredicates;
               }
               break;
             }
-            case "NEUTRAL": {
+            case 'NEUTRAL': {
               if (filter.neutralPredicates) {
                 result = filter.neutralPredicates;
               }
               break;
             }
-            case "ENABLED": {
+            case 'ENABLED': {
               if (filter.enabledPredicates) {
                 result = filter.enabledPredicates;
               }
@@ -1264,14 +1332,14 @@ const FILTER_REGISTRY: ListFilterSetup = {
 
       return result;
     },
-    inputBindings(instance: ListFilterComponent, filter: KokuDto.ListViewToggleFilterDto): { [p: string]: any } {
+    inputBindings(instance: ListFilterComponent, filter: KokuDto.ListViewToggleFilterDto): Record<string, any> {
       return {
-        'label': filter.label
+        label: filter.label,
       };
     },
-    outputBindings(instance: ListFilterComponent, filter: KokuDto.ListViewToggleFilterDto): { [p: string]: any } {
+    outputBindings(instance: ListFilterComponent, filter: KokuDto.ListViewToggleFilterDto): Record<string, any> {
       return {
-        'onFilterChange': (state: ToggleFilterTriState) => {
+        onFilterChange: (state: ToggleFilterTriState) => {
           let result: KokuDto.QueryPredicate[] = [];
           switch (state) {
             case 'checked': {
@@ -1288,10 +1356,10 @@ const FILTER_REGISTRY: ListFilterSetup = {
             }
           }
           instance.onFilterChange.emit(result);
-        }
+        },
       };
-    }
-  }
+    },
+  },
 };
 
 export const LIST_CONTENT_SETUP: ListContentSetup = {
@@ -1301,5 +1369,5 @@ export const LIST_CONTENT_SETUP: ListContentSetup = {
   actionRegistry: ACTION_REGISTRY,
   modalRegistry: MODAL_REGISTRY,
   itemStylingRegistry: STYLING_REGISTRY,
-  filterRegistry: FILTER_REGISTRY
-}
+  filterRegistry: FILTER_REGISTRY,
+};

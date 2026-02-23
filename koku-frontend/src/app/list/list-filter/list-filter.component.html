@@ -1,10 +1,15 @@
 @if (filter().filterDefinition; as filterDefinition) {
   @if (contentSetup().filterRegistry[filterDefinition['@type']]; as filterRegistration) {
-    <ndc-dynamic [ndcDynamicComponent]="filterRegistration.componentType"
-                 [ndcDynamicInputs]="{}"
-                 (ndcDynamicCreated)="{}"
-                 [ngComponentOutletNdcDynamicInputs]="filterRegistration.inputBindings ? filterRegistration.inputBindings(this, filterDefinition) : {}"
-                 [ngComponentOutletNdcDynamicOutputs]="filterRegistration.outputBindings ? filterRegistration.outputBindings(this, filterDefinition) : {}"
+    <ndc-dynamic
+      [ndcDynamicComponent]="filterRegistration.componentType"
+      [ndcDynamicInputs]="{}"
+      (ndcDynamicCreated)="({})"
+      [ngComponentOutletNdcDynamicInputs]="
+        filterRegistration.inputBindings ? filterRegistration.inputBindings(this, filterDefinition) : {}
+      "
+      [ngComponentOutletNdcDynamicOutputs]="
+        filterRegistration.outputBindings ? filterRegistration.outputBindings(this, filterDefinition) : {}
+      "
     ></ndc-dynamic>
   }
 }

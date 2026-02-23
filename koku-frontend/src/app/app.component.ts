@@ -1,21 +1,21 @@
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
-import {ThemingService} from './theme/theming.service';
-import {ToastComponent} from './toast/toast.component';
-import {ModalComponent} from './modal/modal.component';
-import {FieldEvent, FORMULAR_PLUGIN, FormularComponent, FormularPlugin} from './formular/formular.component';
-import {BusinessRuleExecutor, BusinessRuleExecutorFieldInstanceIndex} from './business-rules/BusinessRuleExecutor';
-import {BehaviorSubject, filter, Observable, Subscriber, Subscription} from 'rxjs';
-import {HttpClient, HttpErrorResponse} from '@angular/common/http';
-import {ModalService} from './modal/modal.service';
-import {BUSINESS_RULES_CONTENT_SETUP} from './business-rules-binding/registry';
-import {UnsavedChangesPreventionGuard} from './navi/UnsavedChangesPreventionGuard';
-import {ModalButtonType, ModalType, RenderedModalType} from './modal/modal.type';
-import {GLOBAL_EVENT_BUS} from './events/global-events';
-import {get} from './utils/get';
-import {UNIQUE_REF_GENERATOR} from './utils/uniqueRef';
-import {set} from './utils/set';
-import Holidays, {HolidaysTypes} from 'date-holidays';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { ThemingService } from './theme/theming.service';
+import { ToastComponent } from './toast/toast.component';
+import { ModalComponent } from './modal/modal.component';
+import { FieldEvent, FORMULAR_PLUGIN, FormularComponent, FormularPlugin } from './formular/formular.component';
+import { BusinessRuleExecutor, BusinessRuleExecutorFieldInstanceIndex } from './business-rules/BusinessRuleExecutor';
+import { BehaviorSubject, filter, Observable, Subscriber, Subscription } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { ModalService } from './modal/modal.service';
+import { BUSINESS_RULES_CONTENT_SETUP } from './business-rules-binding/registry';
+import { UnsavedChangesPreventionGuard } from './navi/UnsavedChangesPreventionGuard';
+import { ModalButtonType, ModalType, RenderedModalType } from './modal/modal.type';
+import { GLOBAL_EVENT_BUS } from './events/global-events';
+import { get } from './utils/get';
+import { UNIQUE_REF_GENERATOR } from './utils/uniqueRef';
+import { set } from './utils/set';
+import Holidays, { HolidaysTypes } from 'date-holidays';
 import dayjs from 'dayjs';
 import dayOfYear from 'dayjs/plugin/dayOfYear';
 
@@ -28,25 +28,23 @@ import {
   CalendarPluginEventSourceFactory,
   CalendarPluginInstanceDetails,
   DateSelection,
-  RenderedCalendarInlineItem
+  RenderedCalendarInlineItem,
 } from './calendar/calendar.component';
-import {ToastService} from './toast/toast.service';
-import {catchError} from 'rxjs/operators';
-import {EventInput, EventSourceInput} from '@fullcalendar/core';
-import {Frequency, Options} from 'rrule/dist/esm/types';
-import {LIST_CONTENT_SETUP} from './list-binding/registry';
-import {
-  CalendarInlineHeaderContainerComponent
-} from './calendar-binding/header-container/calendar-inline-header-container.component';
-import {
-  CalendarInlineListContainerComponent
-} from './calendar-binding/list-container/calendar-inline-list-container.component';
-import {CALENDAR_CONTENT_SETUP} from './calendar-binding/registry';
+import { ToastService } from './toast/toast.service';
+import { catchError } from 'rxjs/operators';
+import { EventInput, EventSourceInput } from '@fullcalendar/core';
+import { Frequency, Options } from 'rrule/dist/esm/types';
+import { LIST_CONTENT_SETUP } from './list-binding/registry';
+import { CalendarInlineHeaderContainerComponent } from './calendar-binding/header-container/calendar-inline-header-container.component';
+import { CalendarInlineListContainerComponent } from './calendar-binding/list-container/calendar-inline-list-container.component';
+import { CALENDAR_CONTENT_SETUP } from './calendar-binding/registry';
 
 class BusinessRulePlugin implements FormularPlugin {
   private businessRuleExecutorsInitialized = false;
   private sourceInitialInitialization = true;
-  private businessRuleEventNameMapping: Partial<Record<FieldEvent, KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum>> = {
+  private businessRuleEventNameMapping: Partial<
+    Record<FieldEvent, KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum>
+  > = {
     onChange: 'CHANGE',
     onInput: 'INPUT',
     onBlur: 'BLUR',
@@ -71,14 +69,13 @@ class BusinessRulePlugin implements FormularPlugin {
     private httpClient: HttpClient,
     private modalService: ModalService,
     private formularInstance: FormularComponent,
-  ) {
-  }
+  ) {}
 
   onFormularLoaded(formularData: KokuDto.FormViewDto): void {
     if (!this.businessRuleExecutorsInitialized) {
       this.businessRuleExecutorsInitialized = true;
       for (const currentBusinessRule of formularData.businessRules || []) {
-        const businessRuleFields: BusinessRuleExecutorFieldInstanceIndex = {}
+        const businessRuleFields: BusinessRuleExecutorFieldInstanceIndex = {};
         for (const currentReference of currentBusinessRule.references || []) {
           if (!currentReference.reference) {
             throw new Error('Unexpected reference');
@@ -89,20 +86,18 @@ class BusinessRulePlugin implements FormularPlugin {
           }
 
           const businessRuleEventBus = new BehaviorSubject<{
-            eventName: KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum,
-            payload?: any
+            eventName: KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum;
+            payload?: any;
           } | null>(null);
-          lookupField.fieldEventBus
-            .subscribe(value => {
-                const mappedEvent = this.businessRuleEventNameMapping[value.eventName];
-                if (mappedEvent !== undefined) {
-                  businessRuleEventBus.next({
-                    payload: value?.payload,
-                    eventName: mappedEvent,
-                  });
-                }
-              }
-            );
+          lookupField.fieldEventBus.subscribe((value) => {
+            const mappedEvent = this.businessRuleEventNameMapping[value.eventName];
+            if (mappedEvent !== undefined) {
+              businessRuleEventBus.next({
+                payload: value?.payload,
+                eventName: mappedEvent,
+              });
+            }
+          });
           businessRuleFields[currentReference.reference] = {
             value: lookupField.value,
             fieldEventBus: businessRuleEventBus,
@@ -110,20 +105,22 @@ class BusinessRulePlugin implements FormularPlugin {
             requiredCauses: lookupField.requiredCauses,
             readonlyCauses: lookupField.readonlyCauses,
             loadingCauses: lookupField.loadingCauses,
-          }
+          };
         }
-        this.registeredBusinessRuleExecutors.push(new BusinessRuleExecutor(
-          this.httpClient,
-          this.modalService,
-          BUSINESS_RULES_CONTENT_SETUP.modalContentRegistry,
-          currentBusinessRule,
-          businessRuleFields
-        ));
+        this.registeredBusinessRuleExecutors.push(
+          new BusinessRuleExecutor(
+            this.httpClient,
+            this.modalService,
+            BUSINESS_RULES_CONTENT_SETUP.modalContentRegistry,
+            currentBusinessRule,
+            businessRuleFields,
+          ),
+        );
       }
     }
   }
 
-  onSourceLoaded(source: any): void {
+  onSourceLoaded(): void {
     if (this.sourceInitialInitialization) {
       this.sourceInitialInitialization = false;
       for (const currentBusinessRuleCase of this.registeredBusinessRuleExecutors || []) {
@@ -141,17 +138,12 @@ class BusinessRulePlugin implements FormularPlugin {
       currentBusinessRuleCase.destroy();
     }
   }
-
 }
 
 class GlobalEventListenerPlugin implements FormularPlugin {
-
   componentRef = UNIQUE_REF_GENERATOR.generate();
 
-  constructor(
-    private formularInstance: FormularComponent,
-  ) {
-  }
+  constructor(private formularInstance: FormularComponent) {}
 
   onFormularLoaded(formularData: KokuDto.FormViewDto): void {
     this.clearGlobalEventListeners();
@@ -159,219 +151,239 @@ class GlobalEventListenerPlugin implements FormularPlugin {
       if (!currentEventListener.eventName) {
         throw new Error('Missing eventName in Global Listener Configuration');
       }
-      GLOBAL_EVENT_BUS.addGlobalEventListener(String(this.componentRef), currentEventListener.eventName, (eventPayload) => {
-        switch (currentEventListener['@type']) {
-          case "field-update-via-payload": {
-            const castedEventListener = currentEventListener as KokuDto.FormViewEventPayloadFieldUpdateGlobalEventListenerDto;
+      GLOBAL_EVENT_BUS.addGlobalEventListener(
+        String(this.componentRef),
+        currentEventListener.eventName,
+        (eventPayload) => {
+          switch (currentEventListener['@type']) {
+            case 'field-update-via-payload': {
+              const castedEventListener =
+                currentEventListener as KokuDto.FormViewEventPayloadFieldUpdateGlobalEventListenerDto;
 
-            for (const [fieldRef, currentMappingDefinition] of Object.entries(castedEventListener.configMapping || {})) {
+              for (const [fieldRef, currentMappingDefinition] of Object.entries(
+                castedEventListener.configMapping || {},
+              )) {
+                const registeredField = this.formularInstance.fieldRegister()[fieldRef];
+                switch ((currentMappingDefinition.valueMapping || {})['@type']) {
+                  case 'append-list': {
+                    const castedMappingDefinition =
+                      currentMappingDefinition.valueMapping as KokuDto.ConfigMappingAppendListDto;
 
-              const registeredField = this.formularInstance.fieldRegister()[fieldRef];
-              switch ((currentMappingDefinition.valueMapping || {})['@type']) {
-                case "append-list": {
-                  const castedMappingDefinition = currentMappingDefinition.valueMapping as KokuDto.ConfigMappingAppendListDto;
+                    if (!currentMappingDefinition.targetConfigPath) {
+                      throw new Error('Missing targetConfigPath');
+                    }
 
-                  if (!currentMappingDefinition.targetConfigPath) {
-                    throw new Error('Missing targetConfigPath');
-                  }
+                    const newItem: Record<string, any> = {};
 
-                  const newItem: { [key: string]: any } = {};
-
-                  for (const currentValueMapping of castedMappingDefinition.valueMapping || []) {
-                    switch (currentValueMapping['@type']) {
-                      case "source-path": {
-                        const castedValueMapping = currentValueMapping as KokuDto.SourcePathConfigMappingAppendListItemDto;
-                        if (!castedValueMapping.sourcePath) {
-                          throw new Error('Missing sourcePath');
+                    for (const currentValueMapping of castedMappingDefinition.valueMapping || []) {
+                      switch (currentValueMapping['@type']) {
+                        case 'source-path': {
+                          const castedValueMapping =
+                            currentValueMapping as KokuDto.SourcePathConfigMappingAppendListItemDto;
+                          if (!castedValueMapping.sourcePath) {
+                            throw new Error('Missing sourcePath');
+                          }
+                          if (!castedValueMapping.targetPath) {
+                            throw new Error('Missing targetPath');
+                          }
+                          const currentValue = get(eventPayload, castedValueMapping.sourcePath);
+                          if (currentValue !== undefined) {
+                            set(newItem, castedValueMapping.targetPath, currentValue);
+                          }
+                          break;
                         }
-                        if (!castedValueMapping.targetPath) {
-                          throw new Error('Missing targetPath');
-                        }
-                        const currentValue = get(eventPayload, castedValueMapping.sourcePath);
-                        if (currentValue !== undefined) {
-                          set(newItem, castedValueMapping.targetPath, currentValue);
-                        }
-                        break;
-                      }
-                      case "string-transformation": {
-                        const castedValueMapping = currentValueMapping as KokuDto.StringTransformationConfigMappingAppendListItemDto;
-                        if (!castedValueMapping.targetPath) {
-                          throw new Error('Missing targetPath');
-                        }
-                        let replacedValue = castedValueMapping.transformPattern || '';
-                        if (castedValueMapping.transformPattern) {
-                          for (const [currentParam, currentParamMapping] of Object.entries(castedValueMapping.transformPatternParameters || {})) {
-                            switch (currentParamMapping['@type']) {
-                              case "source-path": {
-                                const castedParam = currentParamMapping as KokuDto.StringTransformationSourcePathPatternParam;
-                                if (!castedParam.sourcePath) {
-                                  throw new Error('Missing sourcePath');
+                        case 'string-transformation': {
+                          const castedValueMapping =
+                            currentValueMapping as KokuDto.StringTransformationConfigMappingAppendListItemDto;
+                          if (!castedValueMapping.targetPath) {
+                            throw new Error('Missing targetPath');
+                          }
+                          let replacedValue = castedValueMapping.transformPattern || '';
+                          if (castedValueMapping.transformPattern) {
+                            for (const [currentParam, currentParamMapping] of Object.entries(
+                              castedValueMapping.transformPatternParameters || {},
+                            )) {
+                              switch (currentParamMapping['@type']) {
+                                case 'source-path': {
+                                  const castedParam =
+                                    currentParamMapping as KokuDto.StringTransformationSourcePathPatternParam;
+                                  if (!castedParam.sourcePath) {
+                                    throw new Error('Missing sourcePath');
+                                  }
+                                  replacedValue = replacedValue.replaceAll(
+                                    currentParam,
+                                    get(eventPayload, castedParam.sourcePath),
+                                  );
+                                  break;
                                 }
-                                replacedValue = replacedValue.replaceAll(currentParam, get(eventPayload, castedParam.sourcePath));
-                                break;
-                              }
-                              default: {
-                                throw new Error(`Unknown Param type ${currentParamMapping['@type']}`);
+                                default: {
+                                  throw new Error(`Unknown Param type ${currentParamMapping['@type']}`);
+                                }
                               }
                             }
+                            set(newItem, castedValueMapping.targetPath, replacedValue);
                           }
                           set(newItem, castedValueMapping.targetPath, replacedValue);
-                        }
-                        set(newItem, castedValueMapping.targetPath, replacedValue);
 
-                        break;
-                      }
-                      case "string-conversion": {
-                        const castedValueMapping = currentValueMapping as KokuDto.SourcePathConfigMappingAppendListItemDto;
-                        if (!castedValueMapping.sourcePath) {
-                          throw new Error('Missing sourcePath');
+                          break;
                         }
-                        if (!castedValueMapping.targetPath) {
-                          throw new Error('Missing targetPath');
+                        case 'string-conversion': {
+                          const castedValueMapping =
+                            currentValueMapping as KokuDto.SourcePathConfigMappingAppendListItemDto;
+                          if (!castedValueMapping.sourcePath) {
+                            throw new Error('Missing sourcePath');
+                          }
+                          if (!castedValueMapping.targetPath) {
+                            throw new Error('Missing targetPath');
+                          }
+                          const currentValue = get(eventPayload, castedValueMapping.sourcePath);
+                          if (currentValue !== undefined) {
+                            set(newItem, castedValueMapping.targetPath, String(currentValue));
+                          }
+                          break;
                         }
-                        const currentValue = get(eventPayload, castedValueMapping.sourcePath);
-                        if (currentValue !== undefined) {
-                          set(newItem, castedValueMapping.targetPath, String(currentValue));
+                        case 'static-value': {
+                          const castedValueMapping =
+                            currentValueMapping as KokuDto.StaticValueConfigMappingAppendListItemDto;
+                          if (!castedValueMapping.targetPath) {
+                            throw new Error('Missing targetPath');
+                          }
+                          if (castedValueMapping.value !== undefined) {
+                            set(newItem, castedValueMapping.targetPath, castedValueMapping.value);
+                          }
+                          break;
                         }
-                        break;
-                      }
-                      case "static-value": {
-                        const castedValueMapping = currentValueMapping as KokuDto.StaticValueConfigMappingAppendListItemDto;
-                        if (!castedValueMapping.targetPath) {
-                          throw new Error('Missing targetPath');
+                        default: {
+                          throw new Error(`Unknown value Mapping type ${currentValueMapping['@type']}`);
                         }
-                        if (castedValueMapping.value !== undefined) {
-                          set(newItem, castedValueMapping.targetPath, castedValueMapping.value);
-                        }
-                        break;
-                      }
-                      default: {
-                        throw new Error(`Unknown value Mapping type ${currentValueMapping['@type']}`);
                       }
                     }
+
+                    const registeredFieldConfig = { ...registeredField.config };
+                    const currentArray = [
+                      ...(get(registeredField.config, currentMappingDefinition.targetConfigPath) || []),
+                    ];
+                    currentArray.push(newItem);
+                    set(registeredFieldConfig, currentMappingDefinition.targetConfigPath, currentArray);
+
+                    this.formularInstance.fieldRegister.set({
+                      ...this.formularInstance.fieldRegister(),
+                      [fieldRef]: {
+                        ...registeredField,
+                        config: registeredFieldConfig,
+                      },
+                    });
+
+                    break;
                   }
-
-                  const registeredFieldConfig = {...registeredField.config};
-                  const currentArray = [...(get(registeredField.config, currentMappingDefinition.targetConfigPath) || [])];
-                  currentArray.push(newItem);
-                  set(registeredFieldConfig, currentMappingDefinition.targetConfigPath, currentArray);
-
-                  this.formularInstance.fieldRegister.set({
-                    ...this.formularInstance.fieldRegister(),
-                    [fieldRef]: {
-                      ...registeredField,
-                      config: registeredFieldConfig
-                    }
-                  });
-
-                  break;
                 }
-
-
-              }
-            }
-
-            const fieldRegisterSnapshot = this.formularInstance.fieldRegister();
-            for (const [currentFieldId, reference] of Object.entries(castedEventListener.fieldValueMapping || {})) {
-
-              if (!reference) {
-                throw new Error('Unexpected reference');
               }
 
-              const fieldRegisterField = fieldRegisterSnapshot[currentFieldId];
-              let newValue;
-              switch (reference['@type']) {
-                case 'field-reference': {
-                  const castedReference = reference as KokuDto.FormViewFieldReferenceValueMapping;
-                  if (!castedReference) {
-                    throw new Error('Unexpected reference');
-                  }
-                  if (!castedReference.source) {
-                    throw new Error('Unexpected reference source');
-                  }
-
-                  switch (castedReference.source['@type']) {
-                    case "source-path": {
-                      const castedReferenceSource = castedReference.source as KokuDto.FormViewEventPayloadSourcePathFieldUpdateValueSourceDto;
-                      if (!castedReferenceSource.sourcePath) {
-                        throw new Error('Unexpected reference sourcePath');
-                      }
-                      newValue = get(eventPayload, castedReferenceSource.sourcePath);
-                      break;
-                    }
-                    case "static-value": {
-                      const castedReferenceSource = castedReference.source as KokuDto.FormViewEventPayloadStaticValueFieldUpdateValueSourceDto;
-                      newValue = castedReferenceSource.value;
-                      break;
-                    }
-                    default: {
-                      throw new Error("unexpected reference");
-                    }
-                  }
-
-                  break;
-                }
-                case 'append-list': {
-                  const castedReference = reference as KokuDto.FormViewFieldReferenceMultiSelectValueMapping;
-
-                  let newValueItem: { [key: string]: any } = {};
-                  for (const [currentMappingTarget, currentMappingSource] of Object.entries(castedReference.targetPathMapping || {})) {
-
-                    let currentValue;
-                    switch (currentMappingSource['@type']) {
-                      case "source-path": {
-                        const castedMappingSource = currentMappingSource as KokuDto.FormViewEventPayloadSourcePathFieldUpdateValueSourceDto;
-                        if (!castedMappingSource.sourcePath) {
-                          throw new Error('Unexpected reference source path');
-                        }
-                        currentValue = get(eventPayload, castedMappingSource.sourcePath);
-                        break;
-                      }
-                      case "static-value": {
-                        const castedMappingSource = currentMappingSource as KokuDto.FormViewEventPayloadStaticValueFieldUpdateValueSourceDto;
-                        currentValue = castedMappingSource.value;
-                        break;
-                      }
-                      default: {
-                        throw new Error(`Unknown mapping source type ${currentMappingSource['@type']}`);
-                      }
-                    }
-                    if (currentValue !== undefined) {
-                      if (currentMappingTarget !== undefined) {
-                        newValueItem[currentMappingTarget] = currentValue;
-                      } else {
-                        newValueItem = currentValue;
-                      }
-                    }
-                  }
-                  newValue = [...fieldRegisterField.value(), newValueItem];
-
-                  break;
-                }
-                default: {
+              const fieldRegisterSnapshot = this.formularInstance.fieldRegister();
+              for (const [currentFieldId, reference] of Object.entries(castedEventListener.fieldValueMapping || {})) {
+                if (!reference) {
                   throw new Error('Unexpected reference');
                 }
-              }
-              if (newValue !== undefined) {
-                fieldRegisterField.fieldEventBus.next({
-                  eventName: 'onInput',
-                  payload: newValue,
-                })
-                fieldRegisterField.fieldEventBus.next({
-                  eventName: 'onChange',
-                  payload: newValue,
-                })
+
+                const fieldRegisterField = fieldRegisterSnapshot[currentFieldId];
+                let newValue;
+                switch (reference['@type']) {
+                  case 'field-reference': {
+                    const castedReference = reference as KokuDto.FormViewFieldReferenceValueMapping;
+                    if (!castedReference) {
+                      throw new Error('Unexpected reference');
+                    }
+                    if (!castedReference.source) {
+                      throw new Error('Unexpected reference source');
+                    }
+
+                    switch (castedReference.source['@type']) {
+                      case 'source-path': {
+                        const castedReferenceSource =
+                          castedReference.source as KokuDto.FormViewEventPayloadSourcePathFieldUpdateValueSourceDto;
+                        if (!castedReferenceSource.sourcePath) {
+                          throw new Error('Unexpected reference sourcePath');
+                        }
+                        newValue = get(eventPayload, castedReferenceSource.sourcePath);
+                        break;
+                      }
+                      case 'static-value': {
+                        const castedReferenceSource =
+                          castedReference.source as KokuDto.FormViewEventPayloadStaticValueFieldUpdateValueSourceDto;
+                        newValue = castedReferenceSource.value;
+                        break;
+                      }
+                      default: {
+                        throw new Error('unexpected reference');
+                      }
+                    }
+
+                    break;
+                  }
+                  case 'append-list': {
+                    const castedReference = reference as KokuDto.FormViewFieldReferenceMultiSelectValueMapping;
+
+                    let newValueItem: Record<string, any> = {};
+                    for (const [currentMappingTarget, currentMappingSource] of Object.entries(
+                      castedReference.targetPathMapping || {},
+                    )) {
+                      let currentValue;
+                      switch (currentMappingSource['@type']) {
+                        case 'source-path': {
+                          const castedMappingSource =
+                            currentMappingSource as KokuDto.FormViewEventPayloadSourcePathFieldUpdateValueSourceDto;
+                          if (!castedMappingSource.sourcePath) {
+                            throw new Error('Unexpected reference source path');
+                          }
+                          currentValue = get(eventPayload, castedMappingSource.sourcePath);
+                          break;
+                        }
+                        case 'static-value': {
+                          const castedMappingSource =
+                            currentMappingSource as KokuDto.FormViewEventPayloadStaticValueFieldUpdateValueSourceDto;
+                          currentValue = castedMappingSource.value;
+                          break;
+                        }
+                        default: {
+                          throw new Error(`Unknown mapping source type ${currentMappingSource['@type']}`);
+                        }
+                      }
+                      if (currentValue !== undefined) {
+                        if (currentMappingTarget !== undefined) {
+                          newValueItem[currentMappingTarget] = currentValue;
+                        } else {
+                          newValueItem = currentValue;
+                        }
+                      }
+                    }
+                    newValue = [...fieldRegisterField.value(), newValueItem];
+
+                    break;
+                  }
+                  default: {
+                    throw new Error('Unexpected reference');
+                  }
+                }
+                if (newValue !== undefined) {
+                  fieldRegisterField.fieldEventBus.next({
+                    eventName: 'onInput',
+                    payload: newValue,
+                  });
+                  fieldRegisterField.fieldEventBus.next({
+                    eventName: 'onChange',
+                    payload: newValue,
+                  });
+                }
               }
 
+              break;
             }
-
-            break;
+            default: {
+              throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
+            }
           }
-          default: {
-            throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
-          }
-        }
-      });
+        },
+      );
     }
   }
 
@@ -382,58 +394,58 @@ class GlobalEventListenerPlugin implements FormularPlugin {
   clearGlobalEventListeners() {
     GLOBAL_EVENT_BUS.removeGlobalEventListener(this.componentRef);
   }
-
 }
 
 class UnsavedChangesPreventionGuardPlugin implements FormularPlugin {
-
   private unsavedChangesPreventionGuardInitialized = false;
 
   constructor(
     private unsavedChangesPreventionGuard: UnsavedChangesPreventionGuard<any>,
     private modalService: ModalService,
     private formularInstance: FormularComponent,
-  ) {
-  }
+  ) {}
 
   destroy(): void {
     this.unsavedChangesPreventionGuard.unregisterUnsavedChangesPrevention(this);
   }
 
-  onSourceLoaded(source: any): void {
+  onSourceLoaded(): void {
     if (!this.unsavedChangesPreventionGuardInitialized) {
       this.unsavedChangesPreventionGuardInitialized = true;
       this.unsavedChangesPreventionGuard.registerUnsavedChangesPrevention(this, () => {
-        return new Observable<boolean>(observer => {
+        return new Observable<boolean>((observer) => {
           if (this.formularInstance.dirty()) {
             const confirmationModal = this.modalService.add({
-              headline: "Ungespeicherte Änderungen",
-              content: "Es gibt ungespeicherte Änderungen. Willst du trotzdem fortfahren?",
-              buttons: [{
-                buttonType: "BUTTON",
-                title: "Jetzt abbrechen",
-                text: "Abbruch",
-                onClick: (event: Event, modal: ModalType, button: ModalButtonType) => {
-                  this.modalService.close(confirmationModal);
-                  observer.next(false);
-                  observer.complete();
-                }
-              }, {
-                buttonType: "BUTTON",
-                title: "Trotzdem jetzt fortfahren",
-                text: "Fortfahren",
-                onClick: (event: Event, modal: ModalType, button: ModalButtonType) => {
-                  this.modalService.close(confirmationModal);
-                  this.formularInstance.dirty.set(false);
-                  observer.next(true);
-                  observer.complete();
-                }
-              }],
+              headline: 'Ungespeicherte Änderungen',
+              content: 'Es gibt ungespeicherte Änderungen. Willst du trotzdem fortfahren?',
+              buttons: [
+                {
+                  buttonType: 'BUTTON',
+                  title: 'Jetzt abbrechen',
+                  text: 'Abbruch',
+                  onClick: () => {
+                    this.modalService.close(confirmationModal);
+                    observer.next(false);
+                    observer.complete();
+                  },
+                },
+                {
+                  buttonType: 'BUTTON',
+                  title: 'Trotzdem jetzt fortfahren',
+                  text: 'Fortfahren',
+                  onClick: () => {
+                    this.modalService.close(confirmationModal);
+                    this.formularInstance.dirty.set(false);
+                    observer.next(true);
+                    observer.complete();
+                  },
+                },
+              ],
               clickOutside: () => {
                 this.modalService.close(confirmationModal);
                 observer.next(false);
                 observer.complete();
-              }
+              },
             });
           } else {
             observer.next(true);
@@ -443,46 +455,49 @@ class UnsavedChangesPreventionGuardPlugin implements FormularPlugin {
       });
     }
   }
-
 }
 
 class BusinessExceptionPlugin implements FormularPlugin {
-
   constructor(
     private modalService: ModalService,
     private formularInstance: FormularComponent,
-  ) {
-  }
+  ) {}
 
-  onSubmitError(error: HttpErrorResponse, request: Subscriber<any>, submitMethod: string, submitUrl: string, submitData: any): boolean {
-    if (error.error && error.error["@type"] === "business-exception-with-confirmation-message") {
+  onSubmitError(
+    error: HttpErrorResponse,
+    request: Subscriber<any>,
+    submitMethod: string,
+    submitUrl: string,
+    submitData: any,
+  ): boolean {
+    if (error.error && error.error['@type'] === 'business-exception-with-confirmation-message') {
       const castedError = error.error as KokuDto.KokuBusinessExceptionWithConfirmationMessageDto;
       const buttons: ModalButtonType[] = [];
       for (const buttonCfg of castedError.buttons || []) {
-        switch (buttonCfg["@type"]) {
-          case "close-button":
+        switch (buttonCfg['@type']) {
+          case 'close-button':
             buttons.push({
               loading: buttonCfg.loading,
               disabled: buttonCfg.disabled,
-              buttonType: "BUTTON",
+              buttonType: 'BUTTON',
               title: buttonCfg.title,
               icon: buttonCfg.icon,
               text: buttonCfg.text,
               styles: buttonCfg.styles,
               size: buttonCfg.size,
-              onClick: (event: Event, modal: ModalType, button: ModalButtonType) => {
+              onClick: () => {
                 this.modalService.close(confirmationModal);
                 request.complete();
-              }
+              },
             });
             break;
-          case "send-to-different-endpoint-button":
+          case 'send-to-different-endpoint-button': {
             const castedButtonCfg = buttonCfg as KokuDto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
 
             buttons.push({
               loading: castedButtonCfg.loading,
               disabled: castedButtonCfg.disabled,
-              buttonType: "BUTTON",
+              buttonType: 'BUTTON',
               title: castedButtonCfg.title,
               icon: castedButtonCfg.icon,
               text: castedButtonCfg.text,
@@ -496,32 +511,35 @@ class BusinessExceptionPlugin implements FormularPlugin {
                   button.disabled = true;
                 }
 
-                this.formularInstance.requestSubmit(
-                  castedButtonCfg.endpointMethod || submitMethod,
-                  castedButtonCfg.endpointUrl || submitUrl,
-                  submitData
-                ).subscribe({
-                  next: (response) => {
-                    this.modalService.close(confirmationModal);
-                    request.next(response);
-                    request.complete();
-                  },
-                  error: (error: HttpErrorResponse) => {
-                    if (castedButtonCfg.showLoadingAnimation) {
-                      button.loading = false;
-                    }
-                    if (castedButtonCfg.showDisabledState) {
-                      button.disabled = false;
-                    }
-                  },
-                  complete: () => {
-                    this.modalService.close(confirmationModal);
-                    request.complete();
-                  }
-                });
-              }
+                this.formularInstance
+                  .requestSubmit(
+                    castedButtonCfg.endpointMethod || submitMethod,
+                    castedButtonCfg.endpointUrl || submitUrl,
+                    submitData,
+                  )
+                  .subscribe({
+                    next: (response) => {
+                      this.modalService.close(confirmationModal);
+                      request.next(response);
+                      request.complete();
+                    },
+                    error: () => {
+                      if (castedButtonCfg.showLoadingAnimation) {
+                        button.loading = false;
+                      }
+                      if (castedButtonCfg.showDisabledState) {
+                        button.disabled = false;
+                      }
+                    },
+                    complete: () => {
+                      this.modalService.close(confirmationModal);
+                      request.complete();
+                    },
+                  });
+              },
             });
             break;
+          }
           default:
             throw new Error('Unknown button type');
         }
@@ -536,26 +554,21 @@ class BusinessExceptionPlugin implements FormularPlugin {
             this.modalService.close(confirmationModal);
             request.complete();
           }
-        }
+        },
       });
       return true;
     }
 
     return false;
   }
-
 }
 
 class CalendarInteractionPlugin implements CalendarPlugin {
-
-  constructor(
-    private calendarInstance: CalendarComponent,
-  ) {
-  }
+  constructor(private calendarInstance: CalendarComponent) {}
 
   init(): CalendarPluginInstanceDetails {
     return {
-      id: 'CalendarInteractionPlugin'
+      id: 'CalendarInteractionPlugin',
     };
   }
 
@@ -565,7 +578,7 @@ class CalendarInteractionPlugin implements CalendarPlugin {
       const clickAction = calendarConfig.calendarClickAction;
       if (clickAction) {
         switch (clickAction['@type']) {
-          case "open-routed-content": {
+          case 'open-routed-content': {
             const castedClickAction = clickAction as KokuDto.CalendarOpenRoutedContentClickActionDto;
             if (castedClickAction.route) {
               let context: CalendarContext | undefined = undefined;
@@ -592,13 +605,8 @@ class CalendarInteractionPlugin implements CalendarPlugin {
   }
 }
 
-
 class CalendarActionPlugin implements CalendarPlugin {
-
-  constructor(
-    private calendarInstance: CalendarComponent,
-  ) {
-  }
+  constructor(private calendarInstance: CalendarComponent) {}
 
   init(): CalendarPluginInstanceDetails {
     return {
@@ -608,7 +616,7 @@ class CalendarActionPlugin implements CalendarPlugin {
 
   onCalendarActionClicked(action: KokuDto.AbstractCalendarActionDto): void {
     switch (action['@type']) {
-      case "open-routed-content": {
+      case 'open-routed-content': {
         const castedActionType = action as KokuDto.CalendarOpenRoutedContentActionDto;
         if (castedActionType.route) {
           this.calendarInstance.openRoutedContent(castedActionType.route.split('/'));
@@ -617,7 +625,6 @@ class CalendarActionPlugin implements CalendarPlugin {
       }
     }
   }
-
 }
 
 export interface CalendarUserSelectActionPluginApi {
@@ -625,7 +632,6 @@ export interface CalendarUserSelectActionPluginApi {
 }
 
 class CalendarUserSelectActionPlugin implements CalendarPlugin {
-
   private selectedUserDetails = new BehaviorSubject<KokuDto.KokuUserDto | null>(null);
   private selectedUserSubscription: Subscription | undefined;
   componentRef = UNIQUE_REF_GENERATOR.generate();
@@ -635,19 +641,22 @@ class CalendarUserSelectActionPlugin implements CalendarPlugin {
     private toastService: ToastService,
     private modalService: ModalService,
   ) {
-    this.httpClient.get<KokuDto.KokuUserDto>('/services/users/users/@self').subscribe((userResult) => {
-      this.selectedUserDetails.next(userResult);
-    }, () => {
-      this.toastService.add("Fehler beim Laden der Nutzerinformationen", 'error');
-    });
+    this.httpClient.get<KokuDto.KokuUserDto>('/services/users/users/@self').subscribe(
+      (userResult) => {
+        this.selectedUserDetails.next(userResult);
+      },
+      () => {
+        this.toastService.add('Fehler beim Laden der Nutzerinformationen', 'error');
+      },
+    );
   }
 
   init(): CalendarPluginInstanceDetails {
     return {
       id: 'CalendarUserSelectActionPlugin',
       api: {
-        selectedUserDetails: this.selectedUserDetails
-      } as CalendarUserSelectActionPluginApi
+        selectedUserDetails: this.selectedUserDetails,
+      } as CalendarUserSelectActionPluginApi,
     };
   }
 
@@ -659,9 +668,7 @@ class CalendarUserSelectActionPlugin implements CalendarPlugin {
 
   onCalendarActionClicked(action: KokuDto.AbstractCalendarActionDto): void {
     switch (action['@type']) {
-      case "select-user": {
-        const castedActionType = action as KokuDto.CalendarUserSelectionActionDto;
-
+      case 'select-user': {
         const newModal = this.modalService.add({
           dynamicContent: {
             '@type': 'header',
@@ -671,41 +678,43 @@ class CalendarUserSelectActionPlugin implements CalendarPlugin {
               listUrl: '/services/users/users/list?selectMode=true',
               sourceUrl: '/services/users/users/query',
               contentSetup: LIST_CONTENT_SETUP,
-              parentRoutePath: '/calendar'
+              parentRoutePath: '/calendar',
             },
           },
           urlSegments: {},
           dynamicContentSetup: {
-            "header": {
+            header: {
               componentType: CalendarInlineHeaderContainerComponent,
-              inputBindings(instance: ModalComponent, modal: RenderedModalType, inlineContent: KokuDto.CalendarHeaderInlineContentDto): {
-                [key: string]: any
-              } {
-                let segmentMapping: { [key: string]: string } = {...(modal.urlSegments || {})};
+              inputBindings(
+                instance: ModalComponent,
+                modal: RenderedModalType,
+                inlineContent: KokuDto.CalendarHeaderInlineContentDto,
+              ): Record<string, any> {
+                const segmentMapping: Record<string, string> = { ...(modal.urlSegments || {}) };
                 let sourceUrl = undefined;
                 if (inlineContent.sourceUrl) {
                   const mappedSourceParts: string[] = [];
-                  for (const currentRoutePathToMatch of inlineContent.sourceUrl.split("/")) {
-                    if (currentRoutePathToMatch.indexOf(":") === 0) {
+                  for (const currentRoutePathToMatch of inlineContent.sourceUrl.split('/')) {
+                    if (currentRoutePathToMatch.indexOf(':') === 0) {
                       mappedSourceParts.push(segmentMapping[currentRoutePathToMatch]);
                     } else {
                       mappedSourceParts.push(currentRoutePathToMatch);
                     }
                   }
-                  sourceUrl = mappedSourceParts.join("/");
+                  sourceUrl = mappedSourceParts.join('/');
                 }
 
                 return {
-                  'content': inlineContent,
-                  'sourceUrl': sourceUrl,
-                  'titlePath': inlineContent.titlePath,
-                  'title': inlineContent.title,
-                  'contentSetup': CALENDAR_CONTENT_SETUP,
-                  'urlSegments': modal.urlSegments,
-                  'parentRoutePath': modal.parentRoutePath,
-                }
+                  content: inlineContent,
+                  sourceUrl: sourceUrl,
+                  titlePath: inlineContent.titlePath,
+                  title: inlineContent.title,
+                  contentSetup: CALENDAR_CONTENT_SETUP,
+                  urlSegments: modal.urlSegments,
+                  parentRoutePath: modal.parentRoutePath,
+                };
               },
-              outputBindings: (instance: ModalComponent, modal: RenderedModalType, inlineContent: KokuDto.CalendarHeaderInlineContentDto) => {
+              outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
                 return {
                   onClose: () => {
                     if (modal.onCloseRequested) {
@@ -714,14 +723,16 @@ class CalendarUserSelectActionPlugin implements CalendarPlugin {
                       modal.close();
                     }
                   },
-                }
-              }
+                };
+              },
             },
-            "list": {
+            list: {
               componentType: CalendarInlineListContainerComponent,
-              inputBindings(instance: ModalComponent, modal: RenderedModalType, inlineContent: KokuDto.CalendarListInlineContentDto): {
-                [key: string]: any
-              } {
+              inputBindings(
+                instance: ModalComponent,
+                modal: RenderedModalType,
+                inlineContent: KokuDto.CalendarListInlineContentDto,
+              ): Record<string, any> {
                 let listUrl = inlineContent.listUrl || '';
                 for (const [segment, value] of Object.entries(modal.urlSegments || {})) {
                   listUrl = listUrl.replace(segment, value);
@@ -732,88 +743,84 @@ class CalendarUserSelectActionPlugin implements CalendarPlugin {
                 }
 
                 return {
-                  'title': 'Termine',
-                  'listUrl': listUrl,
-                  'sourceUrl': sourceUrl,
-                  'contentSetup': LIST_CONTENT_SETUP,
-                  'urlSegments': modal.urlSegments,
-                  'parentRoutePath': modal.parentRoutePath,
-                }
+                  title: 'Termine',
+                  listUrl: listUrl,
+                  sourceUrl: sourceUrl,
+                  contentSetup: LIST_CONTENT_SETUP,
+                  urlSegments: modal.urlSegments,
+                  parentRoutePath: modal.parentRoutePath,
+                };
               },
-              outputBindings: (instance: ModalComponent, modal: RenderedModalType, inlineContent: KokuDto.CalendarListInlineContentDto) => {
-                return {
-                  // onClose: () => {
-                  //   instance.closeInlineContent()
-                  // },
-                  // onOpenRoutedContent: (routes: string[]) => {
-                  //   instance.openRoutedContent(routes)
-                  // },
-                }
-              }
+              outputBindings: () => {
+                return {};
+              },
             },
           },
           fullscreen: true,
           maxWidthInPx: 799,
           parentRoutePath: '',
-          clickOutside: (event) => {
+          clickOutside: () => {
             newModal.close();
           },
           onCloseRequested: () => {
             newModal.close();
-          }
+          },
         });
         GLOBAL_EVENT_BUS.addGlobalEventListener(this.componentRef, 'user-selected', (payload) => {
-          this.httpClient.get<KokuDto.KokuUserDto>('/services/users/users/' + payload.id).subscribe((userResult) => {
-            this.selectedUserDetails.next(userResult);
-            newModal.close();
-          }, (err) => {
-            this.toastService.add("Fehler beim Laden der Nutzerinformationen", 'error');
-          });
+          this.httpClient.get<KokuDto.KokuUserDto>('/services/users/users/' + payload.id).subscribe(
+            (userResult) => {
+              this.selectedUserDetails.next(userResult);
+              newModal.close();
+            },
+            () => {
+              this.toastService.add('Fehler beim Laden der Nutzerinformationen', 'error');
+            },
+          );
         });
         break;
       }
     }
   }
 
-  initCalendarAction(currentCalendarAction: KokuDto.AbstractCalendarActionDto, updateCb: (updatedAction: KokuDto.AbstractCalendarActionDto) => void): void {
+  initCalendarAction(
+    currentCalendarAction: KokuDto.AbstractCalendarActionDto,
+    updateCb: (updatedAction: KokuDto.AbstractCalendarActionDto) => void,
+  ): void {
     switch (currentCalendarAction['@type']) {
-      case "select-user": {
+      case 'select-user': {
         updateCb({
           ...currentCalendarAction,
-          loading: true
+          loading: true,
         });
 
         if (this.selectedUserSubscription) {
           this.selectedUserSubscription.unsubscribe();
         }
-        this.selectedUserSubscription = this.selectedUserDetails.pipe(filter(value => value !== null)).subscribe((selectedUserDetails) => {
-          updateCb({
-            ...currentCalendarAction,
-            loading: false,
-            imgBase64: selectedUserDetails.avatarBase64
+        this.selectedUserSubscription = this.selectedUserDetails
+          .pipe(filter((value) => value !== null))
+          .subscribe((selectedUserDetails) => {
+            updateCb({
+              ...currentCalendarAction,
+              loading: false,
+              imgBase64: selectedUserDetails.avatarBase64,
+            });
           });
-        });
 
         break;
       }
     }
   }
-
 }
 
 class CalendarGlobalEventPlugin implements CalendarPlugin {
-
   componentRef = UNIQUE_REF_GENERATOR.generate();
   componentRefInlineContent = UNIQUE_REF_GENERATOR.generate();
 
-  constructor(
-    private calendarInstance: CalendarComponent,
-  ) {
-  }
+  constructor(private calendarInstance: CalendarComponent) {}
 
   init(): CalendarPluginInstanceDetails {
     return {
-      id: 'CalendarGlobalEventPlugin'
+      id: 'CalendarGlobalEventPlugin',
     };
   }
 
@@ -825,7 +832,7 @@ class CalendarGlobalEventPlugin implements CalendarPlugin {
   onRoutedInlineContentOpened(routedContent: KokuDto.CalendarRoutedContentDto): void {
     for (const currentListener of routedContent.globalEventListeners || []) {
       if (!currentListener.eventName) {
-        throw new Error("Missing eventName in Listener Config");
+        throw new Error('Missing eventName in Listener Config');
       }
       GLOBAL_EVENT_BUS.addGlobalEventListener(this.componentRefInlineContent, currentListener.eventName, () => {
         switch (currentListener['@type']) {
@@ -834,7 +841,7 @@ class CalendarGlobalEventPlugin implements CalendarPlugin {
             break;
           }
           default: {
-            throw new Error(`Unexpected listener Type: ${currentListener['@type']}`)
+            throw new Error(`Unexpected listener Type: ${currentListener['@type']}`);
           }
         }
       });
@@ -853,100 +860,107 @@ class CalendarGlobalEventPlugin implements CalendarPlugin {
       if (!currentEventListener.eventName) {
         throw new Error('Missing eventName in Global Listener Configuration');
       }
-      GLOBAL_EVENT_BUS.addGlobalEventListener(String(this.componentRef), currentEventListener.eventName, (eventPayload) => {
-        switch (currentEventListener['@type']) {
-          case 'refresh': {
-            this.calendarInstance.calendarComponent()?.getApi().refetchEvents();
-            break;
-          }
-          case 'replace-via-payload': {
-            const castedEventListener = currentEventListener as KokuDto.CalendarReplaceItemViaPayloadGlobalEventListenerDto;
+      GLOBAL_EVENT_BUS.addGlobalEventListener(
+        String(this.componentRef),
+        currentEventListener.eventName,
+        (eventPayload) => {
+          switch (currentEventListener['@type']) {
+            case 'refresh': {
+              this.calendarInstance.calendarComponent()?.getApi().refetchEvents();
+              break;
+            }
+            case 'replace-via-payload': {
+              const castedEventListener =
+                currentEventListener as KokuDto.CalendarReplaceItemViaPayloadGlobalEventListenerDto;
 
-            if (castedEventListener.sourceId === undefined) {
-              throw new Error(`Missing sourceId`);
-            }
-
-            const eventSource = this.calendarInstance.calendarComponent()?.getApi().getEventSourceById(castedEventListener.sourceId)
-            if (!eventSource) {
-              throw new Error(`eventSource ${castedEventListener.sourceId} cannot be resolved`);
-            }
-            const calendarSourceFactory = this.calendarInstance.registeredEventSourceFactories[castedEventListener.sourceId];
-            if (!calendarSourceFactory) {
-              throw new Error(`EventSourceFactory ${castedEventListener.sourceId} missing`);
-            }
-
-            let lookedUpEvent = calendarSourceFactory.lookupEvent(eventPayload);
-            let toBeDeleted = false;
-            if (castedEventListener.deletedPath && castedEventListener.deletedExpression !== undefined) {
-              toBeDeleted = get(eventPayload, castedEventListener.deletedPath) === castedEventListener.deletedExpression;
-            }
-            if (toBeDeleted) {
-              if (lookedUpEvent) {
-                lookedUpEvent.remove();
+              if (castedEventListener.sourceId === undefined) {
+                throw new Error(`Missing sourceId`);
               }
-            } else {
-              const newEvent = calendarSourceFactory.generateEventItem(eventPayload);
 
-              if (!lookedUpEvent) {
-                lookedUpEvent = this.calendarInstance.calendarComponent()?.getApi().addEvent(newEvent, eventSource);
+              const eventSource = this.calendarInstance
+                .calendarComponent()
+                ?.getApi()
+                .getEventSourceById(castedEventListener.sourceId);
+              if (!eventSource) {
+                throw new Error(`eventSource ${castedEventListener.sourceId} cannot be resolved`);
+              }
+              const calendarSourceFactory =
+                this.calendarInstance.registeredEventSourceFactories[castedEventListener.sourceId];
+              if (!calendarSourceFactory) {
+                throw new Error(`EventSourceFactory ${castedEventListener.sourceId} missing`);
+              }
+
+              let lookedUpEvent = calendarSourceFactory.lookupEvent(eventPayload);
+              let toBeDeleted = false;
+              if (castedEventListener.deletedPath && castedEventListener.deletedExpression !== undefined) {
+                toBeDeleted =
+                  get(eventPayload, castedEventListener.deletedPath) === castedEventListener.deletedExpression;
+              }
+              if (toBeDeleted) {
+                if (lookedUpEvent) {
+                  lookedUpEvent.remove();
+                }
               } else {
-                if (newEvent.allDay !== undefined && newEvent.allDay !== !!lookedUpEvent.allDay) {
-                  lookedUpEvent.setAllDay(newEvent.allDay);
-                }
-                if (newEvent.start !== undefined && newEvent.end !== undefined) {
-                  lookedUpEvent.setDates(newEvent.start, newEvent.end);
-                } else {
-                  if (newEvent.start !== undefined) {
-                    lookedUpEvent.setStart(newEvent.start, {maintainDuration: true});
-                  }
-                  if (newEvent.end !== undefined) {
-                    lookedUpEvent.setEnd(newEvent.end, {maintainDuration: true});
-                  }
-                }
-                lookedUpEvent.setProp('title', newEvent.title);
-                lookedUpEvent.setProp('display', newEvent.display);
-                lookedUpEvent.setProp('rrule', newEvent.rrule);
-                lookedUpEvent.setProp('className', newEvent.className);
-                lookedUpEvent.setExtendedProp('item', eventPayload);
-              }
-              if (lookedUpEvent) {
-                const classnameSnapshot = [...lookedUpEvent.classNames];
-                setTimeout(() => {
-                  classnameSnapshot.splice(classnameSnapshot.indexOf('calendar-item--flash'), 1);
-                  lookedUpEvent.setProp('classNames', classnameSnapshot);
-                }, 1000);
-                classnameSnapshot.push('calendar-item--flash');
-                lookedUpEvent.setProp('classNames', classnameSnapshot);
-              }
-            }
+                const newEvent = calendarSourceFactory.generateEventItem(eventPayload);
 
-            break;
+                if (!lookedUpEvent) {
+                  lookedUpEvent = this.calendarInstance.calendarComponent()?.getApi().addEvent(newEvent, eventSource);
+                } else {
+                  if (newEvent.allDay !== undefined && newEvent.allDay !== !!lookedUpEvent.allDay) {
+                    lookedUpEvent.setAllDay(newEvent.allDay);
+                  }
+                  if (newEvent.start !== undefined && newEvent.end !== undefined) {
+                    lookedUpEvent.setDates(newEvent.start, newEvent.end);
+                  } else {
+                    if (newEvent.start !== undefined) {
+                      lookedUpEvent.setStart(newEvent.start, { maintainDuration: true });
+                    }
+                    if (newEvent.end !== undefined) {
+                      lookedUpEvent.setEnd(newEvent.end, { maintainDuration: true });
+                    }
+                  }
+                  lookedUpEvent.setProp('title', newEvent.title);
+                  lookedUpEvent.setProp('display', newEvent.display);
+                  lookedUpEvent.setProp('rrule', newEvent.rrule);
+                  lookedUpEvent.setProp('className', newEvent.className);
+                  lookedUpEvent.setExtendedProp('item', eventPayload);
+                }
+                if (lookedUpEvent) {
+                  const classnameSnapshot = [...lookedUpEvent.classNames];
+                  setTimeout(() => {
+                    classnameSnapshot.splice(classnameSnapshot.indexOf('calendar-item--flash'), 1);
+                    lookedUpEvent.setProp('classNames', classnameSnapshot);
+                  }, 1000);
+                  classnameSnapshot.push('calendar-item--flash');
+                  lookedUpEvent.setProp('classNames', classnameSnapshot);
+                }
+              }
+
+              break;
+            }
+            default: {
+              throw new Error(`Unknown event Listener Type: ${currentEventListener['@type']}`);
+            }
           }
-          default: {
-            throw new Error(`Unknown event Listener Type: ${currentEventListener['@type']}`);
-          }
-        }
-      });
+        },
+      );
     }
   }
-
 }
 
 class CalendarListSourcePlugin implements CalendarPlugin {
-
-  private userDetailsSubscriptions: { [key: string]: Subscription } = {};
+  private userDetailsSubscriptions: Record<string, Subscription> = {};
 
   constructor(
     private calendarInstance: CalendarComponent,
     private httpClient: HttpClient,
     private toastService: ToastService,
     private modalService: ModalService,
-  ) {
-  }
+  ) {}
 
   init(): CalendarPluginInstanceDetails {
     return {
-      id: 'CalendarListSourcePlugin'
+      id: 'CalendarListSourcePlugin',
     };
   }
 
@@ -956,41 +970,42 @@ class CalendarListSourcePlugin implements CalendarPlugin {
     }
   }
 
-  private callHttpEndpount(method: "POST" | "PUT" | "GET" | "DELETE", url: string, requestBody: {}) {
-    return this.httpClient.request(method, url, {
-      body: requestBody
-    }).pipe(
-      catchError((error) => {
-        return new Observable(
-          (subscriber) => {
-            if (error.error && error.error["@type"] === "business-exception-with-confirmation-message") {
+  private callHttpEndpount(method: 'POST' | 'PUT' | 'GET' | 'DELETE', url: string, requestBody: any) {
+    return this.httpClient
+      .request(method, url, {
+        body: requestBody,
+      })
+      .pipe(
+        catchError((error) => {
+          return new Observable((subscriber) => {
+            if (error.error && error.error['@type'] === 'business-exception-with-confirmation-message') {
               const castedError = error.error as KokuDto.KokuBusinessExceptionWithConfirmationMessageDto;
               const buttons: ModalButtonType[] = [];
               for (const buttonCfg of castedError.buttons || []) {
-                switch (buttonCfg["@type"]) {
-                  case "close-button":
+                switch (buttonCfg['@type']) {
+                  case 'close-button':
                     buttons.push({
                       loading: buttonCfg.loading,
                       disabled: buttonCfg.disabled,
-                      buttonType: "BUTTON",
+                      buttonType: 'BUTTON',
                       title: buttonCfg.title,
                       icon: buttonCfg.icon,
                       text: buttonCfg.text,
                       styles: buttonCfg.styles,
                       size: buttonCfg.size,
-                      onClick: (event: Event, modal: ModalType, button: ModalButtonType) => {
+                      onClick: () => {
                         this.modalService.close(confirmationModal);
                         subscriber.error(error);
-                      }
+                      },
                     });
                     break;
-                  case "send-to-different-endpoint-button":
+                  case 'send-to-different-endpoint-button': {
                     const castedButtonCfg = buttonCfg as KokuDto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
 
                     buttons.push({
                       loading: castedButtonCfg.loading,
                       disabled: castedButtonCfg.disabled,
-                      buttonType: "BUTTON",
+                      buttonType: 'BUTTON',
                       title: castedButtonCfg.title,
                       icon: castedButtonCfg.icon,
                       text: castedButtonCfg.text,
@@ -1007,7 +1022,7 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                         this.callHttpEndpount(
                           castedButtonCfg.endpointMethod || method,
                           castedButtonCfg.endpointUrl || url,
-                          requestBody
+                          requestBody,
                         ).subscribe({
                           next: (args) => {
                             this.modalService.close(confirmationModal);
@@ -1022,11 +1037,12 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                               button.disabled = false;
                             }
                             subscriber.error(args);
-                          }
+                          },
                         });
-                      }
+                      },
                     });
                     break;
+                  }
                   default:
                     throw new Error('Unknown button type');
                 }
@@ -1041,28 +1057,27 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                     this.modalService.close(confirmationModal);
                     subscriber.complete();
                   }
-                }
+                },
               });
             }
-          }
-        );
-      })
-    );
+          });
+        }),
+      );
   }
 
-  provideEventSourceFactory(currentSource: KokuDto.AbstractCalendarListSourceConfigDto): CalendarPluginEventSourceFactory | void {
+  provideEventSourceFactory(
+    currentSource: KokuDto.AbstractCalendarListSourceConfigDto,
+  ): CalendarPluginEventSourceFactory | void {
     if (currentSource && currentSource['@type'] === 'list') {
       const castedSource = currentSource as KokuDto.CalendarListSourceConfigDto;
 
-      const generateEventItem = (item: {
-        [key: string]: any
-      }): EventInput => {
+      const generateEventItem = (item: Record<string, any>): EventInput => {
         let rrule: Partial<Options> | undefined = undefined;
         if (castedSource.searchOperatorHint === 'YEARLY_RECURRING') {
           rrule = {
             freq: Frequency.YEARLY,
-            dtstart: get(item, castedSource.startDateFieldSelectionPath || '')
-          }
+            dtstart: get(item, castedSource.startDateFieldSelectionPath || ''),
+          };
         }
         let prefix = '';
         if (castedSource.sourceItemText) {
@@ -1072,25 +1087,21 @@ class CalendarListSourcePlugin implements CalendarPlugin {
         if (castedSource.startDateFieldSelectionPath === undefined) {
           throw new Error(`Missing startDateFieldSelectionPath`);
         }
-        const start = [
-          get(item, castedSource.startDateFieldSelectionPath)
-        ];
+        const start = [get(item, castedSource.startDateFieldSelectionPath)];
         if (castedSource.startTimeFieldSelectionPath !== undefined) {
           start.push(get(item, castedSource.startTimeFieldSelectionPath));
         }
         if (castedSource.endDateFieldSelectionPath === undefined) {
           throw new Error(`Missing endDateFieldSelectionPath`);
         }
-        const end = [
-          get(item, castedSource.endDateFieldSelectionPath)
-        ];
+        const end = [get(item, castedSource.endDateFieldSelectionPath)];
         if (castedSource.endTimeFieldSelectionPath !== undefined) {
           end.push(get(item, castedSource.endTimeFieldSelectionPath));
         }
 
         const date1 = dayjs(start.join('T'));
         const date2 = dayjs(end.join('T'));
-        let calculatedEndDate
+        let calculatedEndDate;
         const diffMinutes = date2.diff(date1, 'minute');
         if (diffMinutes < 60) {
           calculatedEndDate = date1.add(60, 'minutes');
@@ -1109,9 +1120,7 @@ class CalendarListSourcePlugin implements CalendarPlugin {
           className: `calendar-item calendar-item--color-${castedSource.sourceItemColor}`,
           item: item,
           editable: castedSource.editable !== false,
-          onClickHandler: (event: {
-            item: { [key: string]: any }
-          }) => {
+          onClickHandler: (event: { item: Record<string, never> }) => {
             if (castedSource.clickAction) {
               switch (castedSource.clickAction['@type']) {
                 case 'open-routed-content': {
@@ -1122,40 +1131,49 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                       throw new Error(`Missing param`);
                     }
                     switch (currentParam['@type']) {
-                      case "item-value": {
-                        const castedCurrentParam = currentParam as KokuDto.ItemValueCalendarOpenRoutedContentItemParamDto;
+                      case 'item-value': {
+                        const castedCurrentParam =
+                          currentParam as KokuDto.ItemValueCalendarOpenRoutedContentItemParamDto;
                         if (castedCurrentParam.valuePath === undefined) {
                           throw new Error(`Missing valuePath`);
                         }
-                        url = url.replaceAll(currentParam.param, String(get({
-                          ...event.item,
-                        }, castedCurrentParam.valuePath)));
+                        url = url.replaceAll(
+                          currentParam.param,
+                          String(
+                            get(
+                              {
+                                ...event.item,
+                              },
+                              castedCurrentParam.valuePath,
+                            ),
+                          ),
+                        );
                         break;
                       }
                       default: {
-                        throw new Error(`Unknown param type ${currentParam['@type']}`)
+                        throw new Error(`Unknown param type ${currentParam['@type']}`);
                       }
                     }
                   }
 
                   if (castedActionType.route) {
-                    this.calendarInstance.openRoutedContent(url.split("/"));
+                    this.calendarInstance.openRoutedContent(url.split('/'));
                   }
                   break;
                 }
                 default: {
-                  throw new Error(`Unknown item click action type ${castedSource.clickAction['@type']}`)
+                  throw new Error(`Unknown item click action type ${castedSource.clickAction['@type']}`);
                 }
               }
             }
           },
           onDropHandler: (event: {
-            item: { [key: string]: any },
-            newStart: Date,
-            newEnd: Date,
-            allDay: boolean,
-            revert: () => void,
-            setLoading: (loading: boolean) => void,
+            item: Record<string, never>;
+            newStart: Date;
+            newEnd: Date;
+            allDay: boolean;
+            revert: () => void;
+            setLoading: (loading: boolean) => void;
           }) => {
             let dropHandled = false;
             if (castedSource.dropAction) {
@@ -1168,18 +1186,27 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                       throw new Error(`Missing param`);
                     }
                     switch (currentParam['@type']) {
-                      case "item-value": {
-                        const castedCurrentParam = currentParam as KokuDto.ItemValueCalendarOpenRoutedContentItemParamDto;
+                      case 'item-value': {
+                        const castedCurrentParam =
+                          currentParam as KokuDto.ItemValueCalendarOpenRoutedContentItemParamDto;
                         if (castedCurrentParam.valuePath === undefined) {
                           throw new Error(`Missing valuePath`);
                         }
-                        url = url.replaceAll(currentParam.param, String(get({
-                          ...event.item,
-                        }, castedCurrentParam.valuePath)));
+                        url = url.replaceAll(
+                          currentParam.param,
+                          String(
+                            get(
+                              {
+                                ...event.item,
+                              },
+                              castedCurrentParam.valuePath,
+                            ),
+                          ),
+                        );
                         break;
                       }
                       default: {
-                        throw new Error(`Unknown param type ${currentParam['@type']}`)
+                        throw new Error(`Unknown param type ${currentParam['@type']}`);
                       }
                     }
                   }
@@ -1208,17 +1235,14 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                   }
 
                   event.setLoading(true);
-                  this.callHttpEndpount(
-                    castedActionType.method,
-                    url,
-                    requestBody
-                  ).subscribe({
+                  this.callHttpEndpount(castedActionType.method, url, requestBody).subscribe({
                     next: (response) => {
                       event.setLoading(false);
                       for (const currentEvent of castedActionType.successEvents || []) {
                         switch (currentEvent['@type']) {
-                          case "propagate-global-event": {
-                            const castedEvent = currentEvent as KokuDto.CalendarCallHttpItemActionPropagateGlobalEventSuccessEventDto;
+                          case 'propagate-global-event': {
+                            const castedEvent =
+                              currentEvent as KokuDto.CalendarCallHttpItemActionPropagateGlobalEventSuccessEventDto;
                             if (!castedEvent.eventName) {
                               throw new Error(`Missing eventName`);
                             }
@@ -1226,7 +1250,7 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                             break;
                           }
                           default: {
-                            throw new Error(`Unknown event type ${currentEvent['@type']}`)
+                            throw new Error(`Unknown event type ${currentEvent['@type']}`);
                           }
                         }
                       }
@@ -1235,9 +1259,12 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                     error: () => {
                       event.setLoading(false);
                       event.revert();
-                      this.toastService.add(`Es ist ein Fehler bei der Anfrage aufgetreten. Versuche es später erneut!`, 'error');
-                    }
-                  })
+                      this.toastService.add(
+                        `Es ist ein Fehler bei der Anfrage aufgetreten. Versuche es später erneut!`,
+                        'error',
+                      );
+                    },
+                  });
                   dropHandled = true;
                   break;
                 }
@@ -1252,11 +1279,11 @@ class CalendarListSourcePlugin implements CalendarPlugin {
             }
           },
           onResizeHandler: (event: {
-            item: { [key: string]: any },
-            newEnd: Date,
-            allDay: boolean,
-            revert: () => void,
-            setLoading: (loading: boolean) => void,
+            item: Record<string, never>;
+            newEnd: Date;
+            allDay: boolean;
+            revert: () => void;
+            setLoading: (loading: boolean) => void;
           }) => {
             let resizeHandled = false;
 
@@ -1270,18 +1297,27 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                       throw new Error(`Missing param`);
                     }
                     switch (currentParam['@type']) {
-                      case "item-value": {
-                        const castedCurrentParam = currentParam as KokuDto.ItemValueCalendarOpenRoutedContentItemParamDto;
+                      case 'item-value': {
+                        const castedCurrentParam =
+                          currentParam as KokuDto.ItemValueCalendarOpenRoutedContentItemParamDto;
                         if (castedCurrentParam.valuePath === undefined) {
                           throw new Error(`Missing valuePath`);
                         }
-                        url = url.replaceAll(currentParam.param, String(get({
-                          ...event.item,
-                        }, castedCurrentParam.valuePath)));
+                        url = url.replaceAll(
+                          currentParam.param,
+                          String(
+                            get(
+                              {
+                                ...event.item,
+                              },
+                              castedCurrentParam.valuePath,
+                            ),
+                          ),
+                        );
                         break;
                       }
                       default: {
-                        throw new Error(`Unknown param type ${currentParam['@type']}`)
+                        throw new Error(`Unknown param type ${currentParam['@type']}`);
                       }
                     }
                   }
@@ -1304,17 +1340,14 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                   }
 
                   event.setLoading(true);
-                  this.callHttpEndpount(
-                    castedActionType.method,
-                    url,
-                    requestBody
-                  ).subscribe({
+                  this.callHttpEndpount(castedActionType.method, url, requestBody).subscribe({
                     next: (response) => {
                       event.setLoading(false);
                       for (const currentEvent of castedActionType.successEvents || []) {
                         switch (currentEvent['@type']) {
-                          case "propagate-global-event": {
-                            const castedEvent = currentEvent as KokuDto.CalendarCallHttpItemActionPropagateGlobalEventSuccessEventDto;
+                          case 'propagate-global-event': {
+                            const castedEvent =
+                              currentEvent as KokuDto.CalendarCallHttpItemActionPropagateGlobalEventSuccessEventDto;
                             if (!castedEvent.eventName) {
                               throw new Error(`Missing eventName`);
                             }
@@ -1322,7 +1355,7 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                             break;
                           }
                           default: {
-                            throw new Error(`Unknown event type ${currentEvent['@type']}`)
+                            throw new Error(`Unknown event type ${currentEvent['@type']}`);
                           }
                         }
                       }
@@ -1331,9 +1364,12 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                     error: () => {
                       event.setLoading(false);
                       event.revert();
-                      this.toastService.add(`Es ist ein Fehler bei der Anfrage aufgetreten. Versuche es später erneut!`, 'error');
-                    }
-                  })
+                      this.toastService.add(
+                        `Es ist ein Fehler bei der Anfrage aufgetreten. Versuche es später erneut!`,
+                        'error',
+                      );
+                    },
+                  });
                   resizeHandled = true;
                   break;
                 }
@@ -1350,27 +1386,23 @@ class CalendarListSourcePlugin implements CalendarPlugin {
             }
           },
         };
-
-      }
+      };
 
       const generateEventSource = (): EventSourceInput => {
         return {
           id: castedSource.id,
           events: (arg, successCallback, failureCallback) => {
-            const loadList = (
-              fieldSelection: Set<string>,
-              fieldPredicates: { [index: string]: KokuDto.ListFieldQuery }
-            ) => {
+            const loadList = (fieldSelection: Set<string>, fieldPredicates: Record<string, KokuDto.ListFieldQuery>) => {
               const query: KokuDto.ListQuery = {
                 fieldSelection: [...fieldSelection],
                 limit: 100,
                 page: 0,
-                fieldPredicates: fieldPredicates
-              }
+                fieldPredicates: fieldPredicates,
+              };
 
               if (castedSource.sourceUrl) {
-                this.httpClient.post<KokuDto.ListPage>(castedSource.sourceUrl, query)
-                  .subscribe((result) => {
+                this.httpClient.post<KokuDto.ListPage>(castedSource.sourceUrl, query).subscribe(
+                  (result) => {
                     const results: EventInput[] = [];
 
                     for (const currentListItem of result.results || []) {
@@ -1378,16 +1410,19 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                     }
 
                     successCallback(results);
-                  }, (err) => {
+                  },
+                  (err) => {
                     failureCallback(err);
-                  });
+                  },
+                );
               }
-            }
+            };
 
             const fieldSelection: Set<string> = new Set<string>();
-            const fieldPredicates: { [index: string]: KokuDto.ListFieldQuery } = {};
+            const fieldPredicates: Record<string, KokuDto.ListFieldQuery> = {};
 
-            let startAndEndDOYOrGroupIdentifier = dayjs(arg.start).dayOfYear() > dayjs(arg.end).dayOfYear() ? 'startGTend' : undefined;
+            const startAndEndDOYOrGroupIdentifier =
+              dayjs(arg.start).dayOfYear() > dayjs(arg.end).dayOfYear() ? 'startGTend' : undefined;
 
             if (castedSource.startDateFieldSelectionPath) {
               fieldSelection.add(castedSource.startDateFieldSelectionPath);
@@ -1397,11 +1432,11 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                     searchExpression: dayjs(arg.start).format('YYYY-MM-DD'),
                     searchOperator: 'GREATER_OR_EQ',
                     searchOperatorHint: castedSource.searchOperatorHint,
-                    orGroupIdentifier: startAndEndDOYOrGroupIdentifier
+                    orGroupIdentifier: startAndEndDOYOrGroupIdentifier,
                   },
-                  ...((fieldPredicates[castedSource.startDateFieldSelectionPath] || {}).predicates || [])
-                ]
-              }
+                  ...((fieldPredicates[castedSource.startDateFieldSelectionPath] || {}).predicates || []),
+                ],
+              };
             }
             if (castedSource.endDateFieldSelectionPath) {
               fieldSelection.add(castedSource.endDateFieldSelectionPath);
@@ -1411,11 +1446,11 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                     searchExpression: dayjs(arg.end).format('YYYY-MM-DD'),
                     searchOperator: 'LESS_OR_EQ',
                     searchOperatorHint: castedSource.searchOperatorHint,
-                    orGroupIdentifier: startAndEndDOYOrGroupIdentifier
+                    orGroupIdentifier: startAndEndDOYOrGroupIdentifier,
                   },
-                  ...((fieldPredicates[castedSource.endDateFieldSelectionPath] || {}).predicates || [])
-                ]
-              }
+                  ...((fieldPredicates[castedSource.endDateFieldSelectionPath] || {}).predicates || []),
+                ],
+              };
             }
             if (castedSource.startTimeFieldSelectionPath) {
               fieldSelection.add(castedSource.startTimeFieldSelectionPath);
@@ -1433,11 +1468,11 @@ class CalendarListSourcePlugin implements CalendarPlugin {
                   {
                     searchExpression: 'TRUE',
                     searchOperator: 'EQ',
-                    negate: true
+                    negate: true,
                   },
-                  ...((fieldPredicates[castedSource.deletedFieldSelectionPath] || {}).predicates || [])
-                ]
-              }
+                  ...((fieldPredicates[castedSource.deletedFieldSelectionPath] || {}).predicates || []),
+                ],
+              };
             }
             for (const currentAdditionalFieldSelectionPath of castedSource.additionalFieldSelectionPaths || []) {
               fieldSelection.add(currentAdditionalFieldSelectionPath);
@@ -1446,7 +1481,9 @@ class CalendarListSourcePlugin implements CalendarPlugin {
             if (userIdFieldSelectionPath) {
               fieldSelection.add(userIdFieldSelectionPath);
 
-              const calendarActionPluginApi = this.calendarInstance.getPluginApi('CalendarUserSelectActionPlugin') as CalendarUserSelectActionPluginApi;
+              const calendarActionPluginApi = this.calendarInstance.getPluginApi(
+                'CalendarUserSelectActionPlugin',
+              ) as CalendarUserSelectActionPluginApi;
 
               let firstCall = true;
               const sourceId = castedSource.id;
@@ -1457,33 +1494,35 @@ class CalendarListSourcePlugin implements CalendarPlugin {
               if (oldSubscription) {
                 oldSubscription.unsubscribe();
               }
-              this.userDetailsSubscriptions[sourceId] = calendarActionPluginApi.selectedUserDetails.pipe(filter(value => value !== null)).subscribe((userDetails) => {
-                if (firstCall) {
-                  if (userDetails.id === undefined) {
-                    throw new Error('user id required');
+              this.userDetailsSubscriptions[sourceId] = calendarActionPluginApi.selectedUserDetails
+                .pipe(filter((value) => value !== null))
+                .subscribe((userDetails) => {
+                  if (firstCall) {
+                    if (userDetails.id === undefined) {
+                      throw new Error('user id required');
+                    }
+                    fieldPredicates[userIdFieldSelectionPath] = {
+                      predicates: [
+                        {
+                          searchExpression: String(userDetails.id),
+                          searchOperator: 'EQ',
+                        },
+                        ...((fieldPredicates[userIdFieldSelectionPath] || {}).predicates || []),
+                      ],
+                    };
+                    loadList(fieldSelection, fieldPredicates);
+                  } else {
+                    this.calendarInstance.calendarComponent()?.getApi().getEventSourceById(sourceId)?.refetch();
                   }
-                  fieldPredicates[userIdFieldSelectionPath] = {
-                    predicates: [
-                      {
-                        searchExpression: String(userDetails.id),
-                        searchOperator: 'EQ',
-                      },
-                      ...((fieldPredicates[userIdFieldSelectionPath] || {}).predicates || [])
-                    ]
-                  }
-                  loadList(fieldSelection, fieldPredicates);
-                } else {
-                  this.calendarInstance.calendarComponent()?.getApi().getEventSourceById(sourceId)?.refetch();
-                }
-                firstCall = false;
-              });
+                  firstCall = false;
+                });
             } else {
               loadList(fieldSelection, fieldPredicates);
             }
-          }
+          },
         };
       };
-      const lookupEvent = (eventPayload: any): any => {
+      const lookupEvent = (eventPayload: never): any => {
         if (castedSource.idPath === undefined) {
           throw new Error(`Missing idPath`);
         }
@@ -1498,35 +1537,33 @@ class CalendarListSourcePlugin implements CalendarPlugin {
       return {
         generateEventSource,
         generateEventItem,
-        lookupEvent
-      }
+        lookupEvent,
+      };
     }
   }
-
 }
 
 class CalendarHolidaySourcePlugin implements CalendarPlugin {
-
   constructor(
     private calendarInstance: CalendarComponent,
     private httpClient: HttpClient,
-  ) {
-  }
+  ) {}
 
   init(): CalendarPluginInstanceDetails {
     return {
-      id: 'CalendarHolidaySourcePlugin'
+      id: 'CalendarHolidaySourcePlugin',
     };
   }
 
   private userRegion: KokuDto.KokuUserRegionDto | null = null;
 
-  provideEventSourceFactory(currentSource: KokuDto.AbstractCalendarListSourceConfigDto): CalendarPluginEventSourceFactory | void {
+  provideEventSourceFactory(
+    currentSource: KokuDto.AbstractCalendarListSourceConfigDto,
+  ): CalendarPluginEventSourceFactory | void {
     if (currentSource && currentSource['@type'] === 'holiday') {
       const castedSource = currentSource as KokuDto.CalendarHolidaySourceConfigDto;
 
       const generateEventItem = (item: HolidaysTypes.Holiday): EventInput => {
-
         return {
           id: `${castedSource.id}/${item.start}`,
           title: item.name,
@@ -1538,8 +1575,7 @@ class CalendarHolidaySourcePlugin implements CalendarPlugin {
           className: `calendar-item calendar-item--color-${castedSource.sourceItemColor}`,
           item: item,
         };
-
-      }
+      };
 
       const generateEventSource = (): EventSourceInput => {
         return {
@@ -1570,47 +1606,48 @@ class CalendarHolidaySourcePlugin implements CalendarPlugin {
                 }
               }
               successCallback(results);
-            }
+            };
 
             if (this.userRegion) {
               afterRegionLoaded(this.userRegion);
             } else {
-              this.httpClient.get<KokuDto.KokuUserRegionDto>('/services/users/users/@self/region').subscribe((regionResult) => {
-                this.userRegion = regionResult;
-                afterRegionLoaded(regionResult);
-              }, (err) => {
-                failureCallback(err);
-              });
+              this.httpClient.get<KokuDto.KokuUserRegionDto>('/services/users/users/@self/region').subscribe(
+                (regionResult) => {
+                  this.userRegion = regionResult;
+                  afterRegionLoaded(regionResult);
+                },
+                (err) => {
+                  failureCallback(err);
+                },
+              );
             }
-          }
+          },
         };
       };
       const lookupEvent = (eventPayload: HolidaysTypes.Holiday): any => {
-        return this.calendarInstance.calendarComponent()?.getApi().getEventById(`${castedSource.id}/${eventPayload.start}`);
+        return this.calendarInstance
+          .calendarComponent()
+          ?.getApi()
+          .getEventById(`${castedSource.id}/${eventPayload.start}`);
       };
 
       return {
         generateEventSource,
         generateEventItem,
-        lookupEvent
-      }
+        lookupEvent,
+      };
     }
   }
-
 }
 
 @Component({
   selector: 'koku-root',
-  imports: [
-    RouterOutlet,
-    ToastComponent,
-    ModalComponent,
-  ],
+  imports: [RouterOutlet, ToastComponent, ModalComponent],
   providers: [
     ThemingService,
     {
       provide: FORMULAR_PLUGIN,
-      useFactory: (): (formularInstance: FormularComponent) => FormularPlugin => (formularInstance) => {
+      useFactory: (): ((formularInstance: FormularComponent) => FormularPlugin) => (formularInstance) => {
         const httpClient = inject(HttpClient);
         const modalService = inject(ModalService);
         return new BusinessRulePlugin(httpClient, modalService, formularInstance);
@@ -1619,7 +1656,7 @@ class CalendarHolidaySourcePlugin implements CalendarPlugin {
     },
     {
       provide: FORMULAR_PLUGIN,
-      useFactory: (): (formularInstance: FormularComponent) => FormularPlugin => (formularInstance) => {
+      useFactory: (): ((formularInstance: FormularComponent) => FormularPlugin) => (formularInstance) => {
         const unsavedChangesPreventionGuard = inject(UnsavedChangesPreventionGuard);
         const modalService = inject(ModalService);
         return new UnsavedChangesPreventionGuardPlugin(unsavedChangesPreventionGuard, modalService, formularInstance);
@@ -1628,7 +1665,7 @@ class CalendarHolidaySourcePlugin implements CalendarPlugin {
     },
     {
       provide: FORMULAR_PLUGIN,
-      useFactory: (): (formularInstance: FormularComponent) => FormularPlugin => (formularInstance) => {
+      useFactory: (): ((formularInstance: FormularComponent) => FormularPlugin) => (formularInstance) => {
         const modalService = inject(ModalService);
         return new BusinessExceptionPlugin(modalService, formularInstance);
       },
@@ -1636,56 +1673,60 @@ class CalendarHolidaySourcePlugin implements CalendarPlugin {
     },
     {
       provide: FORMULAR_PLUGIN,
-      useFactory: (): (formularInstance: FormularComponent) => FormularPlugin => (formularInstance) => {
+      useFactory: (): ((formularInstance: FormularComponent) => FormularPlugin) => (formularInstance) => {
         return new GlobalEventListenerPlugin(formularInstance);
       },
       multi: true,
     },
     {
       provide: CALENDAR_PLUGIN,
-      useFactory: (): (calendarInstance: CalendarComponent) => CalendarPlugin => (calendarInstance) => {
+      useFactory: (): ((calendarInstance: CalendarComponent) => CalendarPlugin) => (calendarInstance) => {
         return new CalendarInteractionPlugin(calendarInstance);
       },
       multi: true,
     },
     {
       provide: CALENDAR_PLUGIN,
-      useFactory: (): (calendarInstance: CalendarComponent) => CalendarPlugin => (calendarInstance) => {
+      useFactory: (): ((calendarInstance: CalendarComponent) => CalendarPlugin) => (calendarInstance) => {
         return new CalendarGlobalEventPlugin(calendarInstance);
       },
       multi: true,
     },
     {
       provide: CALENDAR_PLUGIN,
-      useFactory: (): (calendarInstance: CalendarComponent) => CalendarPlugin => (calendarInstance) => {
+      useFactory: (): ((calendarInstance: CalendarComponent) => CalendarPlugin) => (calendarInstance) => {
         return new CalendarActionPlugin(calendarInstance);
       },
       multi: true,
     },
     {
       provide: CALENDAR_PLUGIN,
-      useFactory: (): (calendarInstance: CalendarComponent) => CalendarPlugin => () => {
+      useFactory: (): ((calendarInstance: CalendarComponent) => CalendarPlugin) => () => {
         return new CalendarUserSelectActionPlugin(inject(HttpClient), inject(ToastService), inject(ModalService));
       },
       multi: true,
     },
     {
       provide: CALENDAR_PLUGIN,
-      useFactory: (): (calendarInstance: CalendarComponent) => CalendarPlugin => (calendarInstance) => {
-        return new CalendarListSourcePlugin(calendarInstance, inject(HttpClient), inject(ToastService), inject(ModalService));
+      useFactory: (): ((calendarInstance: CalendarComponent) => CalendarPlugin) => (calendarInstance) => {
+        return new CalendarListSourcePlugin(
+          calendarInstance,
+          inject(HttpClient),
+          inject(ToastService),
+          inject(ModalService),
+        );
       },
       multi: true,
     },
     {
       provide: CALENDAR_PLUGIN,
-      useFactory: (): (calendarInstance: CalendarComponent) => CalendarPlugin => (calendarInstance) => {
+      useFactory: (): ((calendarInstance: CalendarComponent) => CalendarPlugin) => (calendarInstance) => {
         return new CalendarHolidaySourcePlugin(calendarInstance, inject(HttpClient));
       },
       multi: true,
     },
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
@@ -1701,5 +1742,4 @@ export class AppComponent {
     });
     this.theme = themingService.theme.value;
   }
-
 }

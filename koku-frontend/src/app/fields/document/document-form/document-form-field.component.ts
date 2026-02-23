@@ -10,43 +10,39 @@ import {
   output,
   signal,
   SimpleChanges,
-  viewChild
+  viewChild,
 } from '@angular/core';
-import {Template, ZOOM} from '@pdfme/common';
-import {Form} from '@pdfme/ui';
-import {getFontsData} from '../fonts';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {HttpClient} from '@angular/common/http';
-import {getPlugins} from '../plugins';
-import {get} from '../../../utils/get';
-import {OutletDirective} from '../../../portal/outlet.directive';
-import {PortalDirective} from '../../../portal/portal.directive';
-import {generate} from '@pdfme/generator';
-import {IconComponent} from '../../../icon/icon.component';
-import {ToastService} from '../../../toast/toast.service';
+import { Template, ZOOM } from '@pdfme/common';
+import { Form } from '@pdfme/ui';
+import { getFontsData } from '../fonts';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpClient } from '@angular/common/http';
+import { getPlugins } from '../plugins';
+import { get } from '../../../utils/get';
+import { OutletDirective } from '../../../portal/outlet.directive';
+import { PortalDirective } from '../../../portal/portal.directive';
+import { generate } from '@pdfme/generator';
+import { IconComponent } from '../../../icon/icon.component';
+import { ToastService } from '../../../toast/toast.service';
 import dayjs from 'dayjs';
-import {FullscreenService} from '../../../fullscreen/fullscreen.service';
-import {fromEvent} from 'rxjs';
-import {debounce} from '../../../utils/debounce';
+import { FullscreenService } from '../../../fullscreen/fullscreen.service';
+import { fromEvent } from 'rxjs';
+import { debounce } from '../../../utils/debounce';
 
 @Component({
   selector: 'document-form-field',
   templateUrl: './document-form-field.component.html',
   styleUrl: './document-form-field.component.css',
-  imports: [
-    PortalDirective,
-    IconComponent
-  ],
-  standalone: true
+  imports: [PortalDirective, IconComponent],
+  standalone: true,
 })
 export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterViewInit {
-
-  formRoot = viewChild.required<ElementRef<HTMLDivElement>>("formRoot");
+  formRoot = viewChild.required<ElementRef<HTMLDivElement>>('formRoot');
 
   documentUrl = input.required<string>();
   submitUrl = input.required<string>();
   submitMethod = input<'POST' | 'PUT'>();
-  context = input<{ [key: string]: any }>();
+  context = input<Record<string, any>>();
   buttonDockOutlet = input<OutletDirective>();
 
   destroyRef = inject(DestroyRef);
@@ -64,7 +60,8 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['documentUrl']) {
-      this.httpClient.get<KokuDto.KokuDocumentDto>(this.documentUrl())
+      this.httpClient
+        .get<KokuDto.KokuDocumentDto>(this.documentUrl())
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((document) => {
           this.documentMeta = {
@@ -73,8 +70,8 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
                 const r = (Math.random() * 16) | 0;
                 const v = c == 'x' ? r : (r & 0x3) | 0x8;
                 return v.toString(16);
-              })
-            }
+              }),
+            },
           };
           this.document = document;
           this.initOrUpdateForm();
@@ -86,60 +83,82 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
     const now = Date.now();
     const utils = {
       utils: {
-        today: dayjs(now).format("YYYY-MM-DDTHH:mm:ss"),
-        'today+1y': dayjs(now).add(1, 'year').format("YYYY-MM-DDTHH:mm:ss")
-      }
+        today: dayjs(now).format('YYYY-MM-DDTHH:mm:ss'),
+        'today+1y': dayjs(now).add(1, 'year').format('YYYY-MM-DDTHH:mm:ss'),
+      },
     };
     if (!this.document || !this.document.template) {
       throw new Error('Missing template in document');
     }
     const inputs: Record<string, any>[] = [];
     const parsedTemplate = JSON.parse(this.document.template) as Template;
-    for (const currentTemplateSchema of (parsedTemplate.schemas)) {
+    for (const currentTemplateSchema of parsedTemplate.schemas) {
       const currentSchemaContents: Record<string, any> = {};
-      for (const currentTemplateSchemaContent of (currentTemplateSchema)) {
+      for (const currentTemplateSchemaContent of currentTemplateSchema) {
         const contextSnapshot = this.context();
         switch (currentTemplateSchemaContent['type']) {
-          case "text": {
-            currentSchemaContents[currentTemplateSchemaContent.name] = (currentTemplateSchemaContent.content || '').replace(/\{([\w\.\s]+)\}/g, (_, key) => {
-              return get({
-                ...contextSnapshot,
-                ...utils,
-                ...(this.documentMeta || {}),
-              }, (key || '').trim(), `{${key}}`);
+          case 'text': {
+            currentSchemaContents[currentTemplateSchemaContent.name] = (
+              currentTemplateSchemaContent.content || ''
+            ).replace(/\{([\w.\s]+)\}/g, (_, key) => {
+              return get(
+                {
+                  ...contextSnapshot,
+                  ...utils,
+                  ...(this.documentMeta || {}),
+                },
+                (key || '').trim(),
+                `{${key}}`,
+              );
             });
             break;
           }
-          case "date": {
-            currentSchemaContents[currentTemplateSchemaContent.name] = (currentTemplateSchemaContent.name || '').replace(/\{([\w\.\s\+]+)\}/g, (_, key) => {
-              return get({
-                ...contextSnapshot,
-                ...utils,
-                ...(this.documentMeta || {}),
-              }, (key || '').trim(), `{${key}}`);
+          case 'date': {
+            currentSchemaContents[currentTemplateSchemaContent.name] = (
+              currentTemplateSchemaContent.name || ''
+            ).replace(/\{([\w.\s+]+)\}/g, (_, key) => {
+              return get(
+                {
+                  ...contextSnapshot,
+                  ...utils,
+                  ...(this.documentMeta || {}),
+                },
+                (key || '').trim(),
+                `{${key}}`,
+              );
             });
             break;
           }
-          case "multiVariableText": {
-            const values: { [key: string]: string } = {};
-            for (const currentVariable of currentTemplateSchemaContent['variables'] as string[] || []) {
-              values[currentVariable] = get({
-                ...contextSnapshot,
-                ...utils,
-                ...(this.documentMeta || {}),
-              }, currentVariable.trim(), `{${currentVariable}}`);
+          case 'multiVariableText': {
+            const values: Record<string, string> = {};
+            for (const currentVariable of (currentTemplateSchemaContent['variables'] as string[]) || []) {
+              values[currentVariable] = get(
+                {
+                  ...contextSnapshot,
+                  ...utils,
+                  ...(this.documentMeta || {}),
+                },
+                currentVariable.trim(),
+                `{${currentVariable}}`,
+              );
             }
 
             currentSchemaContents[currentTemplateSchemaContent.name] = JSON.stringify(values);
             break;
           }
-          case "qrcode": {
-            currentSchemaContents[currentTemplateSchemaContent.name] = (currentTemplateSchemaContent.content || '').replace(/\{([\w\.\s]+)\}/g, (_, key) => {
-              return get({
-                ...contextSnapshot,
-                ...utils,
-                ...(this.documentMeta || {}),
-              }, (key || '').trim(), `{${key}}`);
+          case 'qrcode': {
+            currentSchemaContents[currentTemplateSchemaContent.name] = (
+              currentTemplateSchemaContent.content || ''
+            ).replace(/\{([\w.\s]+)\}/g, (_, key) => {
+              return get(
+                {
+                  ...contextSnapshot,
+                  ...utils,
+                  ...(this.documentMeta || {}),
+                },
+                (key || '').trim(),
+                `{${key}}`,
+              );
             });
             break;
           }
@@ -156,12 +175,12 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
         inputs,
         options: {
           font: getFontsData(),
-          lang: "de",
+          lang: 'de',
           labels: {
-            'signature.clear': "🗑️",
+            'signature.clear': '🗑️',
           },
           theme: {
-            token: {colorPrimary: "#25c2a0"},
+            token: { colorPrimary: '#25c2a0' },
           },
           icons: {
             multiVariableText:
@@ -169,28 +188,27 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
           },
           maxZoom: 10000,
         },
-        plugins: getPlugins()
+        plugins: getPlugins(),
       });
       this.form.resizeObserver.disconnect();
-      this.form.resizeObserver = new ResizeObserver(debounce(() => {
-        const self = this.form as any;
+      this.form.resizeObserver = new ResizeObserver(
+        debounce(() => {
+          const self = this.form as any;
 
-        const rect = self.domContainer.getBoundingClientRect();
+          const rect = self.domContainer.getBoundingClientRect();
 
-        const pageWidth = self.template.basePdf.width;
-        const pageHeight = self.template.basePdf.height;
-        const aspectRatio = pageHeight / pageWidth;
+          const pageWidth = self.template.basePdf.width;
+          const pageHeight = self.template.basePdf.height;
+          const aspectRatio = pageHeight / pageWidth;
 
-        const calculatedWidth = Math.floor(rect.width);
-        self.size = {
-          height: Math.max(
-            rect.height,
-            Math.min(calculatedWidth * aspectRatio, pageHeight * ZOOM)
-          ),
-          width: calculatedWidth
-        };
-        self.render();
-      }, 50));
+          const calculatedWidth = Math.floor(rect.width);
+          self.size = {
+            height: Math.max(rect.height, Math.min(calculatedWidth * aspectRatio, pageHeight * ZOOM)),
+            width: calculatedWidth,
+          };
+          self.render();
+        }, 50),
+      );
       this.form.resizeObserver.observe(this.formRoot().nativeElement);
     } else {
       form.updateTemplate(parsedTemplate);
@@ -212,12 +230,14 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
       this.submitting.set(true);
 
       let missingFieldValueFound = false;
-      this.form?.getTemplate().schemas.forEach((schemaPage) => schemaPage.forEach((schema) => {
-        if (schema.required && !schema.readOnly && !this.form?.getInputs().some((input) => input[schema.name])) {
-          missingFieldValueFound = true;
-          this.toastService.add('Überprüfe die Eingaben', 'warning');
-        }
-      }));
+      this.form?.getTemplate().schemas.forEach((schemaPage) =>
+        schemaPage.forEach((schema) => {
+          if (schema.required && !schema.readOnly && !this.form?.getInputs().some((input) => input[schema.name])) {
+            missingFieldValueFound = true;
+            this.toastService.add('Überprüfe die Eingaben', 'warning');
+          }
+        }),
+      );
       if (!missingFieldValueFound) {
         generate({
           template: formSnapshot.getTemplate(),
@@ -228,31 +248,42 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
             author: 'KoKu',
             lang: 'de',
             creator: 'KoKu',
-          }
-        }).then((pdf) => {
-          if (!this.document || !this.document.name) {
-            throw new Error('Missing name in document');
-          }
-          const formData = new FormData();
-          formData.append('file', new Blob([new Uint8Array(pdf.buffer)], {type: 'application/pdf'}), this.document.name + '.pdf');
-          this.httpClient.request(
-            this.submitMethod() || 'POST',
-            `${submitUrlSnapshot}${submitUrlSnapshot.includes('?') ? '&' : '?'}id=${this.documentMeta?.document.id}`,
-            {
-              body: formData,
+          },
+        })
+          .then((pdf) => {
+            if (!this.document || !this.document.name) {
+              throw new Error('Missing name in document');
             }
-          ).subscribe((payload) => {
-            this.submitting.set(false);
-            this.onSubmit.emit(payload);
-            this.toastService.add("Dokument erstellt");
-          }, () => {
-            this.submitting.set(false);
-            this.toastService.add("Fehler beim Speichern", 'error');
+            const formData = new FormData();
+            formData.append(
+              'file',
+              new Blob([new Uint8Array(pdf.buffer)], { type: 'application/pdf' }),
+              this.document.name + '.pdf',
+            );
+            this.httpClient
+              .request(
+                this.submitMethod() || 'POST',
+                `${submitUrlSnapshot}${submitUrlSnapshot.includes('?') ? '&' : '?'}id=${this.documentMeta?.document.id}`,
+                {
+                  body: formData,
+                },
+              )
+              .subscribe(
+                (payload) => {
+                  this.submitting.set(false);
+                  this.onSubmit.emit(payload);
+                  this.toastService.add('Dokument erstellt');
+                },
+                () => {
+                  this.submitting.set(false);
+                  this.toastService.add('Fehler beim Speichern', 'error');
+                },
+              );
           })
-        }).catch((error) => {
-          this.toastService.add('Fehler beim Erstellen der PDF', 'error');
-          this.submitting.set(false);
-        });
+          .catch(() => {
+            this.toastService.add('Fehler beim Erstellen der PDF', 'error');
+            this.submitting.set(false);
+          });
       } else {
         this.submitting.set(false);
       }
@@ -269,9 +300,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
 
   ngAfterViewInit() {
     fromEvent(screen.orientation, 'change')
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         if (screen.orientation.type.includes('landscape')) {
           this.enterFullscreen();
@@ -279,7 +308,5 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
           this.exitFullscreen();
         }
       });
-
   }
-
 }

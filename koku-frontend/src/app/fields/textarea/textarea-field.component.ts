@@ -1,4 +1,4 @@
-import {booleanAttribute, Component, input, output} from '@angular/core';
+import { booleanAttribute, Component, input, output } from '@angular/core';
 
 let uniqueId = 0;
 
@@ -7,20 +7,19 @@ let uniqueId = 0;
   templateUrl: './textarea-field.component.html',
   styleUrl: './textarea-field.component.css',
   imports: [],
-  standalone: true
+  standalone: true,
 })
 export class TextareaFieldComponent {
-
   value = input.required<string>();
-  defaultValue = input<string>("");
+  defaultValue = input<string>('');
   name = input.required<string>();
   label = input<string>();
   placeholder = input<string>();
-  loading = input(false, {transform: booleanAttribute});
-  readonly = input(false, {transform: booleanAttribute});
-  required = input(false, {transform: booleanAttribute});
-  disabled = input(false, {transform: booleanAttribute});
-  valueOnly = input(false, {transform: booleanAttribute});
+  loading = input(false, { transform: booleanAttribute });
+  readonly = input(false, { transform: booleanAttribute });
+  required = input(false, { transform: booleanAttribute });
+  disabled = input(false, { transform: booleanAttribute });
+  valueOnly = input(false, { transform: booleanAttribute });
   onChange = output<string>();
   onInput = output<string>();
   onBlur = output<void>();
@@ -29,7 +28,7 @@ export class TextareaFieldComponent {
   id = `textarea-field-${uniqueId++}`;
 
   constructor() {
-    this.supportsFieldSizingNatively = CSS.supports("field-sizing", "content");
+    this.supportsFieldSizingNatively = CSS.supports('field-sizing', 'content');
   }
 
   onInputRaw($event: Event) {
@@ -45,12 +44,18 @@ export class TextareaFieldComponent {
     }
   }
 
-  private applyAutoHeight(
-    targetEl: HTMLTextAreaElement
-  ) {
+  private applyAutoHeight(targetEl: HTMLTextAreaElement) {
     targetEl.style.height = 'auto';
     const computedStyle = getComputedStyle(targetEl);
-    targetEl.style.height = 'calc(' + targetEl.scrollHeight + 'px' + ' + ' + computedStyle.borderTopWidth + ' + ' + computedStyle.borderBottomWidth + ')';
+    targetEl.style.height =
+      'calc(' +
+      targetEl.scrollHeight +
+      'px' +
+      ' + ' +
+      computedStyle.borderTopWidth +
+      ' + ' +
+      computedStyle.borderBottomWidth +
+      ')';
   }
 
   onChangeRaw($event: Event) {
@@ -67,5 +72,4 @@ export class TextareaFieldComponent {
     }
     return true;
   }
-
 }

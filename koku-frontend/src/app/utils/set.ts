@@ -3,11 +3,11 @@ export const set = (obj: any, path: string[] | string, value: any) => {
 
   if (pathArray) {
     pathArray.reduce((acc, key, i) => {
-      if (acc[key] === undefined) acc[key] = {}
-      if (i === pathArray.length - 1) acc[key] = value
-      return acc[key]
+      if (acc[key] === undefined) acc[key] = {};
+      if (i === pathArray.length - 1) acc[key] = value;
+      return acc[key];
     }, obj);
   } else {
     throw new Error('Unable to read path');
   }
-}
+};

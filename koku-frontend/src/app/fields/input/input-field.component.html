@@ -10,22 +10,23 @@
     <ng-content select="prepend-outer"></ng-content>
     <div class="flex w-full input join-item">
       <ng-content select="prepend-inner"></ng-content>
-      <input [name]="name()"
-             [type]="type().toLowerCase()"
-             [attr.disabled]="disabled() ? '' : null"
-             [attr.placeholder]="placeholder() || null"
-             [attr.readonly]="readonly() || null"
-             [class.skeleton]="loading()"
-             [value]="!loading() ? value() : defaultValue()"
-             [attr.required]="required() ? true : null"
-             (change)="onChangeRaw($event)"
-             (input)="onInputRaw($event)"
-             (blur)="onBlur.emit()"
-             (focus)="onFocus.emit()"
-             [attr.min]="min() !== undefined ? min() : null"
-             [attr.max]="max() !== undefined ? max() : null"
-             [attr.id]="id"
-             class="block"
+      <input
+        [name]="name()"
+        [type]="type().toLowerCase()"
+        [attr.disabled]="disabled() ? '' : null"
+        [attr.placeholder]="placeholder() || null"
+        [attr.readonly]="readonly() || null"
+        [class.skeleton]="loading()"
+        [value]="!loading() ? value() : defaultValue()"
+        [attr.required]="required() ? true : null"
+        (change)="onChangeRaw($event)"
+        (input)="onInputRaw($event)"
+        (blur)="onBlur.emit()"
+        (focus)="onFocus.emit()"
+        [attr.min]="min() !== undefined ? min() : null"
+        [attr.max]="max() !== undefined ? max() : null"
+        [attr.id]="id"
+        class="block"
       />
       <ng-content select="append-inner"></ng-content>
     </div>
@@ -33,19 +34,20 @@
   </div>
 } @else {
   @if (loading()) {
-    <div class="skeleton w-full bg-neutral content-center" style="--radius-box:0">&nbsp;</div>
+    <div class="skeleton w-full bg-neutral content-center" style="--radius-box: 0">&nbsp;</div>
   } @else {
     @if (value(); as value) {
-      <div class="content-center {{cls()}}">
-        @if (type() === "DATETIME") {
-          {{ value | date:'dd.MM.yyyy HH:mm \'Uhr\'' }}
-        } @else if (type() === "DATE") {
-          {{ value | date:'dd.MM.yyyy' }}
-        } @else if (type() === "TIME") {
-          {{ value | date:'HH:mm \'Uhr\'' }}
+      <div class="content-center {{ cls() }}">
+        @if (type() === 'DATETIME') {
+          {{ value | date: "dd.MM.yyyy HH:mm 'Uhr'" }}
+        } @else if (type() === 'DATE') {
+          {{ value | date: 'dd.MM.yyyy' }}
+        } @else if (type() === 'TIME') {
+          {{ value | date: "HH:mm 'Uhr'" }}
         } @else {
           {{ value }}
-        }</div>
+        }
+      </div>
     }
   }
 }

@@ -1,17 +1,13 @@
-import {ChangeDetectionStrategy, Component, inject} from "@angular/core";
-import {ActivatedRoute, RouterOutlet} from "@angular/router";
-import {NaviListComponent} from '../navi/navi-list/navi-list.component';
-import {NaviService} from '../navi/navi.service';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ActivatedRoute, RouterOutlet } from '@angular/router';
+import { NaviListComponent } from '../navi/navi-list/navi-list.component';
+import { NaviService } from '../navi/navi.service';
 
 @Component({
   selector: 'koku-page-skeleton',
   templateUrl: './page-skeleton.component.html',
-  styleUrls: ['./page-skeleton.component.css'],
-  imports: [
-    RouterOutlet,
-    NaviListComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [RouterOutlet, NaviListComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PageSkeletonComponent {
   activatedRoute = inject(ActivatedRoute);

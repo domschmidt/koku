@@ -165,6 +165,12 @@ public class CustomerAppointmentController {
         return transformer.transformToActivityPriceSummary(request);
     }
 
+    @GetMapping("/customers/appointments/overallsummary")
+    public KokuCustomerAppointmentOverallPriceSummaryDto getActivitySum(
+            KokuCustomerAppointmentOverallPriceSummaryRequestDto request) {
+        return transformer.transformToOverallPriceSummary(request);
+    }
+
     @GetMapping("/customers/appointments/productsummary")
     public KokuActivitySoldProductPriceSummaryDto getProductSum(KokuActivitySoldProductSummaryRequestDto request) {
         return this.transformer.transformToSoldProductPriceSummary(request);
@@ -275,6 +281,13 @@ public class CustomerAppointmentController {
                 .required(true)
                 .build());
         formFactory.endContainer();
+
+        final String overallPriceSumStatFieldRef = formFactory.addField(StatFormularField.builder()
+                .title("Gesamtkosten")
+                .description("Erwartete Einnahme")
+                .valuePath(KokuCustomerAppointmentDto.Fields.overallPriceSummary)
+                .icon("CURRENCY_EURO")
+                .build());
 
         formFactory.addContainer(
                 FieldsetContainer.builder().title("Tätigkeiten").build());
@@ -914,6 +927,49 @@ public class CustomerAppointmentController {
                         .build())
                 .execution(KokuBusinessRuleCallHttpEndpoint.builder()
                         .url("services/customers/customers/appointments/activitysummary")
+                        .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
+                        .build())
+                .build());
+
+        formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
+                .id("OverallSummary")
+                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .reference(activityFieldRef)
+                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.activities)
+                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
+                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CHANGE)
+                                .build())
+                        .build())
+                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .reference(soldProductsFieldRef)
+                        .requestParam(KokuActivitySoldProductSummaryRequestDto.Fields.soldProducts)
+                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
+                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CHANGE)
+                                .build())
+                        .build())
+                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .reference(promotionFieldRef)
+                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.promotions)
+                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
+                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CHANGE)
+                                .build())
+                        .build())
+                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .reference(dateFieldRef)
+                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.date)
+                        .build())
+                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .reference(timeFieldRef)
+                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.time)
+                        .build())
+                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .reference(overallPriceSumStatFieldRef)
+                        .resultUpdateMode(KokuBusinessRuleFieldReferenceUpdateModeEnum.ALWAYS)
+                        .resultValuePath(KokuCustomerAppointmentOverallPriceSummaryDto.Fields.priceSum)
+                        .loadingAnimation(true)
+                        .build())
+                .execution(KokuBusinessRuleCallHttpEndpoint.builder()
+                        .url("services/customers/customers/appointments/overallsummary")
                         .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
                         .build())
                 .build());

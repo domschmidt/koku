@@ -1,20 +1,20 @@
-import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
-import {ActivatedRouteSnapshot, CanDeactivate, RouterStateSnapshot} from '@angular/router';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { CanDeactivate } from '@angular/router';
 
-
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class UnsavedChangesPreventionGuard<T> implements CanDeactivate<T> {
+  unsavedChangesPreventionRegistry: Map<any, () => Observable<boolean>> = new Map<any, () => Observable<boolean>>();
 
-  unsavedChangesPreventionRegistry: Map<any, () => Observable<boolean>> = new Map<any, () => Observable<boolean>>;
   public registerUnsavedChangesPrevention(instance: any, shouldProceed: () => Observable<boolean>) {
     this.unsavedChangesPreventionRegistry.set(instance, shouldProceed);
   }
+
   public unregisterUnsavedChangesPrevention(instance: any) {
     this.unsavedChangesPreventionRegistry.delete(instance);
   }
 
-  canDeactivate(component: T, route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
+  canDeactivate(): Observable<boolean> | boolean {
     return new Observable<boolean>((observer) => {
       const unsavedChangesPreventionRegistryEntries = this.unsavedChangesPreventionRegistry.values();
       const currentEntry = unsavedChangesPreventionRegistryEntries.next();

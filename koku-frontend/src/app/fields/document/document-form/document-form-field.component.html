@@ -1,15 +1,10 @@
 @if (fullscreenService.isFallbackFullscreen()) {
   <div class="fixed top-3 right-4 z-[10001] flex items-center justify-center gap-2">
-    <button
-      class="btn btn-circle btn-neutral"
-      (click)="exitFullscreen()"
-    >
-      <koku-icon name="CLOSE"/>
+    <button class="btn btn-circle btn-neutral" (click)="exitFullscreen()">
+      <koku-icon name="CLOSE" />
     </button>
-    <button (click)="submit()"
-            [class.skeleton]="submitting()"
-            class="btn btn-circle">
-      <koku-icon name="SAVE"/>
+    <button (click)="submit()" [class.skeleton]="submitting()" class="btn btn-circle">
+      <koku-icon name="SAVE" />
     </button>
   </div>
 }
@@ -19,29 +14,21 @@
 @if (buttonDockOutlet()) {
   <ng-template koku-portal [portalOutlet]="buttonDockOutlet()" [append]="true">
     <div class="flex gap-2">
-      <button
-        (click)="enterFullscreen()"
-        class="btn btn-circle btn-neutral">
-        <koku-icon name="VIEWFINDER"/>
+      <button (click)="enterFullscreen()" class="btn btn-circle btn-neutral">
+        <koku-icon name="VIEWFINDER" />
       </button>
-      <button (click)="submit()"
-              [class.skeleton]="submitting()"
-              class="btn btn-circle">
-        <koku-icon name="SAVE"/>
+      <button (click)="submit()" [class.skeleton]="submitting()" class="btn btn-circle">
+        <koku-icon name="SAVE" />
       </button>
     </div>
   </ng-template>
 } @else {
   <div>
-    <button
-      (click)="enterFullscreen()"
-      class="btn btn-circle btn-neutral">
-      <koku-icon name="VIEWFINDER"/>
+    <button (click)="enterFullscreen()" class="btn btn-circle btn-neutral">
+      <koku-icon name="VIEWFINDER" />
     </button>
-    <button (click)="submit()"
-            [class.skeleton]="submitting()"
-            class="btn btn-circle">
-      <koku-icon name="SAVE"/>
+    <button (click)="submit()" [class.skeleton]="submitting()" class="btn btn-circle">
+      <koku-icon name="SAVE" />
     </button>
   </div>
 }

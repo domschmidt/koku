@@ -7,42 +7,41 @@ import {
   input,
   OnDestroy,
   output,
-  viewChild
+  viewChild,
 } from '@angular/core';
-import {Event} from '@angular/router';
-import {BLANK_A4_PDF, Template} from '@pdfme/common';
-import {Designer} from '@pdfme/ui';
-import {getFontsData} from '../fonts';
-import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
-import {getPlugins} from '../plugins';
-import {deepEqual} from '../../../utils/deepEqual';
+import { Event } from '@angular/router';
+import { BLANK_A4_PDF, Template } from '@pdfme/common';
+import { Designer } from '@pdfme/ui';
+import { getFontsData } from '../fonts';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { getPlugins } from '../plugins';
+import { deepEqual } from '../../../utils/deepEqual';
 
 @Component({
   selector: 'document-designer-field',
   templateUrl: './document-designer-field.component.html',
   styleUrl: './document-designer-field.component.css',
   imports: [],
-  standalone: true
+  standalone: true,
 })
 export class DocumentDesignerFieldComponent implements OnDestroy {
-
-  designerRoot = viewChild.required<ElementRef<HTMLDivElement>>("designerRoot");
+  designerRoot = viewChild.required<ElementRef<HTMLDivElement>>('designerRoot');
 
   value = input.required<string>();
   defaultValue = input<string>();
   name = input.required<string>();
 
-  loading = input(false, {transform: booleanAttribute});
-  readonly = input(false, {transform: booleanAttribute});
-  required = input(false, {transform: booleanAttribute});
-  disabled = input(false, {transform: booleanAttribute});
-  valueOnly = input(false, {transform: booleanAttribute});
+  loading = input(false, { transform: booleanAttribute });
+  readonly = input(false, { transform: booleanAttribute });
+  required = input(false, { transform: booleanAttribute });
+  disabled = input(false, { transform: booleanAttribute });
+  valueOnly = input(false, { transform: booleanAttribute });
 
   onChange = output<string>();
   onBlur = output<Event>();
   onFocus = output<Event>();
 
-  destroyRef = inject(DestroyRef)
+  destroyRef = inject(DestroyRef);
   private designer: Designer | undefined;
   private lastSubscribedValue: Template | undefined;
 
@@ -50,15 +49,17 @@ export class DocumentDesignerFieldComponent implements OnDestroy {
     toObservable(this.value)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => {
-      this.initOrUpdateDesigner(value);
-    });
+        this.initOrUpdateDesigner(value);
+      });
   }
 
   private initOrUpdateDesigner(rawValue: string) {
-    const template: Template = rawValue ? JSON.parse(rawValue) : {
-      basePdf: BLANK_A4_PDF,
-      schemas: []
-    }
+    const template: Template = rawValue
+      ? JSON.parse(rawValue)
+      : {
+          basePdf: BLANK_A4_PDF,
+          schemas: [],
+        };
     this.lastSubscribedValue = template;
     if (!this.designer) {
       this.designer = new Designer({
@@ -68,12 +69,12 @@ export class DocumentDesignerFieldComponent implements OnDestroy {
           zoomLevel: 1,
           sidebarOpen: true,
           font: getFontsData(),
-          lang: "de",
+          lang: 'de',
           labels: {
-            'signature.clear': "🗑️",
+            'signature.clear': '🗑️',
           },
           theme: {
-            token: {colorPrimary: "#B39DDB"},
+            token: { colorPrimary: '#B39DDB' },
           },
           icons: {
             multiVariableText:
@@ -81,7 +82,7 @@ export class DocumentDesignerFieldComponent implements OnDestroy {
           },
           maxZoom: 250,
         },
-        plugins: getPlugins()
+        plugins: getPlugins(),
       });
       this.designer.onChangeTemplate((onChangeTemplate) => {
         if (!deepEqual(onChangeTemplate, this.lastSubscribedValue)) {

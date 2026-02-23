@@ -1,7 +1,6 @@
 @if (content(); as content) {
   @if (contentSetup().fieldRegistry[content['@type']]; as fieldComponent) {
     @if (content.id) {
-
       <template>
         <div #prependOuter class="contents">
           @if (content.prependOuter) {
@@ -74,26 +73,26 @@
           }
         </div>
       </template>
-      <ndc-dynamic [ndcDynamicComponent]="fieldComponent.componentType"
-                   [ndcDynamicInputs]="{
-                     name: content.id,
-                     value: fieldRegister()[content.id].value(),
-                     disabled: submitting() || fieldRegister()[content.id].disabledCauses().size > 0,
-                     required: fieldRegister()[content.id].requiredCauses().size > 0,
-                     readonly: fieldRegister()[content.id].readonlyCauses().size > 0,
-                     loading: loading() || fieldRegister()[content.id].loadingCauses().size > 0,
-                   }"
-                   (ndcDynamicCreated)="emitToFieldEventBus('onInit', $event)"
-                   [ngComponentOutletNdcDynamicInputs]="inputBindings()"
-                   [ngComponentOutletNdcDynamicOutputs]="outputBindings()"
-                   [ndcDynamicContent]="[
-                     prependOuter.children.length ? [prependOuter] : [],
-                     prependInner.children.length ? [prependInner] : [],
-                     appendInner.children.length ? [appendInner] : [],
-                     appendOuter.children.length ? [appendOuter] : []
-                   ]"
+      <ndc-dynamic
+        [ndcDynamicComponent]="fieldComponent.componentType"
+        [ndcDynamicInputs]="{
+          name: content.id,
+          value: fieldRegister()[content.id].value(),
+          disabled: submitting() || fieldRegister()[content.id].disabledCauses().size > 0,
+          required: fieldRegister()[content.id].requiredCauses().size > 0,
+          readonly: fieldRegister()[content.id].readonlyCauses().size > 0,
+          loading: loading() || fieldRegister()[content.id].loadingCauses().size > 0,
+        }"
+        (ndcDynamicCreated)="emitToFieldEventBus('onInit', $event)"
+        [ngComponentOutletNdcDynamicInputs]="inputBindings()"
+        [ngComponentOutletNdcDynamicOutputs]="outputBindings()"
+        [ndcDynamicContent]="[
+          prependOuter.children.length ? [prependOuter] : [],
+          prependInner.children.length ? [prependInner] : [],
+          appendInner.children.length ? [appendInner] : [],
+          appendOuter.children.length ? [appendOuter] : [],
+        ]"
       >
-
       </ndc-dynamic>
     }
   }

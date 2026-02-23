@@ -1,14 +1,13 @@
-import {Component, DestroyRef, inject, input, output, signal} from '@angular/core';
-import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
-import {HttpClient} from '@angular/common/http';
-import {DockComponent, DockContentItem} from '../../dock/dock.component';
-import {OutletDirective} from '../../portal/outlet.directive';
-import {get} from '../../utils/get';
-import {NavigationEnd, Router} from '@angular/router';
-import {Subscription} from 'rxjs';
-import {BusinessRulesContentRegistry} from '../registry';
-import {BusinessRulesContentComponent} from '../business-rules-content/business-rules-content.component';
-
+import { Component, DestroyRef, inject, input, output, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { HttpClient } from '@angular/common/http';
+import { DockComponent, DockContentItem } from '../../dock/dock.component';
+import { OutletDirective } from '../../portal/outlet.directive';
+import { get } from '../../utils/get';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { BusinessRulesContentRegistry } from '../registry';
+import { BusinessRulesContentComponent } from '../business-rules-content/business-rules-content.component';
 
 interface ExtendedDockContentItem extends DockContentItem {
   content: KokuDto.AbstractKokuBusinessRuleContentDto;
@@ -21,18 +20,14 @@ interface ExtendedKokuBusinessRuleDockContentItemDto extends KokuDto.KokuBusines
 
 @Component({
   selector: '[calendar-dock-container],calendar-dock-container',
-  imports: [
-    DockComponent,
-    BusinessRulesContentComponent
-  ],
+  imports: [DockComponent, BusinessRulesContentComponent],
   templateUrl: './business-rules-dock-container.component.html',
-  styleUrl: './business-rules-dock-container.component.css'
+  styleUrl: './business-rules-dock-container.component.css',
 })
 export class BusinessRulesDockContainerComponent {
-
   content = input.required<KokuDto.KokuBusinessRuleDockContentItemDto[]>();
   contentSetup = input.required<BusinessRulesContentRegistry>();
-  urlSegments = input<{ [key: string]: string } | null>(null);
+  urlSegments = input<Record<string, string> | null>(null);
   buttonDockOutlet = input<OutletDirective>();
   sourceUrl = input<string>();
   titlePath = input<string>();
@@ -49,7 +44,7 @@ export class BusinessRulesDockContainerComponent {
   onClose = output<void>();
   onOpenRoutedContent = output<string[]>();
 
-  private dockContentIndex: { [id: string]: ExtendedDockContentItem } = {};
+  private dockContentIndex: Record<string, ExtendedDockContentItem> = {};
   private routerUrlSubscription: Subscription | undefined;
 
   constructor() {
@@ -69,12 +64,9 @@ export class BusinessRulesDockContainerComponent {
     });
     toObservable(this.content).subscribe((content) => {
       const newTransformedContent: ExtendedDockContentItem[] = [];
-      const newDockContentIndex: { [key: string]: ExtendedDockContentItem } = {};
-      for (const currentContent of (content || [])) {
-        if (
-          currentContent.id !== undefined
-          && currentContent.content !== undefined
-        ) {
+      const newDockContentIndex: Record<string, ExtendedDockContentItem> = {};
+      for (const currentContent of content || []) {
+        if (currentContent.id !== undefined && currentContent.content !== undefined) {
           const newDockContent: ExtendedDockContentItem = {
             active: false,
             id: currentContent.id,
@@ -95,21 +87,29 @@ export class BusinessRulesDockContainerComponent {
       }
 
       const afterNavigationUrlChange = () => {
-        const segments = this.router.url.split('?')[0].split('/').filter(value => value !== '').slice(this.parentRoutePath().split('/').filter(value => value !== '').length);
+        const segments = this.router.url
+          .split('?')[0]
+          .split('/')
+          .filter((value) => value !== '')
+          .slice(
+            this.parentRoutePath()
+              .split('/')
+              .filter((value) => value !== '').length,
+          );
         let newActiveContentFound = false;
-        for (const currentRoutedContent of (content || [])) {
+        for (const currentRoutedContent of content || []) {
           if (currentRoutedContent.route) {
             let segmentIdx = 0;
-            let segmentMapping: { [key: string]: string } = {};
+            const segmentMapping: Record<string, string> = {};
             let failedLookup = false;
-            for (const currentRoutePathToMatch of currentRoutedContent.route.split("/")) {
+            for (const currentRoutePathToMatch of currentRoutedContent.route.split('/')) {
               const currentSegment = segments[segmentIdx++];
               if (!currentSegment) {
                 failedLookup = true;
                 break;
               }
               const currentSegmentPath = currentSegment;
-              if (currentRoutePathToMatch.indexOf(":") === 0) {
+              if (currentRoutePathToMatch.indexOf(':') === 0) {
                 if (!segmentMapping[currentRoutePathToMatch]) {
                   segmentMapping[currentRoutePathToMatch] = currentSegmentPath;
                 }
@@ -129,11 +129,16 @@ export class BusinessRulesDockContainerComponent {
               this.activeContent.set({
                 ...currentRoutedContent,
                 parentRoutePath: [
-                  ...(this.parentRoutePath() + '/' + currentRoutedContent.route).split('/').map(value => ({
-                    ...segmentMapping,
-                    ...this.urlSegments()
-                  })[value] || value),
-                ].filter(value => value !== '').join('/')
+                  ...(this.parentRoutePath() + '/' + currentRoutedContent.route).split('/').map(
+                    (value) =>
+                      ({
+                        ...segmentMapping,
+                        ...this.urlSegments(),
+                      })[value] || value,
+                  ),
+                ]
+                  .filter((value) => value !== '')
+                  .join('/'),
               });
               newActiveContentFound = true;
               break;
@@ -144,16 +149,21 @@ export class BusinessRulesDockContainerComponent {
           let firstEntry: ExtendedKokuBusinessRuleDockContentItemDto | null = null;
           const firstEntryRaw = (content || [])[0];
           if (firstEntryRaw) {
-            let segmentMapping: { [key: string]: string } = {...(this.urlSegments() || {})};
+            const segmentMapping: Record<string, string> = { ...(this.urlSegments() || {}) };
             firstEntry = {
               ...firstEntryRaw,
               parentRoutePath: [
-                ...(this.parentRoutePath() + '/' + firstEntryRaw.route).split('/').map(value => ({
-                  ...segmentMapping,
-                  ...this.urlSegments()
-                })[value] || value),
-              ].filter(value => value !== '').join('/')
-            }
+                ...(this.parentRoutePath() + '/' + firstEntryRaw.route).split('/').map(
+                  (value) =>
+                    ({
+                      ...segmentMapping,
+                      ...this.urlSegments(),
+                    })[value] || value,
+                ),
+              ]
+                .filter((value) => value !== '')
+                .join('/'),
+            };
           }
           this.activeContent.set(firstEntry);
           const dockConfigSnapshot = this.dockConfig();
@@ -162,7 +172,7 @@ export class BusinessRulesDockContainerComponent {
           }
           this.dockConfig.set(dockConfigSnapshot);
         }
-      }
+      };
 
       this.routerUrlSubscription = this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evnt) => {
         if (evnt instanceof NavigationEnd) {
@@ -170,7 +180,7 @@ export class BusinessRulesDockContainerComponent {
         }
       });
       afterNavigationUrlChange();
-    })
+    });
   }
 
   closeInlineContent() {
@@ -188,12 +198,12 @@ export class BusinessRulesDockContainerComponent {
         currentDockConfig.active = activatedDockContent.id == currentDockConfig.id;
       }
       this.dockConfig.set(dockConfigSnapshot);
-    }
+    };
 
     const contentLookup = this.dockContentIndex[activatedDockContent.id];
     if (contentLookup) {
       if (contentLookup.route !== undefined) {
-        let routeParts: string[] = [];
+        const routeParts: string[] = [];
         for (const currentRoutePart of contentLookup.route.split('/')) {
           let replacedRoutePart = currentRoutePart;
           for (const [segment, value] of Object.entries(this.urlSegments() || {})) {
@@ -201,24 +211,19 @@ export class BusinessRulesDockContainerComponent {
           }
           routeParts.push(replacedRoutePart);
         }
-        this.router.navigate(
-          [
-            ...this.parentRoutePath().split('/'),
-            ...routeParts,
-          ],
-          {
-            queryParamsHandling: 'merge'
-          }
-        ).then((success) => {
-          if (success) {
-            afterContentActivated();
-          }
-        });
+        this.router
+          .navigate([...this.parentRoutePath().split('/'), ...routeParts], {
+            queryParamsHandling: 'merge',
+          })
+          .then((success) => {
+            if (success) {
+              afterContentActivated();
+            }
+          });
       } else {
         this.activeContent.set(contentLookup);
         afterContentActivated();
       }
     }
   }
-
 }

@@ -1,19 +1,19 @@
-import {WritableSignal} from '@angular/core';
-import {BehaviorSubject, filter, Subscription} from 'rxjs';
-import {HttpClient} from '@angular/common/http';
-import {get} from '../utils/get';
-import {set} from '../utils/set';
+import { WritableSignal } from '@angular/core';
+import { BehaviorSubject, filter, Subscription } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { get } from '../utils/get';
+import { set } from '../utils/set';
 import qs from 'qs';
-import {ModalService} from '../modal/modal.service';
-import {ModalContentSetup} from '../modal/modal.type';
-import {GLOBAL_EVENT_BUS} from '../events/global-events';
-import {UNIQUE_REF_GENERATOR} from '../utils/uniqueRef';
+import { ModalService } from '../modal/modal.service';
+import { ModalContentSetup } from '../modal/modal.type';
+import { GLOBAL_EVENT_BUS } from '../events/global-events';
+import { UNIQUE_REF_GENERATOR } from '../utils/uniqueRef';
 
 export interface BusinessRuleExecutorFieldInstance {
   value: WritableSignal<any>;
   fieldEventBus: BehaviorSubject<{
-    eventName: KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum,
-    payload?: any
+    eventName: KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum;
+    payload?: any;
   } | null>;
   disabledCauses: WritableSignal<Set<string>>;
   requiredCauses: WritableSignal<Set<string>>;
@@ -21,15 +21,14 @@ export interface BusinessRuleExecutorFieldInstance {
   loadingCauses: WritableSignal<Set<string>>;
 }
 
-export interface BusinessRuleExecutorFieldInstanceIndex {
-  [p: string]: BusinessRuleExecutorFieldInstance
-}
+export type BusinessRuleExecutorFieldInstanceIndex = Record<string, BusinessRuleExecutorFieldInstance>;
 
 class BusinessRuleExecutor {
+  private readonly fastListenerRegistry: Partial<
+    Record<KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum, () => void>
+  > = {};
 
-  private readonly fastListenerRegistry: { [key in KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum]?: () => void } = {};
-
-  private loadingAnimationFields: Set<BusinessRuleExecutorFieldInstance> = new Set([]);
+  private loadingAnimationFields = new Set<BusinessRuleExecutorFieldInstance>([]);
   private asyncLoadingSubscription: Subscription | undefined;
 
   private uniqueInstanceRef = UNIQUE_REF_GENERATOR.generate();
@@ -58,7 +57,7 @@ class BusinessRuleExecutor {
         }
         this.fastListenerRegistry[currentListener.event] = () => {
           this.triggerFieldEvent();
-        }
+        };
       }
 
       if (currentReference.loadingAnimation) {
@@ -66,18 +65,24 @@ class BusinessRuleExecutor {
       }
 
       referencedField.fieldEventBus
-        .pipe(filter(value => {
-          return value !== null;
-        })).subscribe((eventDetails) => {
-        if (!eventDetails.eventName) {
-          throw new Error('Event name is required');
-        }
-        console.log(`BusinessRuleExecutor Received Event '${eventDetails.eventName}' for Field ${currentReference.reference}`, eventDetails.payload);
-        const listenerFnLookup = this.fastListenerRegistry[eventDetails.eventName];
-        if (listenerFnLookup) {
-          listenerFnLookup();
-        }
-      });
+        .pipe(
+          filter((value) => {
+            return value !== null;
+          }),
+        )
+        .subscribe((eventDetails) => {
+          if (!eventDetails.eventName) {
+            throw new Error('Event name is required');
+          }
+          console.log(
+            `BusinessRuleExecutor Received Event '${eventDetails.eventName}' for Field ${currentReference.reference}`,
+            eventDetails.payload,
+          );
+          const listenerFnLookup = this.fastListenerRegistry[eventDetails.eventName];
+          if (listenerFnLookup) {
+            listenerFnLookup();
+          }
+        });
     }
   }
 
@@ -117,11 +122,10 @@ class BusinessRuleExecutor {
 
     switch (this.config.execution['@type']) {
       case 'open-dialog-content': {
-
         const castedExecution = this.config.execution as KokuDto.KokuBusinessRuleOpenDialogContentDto;
 
         if (!castedExecution.content) {
-          throw new Error("open-content content is not defined");
+          throw new Error('open-content content is not defined');
         }
 
         const newModal = this.modalService.add({
@@ -130,26 +134,31 @@ class BusinessRuleExecutor {
           dynamicContentSetup: this.modalSetup,
           fullscreen: true,
           parentRoutePath: '',
-          clickOutside: (event) => {
+          clickOutside: () => {
             newModal.close();
           },
           onCloseRequested: () => {
             newModal.close();
-          }
+          },
         });
 
         for (const currentCloseEventListener of castedExecution.closeEventListeners || []) {
           switch (currentCloseEventListener['@type']) {
-            case "global-event-listener": {
-              const castedCloseEventListener = currentCloseEventListener as KokuDto.KokuBusinessRuleOpenContentCloseGlobalEventListenerDto;
+            case 'global-event-listener': {
+              const castedCloseEventListener =
+                currentCloseEventListener as KokuDto.KokuBusinessRuleOpenContentCloseGlobalEventListenerDto;
 
               if (!castedCloseEventListener.eventName) {
                 throw new Error('Missing eventName in Listener');
               }
 
-              GLOBAL_EVENT_BUS.addGlobalEventListener(this.uniqueInstanceRef, castedCloseEventListener.eventName, () => {
-                newModal.close();
-              });
+              GLOBAL_EVENT_BUS.addGlobalEventListener(
+                this.uniqueInstanceRef,
+                castedCloseEventListener.eventName,
+                () => {
+                  newModal.close();
+                },
+              );
               break;
             }
             default: {
@@ -160,14 +169,13 @@ class BusinessRuleExecutor {
         break;
       }
       case 'call-http-endpoint': {
-
         const castedExecution = this.config.execution as KokuDto.KokuBusinessRuleCallHttpEndpoint;
 
         if (!castedExecution.method) {
-          throw new Error("Call Http Endpoint Method is not defined");
+          throw new Error('Call Http Endpoint Method is not defined');
         }
         if (!castedExecution.url) {
-          throw new Error("Call Http Endpoint Url is not defined");
+          throw new Error('Call Http Endpoint Url is not defined');
         }
 
         const requestBody = {};
@@ -184,20 +192,25 @@ class BusinessRuleExecutor {
           }
         }
 
-        this.asyncLoadingSubscription = this.httpClient.request(
-          castedExecution.method,
-          castedExecution.url
-          + (castedExecution.method === 'GET' ? (castedExecution.url.indexOf('?') === -1 ? "?" : "&") + qs.stringify(requestBody, {
-            arrayFormat: 'indices',
-            allowDots: true
-          }) : ""),
-          {
-            body: castedExecution.method === 'GET' ? undefined : requestBody
-          }
-        ).subscribe((result) => {
-          console.log('Execution finished', result);
-          this.afterExecutionFinished(result);
-        });
+        this.asyncLoadingSubscription = this.httpClient
+          .request(
+            castedExecution.method,
+            castedExecution.url +
+              (castedExecution.method === 'GET'
+                ? (castedExecution.url.indexOf('?') === -1 ? '?' : '&') +
+                  qs.stringify(requestBody, {
+                    arrayFormat: 'indices',
+                    allowDots: true,
+                  })
+                : ''),
+            {
+              body: castedExecution.method === 'GET' ? undefined : requestBody,
+            },
+          )
+          .subscribe((result) => {
+            console.log('Execution finished', result);
+            this.afterExecutionFinished(result);
+          });
 
         break;
       }
@@ -240,7 +253,6 @@ class BusinessRuleExecutor {
       currentLoadingField.loadingCauses.set(new Set(loadingCauses));
     }
   }
-
 }
 
-export {BusinessRuleExecutor,};
+export { BusinessRuleExecutor };

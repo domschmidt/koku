@@ -1,4 +1,3 @@
-
 export function convertToString(v: unknown): string {
   if (v === null) return 'null';
   if (v === undefined) return 'undefined';

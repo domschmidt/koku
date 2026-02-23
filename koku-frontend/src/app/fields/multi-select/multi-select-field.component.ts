@@ -8,81 +8,74 @@ import {
   QueryList,
   signal,
   TemplateRef,
-  ViewChildren
+  ViewChildren,
 } from '@angular/core';
-import {SelectFieldComponent} from '../select/select-field.component';
-import {toObservable} from '@angular/core/rxjs-interop';
-import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop';
-import {NgTemplateOutlet} from '@angular/common';
-import {isMatch} from '../../utils/ismatch';
-import {get} from '../../utils/get';
-import {set} from '../../utils/set';
+import { SelectFieldComponent } from '../select/select-field.component';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import { NgTemplateOutlet } from '@angular/common';
+import { isMatch } from '../../utils/ismatch';
+import { get } from '../../utils/get';
+import { set } from '../../utils/set';
 
 @Component({
   selector: 'multi-select-field',
   templateUrl: './multi-select-field.component.html',
   styleUrl: './multi-select-field.component.css',
-  imports: [
-    SelectFieldComponent,
-    CdkDropList,
-    CdkDrag,
-    NgTemplateOutlet
-  ],
-  standalone: true
+  imports: [SelectFieldComponent, CdkDropList, CdkDrag, NgTemplateOutlet],
+  standalone: true,
 })
 export class MultiSelectFieldComponent {
-
   value = input.required<any[]>();
   defaultValue = input<string[]>([]);
   name = input.required<string>();
   label = input<string>();
   placeholder = input<string>();
   possibleValues = input<KokuDto.MultiSelectFormularFieldPossibleValue[]>([]);
-  loading = input(false, {transform: booleanAttribute});
-  readonly = input(false, {transform: booleanAttribute});
-  required = input(false, {transform: booleanAttribute});
-  disabled = input(false, {transform: booleanAttribute});
-  valueOnly = input(false, {transform: booleanAttribute});
+  loading = input(false, { transform: booleanAttribute });
+  readonly = input(false, { transform: booleanAttribute });
+  required = input(false, { transform: booleanAttribute });
+  disabled = input(false, { transform: booleanAttribute });
+  valueOnly = input(false, { transform: booleanAttribute });
 
   selectionIds = signal<string[]>([]);
   possibleValuesIdx = computed(() => {
-      const result: { [key: string]: KokuDto.MultiSelectFormularFieldPossibleValue } = {};
-      for (const currentValue of (this.possibleValues() || [])) {
-        if (currentValue.id !== undefined) {
-          let key = currentValue.id;
-          if (typeof key !== 'string') {
-            key = String(key);
-          }
-          result[key] = currentValue;
+    const result: Record<string, KokuDto.MultiSelectFormularFieldPossibleValue> = {};
+    for (const currentValue of this.possibleValues() || []) {
+      if (currentValue.id !== undefined) {
+        let key = currentValue.id;
+        if (typeof key !== 'string') {
+          key = String(key);
         }
+        result[key] = currentValue;
       }
-      return result;
     }
-  );
+    return result;
+  });
   filteredPossibleValues = signal<KokuDto.MultiSelectFormularFieldPossibleValue[]>([]);
   badgeContentTemplate = input<TemplateRef<any>>();
   idPathMapping = input<string>();
-  uniqueValues = input(false, {transform: booleanAttribute});
+  uniqueValues = input(false, { transform: booleanAttribute });
 
-  @ViewChildren("badgeEl") badgeEls: QueryList<ElementRef<HTMLButtonElement>> | undefined;
+  @ViewChildren('badgeEl') badgeEls: QueryList<ElementRef<HTMLButtonElement>> | undefined;
 
   onSelectItemClick = output<{
-    event: Event,
-    id: string,
-    pos: number
+    event: Event;
+    id: string;
+    pos: number;
   }>();
   onChange = output<any[]>();
   onBlur = output<Event>();
   onFocus = output<Event>();
   onSelect = output<string>();
   onMove = output<{
-    oldPosition: number,
-    newPosition: number,
-    id: string
+    oldPosition: number;
+    newPosition: number;
+    id: string;
   }>();
   onDelete = output<{
-    position: number,
-    id: string
+    position: number;
+    id: string;
   }>();
 
   constructor() {
@@ -108,17 +101,14 @@ export class MultiSelectFieldComponent {
       this.selectionIds.set(selectionIds);
       this.filteredPossibleValues.set(this.filterPossibleValues(selectionIds));
     });
-    toObservable(this.possibleValues).subscribe((newValue) => {
+    toObservable(this.possibleValues).subscribe(() => {
       this.filteredPossibleValues.set(this.filterPossibleValues(this.selectionIds()));
     });
   }
 
   selectById($event: string | null) {
     if ($event) {
-      const newSelectionIds = [
-        ...this.selectionIds(),
-        $event
-      ];
+      const newSelectionIds = [...this.selectionIds(), $event];
       this.selectionIds.set(newSelectionIds);
       this.filteredPossibleValues.set(this.filterPossibleValues(newSelectionIds));
       this.onSelect.emit($event);
@@ -128,15 +118,15 @@ export class MultiSelectFieldComponent {
 
   onSelectionDelete(event: Event, currentSelectionIdx: number) {
     event.preventDefault();
-    event.stopPropagation()
+    event.stopPropagation();
     const selectionIdsSnapshot = this.selectionIds();
     const deletedId = selectionIdsSnapshot[currentSelectionIdx];
-    selectionIdsSnapshot.splice(currentSelectionIdx, 1)
+    selectionIdsSnapshot.splice(currentSelectionIdx, 1);
     this.selectionIds.set(selectionIdsSnapshot);
     this.filteredPossibleValues.set(this.filterPossibleValues(selectionIdsSnapshot));
     this.onDelete.emit({
       position: currentSelectionIdx,
-      id: deletedId
+      id: deletedId,
     });
     this.emitOnChange(selectionIdsSnapshot);
   }
@@ -144,18 +134,18 @@ export class MultiSelectFieldComponent {
   drop(event: CdkDragDrop<string[]>) {
     const selectionIdsSnapshot = this.selectionIds();
     const movedId = selectionIdsSnapshot[event.currentIndex];
-    moveItemInArray(selectionIdsSnapshot, event.previousIndex, event.currentIndex)
+    moveItemInArray(selectionIdsSnapshot, event.previousIndex, event.currentIndex);
     this.selectionIds.set(selectionIdsSnapshot);
     this.onMove.emit({
       oldPosition: event.previousIndex,
       newPosition: event.currentIndex,
-      id: movedId
+      id: movedId,
     });
     this.emitOnChange(selectionIdsSnapshot);
   }
 
   private filterPossibleValues(selectionIds: string[]) {
-    let currentPossibleValuesSnapshot = this.possibleValues() || [];
+    const currentPossibleValuesSnapshot = this.possibleValues() || [];
     if (this.uniqueValues()) {
       return currentPossibleValuesSnapshot.filter((currentPossibleValue) => {
         return currentPossibleValue.id === undefined || selectionIds.indexOf(currentPossibleValue.id) < 0;

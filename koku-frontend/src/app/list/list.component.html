@@ -1,13 +1,17 @@
 <div class="flex h-full overflow-auto @container/parent">
-  <div class="h-full w-full flex-col overflow-auto relative @min-[800px]/parent:flex @min-[800px]/parent:max-w-[350px]"
-       [class.flex]="inlineContent() === null"
-       [class.hidden]="inlineContent() !== null"
+  <div
+    class="h-full w-full flex-col overflow-auto relative @min-[800px]/parent:flex @min-[800px]/parent:max-w-[350px]"
+    [class.flex]="inlineContent() === null"
+    [class.hidden]="inlineContent() !== null"
   >
     <div class="p-0 min-h-0 bg-neutral shadow-md rounded-bl-3xl">
       <div class="px-4 py-2 flex gap-3">
         @if (((listData() || {}).filters || []).length) {
-          <button class="btn btn-neutral btn-square" (click)="showFilters.set(!showFilters())"
-                  [class.btn-primary]="showFilters()">
+          <button
+            class="btn btn-neutral btn-square"
+            (click)="showFilters.set(!showFilters())"
+            [class.btn-primary]="showFilters()"
+          >
             <koku-icon name="FUNNEL"></koku-icon>
           </button>
         }
@@ -32,15 +36,16 @@
         }
       </div>
       @if (showFilters()) {
-        <hr class="border-neutral-content/20">
+        <hr class="border-neutral-content/20" />
         <div class="px-4 py-2 flex gap-3">
           @for (currentFilter of (listData() || {}).filters || []; track currentFilter.id) {
             @if (currentFilter.id && currentFilter.valuePath) {
-              <div list-filter
-                   [contentSetup]="contentSetup()"
-                   [filter]="currentFilter"
-                   (onFilterChange)="onFilterChange(currentFilter.id, currentFilter.valuePath, $event)"
-                   class="w-full"
+              <div
+                list-filter
+                [contentSetup]="contentSetup()"
+                [filter]="currentFilter"
+                (onFilterChange)="onFilterChange(currentFilter.id, currentFilter.valuePath, $event)"
+                class="w-full"
               ></div>
             }
           }
@@ -48,10 +53,8 @@
       }
     </div>
 
-    <div class="flex-1 overflow-auto ">
-
+    <div class="flex-1 overflow-auto">
       <ul class="menu w-full pb-14">
-
         @if (activeTempItem(); as activeTempItem) {
           <li class="items-center m-1">
             <button class="w-full menu-active min-h-13 content-center">
@@ -59,7 +62,6 @@
                 {{ activeTempItem.text }}
               </div>
             </button>
-
           </li>
         }
 
@@ -95,51 +97,54 @@
         } @else {
           @for (result of listRegister(); track result.id) {
             <li class="items-center m-1">
-              <button class="w-full min-h-13 content-center"
-                      [class.menu-active]="!sourceLoading() && result.id !== null && result.id === inlineContent()?.id"
-                      [class.menu-disabled]="sourceLoading()"
-                      (click)="itemClickAction($event, result, result.clickAction)"
+              <button
+                class="w-full min-h-13 content-center"
+                [class.menu-active]="!sourceLoading() && result.id !== null && result.id === inlineContent()?.id"
+                [class.menu-disabled]="sourceLoading()"
+                (click)="itemClickAction($event, result, result.clickAction)"
               >
-                <div list-item-preview
-                     [register]="result"
-                     [contentSetup]="contentSetup()"
-                >
-                </div>
-                <div list-item
-                     [register]="result"
-                     [contentSetup]="contentSetup()"
-                     class="flex flex-col {{getItemClasses(result.source(), listData()?.globalItemStyling).join(' ')}}"
-                >
-                </div>
+                <div list-item-preview [register]="result" [contentSetup]="contentSetup()"></div>
+                <div
+                  list-item
+                  [register]="result"
+                  [contentSetup]="contentSetup()"
+                  class="flex flex-col {{ getItemClasses(result.source(), listData()?.globalItemStyling).join(' ') }}"
+                ></div>
 
-                <div list-item-action
-                     [register]="result"
-                     [listRegister]="listRegister()"
-                     [contentSetup]="contentSetup()"
-                     [urlSegments]="urlSegments()"
-                     (onOpenInlineContent)="openInlineContent($event)"
-                     (onOpenRoutedContent)="openRoutedContent($event)"
-                     (onReload)="loadListSource()"
-                     class="flex"
-                >
-                </div>
+                <div
+                  list-item-action
+                  [register]="result"
+                  [listRegister]="listRegister()"
+                  [contentSetup]="contentSetup()"
+                  [urlSegments]="urlSegments()"
+                  (onOpenInlineContent)="openInlineContent($event)"
+                  (onOpenRoutedContent)="openRoutedContent($event)"
+                  (onReload)="loadListSource()"
+                  class="flex"
+                ></div>
               </button>
-
             </li>
           }
         }
-
       </ul>
     </div>
 
     @if (currentPage() !== 0 || sourceData()?.hasMore) {
       <div class="join py-2 absolute bottom-0 left-[50%] p-0 min-h-0 translate-x-[-50%]">
-        <button class="join-item btn" [disabled]="currentPage() == 0"
-                (click)="currentPage.set(currentPage() - 1); loadListSource({page: currentPage()})">«
+        <button
+          class="join-item btn"
+          [disabled]="currentPage() === 0"
+          (click)="currentPage.set(currentPage() - 1); loadListSource({ page: currentPage() })"
+        >
+          «
         </button>
         <button class="join-item btn">Seite {{ currentPage() + 1 }}</button>
-        <button class="join-item btn" [disabled]="!sourceData()?.hasMore"
-                (click)="currentPage.set(currentPage() + 1); loadListSource({page: currentPage()})">»
+        <button
+          class="join-item btn"
+          [disabled]="!sourceData()?.hasMore"
+          (click)="currentPage.set(currentPage() + 1); loadListSource({ page: currentPage() })"
+        >
+          »
         </button>
       </div>
     }
@@ -148,19 +153,19 @@
   @if (inlineContent(); as activeContent) {
     @if (activeContent.content; as activeContentContent) {
       <div class="flex flex-col w-full overflow-auto bg-base-100">
-        <div list-inline-content
-             [content]="activeContentContent"
-             [urlSegments]="activeContent.urlSegments"
-             [contentSetup]="contentSetup()"
-             [loading]="sourceLoading()"
-             [parentRoutePath]="activeContent.parentRoutePath || ''"
-             [context]="context()"
-             (onClose)="closeInlineContent().subscribe()"
-             (onOpenRoutedContent)="openRoutedContent($event)"
-             class="flex overflow-auto grow-1">
-        </div>
+        <div
+          list-inline-content
+          [content]="activeContentContent"
+          [urlSegments]="activeContent.urlSegments"
+          [contentSetup]="contentSetup()"
+          [loading]="sourceLoading()"
+          [parentRoutePath]="activeContent.parentRoutePath || ''"
+          [context]="context()"
+          (onClose)="closeInlineContent().subscribe()"
+          (onOpenRoutedContent)="openRoutedContent($event)"
+          class="flex overflow-auto grow-1"
+        ></div>
       </div>
     }
   }
-
 </div>

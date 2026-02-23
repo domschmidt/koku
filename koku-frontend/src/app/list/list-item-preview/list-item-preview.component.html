@@ -1,12 +1,17 @@
 @if (register(); as register) {
   @if (register.preview; as preview) {
     @if (contentSetup().previewRegistry[preview['@type']]; as previewRegistration) {
-      <ndc-dynamic [ndcDynamicComponent]="previewRegistration.componentType"
-                   [ndcDynamicInputs]="{
-                       value: get(register.source(), preview.valuePath || '', ''),
-                     }"
-                   [ngComponentOutletNdcDynamicInputs]="previewRegistration.inputBindings ? previewRegistration.inputBindings(this, preview) : {}"
-                   [ngComponentOutletNdcDynamicOutputs]="previewRegistration.outputBindings ? previewRegistration.outputBindings(this, preview) : {}"
+      <ndc-dynamic
+        [ndcDynamicComponent]="previewRegistration.componentType"
+        [ndcDynamicInputs]="{
+          value: get(register.source(), preview.valuePath || '', ''),
+        }"
+        [ngComponentOutletNdcDynamicInputs]="
+          previewRegistration.inputBindings ? previewRegistration.inputBindings(this, preview) : {}
+        "
+        [ngComponentOutletNdcDynamicOutputs]="
+          previewRegistration.outputBindings ? previewRegistration.outputBindings(this, preview) : {}
+        "
       ></ndc-dynamic>
     }
   }

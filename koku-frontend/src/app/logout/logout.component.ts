@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
-import {AuthService} from "../auth/auth.service";
-import {ToastService} from '../toast/toast.service';
-import {from} from 'rxjs';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { AuthService } from '../auth/auth.service';
+import { ToastService } from '../toast/toast.service';
+import { from } from 'rxjs';
 
 @Component({
   selector: 'koku-logout',
@@ -17,12 +17,14 @@ export class LogoutComponent {
     const authService = this.authService;
 
     this.loading.set(true);
-    from(authService.destroySession()).subscribe(() => {
-      this.loading.set(false);
-      this.toastService.add(`Erfolgreich abgemeldet`, 'success');
-    }, () => {
-      this.loading.set(false);
-    });
+    from(authService.destroySession()).subscribe(
+      () => {
+        this.loading.set(false);
+        this.toastService.add(`Erfolgreich abgemeldet`, 'success');
+      },
+      () => {
+        this.loading.set(false);
+      },
+    );
   }
-
 }

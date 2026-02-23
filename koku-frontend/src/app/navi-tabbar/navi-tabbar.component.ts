@@ -1,18 +1,11 @@
-import {Component, inject} from '@angular/core';
-import {ActivatedRoute, RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { ActivatedRoute, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'koku-navi-tabbar',
-  imports: [
-    RouterLinkActive,
-    RouterLink,
-    RouterOutlet
-  ],
+  imports: [RouterLinkActive, RouterLink, RouterOutlet],
   templateUrl: './navi-tabbar.component.html',
-  styleUrl: './navi-tabbar.component.css'
 })
 export class NaviTabbarComponent {
-
-  activatedRoute = inject(ActivatedRoute)
-
+  activatedRoute = inject(ActivatedRoute);
 }

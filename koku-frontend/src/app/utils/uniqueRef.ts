@@ -6,4 +6,4 @@ class UniqueRefGenerator {
   }
 }
 
-export const UNIQUE_REF_GENERATOR = new UniqueRefGenerator()
+export const UNIQUE_REF_GENERATOR = new UniqueRefGenerator();
