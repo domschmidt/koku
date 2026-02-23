@@ -1,3 +1,11 @@
+## [2.2.7](https://github.com/domschmidt/koku/compare/v2.2.6...v2.2.7) (2026-02-23)
+
+
+### Bug Fixes
+
+* **minors:** add overall price and hide disabled options in select field ([e39cf4a](https://github.com/domschmidt/koku/commit/e39cf4a872b582d7b0f06a8591a4b9e5ee7aa96e))
+* **minors:** hide disabled options in selection mode, calendar source type indicator, fix many linting errors, add overall price summary ([604507b](https://github.com/domschmidt/koku/commit/604507b7d0ad6514f04c827e2adc7b23906bc9d6))
+
 ## [2.2.6](https://github.com/domschmidt/koku/compare/v2.2.5...v2.2.6) (2026-02-20)
 
 
