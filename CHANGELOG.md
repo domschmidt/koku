@@ -1,3 +1,10 @@
+## [2.2.8](https://github.com/domschmidt/koku/compare/v2.2.7...v2.2.8) (2026-02-23)
+
+
+### Bug Fixes
+
+* **deps:** update deps ([af282d9](https://github.com/domschmidt/koku/commit/af282d9eed750fad5b01f9362510c34d35929b9e))
+
 ## [2.2.7](https://github.com/domschmidt/koku/compare/v2.2.6...v2.2.7) (2026-02-23)
 
 
