@@ -77,7 +77,7 @@ export class ChartComponent {
                   borderColor: 'var(--color-neutral)',
                 },
                 series: ((chartData) => {
-                  let result: ApexAxisChartSeries | ApexNonAxisChartSeries | null = null;
+                  let result: ApexCharts.ApexOptions['series'] | null = null;
                   switch (chartData['@type']) {
                     case 'bar': {
                       const castedChartData = chartData as KokuDto.BarChartDto;
@@ -147,7 +147,7 @@ export class ChartComponent {
                     show: false,
                   },
                   ...((chartData) => {
-                    let result: ApexChart | null = null;
+                    let result: ApexCharts.ApexOptions['chart'] | null = null;
                     switch (chartData['@type']) {
                       case 'bar': {
                         const castedChart = chartData as KokuDto.BarChartDto;
@@ -174,7 +174,7 @@ export class ChartComponent {
                   })(chartData),
                 },
                 yaxis: ((chartData) => {
-                  let result: ApexYAxis[] = [
+                  let result: ApexCharts.ApexOptions['yaxis'][] = [
                     {
                       labels: {
                         style: {
@@ -188,7 +188,7 @@ export class ChartComponent {
                       const castedChart = chartData as KokuDto.BarChartDto;
                       const axes = castedChart.axes;
                       if (axes && axes.y) {
-                        const tempResult: ApexYAxis[] = [];
+                        const tempResult: ApexCharts.ApexOptions['yaxis'][] = [];
                         for (const currentAxis of axes.y) {
                           tempResult.push({
                             opposite: currentAxis.opposite,
@@ -211,7 +211,7 @@ export class ChartComponent {
                       const castedChart = chartData as KokuDto.LineChartDto;
                       const axes = castedChart.axes;
                       if (axes && axes.y) {
-                        const tempResult: ApexYAxis[] = [];
+                        const tempResult: ApexCharts.ApexOptions['yaxis'][] = [];
                         for (const currentAxis of axes.y) {
                           tempResult.push({
                             opposite: currentAxis.opposite,
@@ -240,7 +240,7 @@ export class ChartComponent {
                     },
                   },
                   ...((chartData) => {
-                    let result: ApexXAxis = { categories: [] };
+                    let result: ApexCharts.ApexOptions['xaxis'] = { categories: [] };
                     switch (chartData['@type']) {
                       case 'bar': {
                         const castedChartData = chartData as KokuDto.BarChartDto;
@@ -281,11 +281,11 @@ export class ChartComponent {
                   fontFamily: 'inherit',
                 },
                 annotations: ((annotations) => {
-                  let result: ApexAnnotations | undefined = undefined;
+                  let result: ApexCharts.ApexOptions['annotations'] | undefined = undefined;
                   if (annotations) {
                     result = {
                       xaxis: ((xaxis) => {
-                        const result: XAxisAnnotations[] = [];
+                        const result: NonNullable<ApexCharts.ApexOptions['annotations']>['xaxis'] = [];
                         if (xaxis) {
                           for (const currentAxis of xaxis) {
                             result.push({
