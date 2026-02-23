@@ -1,20 +1,17 @@
-import {Component, input, output} from '@angular/core';
-import {ListComponent, ListContentSetup} from '../../list/list.component';
+import { Component, input, output } from '@angular/core';
+import { ListComponent, ListContentSetup } from '../../list/list.component';
 
 @Component({
   selector: '[calendar-inline-list-container],calendar-inline-list-container',
-  imports: [
-    ListComponent,
-  ],
+  imports: [ListComponent],
   templateUrl: './calendar-inline-list-container.component.html',
-  styleUrl: './calendar-inline-list-container.component.css'
+  styleUrl: './calendar-inline-list-container.component.css',
 })
 export class CalendarInlineListContainerComponent {
-
   title = input<string>();
   listUrl = input<string>();
   sourceUrl = input<string>();
-  urlSegments = input<{ [key: string]: string } | null>(null);
+  urlSegments = input<Record<string, string> | null>(null);
   contentSetup = input.required<ListContentSetup>();
   parentRoutePath = input<string>('');
 

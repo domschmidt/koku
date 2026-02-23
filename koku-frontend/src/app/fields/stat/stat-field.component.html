@@ -2,12 +2,10 @@
   <ng-content select="prepend-outer"></ng-content>
   <div class="stats rounded-4xl border-1 border-base-content/20 w-full">
     <ng-content select="prepend-inner"></ng-content>
-    <div class="stat"
-         [class.skeleton]="loading()">
+    <div class="stat" [class.skeleton]="loading()">
       <div class="stat-figure text-secondary">
         @if (icon(); as icon) {
-          <koku-icon [name]="icon"
-                     class="size-10"></koku-icon>
+          <koku-icon [name]="icon" class="size-10"></koku-icon>
         }
       </div>
       <div class="stat-title">{{ title() }}</div>

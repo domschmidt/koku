@@ -1,4 +1,4 @@
-import {Injectable, signal} from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class FullscreenService {
@@ -8,12 +8,7 @@ export class FullscreenService {
 
   canUseNative(): boolean {
     const el: any = document.documentElement;
-    return !!(
-      el.requestFullscreen ||
-      el.webkitRequestFullscreen ||
-      el.mozRequestFullScreen ||
-      el.msRequestFullscreen
-    );
+    return !!(el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen);
   }
 
   enter(el: HTMLElement) {
@@ -45,19 +40,11 @@ export class FullscreenService {
 
   private exitNative() {
     const d: any = document;
-    (
-      d.exitFullscreen ||
-      d.webkitExitFullscreen ||
-      d.mozCancelFullScreen ||
-      d.msExitFullscreen
-    ).call(d);
+    (d.exitFullscreen || d.webkitExitFullscreen || d.mozCancelFullScreen || d.msExitFullscreen).call(d);
   }
 
   private isNativeActive(): boolean {
-    return !!(
-      document.fullscreenElement ||
-      (document as any).webkitFullscreenElement
-    );
+    return !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
   }
 
   private enterFallback(el: HTMLElement) {
@@ -78,10 +65,7 @@ export class FullscreenService {
     if (!window.visualViewport) return;
 
     const update = () => {
-      document.documentElement.style.setProperty(
-        '--vhvv',
-        `${window.visualViewport!.height}px`
-      );
+      document.documentElement.style.setProperty('--vhvv', `${window.visualViewport!.height}px`);
     };
 
     window.visualViewport.addEventListener('resize', update);

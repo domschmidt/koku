@@ -1,20 +1,19 @@
-import {Component, ElementRef, input, output, signal, viewChild} from '@angular/core';
+import { Component, ElementRef, input, output, signal, viewChild } from '@angular/core';
 
 export type ToggleFilterTriState = 'checked' | 'unchecked' | 'indeterminate';
 
 @Component({
   selector: '[toggle-filter],toggle-filter',
   templateUrl: './toggle-filter.component.html',
-  styleUrl: './toggle-filter.component.css'
+  styleUrl: './toggle-filter.component.css',
 })
 export class ToggleFilterComponent {
-
   label = input.required<string>();
   inputElement = viewChild<ElementRef<HTMLInputElement>>('inputElement');
   state = signal<ToggleFilterTriState>('unchecked');
   onFilterChange = output<ToggleFilterTriState>();
 
-  onToggle(event: MouseEvent) {
+  onToggle() {
     let newState: ToggleFilterTriState;
     switch (this.state()) {
       case 'unchecked':
@@ -39,5 +38,4 @@ export class ToggleFilterComponent {
 
     this.onFilterChange.emit(newState);
   }
-
 }

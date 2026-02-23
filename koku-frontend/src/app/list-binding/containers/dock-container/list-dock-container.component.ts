@@ -1,14 +1,13 @@
-import {Component, DestroyRef, inject, input, output, signal} from '@angular/core';
-import {DockComponent, DockContentItem} from '../../../dock/dock.component';
-import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
-import {ListInlineContentComponent} from '../../../list/list-inline-content/list-inline-content.component';
-import {ListContentSetup} from '../../../list/list.component';
-import {NavigationEnd, Router} from '@angular/router';
-import {OutletDirective} from '../../../portal/outlet.directive';
-import {HttpClient} from '@angular/common/http';
-import {get} from '../../../utils/get';
-import {Subscription} from 'rxjs';
-
+import { Component, DestroyRef, inject, input, output, signal } from '@angular/core';
+import { DockComponent, DockContentItem } from '../../../dock/dock.component';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { ListInlineContentComponent } from '../../../list/list-inline-content/list-inline-content.component';
+import { ListContentSetup } from '../../../list/list.component';
+import { NavigationEnd, Router } from '@angular/router';
+import { OutletDirective } from '../../../portal/outlet.directive';
+import { HttpClient } from '@angular/common/http';
+import { get } from '../../../utils/get';
+import { Subscription } from 'rxjs';
 
 interface ExtendedDockContentItem extends DockContentItem {
   content: KokuDto.AbstractListViewContentDto;
@@ -19,39 +18,34 @@ interface ExtendedCalendarInlineDockContentItemDto extends KokuDto.ListViewItemI
   parentRoutePath?: string;
 }
 
-
 @Component({
   selector: '[list-inline-dock-container],list-inline-dock-container',
-  imports: [
-    DockComponent,
-    ListInlineContentComponent,
-  ],
+  imports: [DockComponent, ListInlineContentComponent],
   templateUrl: './list-dock-container.component.html',
-  styleUrl: './list-dock-container.component.css'
+  styleUrl: './list-dock-container.component.css',
 })
 export class ListDockContainerComponent {
-
   content = input.required<KokuDto.ListViewItemInlineDockContentItemDto[]>();
   contentSetup = input.required<ListContentSetup>();
-  urlSegments = input<{ [key: string]: string } | null>(null);
+  urlSegments = input<Record<string, string> | null>(null);
   parentRoutePath = input<string>('');
   buttonDockOutlet = input<OutletDirective>();
   sourceUrl = input<string>();
   titlePath = input<string>();
-  context = input<{ [key: string]: any }>();
+  context = input<Record<string, any>>();
 
   dockConfig = signal<ExtendedDockContentItem[]>([]);
   activeContent = signal<ExtendedCalendarInlineDockContentItemDto | null>(null);
   title = signal<string | null>(null);
 
-  httpClient = inject(HttpClient)
-  router = inject(Router)
+  httpClient = inject(HttpClient);
+  router = inject(Router);
   destroyRef = inject(DestroyRef);
 
   onClose = output<void>();
   onOpenRoutedContent = output<string[]>();
 
-  private dockContentIndex: { [id: string]: ExtendedDockContentItem } = {};
+  private dockContentIndex: Record<string, ExtendedDockContentItem> = {};
   private routerUrlSubscription: Subscription | undefined;
 
   constructor() {
@@ -71,12 +65,9 @@ export class ListDockContainerComponent {
     });
     toObservable(this.content).subscribe((content) => {
       const newTransformedContent: ExtendedDockContentItem[] = [];
-      const newDockContentIndex: { [key: string]: ExtendedDockContentItem } = {};
-      for (const currentContent of (content || [])) {
-        if (
-          currentContent.id !== undefined
-          && currentContent.content !== undefined
-        ) {
+      const newDockContentIndex: Record<string, ExtendedDockContentItem> = {};
+      for (const currentContent of content || []) {
+        if (currentContent.id !== undefined && currentContent.content !== undefined) {
           const newDockContent: ExtendedDockContentItem = {
             active: false,
             id: currentContent.id,
@@ -97,21 +88,28 @@ export class ListDockContainerComponent {
       }
 
       const afterNavigationUrlChange = () => {
-        const segments = this.router.url.split('/').filter(value => value !== '').slice(this.parentRoutePath().split('/').filter(value => value !== '').length);
+        const segments = this.router.url
+          .split('/')
+          .filter((value) => value !== '')
+          .slice(
+            this.parentRoutePath()
+              .split('/')
+              .filter((value) => value !== '').length,
+          );
         let newActiveContentFound = false;
-        for (const currentRoutedContent of (content || [])) {
+        for (const currentRoutedContent of content || []) {
           if (currentRoutedContent.route) {
             let segmentIdx = 0;
-            let segmentMapping: { [key: string]: string } = {};
+            const segmentMapping: Record<string, string> = {};
             let failedLookup = false;
-            for (const currentRoutePathToMatch of currentRoutedContent.route.split("/")) {
+            for (const currentRoutePathToMatch of currentRoutedContent.route.split('/')) {
               const currentSegment = segments[segmentIdx++];
               if (!currentSegment) {
                 failedLookup = true;
                 break;
               }
               const currentSegmentPath = currentSegment;
-              if (currentRoutePathToMatch.indexOf(":") === 0) {
+              if (currentRoutePathToMatch.indexOf(':') === 0) {
                 if (!segmentMapping[currentRoutePathToMatch]) {
                   segmentMapping[currentRoutePathToMatch] = currentSegmentPath;
                 }
@@ -131,11 +129,16 @@ export class ListDockContainerComponent {
               this.activeContent.set({
                 ...currentRoutedContent,
                 parentRoutePath: [
-                  ...(this.parentRoutePath() + '/' + currentRoutedContent.route).split('/').map(value => ({
-                    ...segmentMapping,
-                    ...this.urlSegments()
-                  })[value] || value),
-                ].filter(value => value !== '').join('/')
+                  ...(this.parentRoutePath() + '/' + currentRoutedContent.route).split('/').map(
+                    (value) =>
+                      ({
+                        ...segmentMapping,
+                        ...this.urlSegments(),
+                      })[value] || value,
+                  ),
+                ]
+                  .filter((value) => value !== '')
+                  .join('/'),
               });
               newActiveContentFound = true;
               break;
@@ -149,15 +152,20 @@ export class ListDockContainerComponent {
             firstEntry = {
               ...firstEntryRaw,
               parentRoutePath: [
-                ...(this.parentRoutePath() + '/' + firstEntryRaw.route).split('/').map(value => ({
-                  ...this.urlSegments()
-                })[value] || value),
-              ].filter(value => value !== '').join('/')
-            }
+                ...(this.parentRoutePath() + '/' + firstEntryRaw.route).split('/').map(
+                  (value) =>
+                    ({
+                      ...this.urlSegments(),
+                    })[value] || value,
+                ),
+              ]
+                .filter((value) => value !== '')
+                .join('/'),
+            };
           }
           this.activeContent.set(firstEntry);
         }
-      }
+      };
 
       this.routerUrlSubscription = this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evnt) => {
         if (evnt instanceof NavigationEnd) {
@@ -165,7 +173,7 @@ export class ListDockContainerComponent {
         }
       });
       afterNavigationUrlChange();
-    })
+    });
   }
 
   closeInlineContent() {
@@ -183,12 +191,12 @@ export class ListDockContainerComponent {
         currentDockConfig.active = activatedDockContent.id == currentDockConfig.id;
       }
       this.dockConfig.set(dockConfigSnapshot);
-    }
+    };
 
     const contentLookup = this.dockContentIndex[activatedDockContent.id];
     if (contentLookup) {
       if (contentLookup.route !== undefined) {
-        let routeParts: string[] = [];
+        const routeParts: string[] = [];
         for (const currentRoutePart of contentLookup.route.split('/')) {
           let replacedRoutePart = currentRoutePart;
           for (const [segment, value] of Object.entries(this.urlSegments() || {})) {
@@ -196,12 +204,7 @@ export class ListDockContainerComponent {
           }
           routeParts.push(replacedRoutePart);
         }
-        this.router.navigate(
-          [
-            ...this.parentRoutePath().split('/'),
-            ...routeParts,
-          ]
-        ).then((success) => {
+        this.router.navigate([...this.parentRoutePath().split('/'), ...routeParts]).then((success) => {
           if (success) {
             afterContentActivated();
           }
@@ -212,5 +215,4 @@ export class ListDockContainerComponent {
       }
     }
   }
-
 }

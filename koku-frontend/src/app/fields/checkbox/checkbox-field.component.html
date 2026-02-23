@@ -1,20 +1,21 @@
 @if (!valueOnly()) {
   <label class="w-full">
     <div class="w-full flex items-center gap-1">
-      <input [name]="name()"
-             type="checkbox"
-             [attr.disabled]="disabled() ? '' : null"
-             [attr.placeholder]="placeholder() || null"
-             [attr.readonly]="readonly() || null"
-             class="checkbox"
-             [attr.required]="required() ? true : null"
-             [checked]="!loading() ? value() : defaultValue()"
-             [class.skeleton]="loading()"
-             (change)="onChangeRaw($event)"
-             (input)="onInputRaw($event)"
-             (blur)="onBlur.emit()"
-             (focus)="onFocus.emit()"
-      >
+      <input
+        [name]="name()"
+        type="checkbox"
+        [attr.disabled]="disabled() ? '' : null"
+        [attr.placeholder]="placeholder() || null"
+        [attr.readonly]="readonly() || null"
+        class="checkbox"
+        [attr.required]="required() ? true : null"
+        [checked]="!loading() ? value() : defaultValue()"
+        [class.skeleton]="loading()"
+        (change)="onChangeRaw($event)"
+        (input)="onInputRaw($event)"
+        (blur)="onBlur.emit()"
+        (focus)="onFocus.emit()"
+      />
       @if (label(); as label) {
         <span class="label-text">{{ label }}</span>
       }
@@ -22,7 +23,7 @@
   </label>
 } @else {
   @if (loading()) {
-    <div class="skeleton w-full bg-neutral content-center" style="--radius-box:0">&nbsp;</div>
+    <div class="skeleton w-full bg-neutral content-center" style="--radius-box: 0">&nbsp;</div>
   } @else {
     <div class="content-center">{{ value() }}</div>
   }

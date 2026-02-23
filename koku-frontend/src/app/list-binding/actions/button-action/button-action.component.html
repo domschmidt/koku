@@ -1,9 +1,7 @@
-
-
 @if (loading()) {
   <div class="skeleton w-10 h-10 bg-neutral"></div>
 } @else {
-  <button (click)="onClick.emit($event)" class="btn btn-ghost btn-circle	">
+  <button (click)="onClick.emit($event)" class="btn btn-ghost btn-circle">
     @if (value().icon; as icon) {
       <koku-icon [name]="icon"></koku-icon>
     }

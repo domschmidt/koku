@@ -4,21 +4,20 @@
       <ng-container
         [ngComponentOutlet]="containerMapping.componentType"
         [ngComponentOutletInputs]="{
-            fieldRegister: fieldRegister(),
-            buttonRegister: buttonRegister(),
-            containerRegister: containerRegister(),
-            layoutRegister: layoutRegister(),
-            loading: loading(),
-            submitting: submitting(),
-            content: content,
-            contentSetup: contentSetup(),
-            buttonDockOutlet: buttonDockOutlet(),
-            context: context(),
-          }"
+          fieldRegister: fieldRegister(),
+          buttonRegister: buttonRegister(),
+          containerRegister: containerRegister(),
+          layoutRegister: layoutRegister(),
+          loading: loading(),
+          submitting: submitting(),
+          content: content,
+          contentSetup: contentSetup(),
+          buttonDockOutlet: buttonDockOutlet(),
+          context: context(),
+        }"
         [ngComponentOutletNdcDynamicInputs]="inputBindings()"
         [ngComponentOutletNdcDynamicOutputs]="outputBindings()"
       />
     </div>
   }
-
 }

@@ -1,16 +1,36 @@
-import {ModalComponent} from './modal.component';
+import { ModalComponent } from './modal.component';
 
 export interface ModalButtonType {
   loading?: boolean;
   disabled?: boolean;
   href?: string;
-  hrefTarget?: "BLANK" | "SELF";
-  buttonType?: "BUTTON" | "SUBMIT";
+  hrefTarget?: 'BLANK' | 'SELF';
+  buttonType?: 'BUTTON' | 'SUBMIT';
   title?: string;
   icon?: string;
   text?: string;
-  styles?: ("NEUTRAL" | "PRIMARY" | "SECONDARY" | "ACCENT" | "INFO" | "SUCCESS" | "WARNING" | "ERROR" | "OUTLINE" | "DASH" | "SOFT" | "GHOST" | "LINK" | "ACTIVE" | "DISABLED" | "WIDE" | "BLOCK" | "SQUARE" | "CIRCLE")[];
-  size?: "XS" | "SM" | "MD" | "LG" | "XL";
+  styles?: (
+    | 'NEUTRAL'
+    | 'PRIMARY'
+    | 'SECONDARY'
+    | 'ACCENT'
+    | 'INFO'
+    | 'SUCCESS'
+    | 'WARNING'
+    | 'ERROR'
+    | 'OUTLINE'
+    | 'DASH'
+    | 'SOFT'
+    | 'GHOST'
+    | 'LINK'
+    | 'ACTIVE'
+    | 'DISABLED'
+    | 'WIDE'
+    | 'BLOCK'
+    | 'SQUARE'
+    | 'CIRCLE'
+  )[];
+  size?: 'XS' | 'SM' | 'MD' | 'LG' | 'XL';
   onClick: (event: Event, modal: RenderedModalType, button: ModalButtonType) => void;
 }
 
@@ -24,23 +44,28 @@ interface ModalDynamicContent {
   [key: string]: any;
 }
 
-type ModalContentSetup =
-  Record<ModalDynamicContent['@type'], {
+type ModalContentSetup = Record<
+  ModalDynamicContent['@type'],
+  {
     componentType: any;
-    inputBindings?(instance: ModalComponent, modal: RenderedModalType, content: ModalDynamicContent): {
-      [key: string]: any
-    }
-    outputBindings?(instance: ModalComponent, modal: RenderedModalType, content: ModalDynamicContent): {
-      [key: string]: any
-    }
-  }>
-
+    inputBindings?(
+      instance: ModalComponent,
+      modal: RenderedModalType,
+      content: ModalDynamicContent,
+    ): Record<string, any>;
+    outputBindings?(
+      instance: ModalComponent,
+      modal: RenderedModalType,
+      content: ModalDynamicContent,
+    ): Record<string, any>;
+  }
+>;
 
 export interface ModalType {
   headline?: string;
   content?: string;
   dynamicContent?: ModalDynamicContent;
-  urlSegments?: { [key: string]: string };
+  urlSegments?: Record<string, string>;
   onCloseRequested?: () => void;
   clickOutside?: ($event: Event) => void;
   buttons?: ModalButtonType[];

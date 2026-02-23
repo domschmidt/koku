@@ -1,9 +1,14 @@
 @if (content(); as content) {
   @if (contentSetup().inlineContentRegistry[content['@type']]; as inlineContentRegistration) {
-    <ndc-dynamic [ndcDynamicComponent]="inlineContentRegistration.componentType"
-                 [ndcDynamicInputs]="{}"
-                 [ngComponentOutletNdcDynamicInputs]="inlineContentRegistration.inputBindings ? inlineContentRegistration.inputBindings(this, content) : {}"
-                 [ngComponentOutletNdcDynamicOutputs]="inlineContentRegistration.outputBindings ? inlineContentRegistration.outputBindings(this, content) : {}"
+    <ndc-dynamic
+      [ndcDynamicComponent]="inlineContentRegistration.componentType"
+      [ndcDynamicInputs]="{}"
+      [ngComponentOutletNdcDynamicInputs]="
+        inlineContentRegistration.inputBindings ? inlineContentRegistration.inputBindings(this, content) : {}
+      "
+      [ngComponentOutletNdcDynamicOutputs]="
+        inlineContentRegistration.outputBindings ? inlineContentRegistration.outputBindings(this, content) : {}
+      "
     ></ndc-dynamic>
   }
 }

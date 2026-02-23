@@ -8,132 +8,162 @@ import {
   OnDestroy,
   signal,
   SimpleChanges,
-  WritableSignal
+  WritableSignal,
 } from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {HttpClient} from '@angular/common/http';
-import {debounceTime, distinctUntilChanged, Observable, of, Subject, Subscription} from 'rxjs';
-import {ListItemComponent} from './list-item/list-item.component';
-import {InputFieldComponent} from '../fields/input/input-field.component';
-import {tap} from 'rxjs/operators';
-import {IconComponent} from '../icon/icon.component';
-import {ListItemPreviewComponent} from './list-item-preview/list-item-preview.component';
-import {ListInlineContentComponent} from './list-inline-content/list-inline-content.component';
-import {NavigationEnd, Router} from '@angular/router';
-import {get} from '../utils/get';
-import {ListItemActionComponent} from './list-item-action/list-item-action.component';
-import {GLOBAL_EVENT_BUS} from '../events/global-events';
-import {set} from '../utils/set';
-import {deepEqual} from '../utils/deepEqual';
-import {UNIQUE_REF_GENERATOR} from '../utils/uniqueRef';
-import {ModalService} from '../modal/modal.service';
-import {ModalContentSetup, RenderedModalType} from '../modal/modal.type';
-import {ListFilterComponent} from './list-filter/list-filter.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpClient } from '@angular/common/http';
+import { debounceTime, distinctUntilChanged, Observable, of, Subject, Subscription } from 'rxjs';
+import { ListItemComponent } from './list-item/list-item.component';
+import { InputFieldComponent } from '../fields/input/input-field.component';
+import { tap } from 'rxjs/operators';
+import { IconComponent } from '../icon/icon.component';
+import { ListItemPreviewComponent } from './list-item-preview/list-item-preview.component';
+import { ListInlineContentComponent } from './list-inline-content/list-inline-content.component';
+import { NavigationEnd, Router } from '@angular/router';
+import { get } from '../utils/get';
+import { ListItemActionComponent } from './list-item-action/list-item-action.component';
+import { GLOBAL_EVENT_BUS } from '../events/global-events';
+import { set } from '../utils/set';
+import { deepEqual } from '../utils/deepEqual';
+import { UNIQUE_REF_GENERATOR } from '../utils/uniqueRef';
+import { ModalService } from '../modal/modal.service';
+import { ModalContentSetup, RenderedModalType } from '../modal/modal.type';
+import { ListFilterComponent } from './list-filter/list-filter.component';
 
-export type ListFieldRegistrationType = {
-  value: WritableSignal<any>,
-  config: KokuDto.AbstractListViewFieldDto<any>,
-  instance?: ComponentRef<any>
-};
+export interface ListFieldRegistrationType {
+  value: WritableSignal<any>;
+  config: KokuDto.AbstractListViewFieldDto<any>;
+  instance?: ComponentRef<any>;
+}
 
 export interface ListItemSetup {
-
   fieldSelection: string[];
-  fields: { [key: string]: ListFieldRegistrationType };
+  fields: Record<string, ListFieldRegistrationType>;
   actions: KokuDto.AbstractListViewItemActionDto[];
   clickAction?: KokuDto.AbstractListViewItemClickActionDto;
   preview?: KokuDto.AbstractListViewItemPreviewDto;
   id: string | null;
-  source: WritableSignal<{ [index: string]: any }>;
-
+  source: WritableSignal<Record<string, any>>;
 }
 
 export interface ListTempItem {
-
   text: string;
-
 }
 
-export type ItemStylingSetup = Partial<Record<KokuDto.AbstractListViewGlobalItemStylingDto["@type"] | string, {
-  itemClasses?(stylingDefinition: KokuDto.AbstractListViewGlobalItemStylingDto, source: {
-    [p: string]: any
-  }): string[]
-}>>;
+export type ItemStylingSetup = Partial<
+  Record<
+    KokuDto.AbstractListViewGlobalItemStylingDto['@type'] | string,
+    {
+      itemClasses?(
+        stylingDefinition: KokuDto.AbstractListViewGlobalItemStylingDto,
+        source: Record<string, any>,
+      ): string[];
+    }
+  >
+>;
 
-export type ListFilterSetup = Partial<Record<KokuDto.AbstractListViewFilterDto["@type"] | string, {
-  componentType: any;
-  stateInitializer?: (filter: KokuDto.AbstractListViewFilterDto) => KokuDto.QueryPredicate[],
-  inputBindings?(instance: ListFilterComponent, filter: KokuDto.AbstractListViewFilterDto): {
-    [key: string]: any
-  }
-  outputBindings?(instance: ListFilterComponent, filter: KokuDto.AbstractListViewFilterDto): {
-    [key: string]: any
-  }
-}>>;
+export type ListFilterSetup = Partial<
+  Record<
+    KokuDto.AbstractListViewFilterDto['@type'] | string,
+    {
+      componentType: any;
+      stateInitializer?: (filter: KokuDto.AbstractListViewFilterDto) => KokuDto.QueryPredicate[];
+      inputBindings?(instance: ListFilterComponent, filter: KokuDto.AbstractListViewFilterDto): Record<string, any>;
+      outputBindings?(instance: ListFilterComponent, filter: KokuDto.AbstractListViewFilterDto): Record<string, any>;
+    }
+  >
+>;
 
 export interface ListContentSetup {
-  fieldRegistry: Partial<Record<KokuDto.AbstractListViewFieldDto<any>["@type"] | string, {
-    componentType: any;
-    stateInitializer: (listContent: KokuDto.AbstractListViewFieldDto<any>, value: any) => ListFieldRegistrationType,
-    inputBindings?(instance: ListItemComponent, key: string, listContent: KokuDto.AbstractListViewFieldDto<any>): {
-      [key: string]: any
-    }
-    outputBindings?(instance: ListItemComponent, key: string, listContent: KokuDto.AbstractListViewFieldDto<any>): {
-      [key: string]: any
-    }
-  }>>,
-  previewRegistry: Partial<Record<KokuDto.AbstractListViewItemPreviewDto["@type"] | string, {
-    componentType: any;
-    inputBindings?(instance: ListItemPreviewComponent, listPreviewContent: KokuDto.AbstractListViewItemPreviewDto): {
-      [key: string]: any
-    }
-    outputBindings?(instance: ListItemPreviewComponent, listPreviewContent: KokuDto.AbstractListViewItemPreviewDto): {
-      [key: string]: any
-    }
-  }>>,
-  inlineContentRegistry: Partial<Record<KokuDto.AbstractListViewContentDto["@type"] | string, {
-    componentType: any;
-    inputBindings?(instance: ListInlineContentComponent, inlineContent: KokuDto.AbstractListViewContentDto): {
-      [key: string]: any
-    }
-    outputBindings?(instance: ListInlineContentComponent, inlineContent: KokuDto.AbstractListViewContentDto): {
-      [key: string]: any
-    }
-  }>>,
-  actionRegistry: Partial<Record<KokuDto.AbstractListViewItemActionDto["@type"] | string, {
-    componentType: any;
-    inputBindings?(instance: ListItemActionComponent, inlineContent: KokuDto.AbstractListViewItemActionDto): {
-      [key: string]: any
-    }
-    outputBindings?(instance: ListItemActionComponent, inlineContent: KokuDto.AbstractListViewItemActionDto): {
-      [key: string]: any
-    }
-  }>>,
-  filterRegistry: ListFilterSetup,
-  modalRegistry: ModalContentSetup,
-  itemStylingRegistry: ItemStylingSetup,
+  fieldRegistry: Partial<
+    Record<
+      KokuDto.AbstractListViewFieldDto<any>['@type'] | string,
+      {
+        componentType: any;
+        stateInitializer: (listContent: KokuDto.AbstractListViewFieldDto<any>, value: any) => ListFieldRegistrationType;
+        inputBindings?(
+          instance: ListItemComponent,
+          key: string,
+          listContent: KokuDto.AbstractListViewFieldDto<any>,
+        ): Record<string, any>;
+        outputBindings?(
+          instance: ListItemComponent,
+          key: string,
+          listContent: KokuDto.AbstractListViewFieldDto<any>,
+        ): Record<string, any>;
+      }
+    >
+  >;
+  previewRegistry: Partial<
+    Record<
+      KokuDto.AbstractListViewItemPreviewDto['@type'] | string,
+      {
+        componentType: any;
+        inputBindings?(
+          instance: ListItemPreviewComponent,
+          listPreviewContent: KokuDto.AbstractListViewItemPreviewDto,
+        ): Record<string, any>;
+        outputBindings?(
+          instance: ListItemPreviewComponent,
+          listPreviewContent: KokuDto.AbstractListViewItemPreviewDto,
+        ): Record<string, any>;
+      }
+    >
+  >;
+  inlineContentRegistry: Partial<
+    Record<
+      KokuDto.AbstractListViewContentDto['@type'] | string,
+      {
+        componentType: any;
+        inputBindings?(
+          instance: ListInlineContentComponent,
+          inlineContent: KokuDto.AbstractListViewContentDto,
+        ): Record<string, any>;
+        outputBindings?(
+          instance: ListInlineContentComponent,
+          inlineContent: KokuDto.AbstractListViewContentDto,
+        ): Record<string, any>;
+      }
+    >
+  >;
+  actionRegistry: Partial<
+    Record<
+      KokuDto.AbstractListViewItemActionDto['@type'] | string,
+      {
+        componentType: any;
+        inputBindings?(
+          instance: ListItemActionComponent,
+          inlineContent: KokuDto.AbstractListViewItemActionDto,
+        ): Record<string, any>;
+        outputBindings?(
+          instance: ListItemActionComponent,
+          inlineContent: KokuDto.AbstractListViewItemActionDto,
+        ): Record<string, any>;
+      }
+    >
+  >;
+  filterRegistry: ListFilterSetup;
+  modalRegistry: ModalContentSetup;
+  itemStylingRegistry: ItemStylingSetup;
 }
 
 interface ExtendedAbstractListViewItemActionDto extends KokuDto.AbstractListViewItemActionDto {
-
   loading: boolean;
-
 }
 
-
-export type ListInlineItem = {
+export interface ListInlineItem {
   content: KokuDto.AbstractListViewContentDto | null;
   id: string | null;
   parentRoutePath?: string;
-  urlSegments: { [key: string]: string } | null;
-};
-export type ListModalItem = {
+  urlSegments: Record<string, string> | null;
+}
+export interface ListModalItem {
   modal: RenderedModalType;
   content: KokuDto.AbstractListViewContentDto | null;
   id: string | null;
   parentRoutePath?: string;
-  urlSegments: { [key: string]: string } | null;
-};
+  urlSegments: Record<string, string> | null;
+}
 
 @Component({
   selector: 'list',
@@ -144,13 +174,12 @@ export type ListModalItem = {
     ListItemPreviewComponent,
     ListInlineContentComponent,
     ListItemActionComponent,
-    ListFilterComponent
+    ListFilterComponent,
   ],
   templateUrl: './list.component.html',
-  styleUrl: './list.component.css'
+  styleUrl: './list.component.css',
 })
 export class ListComponent implements OnDestroy, OnChanges {
-
   httpClient = inject(HttpClient);
   destroyRef = inject(DestroyRef);
   router = inject(Router);
@@ -159,9 +188,9 @@ export class ListComponent implements OnDestroy, OnChanges {
   contentSetup = input.required<ListContentSetup>();
   listUrl = input<string>();
   sourceUrl = input<string>();
-  urlSegments = input<{ [key: string]: string } | null>(null);
+  urlSegments = input<Record<string, string> | null>(null);
   parentRoutePath = input<string>('');
-  context = input<{ [key: string]: any }>();
+  context = input<Record<string, any>>();
 
   sourceLoading = signal(true);
   sourceData = signal<KokuDto.ListPage | null>(null);
@@ -182,12 +211,13 @@ export class ListComponent implements OnDestroy, OnChanges {
   private lastListSubscription: Subscription | undefined;
   private routerUrlSubscription: Subscription | undefined;
   private globalSearchTermSubscription: Subscription | undefined;
-  private filters: {
-    [key: string]: {
+  private filters: Record<
+    string,
+    {
       valuePath: string;
-      predicates: KokuDto.QueryPredicate[]
+      predicates: KokuDto.QueryPredicate[];
     }
-  } = {};
+  > = {};
 
   componentRef = UNIQUE_REF_GENERATOR.generate();
 
@@ -211,12 +241,12 @@ export class ListComponent implements OnDestroy, OnChanges {
       if (this.lastListSubscription && !this.lastListSubscription.closed) {
         this.lastListSubscription.unsubscribe();
       }
-      return new Observable(subscriber => {
+      return new Observable((subscriber) => {
         this.lastListSubscription = this.httpClient.get<KokuDto.ListViewDto>(listUrlSnapshot).subscribe({
           next: (listData) => {
             this.clearGlobalEventListeners();
 
-            const registeredEventListeners: { [key: string]: ((eventPayload: any) => void)[] } = {};
+            const registeredEventListeners: Record<string, ((eventPayload: any) => void)[]> = {};
             for (const currentEventListener of listData.globalEventListeners || []) {
               if (!currentEventListener.eventName) {
                 throw new Error('Missing eventName in Global Listener Configuration');
@@ -226,8 +256,9 @@ export class ListComponent implements OnDestroy, OnChanges {
               }
               registeredEventListeners[currentEventListener.eventName].push((eventPayload: any) => {
                 switch (currentEventListener['@type']) {
-                  case "event-payload-search-term": {
-                    const castedEventListener = currentEventListener as KokuDto.ListViewEventPayloadSearchTermGlobalEventListenerDto;
+                  case 'event-payload-search-term': {
+                    const castedEventListener =
+                      currentEventListener as KokuDto.ListViewEventPayloadSearchTermGlobalEventListenerDto;
 
                     let newSearchTerm;
                     if (castedEventListener.valuePath !== undefined) {
@@ -236,11 +267,13 @@ export class ListComponent implements OnDestroy, OnChanges {
                       newSearchTerm = eventPayload;
                     }
 
+                    this.globalSearchTermSubject.next(newSearchTerm);
 
                     break;
                   }
-                  case "item-add": {
-                    const castedEventListener = currentEventListener as KokuDto.ListViewEventPayloadAddItemGlobalEventListenerDto;
+                  case 'item-add': {
+                    const castedEventListener =
+                      currentEventListener as KokuDto.ListViewEventPayloadAddItemGlobalEventListenerDto;
 
                     const itemId = get(eventPayload, castedEventListener.idPath || '', null);
                     if (!itemId) {
@@ -249,14 +282,16 @@ export class ListComponent implements OnDestroy, OnChanges {
 
                     const newItemInstance = this.addItem({
                       id: String(itemId),
-                      values: {}
+                      values: {},
                     });
 
-                    for (const [currentMappingPath, listViewReference] of Object.entries(castedEventListener.valueMapping || {})) {
+                    for (const [currentMappingPath, listViewReference] of Object.entries(
+                      castedEventListener.valueMapping || {},
+                    )) {
                       const mappablePayloadValue = get(eventPayload, currentMappingPath);
                       if (mappablePayloadValue !== undefined) {
                         switch (listViewReference['@type']) {
-                          case "field-reference": {
+                          case 'field-reference': {
                             const castedReference = listViewReference as KokuDto.ListViewFieldReference;
                             if (!castedReference.fieldId) {
                               throw new Error('Missing fieldId in FieldReference');
@@ -268,13 +303,13 @@ export class ListComponent implements OnDestroy, OnChanges {
                             field.value.set(mappablePayloadValue);
                             break;
                           }
-                          case "source-path-reference": {
+                          case 'source-path-reference': {
                             const castedReference = listViewReference as KokuDto.ListViewSourcePathReference;
                             if (!castedReference.valuePath) {
                               throw new Error('Missing valuePath in FieldReference');
                             }
                             const itemSourceSnapshot = {
-                              ...newItemInstance.source()
+                              ...newItemInstance.source(),
                             };
                             set(itemSourceSnapshot, castedReference.valuePath, mappablePayloadValue);
                             newItemInstance.source.set(itemSourceSnapshot);
@@ -288,14 +323,15 @@ export class ListComponent implements OnDestroy, OnChanges {
                     }
                     break;
                   }
-                  case "item-update-via-event-payload": {
-                    const castedEventListener = currentEventListener as KokuDto.ListViewEventPayloadItemUpdateGlobalEventListenerDto;
+                  case 'item-update-via-event-payload': {
+                    const castedEventListener =
+                      currentEventListener as KokuDto.ListViewEventPayloadItemUpdateGlobalEventListenerDto;
 
                     if (!castedEventListener.idPath) {
                       throw new Error('Missing idPath configuration in EventListener');
                     }
 
-                    const listRegisterIdx: { [key: string]: ListItemSetup } = {};
+                    const listRegisterIdx: Record<string, ListItemSetup> = {};
                     for (const currentEntry of this.listRegister()) {
                       if (currentEntry.id !== undefined && currentEntry.id !== null) {
                         listRegisterIdx[currentEntry.id] = currentEntry;
@@ -304,11 +340,13 @@ export class ListComponent implements OnDestroy, OnChanges {
                     const item = listRegisterIdx[String(get(eventPayload, castedEventListener.idPath, ''))];
                     // it might be possible that the item is (currently) not shown. in this case, we cannot update the list.
                     if (item !== undefined) {
-                      for (const [currentMappingPath, listViewReference] of Object.entries(castedEventListener.valueMapping || {})) {
+                      for (const [currentMappingPath, listViewReference] of Object.entries(
+                        castedEventListener.valueMapping || {},
+                      )) {
                         const mappablePayloadValue = get(eventPayload, currentMappingPath);
                         if (mappablePayloadValue !== undefined) {
                           switch (listViewReference['@type']) {
-                            case "field-reference": {
+                            case 'field-reference': {
                               const castedReference = listViewReference as KokuDto.ListViewFieldReference;
                               if (!castedReference.fieldId) {
                                 throw new Error('Missing fieldId in FieldReference');
@@ -320,13 +358,13 @@ export class ListComponent implements OnDestroy, OnChanges {
                               field.value.set(mappablePayloadValue);
                               break;
                             }
-                            case "source-path-reference": {
+                            case 'source-path-reference': {
                               const castedReference = listViewReference as KokuDto.ListViewSourcePathReference;
                               if (!castedReference.valuePath) {
                                 throw new Error('Missing valuePath in FieldReference');
                               }
                               const itemSourceSnapshot = {
-                                ...item.source()
+                                ...item.source(),
                               };
                               set(itemSourceSnapshot, castedReference.valuePath, mappablePayloadValue);
                               item.source.set(itemSourceSnapshot);
@@ -342,8 +380,9 @@ export class ListComponent implements OnDestroy, OnChanges {
 
                     break;
                   }
-                  case "open-routed-content": {
-                    const castedEventListener = currentEventListener as KokuDto.ListViewEventPayloadOpenRoutedContentGlobalEventListenerDto;
+                  case 'open-routed-content': {
+                    const castedEventListener =
+                      currentEventListener as KokuDto.ListViewEventPayloadOpenRoutedContentGlobalEventListenerDto;
 
                     if (!castedEventListener.route) {
                       throw new Error('Missing route configuration in EventListener');
@@ -352,8 +391,9 @@ export class ListComponent implements OnDestroy, OnChanges {
                     let route = castedEventListener.route;
                     for (const currentParam of castedEventListener.params || []) {
                       switch (currentParam['@type']) {
-                        case "event-payload": {
-                          const castedParam = currentParam as KokuDto.ListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto;
+                        case 'event-payload': {
+                          const castedParam =
+                            currentParam as KokuDto.ListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto;
                           if (!castedParam.param) {
                             throw new Error('Missing param configuration in EventListener');
                           }
@@ -364,22 +404,26 @@ export class ListComponent implements OnDestroy, OnChanges {
                         }
                       }
                     }
-                    this.openRoutedContent(route.split('/'))
+                    this.openRoutedContent(route.split('/'));
                     break;
                   }
                   default: {
                     throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
                   }
                 }
-              })
+              });
             }
 
             for (const currentEventListenerName of new Set(Object.keys(registeredEventListeners))) {
-              GLOBAL_EVENT_BUS.addGlobalEventListener(String(this.componentRef), currentEventListenerName, (eventPayload) => {
-                for (const currentEventListener of registeredEventListeners[currentEventListenerName] || []) {
-                  currentEventListener(eventPayload);
-                }
-              });
+              GLOBAL_EVENT_BUS.addGlobalEventListener(
+                String(this.componentRef),
+                currentEventListenerName,
+                (eventPayload) => {
+                  for (const currentEventListener of registeredEventListeners[currentEventListenerName] || []) {
+                    currentEventListener(eventPayload);
+                  }
+                },
+              );
             }
 
             this.filters = {};
@@ -391,7 +435,7 @@ export class ListComponent implements OnDestroy, OnChanges {
                   if (filterQueryPredicates && currentFilter.id && currentFilter.valuePath) {
                     this.filters[currentFilter.id] = {
                       valuePath: currentFilter.valuePath,
-                      predicates: filterQueryPredicates
+                      predicates: filterQueryPredicates,
                     };
                   }
                 }
@@ -402,17 +446,14 @@ export class ListComponent implements OnDestroy, OnChanges {
               this.globalSearchTermSubscription.unsubscribe();
             }
             this.globalSearchTermSubscription = this.globalSearchTermSubject
-              .pipe(
-                debounceTime(300),
-                distinctUntilChanged()
-              )
-              .subscribe(term => {
+              .pipe(debounceTime(300), distinctUntilChanged())
+              .subscribe((term) => {
                 this.currentPage.set(0);
                 this.globalSearchTerm.set(term);
 
                 this.loadListSource({
                   globalSearchTerm: term,
-                  page: this.currentPage()
+                  page: this.currentPage(),
                 });
               });
 
@@ -423,7 +464,7 @@ export class ListComponent implements OnDestroy, OnChanges {
           error: (error) => {
             this.listData.set(null);
             subscriber.error(error);
-          }
+          },
         });
       });
     } else {
@@ -443,36 +484,38 @@ export class ListComponent implements OnDestroy, OnChanges {
         this.routerUrlSubscription.unsubscribe();
       }
 
-      const fieldPredicates: { [index: string]: KokuDto.ListFieldQuery } = {};
+      const fieldPredicates: Record<string, KokuDto.ListFieldQuery> = {};
 
       for (const currentFilter of Object.values(this.filters)) {
         if (!fieldPredicates[currentFilter.valuePath]) {
           fieldPredicates[currentFilter.valuePath] = {
-            predicates: currentFilter.predicates
+            predicates: currentFilter.predicates,
           };
         } else {
           fieldPredicates[currentFilter.valuePath] = {
             predicates: [
               ...(fieldPredicates[currentFilter.valuePath].predicates || []),
-              ...(currentFilter.predicates || [])
-            ]
+              ...(currentFilter.predicates || []),
+            ],
           };
         }
       }
 
       const newQueryParams = {
         ...(this.lastSourceQuery || {}),
-        ...(query || {})
+        ...(query || {}),
       };
-      const newQuery = this.httpClient.post<KokuDto.ListPage>(sourceUrlSnapshot, {
-        ...newQueryParams,
-        fieldSelection: (this.listData() || {}).fieldFetchPaths || [],
-        fieldPredicates
-      } as KokuDto.ListQuery).pipe(
-        tap(() => {
-          this.lastSourceQuery = newQueryParams || {};
-        })
-      );
+      const newQuery = this.httpClient
+        .post<KokuDto.ListPage>(sourceUrlSnapshot, {
+          ...newQueryParams,
+          fieldSelection: (this.listData() || {}).fieldFetchPaths || [],
+          fieldPredicates,
+        } as KokuDto.ListQuery)
+        .pipe(
+          tap(() => {
+            this.lastSourceQuery = newQueryParams || {};
+          }),
+        );
 
       this.lastSourceQuerySubscription = newQuery.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (listData) => {
@@ -488,21 +531,28 @@ export class ListComponent implements OnDestroy, OnChanges {
           this.sourceData.set(listData);
 
           const afterNavigationUrlChange = () => {
-            const segments = this.router.url.split('/').filter(value => value !== '').slice(this.parentRoutePath().split('/').filter(value => value !== '').length);
+            const segments = this.router.url
+              .split('/')
+              .filter((value) => value !== '')
+              .slice(
+                this.parentRoutePath()
+                  .split('/')
+                  .filter((value) => value !== '').length,
+              );
             let routedContentFound = false;
-            for (const currentRoutedContent of ((this.listData() || {}).routedContents || [])) {
+            for (const currentRoutedContent of (this.listData() || {}).routedContents || []) {
               if (currentRoutedContent.route) {
                 let failedLookup = false;
                 let segmentIdx = 0;
-                let segmentMapping: { [key: string]: string } = {};
-                for (const currentRoutePathToMatch of currentRoutedContent.route.split("/")) {
+                const segmentMapping: Record<string, string> = {};
+                for (const currentRoutePathToMatch of currentRoutedContent.route.split('/')) {
                   const currentSegment = segments[segmentIdx++];
                   if (!currentSegment) {
                     failedLookup = true;
                     break;
                   }
                   const currentSegmentPath = currentSegment;
-                  if (currentRoutePathToMatch.indexOf(":") === 0) {
+                  if (currentRoutePathToMatch.indexOf(':') === 0) {
                     segmentMapping[currentRoutePathToMatch] = currentSegmentPath;
                   } else if (currentRoutePathToMatch !== currentSegmentPath) {
                     failedLookup = true;
@@ -516,7 +566,7 @@ export class ListComponent implements OnDestroy, OnChanges {
                 };
                 if (!failedLookup) {
                   routedContentFound = true;
-                  if (currentRoutedContent['@type'] === "routed-inline-content") {
+                  if (currentRoutedContent['@type'] === 'routed-inline-content') {
                     const castedRouteContent = currentRoutedContent as KokuDto.ListViewRoutedContentDto;
                     if (castedRouteContent.inlineContent) {
                       let itemId = castedRouteContent.itemId;
@@ -527,17 +577,21 @@ export class ListComponent implements OnDestroy, OnChanges {
                       }
 
                       if (
-                        this.inlineContent()?.id !== itemId
-                        || this.inlineContent()?.content !== castedRouteContent.inlineContent
-                        || !deepEqual(this.inlineContent()?.urlSegments, segmentMapping)
+                        this.inlineContent()?.id !== itemId ||
+                        this.inlineContent()?.content !== castedRouteContent.inlineContent ||
+                        !deepEqual(this.inlineContent()?.urlSegments, segmentMapping)
                       ) {
                         this.openInlineContent({
                           content: castedRouteContent.inlineContent,
                           id: itemId || null,
                           parentRoutePath: [
-                            ...(this.parentRoutePath() + '/' + castedRouteContent.route).split('/').map(value => newUrlSegments[value] || value),
-                          ].filter(value => value !== '').join('/'),
-                          urlSegments: newUrlSegments
+                            ...(this.parentRoutePath() + '/' + castedRouteContent.route)
+                              .split('/')
+                              .map((value) => newUrlSegments[value] || value),
+                          ]
+                            .filter((value) => value !== '')
+                            .join('/'),
+                          urlSegments: newUrlSegments,
                         });
                       }
                     } else if (castedRouteContent.modalContent) {
@@ -549,28 +603,34 @@ export class ListComponent implements OnDestroy, OnChanges {
                       }
 
                       if (
-                        this.modalContent()?.id !== itemId
-                        || this.modalContent()?.content !== castedRouteContent.modalContent
-                        || !deepEqual(this.modalContent()?.urlSegments, newUrlSegments)
+                        this.modalContent()?.id !== itemId ||
+                        this.modalContent()?.content !== castedRouteContent.modalContent ||
+                        !deepEqual(this.modalContent()?.urlSegments, newUrlSegments)
                       ) {
                         const oldRoutePath = [
-                          ...(this.parentRoutePath()).split('/').map(value => newUrlSegments[value] || value),
-                        ].filter(value => value !== '');
+                          ...this.parentRoutePath()
+                            .split('/')
+                            .map((value) => newUrlSegments[value] || value),
+                        ].filter((value) => value !== '');
                         const newParentRoutePath = [
-                          ...(this.parentRoutePath() + '/' + castedRouteContent.route).split('/').map(value => newUrlSegments[value] || value),
-                        ].filter(value => value !== '').join('/');
+                          ...(this.parentRoutePath() + '/' + castedRouteContent.route)
+                            .split('/')
+                            .map((value) => newUrlSegments[value] || value),
+                        ]
+                          .filter((value) => value !== '')
+                          .join('/');
                         const newModal = this.modalService.add({
                           dynamicContent: castedRouteContent.modalContent,
                           urlSegments: newUrlSegments,
                           dynamicContentSetup: this.contentSetup().modalRegistry,
                           fullscreen: true,
                           parentRoutePath: newParentRoutePath,
-                          clickOutside: (event) => {
+                          clickOutside: () => {
                             this.closeModalContent(oldRoutePath).subscribe();
                           },
                           onCloseRequested: () => {
                             this.closeModalContent(oldRoutePath).subscribe();
-                          }
+                          },
                         });
 
                         this.modalContent.set({
@@ -578,7 +638,7 @@ export class ListComponent implements OnDestroy, OnChanges {
                           content: castedRouteContent.modalContent,
                           id: itemId || '',
                           urlSegments: newUrlSegments,
-                          parentRoutePath: newParentRoutePath
+                          parentRoutePath: newParentRoutePath,
                         });
                       }
                     }
@@ -592,19 +652,19 @@ export class ListComponent implements OnDestroy, OnChanges {
             }
 
             let routedItemFound = false;
-            for (const currentRoutedItem of ((this.listData() || {}).routedItems || [])) {
+            for (const currentRoutedItem of (this.listData() || {}).routedItems || []) {
               if (currentRoutedItem.route) {
                 let failedLookup = false;
                 let segmentIdx = 0;
-                let segmentMapping: { [key: string]: string } = {};
-                for (const currentRoutePathToMatch of currentRoutedItem.route.split("/")) {
+                const segmentMapping: Record<string, string> = {};
+                for (const currentRoutePathToMatch of currentRoutedItem.route.split('/')) {
                   const currentSegment = segments[segmentIdx++];
                   if (!currentSegment) {
                     failedLookup = true;
                     break;
                   }
                   const currentSegmentPath = currentSegment;
-                  if (currentRoutePathToMatch.indexOf(":") === 0) {
+                  if (currentRoutePathToMatch.indexOf(':') === 0) {
                     segmentMapping[currentRoutePathToMatch] = currentSegmentPath;
                   } else if (currentRoutePathToMatch !== currentSegmentPath) {
                     failedLookup = true;
@@ -613,7 +673,7 @@ export class ListComponent implements OnDestroy, OnChanges {
                 }
                 if (!failedLookup) {
                   routedItemFound = true;
-                  if (currentRoutedItem['@type'] === "routed-item") {
+                  if (currentRoutedItem['@type'] === 'routed-item') {
                     const castedRouteContent = currentRoutedItem as KokuDto.ListViewRoutedDummyItemDto;
                     if (!castedRouteContent.text) {
                       throw new Error('Missing text property in RoutedItem Configuration');
@@ -628,19 +688,21 @@ export class ListComponent implements OnDestroy, OnChanges {
             if (!routedItemFound) {
               this.hideTempItem();
             }
-          }
-          this.routerUrlSubscription = this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evnt) => {
-            if (evnt instanceof NavigationEnd) {
-              afterNavigationUrlChange();
-            }
-          });
+          };
+          this.routerUrlSubscription = this.router.events
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((evnt) => {
+              if (evnt instanceof NavigationEnd) {
+                afterNavigationUrlChange();
+              }
+            });
           afterNavigationUrlChange();
 
           this.sourceLoading.set(false);
         },
-        error: (error) => {
+        error: () => {
           this.sourceLoading.set(false);
-        }
+        },
       });
       return newQuery;
     } else {
@@ -657,13 +719,12 @@ export class ListComponent implements OnDestroy, OnChanges {
           this.openInlineContent({
             content: castedActionType.inlineContent,
             id: result.id,
-            urlSegments: null
+            urlSegments: null,
           });
         }
         break;
       }
-      case "http-call": {
-
+      case 'http-call': {
         break;
       }
     }
@@ -673,7 +734,7 @@ export class ListComponent implements OnDestroy, OnChanges {
     if (!this.sourceLoading()) {
       if (action) {
         switch (action['@type']) {
-          case "propagate-global-event": {
+          case 'propagate-global-event': {
             const castedActionType = action as KokuDto.ListViewItemClickPropagateGlobalEventActionDto;
             if (!castedActionType.eventName) {
               throw new Error('Missing eventName');
@@ -681,17 +742,18 @@ export class ListComponent implements OnDestroy, OnChanges {
             GLOBAL_EVENT_BUS.propagateGlobalEvent(castedActionType.eventName, item.source());
             break;
           }
-          case "open-routed-content": {
+          case 'open-routed-content': {
             const castedActionType = action as KokuDto.ListViewItemClickOpenRoutedContentActionDto;
             let replacedRoute = castedActionType.route || '';
             for (const currentParam of castedActionType.params || []) {
               if (currentParam.param) {
                 switch (currentParam['@type']) {
-                  case "value": {
-                    const castedParamType = currentParam as KokuDto.ListViewItemClickOpenRoutedContentActionItemValueParamDto;
+                  case 'value': {
+                    const castedParamType =
+                      currentParam as KokuDto.ListViewItemClickOpenRoutedContentActionItemValueParamDto;
                     if (castedParamType.valueReference) {
                       switch (castedParamType.valueReference['@type']) {
-                        case "field-reference": {
+                        case 'field-reference': {
                           const castedReference = castedParamType.valueReference as KokuDto.ListViewFieldReference;
                           if (!castedReference.fieldId) {
                             throw new Error('Missing fieldId in FieldReference');
@@ -703,12 +765,15 @@ export class ListComponent implements OnDestroy, OnChanges {
                           replacedRoute = replacedRoute.replaceAll(currentParam.param, field.value());
                           break;
                         }
-                        case "source-path-reference": {
+                        case 'source-path-reference': {
                           const castedReference = castedParamType.valueReference as KokuDto.ListViewSourcePathReference;
                           if (!castedReference.valuePath) {
                             throw new Error('Missing valuePath in FieldReference');
                           }
-                          replacedRoute = replacedRoute.replaceAll(currentParam.param, get(item.source(), castedReference.valuePath));
+                          replacedRoute = replacedRoute.replaceAll(
+                            currentParam.param,
+                            get(item.source(), castedReference.valuePath),
+                          );
                           break;
                         }
                         default: {
@@ -728,22 +793,17 @@ export class ListComponent implements OnDestroy, OnChanges {
             this.openRoutedContent(replacedRoute.split('/'));
             break;
           }
-          case "open-inline-content": {
+          case 'open-inline-content': {
             const castedActionType = action as KokuDto.ListViewItemOpenInlineContentClickActionDto;
             if (castedActionType.inlineContent) {
               this.openInlineContent({
                 content: castedActionType.inlineContent,
                 id: item.id,
-                urlSegments: null
+                urlSegments: null,
               });
             }
             break;
           }
-        }
-        if (action['@type'] === 'open-inline-content') {
-
-        } else if (action['@type'] === 'open-routed-content') {
-
         }
       }
     }
@@ -758,7 +818,7 @@ export class ListComponent implements OnDestroy, OnChanges {
             this.openInlineContent({
               content: castedActionType.inlineContent,
               id: null,
-              urlSegments: null
+              urlSegments: null,
             });
           }
         } else if (action['@type'] === 'open-routed-content') {
@@ -778,30 +838,29 @@ export class ListComponent implements OnDestroy, OnChanges {
   closeInlineContent(skipRouteChange = false) {
     return new Observable<boolean>((observer) => {
       if (!skipRouteChange) {
-        this.router.navigate(
-          [
-            ...this.parentRoutePath().split('/').map(value => (this.urlSegments() || {})[value] || value),
-          ]
-        ).then((success) => {
-          if (success) {
-            this.inlineContent.set(null);
-          }
-          observer.next(success);
-          observer.complete();
-        })
+        this.router
+          .navigate([
+            ...this.parentRoutePath()
+              .split('/')
+              .map((value) => (this.urlSegments() || {})[value] || value),
+          ])
+          .then((success) => {
+            if (success) {
+              this.inlineContent.set(null);
+            }
+            observer.next(success);
+            observer.complete();
+          });
       } else {
         this.inlineContent.set(null);
         observer.next(true);
         observer.complete();
       }
-    })
+    });
   }
 
   openRoutedContent(routes: string[]) {
-    this.closeModalContent([
-      ...this.parentRoutePath().split('/'),
-      ...routes,
-    ]).subscribe();
+    this.closeModalContent([...this.parentRoutePath().split('/'), ...routes]).subscribe();
   }
 
   openInlineContent(item: ListInlineItem) {
@@ -829,7 +888,7 @@ export class ListComponent implements OnDestroy, OnChanges {
 
   private showTempItem(text: string) {
     this.activeTempItem.set({
-      text
+      text,
     });
   }
 
@@ -837,10 +896,7 @@ export class ListComponent implements OnDestroy, OnChanges {
     this.activeTempItem.set(null);
   }
 
-  private prepareListItem(
-    listData: KokuDto.ListPage,
-    listItem: KokuDto.ListItem
-  ) {
+  private prepareListItem(listData: KokuDto.ListPage, listItem: KokuDto.ListItem) {
     const currentItemId = listItem.id;
     if (currentItemId === undefined) {
       throw new Error('Unexpected item id');
@@ -851,32 +907,40 @@ export class ListComponent implements OnDestroy, OnChanges {
     const currentResultListContentStates: ListItemSetup = {
       fieldSelection: listData.fieldSelection || [],
       fields: {},
-      actions: ((listDataSnapshot || {}).itemActions || []).map(value => {
+      actions: ((listDataSnapshot || {}).itemActions || []).map((value) => {
         return {
           ...value,
-          loading: false
-        }
+          loading: false,
+        };
       }),
       clickAction: (listDataSnapshot || {}).itemClickAction,
       preview: (listDataSnapshot || {}).itemPreview,
       id: currentItemId,
       source: signal({
         ...(listItem.values || {}),
-        ...(itemIdPath ? {[itemIdPath]: currentItemId} : {})
-      })
+        ...(itemIdPath ? { [itemIdPath]: currentItemId } : {}),
+      }),
     };
     for (const currentFieldSelection of (listDataSnapshot || {}).fields || []) {
       if (currentFieldSelection.fieldDefinition) {
-        const currentFieldTypeSetup = contentSetupSnapshot.fieldRegistry[currentFieldSelection.fieldDefinition['@type']];
+        const currentFieldTypeSetup =
+          contentSetupSnapshot.fieldRegistry[currentFieldSelection.fieldDefinition['@type']];
         if (currentFieldTypeSetup && currentFieldSelection.id) {
           const defaultValue = currentFieldSelection.fieldDefinition?.defaultValue || null;
           let currentFieldValue = defaultValue;
           if (currentFieldSelection.valuePath) {
-            currentFieldValue = get({
-              ...(listItem.values || {})
-            }, currentFieldSelection.valuePath, defaultValue);
+            currentFieldValue = get(
+              {
+                ...(listItem.values || {}),
+              },
+              currentFieldSelection.valuePath,
+              defaultValue,
+            );
           }
-          currentResultListContentStates.fields[currentFieldSelection.id] = currentFieldTypeSetup.stateInitializer(currentFieldSelection.fieldDefinition, currentFieldValue)
+          currentResultListContentStates.fields[currentFieldSelection.id] = currentFieldTypeSetup.stateInitializer(
+            currentFieldSelection.fieldDefinition,
+            currentFieldValue,
+          );
         }
       }
     }
@@ -894,7 +958,7 @@ export class ListComponent implements OnDestroy, OnChanges {
           }
           observer.next(success);
           observer.complete();
-        }
+        };
         if (newRoute) {
           this.router.navigate(newRoute).then((success) => {
             afterParentRouteOpened(success);
@@ -903,7 +967,7 @@ export class ListComponent implements OnDestroy, OnChanges {
           afterParentRouteOpened(true);
         }
       } else {
-        this.router.navigate(newRoute).then((success) => {
+        this.router.navigate(newRoute).then(() => {
           observer.next(true);
           observer.complete();
         });
@@ -916,13 +980,14 @@ export class ListComponent implements OnDestroy, OnChanges {
     this.globalSearchTerm.set(newTerm);
     this.loadListSource({
       globalSearchTerm: this.globalSearchTerm(),
-      page: this.currentPage()
+      page: this.currentPage(),
     });
   }
 
-  getItemClasses(source: {
-    [p: string]: any
-  }, globalItemStyling: KokuDto.AbstractListViewGlobalItemStylingDto[] | undefined) {
+  getItemClasses(
+    source: Record<string, any>,
+    globalItemStyling: KokuDto.AbstractListViewGlobalItemStylingDto[] | undefined,
+  ) {
     let result: string[] = [];
     for (const currentItemStyling of globalItemStyling || []) {
       const iconStylingRegister = this.contentSetup().itemStylingRegistry[currentItemStyling['@type']];
@@ -936,11 +1001,11 @@ export class ListComponent implements OnDestroy, OnChanges {
   onFilterChange(id: string, valuePath: string, predicates: KokuDto.QueryPredicate[]) {
     this.filters[id] = {
       valuePath: valuePath,
-      predicates: predicates
+      predicates: predicates,
     };
     this.currentPage.set(0);
     this.loadListSource({
-      page: this.currentPage()
+      page: this.currentPage(),
     });
   }
 }
