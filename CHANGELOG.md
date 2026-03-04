@@ -3,6 +3,14 @@
 
 ### Bug Fixes
 
+* **deps:** update deps ([501020e](https://github.com/domschmidt/koku/commit/501020ec9931cd66d6015f132bb065dd742d24e7))
+* **deps:** update deps ([47b8f3a](https://github.com/domschmidt/koku/commit/47b8f3a5531549019d24ce72a8ca24abd41e4541))
+
+## [2.2.10](https://github.com/domschmidt/koku/compare/v2.2.9...v2.2.10) (2026-03-04)
+
+
+### Bug Fixes
+
 * **deps:** update deps ([47b8f3a](https://github.com/domschmidt/koku/commit/47b8f3a5531549019d24ce72a8ca24abd41e4541))
 
 ## [2.2.9](https://github.com/domschmidt/koku/compare/v2.2.8...v2.2.9) (2026-03-04)
