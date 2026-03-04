@@ -1,3 +1,10 @@
+## [2.2.9](https://github.com/domschmidt/koku/compare/v2.2.8...v2.2.9) (2026-03-04)
+
+
+### Bug Fixes
+
+* **minors:** optimize split view min width, add document tab in calendar view of customer appointments ([3a012c9](https://github.com/domschmidt/koku/commit/3a012c9d2dee8b4f151f2808399798907cecf0ae))
+
 ## [2.2.8](https://github.com/domschmidt/koku/compare/v2.2.7...v2.2.8) (2026-02-23)
 
 
