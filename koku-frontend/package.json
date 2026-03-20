@@ -23,7 +23,7 @@
     "@fullcalendar/interaction": "^6.1.20",
     "@fullcalendar/rrule": "^6.1.20",
     "@fullcalendar/timegrid": "^6.1.20",
-    "@pdfme/common": "^5.5.8",
+    "@pdfme/common": "^5.5.10",
     "@pdfme/generator": "^5.5.8",
     "@pdfme/schemas": "^5.5.8",
     "@pdfme/ui": "^5.5.8",
