@@ -72,255 +72,258 @@ export class ChartComponent {
               if (this.currentChartInstance) {
                 this.currentChartInstance.destroy();
               }
-              const chart = new ApexCharts(this.chartRoot()?.nativeElement, {
-                grid: {
-                  borderColor: 'var(--color-neutral)',
-                },
-                series: ((chartData) => {
-                  let result: ApexCharts.ApexOptions['series'] | null = null;
-                  switch (chartData['@type']) {
-                    case 'bar': {
-                      const castedChartData = chartData as KokuDto.BarChartDto;
-                      result = (castedChartData.series || []).map((s) => ({
-                        name: s.name,
-                        data: s.data || [],
-                        group: s.group,
-                      }));
-                      break;
-                    }
-                    case 'line': {
-                      const castedChartData = chartData as KokuDto.LineChartDto;
-                      result = (castedChartData.series || []).map((s) => ({
-                        name: s.name,
-                        data: s.data || [],
-                        group: s.group,
-                      }));
-                      break;
-                    }
-                    case 'pie': {
-                      const castedChartData = chartData as KokuDto.PieChartDto;
-                      result = castedChartData.series || [];
-                      break;
-                    }
-                  }
-                  return result;
-                })(chartData),
-                colors: ['var(--color-primary)', 'var(--color-secondary)', 'var(--color-accent)'],
-                plotOptions: {
-                  bar: {
-                    dataLabels: {
-                      total: {
-                        enabled: ((chartData) => {
-                          switch (chartData['@type']) {
-                            case 'bar': {
-                              const castedChartData = chartData as KokuDto.BarChartDto;
-                              return castedChartData.showTotals;
-                            }
-                          }
-                          return false;
-                        })(chartData),
-                        offsetY: -10,
-                        style: {
-                          color: 'var(--color-base-content)',
-                        },
-                      },
-                    },
+              const chartRootEl = this.chartRoot()?.nativeElement;
+              if (chartRootEl) {
+                const chart = new ApexCharts(chartRootEl, {
+                  grid: {
+                    borderColor: 'var(--color-neutral)',
                   },
-                },
-                tooltip: {
-                  shared: true,
-                  intersect: false,
-                },
-                title: {
-                  text: chartData.title,
-                  align: 'left',
-                },
-                chart: {
-                  height: 500,
-                  foreColor: 'var(--color-base-content)',
-                  background: 'var(--color-base-100)',
-                  fontFamily: 'inherit',
-                  zoom: {
-                    enabled: false,
-                  },
-                  toolbar: {
-                    show: false,
-                  },
-                  ...((chartData) => {
-                    let result: ApexCharts.ApexOptions['chart'] | null = null;
-                    switch (chartData['@type']) {
-                      case 'bar': {
-                        const castedChart = chartData as KokuDto.BarChartDto;
-                        result = {
-                          type: 'bar',
-                          stacked: castedChart.stacked,
-                        };
-                        break;
-                      }
-                      case 'line': {
-                        result = {
-                          type: 'line',
-                        };
-                        break;
-                      }
-                      case 'pie': {
-                        result = {
-                          type: 'pie',
-                        };
-                        break;
-                      }
-                    }
-                    return result;
-                  })(chartData),
-                },
-                yaxis: ((chartData) => {
-                  let result: ApexCharts.ApexOptions['yaxis'][] = [
-                    {
-                      labels: {
-                        style: {
-                          colors: 'var(--color-base-content)',
-                        },
-                      },
-                    },
-                  ];
-                  switch (chartData['@type']) {
-                    case 'bar': {
-                      const castedChart = chartData as KokuDto.BarChartDto;
-                      const axes = castedChart.axes;
-                      if (axes && axes.y) {
-                        const tempResult: ApexCharts.ApexOptions['yaxis'][] = [];
-                        for (const currentAxis of axes.y) {
-                          tempResult.push({
-                            opposite: currentAxis.opposite,
-                            seriesName: currentAxis.seriesName,
-                            title: {
-                              text: currentAxis.text,
-                            },
-                            labels: {
-                              style: {
-                                colors: 'var(--color-base-content)',
-                              },
-                            },
-                          });
-                        }
-                        result = tempResult;
-                      }
-                      break;
-                    }
-                    case 'line': {
-                      const castedChart = chartData as KokuDto.LineChartDto;
-                      const axes = castedChart.axes;
-                      if (axes && axes.y) {
-                        const tempResult: ApexCharts.ApexOptions['yaxis'][] = [];
-                        for (const currentAxis of axes.y) {
-                          tempResult.push({
-                            opposite: currentAxis.opposite,
-                            seriesName: currentAxis.seriesName,
-                            title: {
-                              text: currentAxis.text,
-                            },
-                            labels: {
-                              style: {
-                                colors: 'var(--color-base-content)',
-                              },
-                            },
-                          });
-                        }
-                        result = tempResult;
-                      }
-                      break;
-                    }
-                  }
-                  return result;
-                })(chartData),
-                xaxis: {
-                  labels: {
-                    style: {
-                      colors: 'var(--color-base-content)',
-                    },
-                  },
-                  ...((chartData) => {
-                    let result: ApexCharts.ApexOptions['xaxis'] = { categories: [] };
+                  series: ((chartData) => {
+                    let result: ApexCharts.ApexOptions['series'] | null = null;
                     switch (chartData['@type']) {
                       case 'bar': {
                         const castedChartData = chartData as KokuDto.BarChartDto;
-                        result = {
-                          categories:
-                            castedChartData.axes?.x && castedChartData.axes.x['@type'] === 'categorical'
-                              ? castedChartData.axes.x.categories
-                              : [],
-                        };
+                        result = (castedChartData.series || []).map((s) => ({
+                          name: s.name,
+                          data: s.data || [],
+                          group: s.group,
+                        }));
                         break;
                       }
                       case 'line': {
                         const castedChartData = chartData as KokuDto.LineChartDto;
-                        result = {
-                          categories:
-                            castedChartData.axes?.x && castedChartData.axes.x['@type'] === 'categorical'
-                              ? castedChartData.axes.x.categories
-                              : [],
-                        };
+                        result = (castedChartData.series || []).map((s) => ({
+                          name: s.name,
+                          data: s.data || [],
+                          group: s.group,
+                        }));
+                        break;
+                      }
+                      case 'pie': {
+                        const castedChartData = chartData as KokuDto.PieChartDto;
+                        result = castedChartData.series || [];
                         break;
                       }
                     }
                     return result;
                   })(chartData),
-                },
-                labels: [],
-                dataLabels: {
-                  enabled: true,
-                  style: {
-                    fontSize: '14px',
-                    fontFamily: 'inherit',
-                    colors: ['var(--color-base-content)'],
+                  colors: ['var(--color-primary)', 'var(--color-secondary)', 'var(--color-accent)'],
+                  plotOptions: {
+                    bar: {
+                      dataLabels: {
+                        total: {
+                          enabled: ((chartData) => {
+                            switch (chartData['@type']) {
+                              case 'bar': {
+                                const castedChartData = chartData as KokuDto.BarChartDto;
+                                return castedChartData.showTotals;
+                              }
+                            }
+                            return false;
+                          })(chartData),
+                          offsetY: -10,
+                          style: {
+                            color: 'var(--color-base-content)',
+                          },
+                        },
+                      },
+                    },
                   },
-                },
-                legend: {
-                  show: true,
-                  fontSize: '14px',
-                  fontFamily: 'inherit',
-                },
-                annotations: ((annotations) => {
-                  let result: ApexCharts.ApexOptions['annotations'] | undefined = undefined;
-                  if (annotations) {
-                    result = {
-                      xaxis: ((xaxis) => {
-                        const result: NonNullable<ApexCharts.ApexOptions['annotations']>['xaxis'] = [];
-                        if (xaxis) {
-                          for (const currentAxis of xaxis) {
-                            result.push({
-                              x: currentAxis.x,
-                              borderColor: this.getColor(currentAxis?.borderColor),
-                              label: ((label) => {
-                                return {
-                                  borderColor: this.getColor(label?.borderColor),
-                                  style: {
-                                    color: '',
-                                    background: this.getColor(label?.borderColor),
-                                  },
-                                  text: label?.text,
-                                  position: 'bottom',
-                                  offsetY: -10,
-                                  offsetX: 3,
-                                };
-                              })(currentAxis.label),
+                  tooltip: {
+                    shared: true,
+                    intersect: false,
+                  },
+                  title: {
+                    text: chartData.title,
+                    align: 'left',
+                  },
+                  chart: {
+                    height: 500,
+                    foreColor: 'var(--color-base-content)',
+                    background: 'var(--color-base-100)',
+                    fontFamily: 'inherit',
+                    zoom: {
+                      enabled: false,
+                    },
+                    toolbar: {
+                      show: false,
+                    },
+                    ...((chartData) => {
+                      let result: ApexCharts.ApexOptions['chart'] | null = null;
+                      switch (chartData['@type']) {
+                        case 'bar': {
+                          const castedChart = chartData as KokuDto.BarChartDto;
+                          result = {
+                            type: 'bar',
+                            stacked: castedChart.stacked,
+                          };
+                          break;
+                        }
+                        case 'line': {
+                          result = {
+                            type: 'line',
+                          };
+                          break;
+                        }
+                        case 'pie': {
+                          result = {
+                            type: 'pie',
+                          };
+                          break;
+                        }
+                      }
+                      return result;
+                    })(chartData),
+                  },
+                  yaxis: ((chartData) => {
+                    let result: ApexCharts.ApexYAxis[] = [
+                      {
+                        labels: {
+                          style: {
+                            colors: 'var(--color-base-content)',
+                          },
+                        },
+                      },
+                    ];
+                    switch (chartData['@type']) {
+                      case 'bar': {
+                        const castedChart = chartData as KokuDto.BarChartDto;
+                        const axes = castedChart.axes;
+                        if (axes && axes.y) {
+                          const tempResult: ApexCharts.ApexYAxis[] = [];
+                          for (const currentAxis of axes.y) {
+                            tempResult.push({
+                              opposite: currentAxis.opposite,
+                              seriesName: currentAxis.seriesName,
+                              title: {
+                                text: currentAxis.text,
+                              },
+                              labels: {
+                                style: {
+                                  colors: 'var(--color-base-content)',
+                                },
+                              },
                             });
                           }
+                          result = tempResult;
                         }
+                        break;
+                      }
+                      case 'line': {
+                        const castedChart = chartData as KokuDto.LineChartDto;
+                        const axes = castedChart.axes;
+                        if (axes && axes.y) {
+                          const tempResult: ApexCharts.ApexYAxis[] = [];
+                          for (const currentAxis of axes.y) {
+                            tempResult.push({
+                              opposite: currentAxis.opposite,
+                              seriesName: currentAxis.seriesName,
+                              title: {
+                                text: currentAxis.text,
+                              },
+                              labels: {
+                                style: {
+                                  colors: 'var(--color-base-content)',
+                                },
+                              },
+                            });
+                          }
+                          result = tempResult;
+                        }
+                        break;
+                      }
+                    }
+                    return result;
+                  })(chartData),
+                  xaxis: {
+                    labels: {
+                      style: {
+                        colors: 'var(--color-base-content)',
+                      },
+                    },
+                    ...((chartData) => {
+                      let result: ApexCharts.ApexOptions['xaxis'] = { categories: [] };
+                      switch (chartData['@type']) {
+                        case 'bar': {
+                          const castedChartData = chartData as KokuDto.BarChartDto;
+                          result = {
+                            categories:
+                              castedChartData.axes?.x && castedChartData.axes.x['@type'] === 'categorical'
+                                ? castedChartData.axes.x.categories
+                                : [],
+                          };
+                          break;
+                        }
+                        case 'line': {
+                          const castedChartData = chartData as KokuDto.LineChartDto;
+                          result = {
+                            categories:
+                              castedChartData.axes?.x && castedChartData.axes.x['@type'] === 'categorical'
+                                ? castedChartData.axes.x.categories
+                                : [],
+                          };
+                          break;
+                        }
+                      }
+                      return result;
+                    })(chartData),
+                  },
+                  labels: [],
+                  dataLabels: {
+                    enabled: true,
+                    style: {
+                      fontSize: '14px',
+                      fontFamily: 'inherit',
+                      colors: ['var(--color-base-content)'],
+                    },
+                  },
+                  legend: {
+                    show: true,
+                    fontSize: '14px',
+                    fontFamily: 'inherit',
+                  },
+                  annotations: ((annotations) => {
+                    let result: ApexCharts.ApexOptions['annotations'] | undefined = undefined;
+                    if (annotations) {
+                      result = {
+                        xaxis: ((xaxis) => {
+                          const result: NonNullable<ApexCharts.ApexOptions['annotations']>['xaxis'] = [];
+                          if (xaxis) {
+                            for (const currentAxis of xaxis) {
+                              result.push({
+                                x: currentAxis.x,
+                                borderColor: this.getColor(currentAxis?.borderColor),
+                                label: ((label) => {
+                                  return {
+                                    borderColor: this.getColor(label?.borderColor),
+                                    style: {
+                                      color: '',
+                                      background: this.getColor(label?.borderColor),
+                                    },
+                                    text: label?.text,
+                                    position: 'bottom',
+                                    offsetY: -10,
+                                    offsetX: 3,
+                                  };
+                                })(currentAxis.label),
+                              });
+                            }
+                          }
 
-                        return result;
-                      })(annotations.xasis),
-                    };
-                  }
-                  return result;
-                })(chartData.annotations),
-              });
-              chart.render();
-              subscriber.next(chartData);
-              subscriber.complete();
-              this.loading.set(false);
-              this.chartData.set(chartData);
-              this.currentChartInstance = chart;
+                          return result;
+                        })(annotations.xasis),
+                      };
+                    }
+                    return result;
+                  })(chartData.annotations),
+                });
+                chart.render();
+                subscriber.next(chartData);
+                subscriber.complete();
+                this.loading.set(false);
+                this.chartData.set(chartData);
+                this.currentChartInstance = chart;
+              }
             },
             error: (err) => {
               this.toastService.add('Fehler beim Laden der Daten! Versuchs später erneut!', 'error');

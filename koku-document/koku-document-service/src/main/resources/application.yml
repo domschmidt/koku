@@ -24,6 +24,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/documents
     username: 'postgres'
     password: 'koku'
+    hikari:
+      maximum-pool-size: 4
+      minimum-idle: 1
   flyway:
     enabled: true
     baseline-on-migrate: false

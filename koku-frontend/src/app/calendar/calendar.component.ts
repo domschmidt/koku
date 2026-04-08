@@ -491,7 +491,17 @@ export class CalendarComponent implements OnDestroy {
     if ($event.target) {
       const value = ($event.target as HTMLInputElement).value;
       if (value) {
-        this.calendarComponent()?.getApi().gotoDate(dayjs(value).toDate());
+        let parsedDate: Date;
+
+        if (this.viewMode() === 'WEEK') {
+          parsedDate = dayjs(value, 'YYYY-[W]WW').startOf('isoWeek').toDate();
+        } else if (this.viewMode() === 'MONTH') {
+          parsedDate = dayjs(value, 'YYYY-MM').toDate();
+        } else {
+          parsedDate = dayjs(value, 'YYYY-MM-DD').toDate();
+        }
+
+        this.calendarComponent()?.getApi().gotoDate(parsedDate);
       }
     }
   }
