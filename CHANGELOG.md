@@ -1,3 +1,10 @@
+## [2.2.11](https://github.com/domschmidt/koku/compare/v2.2.10...v2.2.11) (2026-04-08)
+
+
+### Bug Fixes
+
+* **minors:** minor fix (week selection), update deps ([3317897](https://github.com/domschmidt/koku/commit/3317897aa03981ee75991c5c221050c7d1c19c17))
+
 ## [2.2.10](https://github.com/domschmidt/koku/compare/v2.2.9...v2.2.10) (2026-03-04)
 
 
