@@ -1,3 +1,10 @@
+## [2.2.12](https://github.com/domschmidt/koku/compare/v2.2.11...v2.2.12) (2026-04-08)
+
+
+### Bug Fixes
+
+* **minors:** fix package lock json ([458a464](https://github.com/domschmidt/koku/commit/458a464d02a245268aec28c7516f52f8cea82432))
+
 ## [2.2.11](https://github.com/domschmidt/koku/compare/v2.2.10...v2.2.11) (2026-04-08)
 
 
