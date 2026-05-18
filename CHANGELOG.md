@@ -1,3 +1,11 @@
+# [2.3.0](https://github.com/domschmidt/koku/compare/v2.2.12...v2.3.0) (2026-05-18)
+
+
+### Features
+
+* conditional delete button within formular ([8dad175](https://github.com/domschmidt/koku/commit/8dad175cb182c5d173e304b7c89b61987032a14a))
+* conditional delete button within formular ([221b988](https://github.com/domschmidt/koku/commit/221b98867874c01798f2d4ff23616d5b564f9b8e))
+
 ## [2.2.12](https://github.com/domschmidt/koku/compare/v2.2.11...v2.2.12) (2026-04-08)
 
 
