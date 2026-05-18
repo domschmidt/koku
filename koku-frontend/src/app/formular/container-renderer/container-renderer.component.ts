@@ -16,6 +16,7 @@ import { OutletDirective } from '../../portal/outlet.directive';
   selector: '[container-renderer],container-renderer',
   imports: [NgComponentOutlet, SignalComponentIoModule, ComponentOutletInjectorModule],
   templateUrl: './container-renderer.component.html',
+  styleUrl: './container-renderer.component.css',
 })
 export class ContainerRendererComponent {
   inputBindings = signal<Record<string, any>>({});
@@ -32,6 +33,7 @@ export class ContainerRendererComponent {
   contentSetup = input.required<FormularContentSetup>();
   buttonDockOutlet = input<OutletDirective>();
   context = input<Record<string, any>>();
+  source = input<any>();
 
   constructor() {
     toObservable(this.content).subscribe(() => {

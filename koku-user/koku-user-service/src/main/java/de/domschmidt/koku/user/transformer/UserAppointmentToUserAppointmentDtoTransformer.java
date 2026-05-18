@@ -4,11 +4,12 @@ import de.domschmidt.koku.dto.user.KokuUserAppointmentDto;
 import de.domschmidt.koku.user.persistence.User;
 import de.domschmidt.koku.user.persistence.UserAppointment;
 import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component
 public class UserAppointmentToUserAppointmentDtoTransformer {
@@ -64,6 +65,9 @@ public class UserAppointmentToUserAppointmentDtoTransformer {
         }
         if (updatedDto.getUserId() != null) {
             model.setUser(this.entityManager.getReference(User.class, updatedDto.getUserId()));
+        }
+        if (updatedDto.getDeleted() != null) {
+            model.setDeleted(updatedDto.getDeleted());
         }
         return model;
     }

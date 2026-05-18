@@ -33,4 +33,5 @@ export class GridContainerComponent {
   content = input.required<KokuDto.GridContainer>();
   buttonDockOutlet = input<OutletDirective>();
   context = input<Record<string, any>>();
+  source = input<any>();
 }
