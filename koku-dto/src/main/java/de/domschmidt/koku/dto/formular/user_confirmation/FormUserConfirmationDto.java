@@ -1,10 +1,9 @@
 package de.domschmidt.koku.dto.formular.user_confirmation;
 
-import lombok.Builder;
-import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
 @Builder
 @Data

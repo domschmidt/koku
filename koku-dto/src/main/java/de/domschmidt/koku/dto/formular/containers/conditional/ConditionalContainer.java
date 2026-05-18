@@ -3,13 +3,12 @@ package de.domschmidt.koku.dto.formular.containers.conditional;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.formular.dto.content.IFormularContent;
 import de.domschmidt.formular.dto.content.containers.AbstractFormContainer;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
 import lombok.experimental.SuperBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SuperBuilder
 @JsonTypeName("condition")
