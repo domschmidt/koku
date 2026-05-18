@@ -18,6 +18,7 @@ import { signal } from '@angular/core';
 import { MultiSelectFieldComponent } from '../fields/multi-select/multi-select-field.component';
 import { FieldSlotRendererComponent } from '../formular/field-renderer/field-slot-renderer/field-slot-renderer.component';
 import { DocumentDesignerFieldComponent } from '../fields/document/document-designer/document-designer-field.component';
+import { ConditionalContainerComponent } from './containers/conditional-container/conditional-container.component';
 
 const FIELD_INITIALIZER = (formularContent: KokuDto.AbstractFormField<any>) => {
   const result: FormularContentStates = {
@@ -103,6 +104,52 @@ const CONTAINER_REGISTRY: Partial<
     componentType: FieldsetContainerComponent,
     stateInitializer: (formularContent: KokuDto.AbstractFormContainer) => {
       const castedFormularContent = formularContent as KokuDto.FieldsetContainer;
+      const result: FormularContentStates = {
+        fields: {},
+        containers: {},
+        buttons: {},
+        layouts: {},
+      };
+      result.containers[formularContent.id as string] = {
+        config: formularContent,
+      };
+      for (const currentContent of castedFormularContent.content || []) {
+        if (currentContent['@type']) {
+          const mappedFieldConfig = FIELD_REGISTRY[currentContent['@type'] as KokuDto.AbstractFormField<any>['@type']];
+          if (mappedFieldConfig) {
+            const fieldContentStates = mappedFieldConfig.stateInitializer(
+              currentContent as KokuDto.AbstractFormField<any>,
+            );
+            result.buttons = Object.assign(result.buttons, fieldContentStates.buttons);
+            result.fields = Object.assign(result.fields, fieldContentStates.fields);
+            result.containers = Object.assign(result.containers, fieldContentStates.containers);
+          }
+          const mappedContainerConfig =
+            CONTAINER_REGISTRY[currentContent['@type'] as KokuDto.AbstractFormContainer['@type']];
+          if (mappedContainerConfig) {
+            const containerContentStates = mappedContainerConfig.stateInitializer(
+              currentContent as KokuDto.AbstractFormContainer,
+            );
+            result.buttons = Object.assign(result.buttons, containerContentStates.buttons);
+            result.fields = Object.assign(result.fields, containerContentStates.fields);
+            result.containers = Object.assign(result.containers, containerContentStates.containers);
+          }
+          const mappedButtonConfig = BUTTON_REGISTRY[currentContent['@type'] as KokuDto.KokuFormButton['@type']];
+          if (mappedButtonConfig) {
+            const buttonContentStates = mappedButtonConfig.stateInitializer(currentContent as KokuDto.KokuFormButton);
+            result.buttons = Object.assign(result.buttons, buttonContentStates.buttons);
+            result.fields = Object.assign(result.fields, buttonContentStates.fields);
+            result.containers = Object.assign(result.containers, buttonContentStates.containers);
+          }
+        }
+      }
+      return result;
+    },
+  },
+  condition: {
+    componentType: ConditionalContainerComponent,
+    stateInitializer: (formularContent: KokuDto.AbstractFormContainer) => {
+      const castedFormularContent = formularContent as KokuDto.ConditionalContainer;
       const result: FormularContentStates = {
         fields: {},
         containers: {},
@@ -339,7 +386,7 @@ const FIELD_REGISTRY: Partial<
     },
   },
 };
-const BUTTON_INITIALIZER = (formularContent: KokuDto.KokuFormButton) => {
+const BUTTON_INITIALIZER = (formularContent: KokuDto.AbstractFormButton) => {
   const result: FormularContentStates = {
     fields: {},
     containers: {},
@@ -359,12 +406,12 @@ const BUTTON_INITIALIZER = (formularContent: KokuDto.KokuFormButton) => {
 };
 const BUTTON_REGISTRY: Partial<
   Record<
-    KokuDto.KokuFormButton['@type'],
+    KokuDto.AbstractFormButton['@type'],
     {
       componentType: any;
-      stateInitializer: (formularContent: KokuDto.KokuFormButton) => FormularContentStates;
-      inputBindings?(instance: ButtonRendererComponent, formularContent: KokuDto.KokuFormButton): Record<string, any>;
-      outputBindings?(instance: ButtonRendererComponent, formularContent: KokuDto.KokuFormButton): Record<string, any>;
+      stateInitializer: (formularContent: KokuDto.AbstractFormButton) => FormularContentStates;
+      inputBindings?(instance: any, formularContent: KokuDto.AbstractFormButton): Record<string, any>;
+      outputBindings?(instance: any, formularContent: KokuDto.AbstractFormButton): Record<string, any>;
     }
   >
 > = {

@@ -65,6 +65,9 @@ public class UserAppointmentToUserAppointmentDtoTransformer {
         if (updatedDto.getUserId() != null) {
             model.setUser(this.entityManager.getReference(User.class, updatedDto.getUserId()));
         }
+        if (updatedDto.getDeleted() != null) {
+            model.setDeleted(updatedDto.getDeleted());
+        }
         return model;
     }
 }

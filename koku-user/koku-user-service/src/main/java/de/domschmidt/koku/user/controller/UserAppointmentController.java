@@ -4,7 +4,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
-import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
 import de.domschmidt.formular.factory.DefaultViewContentIdGenerator;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
@@ -13,13 +12,21 @@ import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfir
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
+import de.domschmidt.koku.dto.formular.buttons.FormButtonUserConfirmationSourcePathParamDto;
 import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
+import de.domschmidt.koku.dto.formular.containers.conditional.ConditionalContainer;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEvent;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEventDateValueParamDto;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEventSerenityEnumDto;
+import de.domschmidt.koku.dto.formular.events.FormPropagateGlobalEventDto;
 import de.domschmidt.koku.dto.formular.fields.input.EnumInputFormularFieldType;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularFieldPossibleValue;
 import de.domschmidt.koku.dto.formular.fields.textarea.TextareaFormularField;
+import de.domschmidt.koku.dto.formular.listeners.FormViewEventPayloadSourceUpdateGlobalEventListenerDto;
+import de.domschmidt.koku.dto.formular.user_confirmation.FormUserConfirmationDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldTypeEnumDto;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
@@ -28,7 +35,11 @@ import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStyli
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.koku.dto.user.KokuUserAppointmentDto;
 import de.domschmidt.koku.dto.user.KokuUserAppointmentSummaryDto;
-import de.domschmidt.koku.user.persistence.*;
+import de.domschmidt.koku.user.persistence.QUser;
+import de.domschmidt.koku.user.persistence.QUserAppointment;
+import de.domschmidt.koku.user.persistence.User;
+import de.domschmidt.koku.user.persistence.UserAppointment;
+import de.domschmidt.koku.user.persistence.UserAppointmentRepository;
 import de.domschmidt.koku.user.transformer.UserAppointmentToUserAppointmentDtoTransformer;
 import de.domschmidt.koku.user.transformer.UserAppointmentToUserAppointmentSummaryDtoTransformer;
 import de.domschmidt.list.dto.response.ListViewDto;
@@ -78,7 +89,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -168,7 +188,115 @@ public class UserAppointmentController {
                         .icon("SAVE")
                         .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
                         .build())
-                .postProcessingAction(FormButtonReloadAction.builder().build())
+                .successEvents(Arrays.asList(
+                        FormNotificationEvent.builder()
+                                .text("Erfolgreich gespeichert")
+                                .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                .build(),
+                        FormPropagateGlobalEventDto.builder()
+                                .eventName("user-appointment-updated")
+                                .build()))
+                .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                        .text("Fehler beim Speichern")
+                        .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                        .build()))
+                .build());
+
+        formFactory.addContainer(ConditionalContainer.builder()
+                .compareValuePath(KokuUserAppointmentDto.Fields.deleted)
+                .expectedValue(Boolean.FALSE)
+                .build());
+        formFactory.addButton(KokuFormButton.builder()
+                .id("DeletePrivateAppointmentButton")
+                .buttonType(EnumButtonType.SUBMIT)
+                .text("Löschen")
+                .title("Jetzt löschen")
+                .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.ERROR, EnumButtonStyle.OUTLINE))
+                .dockableSettings(ButtonDockableSettings.builder()
+                        .icon("TRASH")
+                        .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.ERROR))
+                        .build())
+                .submitPayload(KokuUserAppointmentDto.builder().deleted(true).build())
+                .userConfirmation(FormUserConfirmationDto.builder()
+                        .headline("Termin löschen")
+                        .content("Termin vom :date als gelöscht markieren?")
+                        .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                .param(":date")
+                                .sourcePath(KokuUserAppointmentDto.Fields.startDate)
+                                .build()))
+                        .build())
+                .successEvents(Arrays.asList(
+                        FormNotificationEvent.builder()
+                                .text("Termin vom :date erfolgreich als gelöscht markiert")
+                                .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
+                                        .param(":date")
+                                        .sourcePath(KokuUserAppointmentDto.Fields.startDate)
+                                        .build()))
+                                .build(),
+                        FormPropagateGlobalEventDto.builder()
+                                .eventName("user-appointment-updated")
+                                .build()))
+                .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                        .text("Termin vom :date konnte nicht als gelöscht markiert werden")
+                        .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                        .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
+                                .param(":date")
+                                .sourcePath(KokuUserAppointmentDto.Fields.startDate)
+                                .build()))
+                        .build()))
+                .build());
+        formFactory.endContainer();
+
+        formFactory.addContainer(ConditionalContainer.builder()
+                .compareValuePath(KokuUserAppointmentDto.Fields.deleted)
+                .expectedValue(Boolean.TRUE)
+                .build());
+        formFactory.addButton(KokuFormButton.builder()
+                .id("RestorePrivateAppointmentButton")
+                .buttonType(EnumButtonType.SUBMIT)
+                .text("Wiederherstellen")
+                .title("Jetzt wiederherstellen")
+                .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.SUCCESS, EnumButtonStyle.OUTLINE))
+                .dockableSettings(ButtonDockableSettings.builder()
+                        .icon("ARROW_LEFT_START_ON_RECTANGLE")
+                        .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.SUCCESS))
+                        .build())
+                .submitPayload(KokuUserAppointmentDto.builder().deleted(false).build())
+                .userConfirmation(FormUserConfirmationDto.builder()
+                        .headline("Termin wiederherstellen")
+                        .content("Termin vom :date wiederherstellen?")
+                        .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                .param(":date")
+                                .sourcePath(KokuUserAppointmentDto.Fields.startDate)
+                                .build()))
+                        .build())
+                .successEvents(Arrays.asList(
+                        FormNotificationEvent.builder()
+                                .text("Termin vom :date wurde erfolgreich wiederhergestellt")
+                                .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
+                                        .param(":date")
+                                        .sourcePath(KokuUserAppointmentDto.Fields.startDate)
+                                        .build()))
+                                .build(),
+                        FormPropagateGlobalEventDto.builder()
+                                .eventName("user-appointment-updated")
+                                .build()))
+                .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                        .text("Termin vom :date konnte nicht wiederhergestellt werden")
+                        .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                        .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
+                                .param(":date")
+                                .sourcePath(KokuUserAppointmentDto.Fields.startDate)
+                                .build()))
+                        .build()))
+                .build());
+        formFactory.endContainer();
+
+        formFactory.addGlobalEventListener(FormViewEventPayloadSourceUpdateGlobalEventListenerDto.builder()
+                .eventName("user-appointment-updated")
+                .idPath(KokuUserAppointmentDto.Fields.id)
                 .build());
 
         return formFactory.create();
@@ -266,7 +394,8 @@ public class UserAppointmentController {
                 .valueMapping(Map.of(
                         KokuUserAppointmentDto.Fields.startDate, startDateFieldRef,
                         KokuUserAppointmentDto.Fields.startTime, startTimeFieldRef,
-                        KokuUserAppointmentDto.Fields.description, descriptionFieldRef))
+                        KokuUserAppointmentDto.Fields.description, descriptionFieldRef,
+                        KokuUserAppointmentDto.Fields.deleted, deletedSourceRef))
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
                 .route("appointments/:appointmentId")
@@ -285,10 +414,6 @@ public class UserAppointmentController {
                                 .sourceUrl("services/users/users/appointments/:appointmentId")
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
                                 .maxWidthInPx(800)
-                                .onSaveEvents(Arrays.asList(
-                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                .eventName("user-appointment-updated")
-                                                .build()))
                                 .build())
                         .build())
                 .build());

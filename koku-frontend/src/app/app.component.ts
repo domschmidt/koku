@@ -18,8 +18,6 @@ import { set } from './utils/set';
 import Holidays, { HolidaysTypes } from 'date-holidays';
 import dayjs from 'dayjs';
 import dayOfYear from 'dayjs/plugin/dayOfYear';
-
-dayjs.extend(dayOfYear);
 import {
   CALENDAR_PLUGIN,
   CalendarComponent,
@@ -30,14 +28,16 @@ import {
   DateSelection,
   RenderedCalendarInlineItem,
 } from './calendar/calendar.component';
-import { ToastService } from './toast/toast.service';
-import { catchError } from 'rxjs/operators';
+import { ToastService, ToastTypeUnion } from './toast/toast.service';
+import { catchError, tap } from 'rxjs/operators';
 import { EventInput, EventSourceInput } from '@fullcalendar/core';
 import { Frequency, Options } from 'rrule/dist/esm/types';
 import { LIST_CONTENT_SETUP } from './list-binding/registry';
 import { CalendarInlineHeaderContainerComponent } from './calendar-binding/header-container/calendar-inline-header-container.component';
 import { CalendarInlineListContainerComponent } from './calendar-binding/list-container/calendar-inline-list-container.component';
 import { CALENDAR_CONTENT_SETUP } from './calendar-binding/registry';
+
+dayjs.extend(dayOfYear);
 
 class BusinessRulePlugin implements FormularPlugin {
   private businessRuleExecutorsInitialized = false;
@@ -156,6 +156,23 @@ class GlobalEventListenerPlugin implements FormularPlugin {
         currentEventListener.eventName,
         (eventPayload) => {
           switch (currentEventListener['@type']) {
+            case 'source-update-via-payload': {
+              const castedEventListener =
+                currentEventListener as KokuDto.FormViewEventPayloadSourceUpdateGlobalEventListenerDto;
+
+              if (!castedEventListener.idPath) {
+                throw new Error('Missing idPath configuration in EventListener');
+              }
+
+              const sourceSnapshot = this.formularInstance.source();
+              if (get(eventPayload, castedEventListener.idPath) === get(sourceSnapshot, castedEventListener.idPath)) {
+                this.formularInstance.source.set({
+                  ...sourceSnapshot,
+                  ...eventPayload,
+                });
+              }
+              break;
+            }
             case 'field-update-via-payload': {
               const castedEventListener =
                 currentEventListener as KokuDto.FormViewEventPayloadFieldUpdateGlobalEventListenerDto;
@@ -393,6 +410,230 @@ class GlobalEventListenerPlugin implements FormularPlugin {
 
   clearGlobalEventListeners() {
     GLOBAL_EVENT_BUS.removeGlobalEventListener(this.componentRef);
+  }
+}
+
+class ButtonListenerPlugin implements FormularPlugin {
+  buttonSubscriptions: Subscription[] = [];
+
+  constructor(
+    private modalService: ModalService,
+    private toastService: ToastService,
+    private formularInstance: FormularComponent,
+  ) {}
+
+  onFormularLoaded(): void {
+    this.clearGlobalEventListeners();
+    for (const buttonState of Object.values(this.formularInstance.buttonRegister())) {
+      this.buttonSubscriptions.push(
+        buttonState.buttonEventBus.subscribe((eventBody) => {
+          if (!buttonState.config.id) {
+            throw new Error(`missing button id for config ${buttonState.config}`);
+          }
+          const eventName = eventBody.eventName;
+          const eventPayload = eventBody.payload;
+          console.log(buttonState.config.id, eventName, eventPayload);
+
+          const buttonCfg = buttonState.config;
+          if (buttonState.config['@type'] === 'button') {
+            const castedButtonCfg = buttonCfg as KokuDto.KokuFormButton;
+
+            const executeEvents = (events: KokuDto.AbstractFormEventDto[], eventPayload?: any) => {
+              for (const currentEvent of events || []) {
+                switch (currentEvent['@type']) {
+                  case 'notification': {
+                    const castedEvent = currentEvent as KokuDto.FormNotificationEvent;
+                    if (!castedEvent.text) {
+                      throw new Error('Missing text in Notification');
+                    }
+                    let notificationText = castedEvent.text;
+                    for (const currentParam of castedEvent.params || []) {
+                      if (!currentParam.param) {
+                        throw new Error(`Missing param`);
+                      }
+                      switch (currentParam['@type']) {
+                        case 'value': {
+                          const castedParam = currentParam as KokuDto.FormNotificationEventValueParamDto;
+                          if (castedParam.sourcePath) {
+                            notificationText = notificationText.replaceAll(
+                              currentParam.param,
+                              get(this.formularInstance.source(), castedParam.sourcePath),
+                            );
+                            break;
+                          } else {
+                            throw new Error(`Missing valuePath for param: ${currentParam.param}`);
+                          }
+                          break;
+                        }
+                        case 'date-value': {
+                          const castedParam = currentParam as KokuDto.FormNotificationEventValueParamDto;
+                          if (castedParam.sourcePath) {
+                            notificationText = notificationText.replaceAll(
+                              currentParam.param,
+                              get(this.formularInstance.source(), castedParam.sourcePath),
+                            );
+                            break;
+                          } else {
+                            throw new Error(`Missing valuePath for param: ${currentParam.param}`);
+                          }
+                          break;
+                        }
+                        default: {
+                          throw new Error(`Unknown param type ${currentParam['@type']}`);
+                        }
+                      }
+                    }
+                    let serenity: ToastTypeUnion = 'info';
+                    if (castedEvent.serenity) {
+                      switch (castedEvent.serenity) {
+                        case 'SUCCESS': {
+                          serenity = 'success';
+                          break;
+                        }
+                        case 'ERROR': {
+                          serenity = 'error';
+                          break;
+                        }
+                        default:
+                          throw new Error(`Unknown Notification serenity ${serenity}`);
+                      }
+                    }
+                    this.toastService.add(notificationText, serenity);
+                    break;
+                  }
+                  case 'propagate-global-event': {
+                    const castedEvent = currentEvent as KokuDto.FormPropagateGlobalEventDto;
+                    if (!castedEvent.eventName) {
+                      throw new Error('Missing eventName');
+                    }
+                    GLOBAL_EVENT_BUS.propagateGlobalEvent(castedEvent.eventName, eventPayload);
+                    break;
+                  }
+                  default: {
+                    throw new Error(`Unknown event type ${currentEvent}`);
+                  }
+                }
+              }
+            };
+
+            const executeUserConfirmation = (cb: () => Observable<any>) => {
+              if (castedButtonCfg.userConfirmation) {
+                let headline = castedButtonCfg.userConfirmation.headline || '';
+                let content = castedButtonCfg.userConfirmation.content || '';
+
+                for (const currentParam of castedButtonCfg.userConfirmation.params || []) {
+                  if (!currentParam.param) {
+                    throw new Error(`Missing param`);
+                  }
+                  switch (currentParam['@type']) {
+                    case 'source-path': {
+                      const castedParam = currentParam as KokuDto.FormButtonUserConfirmationSourcePathParamDto;
+                      if (!castedParam.sourcePath) {
+                        throw new Error('Missing valuePath in FieldReference');
+                      }
+                      headline = headline.replaceAll(
+                        currentParam.param,
+                        get(this.formularInstance.source(), castedParam.sourcePath),
+                      );
+                      content = content.replaceAll(
+                        currentParam.param,
+                        get(this.formularInstance.source(), castedParam.sourcePath),
+                      );
+                      break;
+                    }
+                    default: {
+                      throw new Error(`Unknown param type ${currentParam['@type']}`);
+                    }
+                  }
+                }
+
+                const confirmationModal = this.modalService.add({
+                  headline: headline,
+                  content: content,
+                  buttons: [
+                    {
+                      text: 'Abbrechen',
+                      styles: ['OUTLINE'],
+                      onClick: () => {
+                        confirmationModal.close();
+                      },
+                    },
+                    {
+                      text: 'Bestätigen',
+                      onClick: (event, modal, button) => {
+                        button.loading = true;
+                        button.disabled = true;
+
+                        cb().subscribe({
+                          next: () => {
+                            button.loading = false;
+                            button.disabled = false;
+                            confirmationModal.close();
+                          },
+                          error: () => {
+                            button.loading = false;
+                            button.disabled = false;
+                            confirmationModal.update(modal);
+                          },
+                          complete: () => {
+                            confirmationModal.close();
+                          },
+                        });
+                      },
+                    },
+                  ],
+                  clickOutside: () => {
+                    confirmationModal.close();
+                  },
+                });
+              } else {
+                cb().subscribe();
+              }
+            };
+
+            switch (eventName) {
+              case 'onClick': {
+                if (buttonState.config.buttonType === 'SUBMIT') {
+                  executeUserConfirmation(() => {
+                    return this.formularInstance.submit(castedButtonCfg.submitPayload).pipe(
+                      tap(
+                        (rawValue) => {
+                          for (const currentPostProcessingAction of castedButtonCfg.postProcessingActions || []) {
+                            switch (currentPostProcessingAction['@type']) {
+                              case 'reload': {
+                                this.formularInstance.loadSource();
+                                break;
+                              }
+                              default:
+                                throw new Error('Unknown PostProcessingAction');
+                            }
+                          }
+                          executeEvents(castedButtonCfg.successEvents || [], rawValue);
+                        },
+                        () => {
+                          executeEvents(castedButtonCfg.failEvents || []);
+                        },
+                      ),
+                    );
+                  });
+                }
+                break;
+              }
+            }
+          }
+        }),
+      );
+    }
+  }
+
+  destroy(): void {
+    this.clearGlobalEventListeners();
+  }
+
+  clearGlobalEventListeners() {
+    for (const buttonSubscription of this.buttonSubscriptions) {
+      buttonSubscription.unsubscribe();
+    }
   }
 }
 
@@ -1651,6 +1892,15 @@ class CalendarHolidaySourcePlugin implements CalendarPlugin {
         const httpClient = inject(HttpClient);
         const modalService = inject(ModalService);
         return new BusinessRulePlugin(httpClient, modalService, formularInstance);
+      },
+      multi: true,
+    },
+    {
+      provide: FORMULAR_PLUGIN,
+      useFactory: (): ((formularInstance: FormularComponent) => FormularPlugin) => (formularInstance) => {
+        const modalService = inject(ModalService);
+        const toastService = inject(ToastService);
+        return new ButtonListenerPlugin(modalService, toastService, formularInstance);
       },
       multi: true,
     },

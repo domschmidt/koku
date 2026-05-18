@@ -214,7 +214,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
 
   onSave = output<any>();
 
-  source = {};
+  source = signal<any>({});
   private lastSourceSubscription: Subscription | undefined;
   private lastFormularSubscription: Subscription | undefined;
   private pluginInstances: FormularPlugin[] = [];
@@ -286,42 +286,15 @@ export class FormularComponent implements OnDestroy, OnChanges {
                         fieldState.value.set(eventPayload);
                         const valuePath = fieldState.config.valuePath;
                         if (valuePath) {
-                          set(this.source, valuePath, eventPayload);
+                          const sourceSnapshot = this.source();
+                          set(sourceSnapshot, valuePath, eventPayload);
+                          this.source.set({ ...sourceSnapshot });
                         }
                       }
                     }
                   });
                 }
                 this.buttonRegister.set(formularStates.buttons);
-                for (const buttonState of Object.values(formularStates.buttons)) {
-                  buttonState.buttonEventBus.subscribe((eventBody) => {
-                    if (!buttonState.config.id) {
-                      throw new Error(`missing button id for config ${buttonState.config}`);
-                    }
-                    const eventName = eventBody.eventName;
-                    const eventPayload = eventBody.payload;
-                    console.log(buttonState.config.id, eventName, eventPayload);
-                    switch (eventName) {
-                      case 'onClick': {
-                        if (buttonState.config.buttonType === 'SUBMIT') {
-                          this.submit().subscribe(() => {
-                            for (const currentPostProcessingAction of buttonState.config.postProcessingActions || []) {
-                              switch (currentPostProcessingAction['@type']) {
-                                case 'reload': {
-                                  this.loadSource();
-                                  break;
-                                }
-                                default:
-                                  throw new Error('Unknown PostProcessingAction');
-                              }
-                            }
-                          });
-                        }
-                        break;
-                      }
-                    }
-                  });
-                }
                 this.containerRegister.set(formularStates.containers);
               }
             }
@@ -343,13 +316,13 @@ export class FormularComponent implements OnDestroy, OnChanges {
   }
 
   private afterSourceLoaded(source: any) {
-    this.source = source;
+    const modifiedSource = source;
 
     for (const sourceOverride of this.sourceOverrides() || []) {
       const valuePath = sourceOverride.path;
       const value = sourceOverride.value;
       if (valuePath && value !== undefined) {
-        set(this.source, valuePath, value);
+        set(modifiedSource, valuePath, value);
       }
     }
 
@@ -360,7 +333,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
       if (valuePathSnapshot) {
         const sourceOrDefaultValue = get(source, valuePathSnapshot.split('.'), defaultValue);
         value.value.set(sourceOrDefaultValue);
-        set(this.source, valuePathSnapshot, sourceOrDefaultValue);
+        set(modifiedSource, valuePathSnapshot, sourceOrDefaultValue);
       }
     }
 
@@ -377,22 +350,23 @@ export class FormularComponent implements OnDestroy, OnChanges {
           lookupField.value.set(newValue);
           const valuePath = lookupField.config.valuePath;
           if (valuePath) {
-            set(this.source, valuePath, newValue);
+            set(modifiedSource, valuePath, newValue);
           }
         }
       } else {
         throw new Error('could not find field id ' + fieldOverride.fieldId);
       }
     }
+    this.source.set(modifiedSource);
 
     this.fieldRegister.set({ ...fieldInstancesSnapshot });
 
     for (const currentPluginInstance of this.pluginInstances || []) {
-      currentPluginInstance.onSourceLoaded?.(source);
+      currentPluginInstance.onSourceLoaded?.(modifiedSource);
     }
   }
 
-  private loadSource() {
+  loadSource() {
     const sourceUrlSnapshot = this.sourceUrl();
     if (sourceUrlSnapshot) {
       this.sourceLoading.set(true);
@@ -415,7 +389,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
     }
   }
 
-  submit() {
+  submit(submitPayload?: any) {
     if (this.submitting()) {
       throw new Error('submit is in progress');
     } else {
@@ -428,22 +402,17 @@ export class FormularComponent implements OnDestroy, OnChanges {
             }
             this.submitting.set(true);
 
-            this.requestSubmit(this.submitMethod() || 'POST', submitUrl, this.source).subscribe({
+            this.requestSubmit(this.submitMethod() || 'POST', submitUrl, {
+              ...this.source(),
+              ...(submitPayload ? submitPayload : {}),
+            }).subscribe({
               next: (response: any) => {
+                this.source.set(response);
                 this.onSave.emit(response);
-                this.toastService.add(`Erfolgreich gespeichert`, 'success');
                 observer.next(response);
                 observer.complete();
               },
               error: (error: any) => {
-                if (error instanceof HttpErrorResponse) {
-                  this.toastService.add(
-                    `Es ist ein Fehler bei der Anfrage aufgetreten. ${error.status}: ${error.statusText}`,
-                    'error',
-                  );
-                } else {
-                  this.toastService.add(`Es ist ein unbekannter Fehler bei der Anfrage aufgetreten.`, 'error');
-                }
                 this.submitting.set(false);
                 observer.error(error);
               },

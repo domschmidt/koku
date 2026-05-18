@@ -10,7 +10,9 @@
         {{ loadedTitle() || title() }}
       </div>
     </div>
-    <ng-container koku-outlet #buttonDockOutlet="koku-outlet"></ng-container>
+    <div class="flex gap-2">
+      <ng-container koku-outlet #buttonDockOutlet="koku-outlet"></ng-container>
+    </div>
   </div>
 
   @if (content().content; as content) {
