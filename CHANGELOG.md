@@ -1,3 +1,10 @@
+## [2.4.1](https://github.com/domschmidt/koku/compare/v2.4.0...v2.4.1) (2026-05-19)
+
+
+### Bug Fixes
+
+* correct day logic ([c2b561b](https://github.com/domschmidt/koku/commit/c2b561b8dc713f1390231747ecd85eebad7d5d33))
+
 # [2.4.0](https://github.com/domschmidt/koku/compare/v2.3.0...v2.4.0) (2026-05-19)
 
 
