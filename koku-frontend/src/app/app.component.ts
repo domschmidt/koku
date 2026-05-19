@@ -1662,16 +1662,20 @@ class CalendarListSourcePlugin implements CalendarPlugin {
             const fieldSelection: Set<string> = new Set<string>();
             const fieldPredicates: Record<string, KokuDto.ListFieldQuery> = {};
 
+            const isRecurring = castedSource.searchOperatorHint === 'YEARLY_RECURRING';
+
             const startAndEndDOYOrGroupIdentifier =
-              dayjs(arg.start).dayOfYear() > dayjs(arg.end).dayOfYear() ? 'startGTend' : undefined;
+              isRecurring && dayjs(arg.start).format('MM-DD') > dayjs(arg.end).format('MM-DD')
+                ? 'startGTend'
+                : undefined;
 
             if (castedSource.startDateFieldSelectionPath) {
               fieldSelection.add(castedSource.startDateFieldSelectionPath);
               fieldPredicates[castedSource.startDateFieldSelectionPath] = {
                 predicates: [
                   {
-                    searchExpression: dayjs(arg.start).format('YYYY-MM-DD'),
-                    searchOperator: 'GREATER_OR_EQ',
+                    searchExpression: dayjs(arg.end).format('YYYY-MM-DD'),
+                    searchOperator: 'LESS_OR_EQ',
                     searchOperatorHint: castedSource.searchOperatorHint,
                     orGroupIdentifier: startAndEndDOYOrGroupIdentifier,
                   },
@@ -1684,8 +1688,8 @@ class CalendarListSourcePlugin implements CalendarPlugin {
               fieldPredicates[castedSource.endDateFieldSelectionPath] = {
                 predicates: [
                   {
-                    searchExpression: dayjs(arg.end).format('YYYY-MM-DD'),
-                    searchOperator: 'LESS_OR_EQ',
+                    searchExpression: dayjs(arg.start).format('YYYY-MM-DD'),
+                    searchOperator: 'GREATER_OR_EQ',
                     searchOperatorHint: castedSource.searchOperatorHint,
                     orGroupIdentifier: startAndEndDOYOrGroupIdentifier,
                   },
