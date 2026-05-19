@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/domschmidt/koku/compare/v2.3.0...v2.4.0) (2026-05-19)
+
+
+### Features
+
+* add architecture docs ([7188ce6](https://github.com/domschmidt/koku/commit/7188ce6411ff6891c126e6183fd2eb5a0cb5b19f))
+
 # [2.3.0](https://github.com/domschmidt/koku/compare/v2.2.12...v2.3.0) (2026-05-18)
 
 
