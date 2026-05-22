@@ -115,7 +115,7 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: ListItemComponent, key: string) => {
       return {
-        onChange: (data: any) => instance.fieldEventBus(key, 'onChange', data),
+        changed: (data: any) => instance.fieldEventBus(key, 'onChange', data),
       };
     },
   },
@@ -137,10 +137,10 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: ListItemComponent, key: string) => {
       return {
-        onChange: (data: any) => instance.fieldEventBus(key, 'onChange', data),
-        onInput: (data: any) => instance.fieldEventBus(key, 'onInput', data),
-        onBlur: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
-        onFocus: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
+        changed: (data: any) => instance.fieldEventBus(key, 'onChange', data),
+        typed: (data: any) => instance.fieldEventBus(key, 'onInput', data),
+        blurred: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
+        focused: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
       };
     },
   },
@@ -154,10 +154,10 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: ListItemComponent, key: string) => {
       return {
-        onChange: (data: any) => instance.fieldEventBus(key, 'onChange', data),
-        onInput: (data: any) => instance.fieldEventBus(key, 'onInput', data),
-        onBlur: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
-        onFocus: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
+        changed: (data: any) => instance.fieldEventBus(key, 'onChange', data),
+        typed: (data: any) => instance.fieldEventBus(key, 'onInput', data),
+        blurred: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
+        focused: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
       };
     },
   },
@@ -171,10 +171,10 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: ListItemComponent, key: string) => {
       return {
-        onChange: (data: any) => instance.fieldEventBus(key, 'onChange', data),
-        onInput: (data: any) => instance.fieldEventBus(key, 'onInput', data),
-        onBlur: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
-        onFocus: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
+        changed: (data: any) => instance.fieldEventBus(key, 'onChange', data),
+        typed: (data: any) => instance.fieldEventBus(key, 'onInput', data),
+        blurred: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
+        focused: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
       };
     },
   },
@@ -271,10 +271,10 @@ const INLINE_CONTENT_REGISTRY: Partial<
     },
     outputBindings: (instance: ListInlineContentComponent) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           instance.closeInlineContent();
         },
-        onOpenRoutedContent: (routes: string[]) => {
+        openRoutedContentRequested: (routes: string[]) => {
           instance.openRoutedContent(routes);
         },
       };
@@ -302,7 +302,7 @@ const INLINE_CONTENT_REGISTRY: Partial<
     },
     outputBindings: (instance: ListInlineContentComponent, inlineContent: KokuDto.ListViewDocumentFormContentDto) => {
       return {
-        onSubmit: (payload: any) => {
+        submitted: (payload: any) => {
           for (const currentOnSubmitEvent of inlineContent.onSubmitEvents || []) {
             switch (currentOnSubmitEvent['@type']) {
               case 'propagate-global-event': {
@@ -364,10 +364,10 @@ const INLINE_CONTENT_REGISTRY: Partial<
     },
     outputBindings: (instance: ListInlineContentComponent) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           instance.closeInlineContent();
         },
-        onOpenRoutedContent: (routes: string[]) => {
+        openRoutedContentRequested: (routes: string[]) => {
           instance.openRoutedContent(routes);
         },
       };
@@ -406,10 +406,10 @@ const INLINE_CONTENT_REGISTRY: Partial<
     },
     outputBindings: (instance: ListInlineContentComponent) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           instance.closeInlineContent();
         },
-        onOpenRoutedContent: (routes: string[]) => {
+        openRoutedContentRequested: (routes: string[]) => {
           instance.openRoutedContent(routes);
         },
       };
@@ -430,10 +430,10 @@ const INLINE_CONTENT_REGISTRY: Partial<
     },
     outputBindings: (instance: ListInlineContentComponent) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           instance.closeInlineContent();
         },
-        onOpenRoutedContent: (routes: string[]) => {
+        openRoutedContentRequested: (routes: string[]) => {
           instance.openRoutedContent(routes);
         },
       };
@@ -486,7 +486,7 @@ const INLINE_CONTENT_REGISTRY: Partial<
               }
             }
           }
-          instance.onClose.emit();
+          instance.closeRequested.emit();
         },
       };
     },
@@ -518,10 +518,10 @@ const INLINE_CONTENT_REGISTRY: Partial<
     },
     outputBindings: (instance: ListInlineContentComponent) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           instance.closeInlineContent();
         },
-        onOpenRoutedContent: (routes: string[]) => {
+        openRoutedContentRequested: (routes: string[]) => {
           instance.openRoutedContent(routes);
         },
       };
@@ -575,14 +575,14 @@ const MODAL_REGISTRY: ModalContentSetup = {
     },
     outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           if (modal.onCloseRequested) {
             modal.onCloseRequested();
           } else {
             modal.close();
           }
         },
-        onOpenRoutedContent: () => {
+        openRoutedContentRequested: () => {
           // instance.openRoutedContent(routes)
         },
       };
@@ -605,14 +605,14 @@ const MODAL_REGISTRY: ModalContentSetup = {
     },
     outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           if (modal.onCloseRequested) {
             modal.onCloseRequested();
           } else {
             modal.close();
           }
         },
-        onOpenRoutedContent: () => {
+        openRoutedContentRequested: () => {
           // instance.openRoutedContent(routes)
         },
       };
@@ -651,14 +651,14 @@ const MODAL_REGISTRY: ModalContentSetup = {
     },
     outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           if (modal.onCloseRequested) {
             modal.onCloseRequested();
           } else {
             modal.close();
           }
         },
-        onOpenRoutedContent: () => {
+        openRoutedContentRequested: () => {
           // instance.openRoutedContent(routes)
         },
       };
@@ -680,14 +680,14 @@ const MODAL_REGISTRY: ModalContentSetup = {
     },
     outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           if (modal.onCloseRequested) {
             modal.onCloseRequested();
           } else {
             modal.close();
           }
         },
-        onOpenRoutedContent: () => {
+        openRoutedContentRequested: () => {
           // instance.openRoutedContent(routes)
         },
       };
@@ -742,14 +742,14 @@ const MODAL_REGISTRY: ModalContentSetup = {
     },
     outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           if (modal.onCloseRequested) {
             modal.onCloseRequested();
           } else {
             modal.close();
           }
         },
-        onOpenRoutedContent: () => {
+        openRoutedContentRequested: () => {
           // instance.openRoutedContent(routes)
         },
       };
@@ -780,7 +780,7 @@ const ACTION_REGISTRY: Partial<
     },
     outputBindings: (instance: ListItemActionComponent, action: KokuDto.ListViewCallHttpListItemActionDto) => {
       return {
-        onClick: (event: MouseEvent) => {
+        clicked: (event: MouseEvent) => {
           event.stopPropagation();
 
           const callAction = () => {
@@ -846,7 +846,7 @@ const ACTION_REGISTRY: Partial<
             for (const currentEvent of events || []) {
               switch (currentEvent['@type']) {
                 case 'reload': {
-                  instance.onReload.emit();
+                  instance.reloadRequested.emit();
                   break;
                 }
                 case 'event-payload-update': {
@@ -1192,10 +1192,10 @@ const ACTION_REGISTRY: Partial<
     },
     outputBindings: (instance: ListItemActionComponent, action: KokuDto.ListViewOpenInlineContentItemActionDto) => {
       return {
-        onClick: (event: MouseEvent) => {
+        clicked: (event: MouseEvent) => {
           event.stopPropagation();
           if (action.inlineContent) {
-            instance.onOpenInlineContent.emit({
+            instance.openInlineContentRequested.emit({
               content: action.inlineContent,
               id: instance.register().id,
               urlSegments: null,
@@ -1215,7 +1215,7 @@ const ACTION_REGISTRY: Partial<
       action: KokuDto.ListViewItemActionOpenRoutedContentActionDto,
     ) => {
       return {
-        onClick: (event: MouseEvent) => {
+        clicked: (event: MouseEvent) => {
           event.stopPropagation();
           if (action.route) {
             let route = action.route;
@@ -1262,7 +1262,7 @@ const ACTION_REGISTRY: Partial<
               }
             }
 
-            instance.onOpenRoutedContent.emit(route.split('/'));
+            instance.openRoutedContentRequested.emit(route.split('/'));
           }
         },
       };
@@ -1339,7 +1339,7 @@ const FILTER_REGISTRY: ListFilterSetup = {
     },
     outputBindings(instance: ListFilterComponent, filter: KokuDto.ListViewToggleFilterDto): Record<string, any> {
       return {
-        onFilterChange: (state: ToggleFilterTriState) => {
+        filterChanged: (state: ToggleFilterTriState) => {
           let result: KokuDto.QueryPredicate[] = [];
           switch (state) {
             case 'checked': {
@@ -1355,7 +1355,7 @@ const FILTER_REGISTRY: ListFilterSetup = {
               break;
             }
           }
-          instance.onFilterChange.emit(result);
+          instance.filterChanged.emit(result);
         },
       };
     },

@@ -21,7 +21,7 @@ import { ModalType } from './modal.type';
 export class ModalComponent {
   readonly modalService = inject(ModalService);
 
-  handleBackdropClick(event: MouseEvent, modal: ModalType) {
+  handleBackdropClick(event: Event, modal: ModalType) {
     if (event.target === event.currentTarget) {
       if (modal.clickOutside) {
         modal.clickOutside(event);

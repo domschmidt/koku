@@ -21,8 +21,8 @@ export class ListInlineListContainerComponent {
 
   mappedContext = signal<Record<string, any> | null | undefined>(undefined);
 
-  onClose = output<void>();
-  onOpenRoutedContent = output<string[]>();
+  closeRequested = output<void>();
+  openRoutedContentRequested = output<string[]>();
 
   destroyRef = inject(DestroyRef);
   httpClient = inject(HttpClient);
@@ -80,6 +80,6 @@ export class ListInlineListContainerComponent {
   }
 
   closeInlineContent() {
-    this.onClose.emit();
+    this.closeRequested.emit();
   }
 }

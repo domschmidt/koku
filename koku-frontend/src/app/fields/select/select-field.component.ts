@@ -46,9 +46,9 @@ export class SelectFieldComponent {
   valueOnly = input(false, { transform: booleanAttribute });
   clearOnSelect = input(false, { transform: booleanAttribute });
 
-  onChange = output<string | null>();
-  onBlur = output<Event>();
-  onFocus = output<Event>();
+  changed = output<string | null>();
+  blurred = output<Event>();
+  focused = output<Event>();
 
   selectedIdx = computed(() => this.filteredPossibleValues().findIndex((opt) => opt.id === this.selectedId()));
   selectedId = signal<string | null>(null);
@@ -93,7 +93,7 @@ export class SelectFieldComponent {
     });
   }
 
-  onInputRaw($event: Event) {
+  typeRaw($event: Event) {
     if ($event.target) {
       const value = ($event.target as HTMLInputElement).value;
       this.searchTerm.set(value);
@@ -131,24 +131,24 @@ export class SelectFieldComponent {
     }
   }
 
-  onBlurRaw($event: Event) {
+  blurredRaw($event: Event) {
     if (this.isOptionClick) {
       this.isOptionClick = false;
     } else {
       this.showDropdown.set(null);
       if (this.selectedIdx() < 0) {
         this.searchTerm.set('');
-        this.onChange.emit(null);
+        this.changed.emit(null);
       } else {
         const currentValue = this.filteredPossibleValues()[this.selectedIdx()];
         this.searchTerm.set(currentValue.text || '');
       }
     }
-    this.onBlur.emit($event);
+    this.blurred.emit($event);
   }
 
-  onFocusRaw($event: Event) {
-    this.onFocus.emit($event);
+  focusedRaw($event: Event) {
+    this.focused.emit($event);
     if (this.filteredPossibleValues().length) {
       this.displayDropdown();
     }
@@ -164,7 +164,7 @@ export class SelectFieldComponent {
 
   selectOption(option: KokuDto.SelectFormularFieldPossibleValue) {
     if (option.disabled !== true) {
-      this.onChange.emit(option.id || null);
+      this.changed.emit(option.id || null);
       if (this.clearOnSelect()) {
         this.searchTerm.set('');
       } else {

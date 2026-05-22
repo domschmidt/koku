@@ -21,7 +21,7 @@
       [urlSegments]="urlSegments()"
       [buttonDockOutlet]="buttonDockOutlet"
       [parentRoutePath]="parentRoutePath()"
-      (onClose)="closeContent()"
+      (closeRequested)="closeContent()"
       class="flex overflow-auto relative"
     ></div>
   }

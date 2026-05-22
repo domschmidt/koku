@@ -14,5 +14,5 @@ export class ButtonActionComponent {
   contentSetup = input.required<ListContentSetup>();
   loading = input(false, { transform: booleanAttribute });
 
-  onClick = output<MouseEvent>();
+  clicked = output<MouseEvent>();
 }

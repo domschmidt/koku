@@ -1,12 +1,12 @@
-import {Routes} from '@angular/router';
-import {FORMULAR_CONTENT_SETUP} from './formular-binding/registry';
-import {ListComponent} from './list/list.component';
-import {LIST_CONTENT_SETUP} from './list-binding/registry';
-import {UnsavedChangesPreventionGuard} from './navi/UnsavedChangesPreventionGuard';
-import {CalendarComponent} from './calendar/calendar.component';
-import {CALENDAR_CONTENT_SETUP} from './calendar-binding/registry';
-import {CHART_CONTENT_SETUP} from './chart-binding/registry';
-import {DASHBOARD_CONTENT_SETUP} from './dashboard-binding/registry';
+import { Routes } from '@angular/router';
+import { FORMULAR_CONTENT_SETUP } from './formular-binding/registry';
+import { ListComponent } from './list/list.component';
+import { LIST_CONTENT_SETUP } from './list-binding/registry';
+import { UnsavedChangesPreventionGuard } from './navi/UnsavedChangesPreventionGuard';
+import { CalendarComponent } from './calendar/calendar.component';
+import { CALENDAR_CONTENT_SETUP } from './calendar-binding/registry';
+import { CHART_CONTENT_SETUP } from './chart-binding/registry';
+import { DASHBOARD_CONTENT_SETUP } from './dashboard-binding/registry';
 
 export const routes: Routes = [
   {

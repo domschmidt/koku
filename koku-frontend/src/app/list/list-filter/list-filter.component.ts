@@ -12,5 +12,5 @@ import ListViewFilterContentDto = KokuDto.ListViewFilterContentDto;
 export class ListFilterComponent {
   contentSetup = input.required<ListContentSetup>();
   filter = input.required<ListViewFilterContentDto>();
-  onFilterChange = output<KokuDto.QueryPredicate[]>();
+  filterChanged = output<KokuDto.QueryPredicate[]>();
 }

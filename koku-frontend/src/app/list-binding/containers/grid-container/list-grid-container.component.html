@@ -25,8 +25,8 @@
             [contentSetup]="contentSetup()"
             [urlSegments]="urlSegments()"
             [parentRoutePath]="parentRoutePath()"
-            (onClose)="closeInlineContent()"
-            (onOpenRoutedContent)="openRoutedContent($event)"
+            (closeRequested)="closeInlineContent()"
+            (openRoutedContentRequested)="openRoutedContent($event)"
             class="flex overflow-auto"
           ></div>
         }

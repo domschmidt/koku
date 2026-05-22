@@ -16,7 +16,7 @@ export class ConditionActionComponent {
   parent = input.required<ListItemActionComponent>();
   loading = input(false, { transform: booleanAttribute });
 
-  onClick = output<MouseEvent>();
+  clicked = output<MouseEvent>();
 
   matchesPositively(value: KokuDto.ListViewConditionalItemValueActionDto, listItemSetup: ListItemSetup) {
     let result = false;

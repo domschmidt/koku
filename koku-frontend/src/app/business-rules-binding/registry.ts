@@ -85,7 +85,7 @@ const MODAL_CONTENT_REGISTRY: Partial<
     },
     outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           if (modal.onCloseRequested) {
             modal.onCloseRequested();
           } else {
@@ -128,7 +128,7 @@ const MODAL_CONTENT_REGISTRY: Partial<
     },
     outputBindings: (instance: ModalComponent, modal: RenderedModalType) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           if (modal.onCloseRequested) {
             modal.onCloseRequested();
           } else {
@@ -163,10 +163,10 @@ const MODAL_CONTENT_REGISTRY: Partial<
   //   },
   //   outputBindings: (instance: ModalComponent, modal: RenderedModalType, inlineContent: KokuDto.CalendarListInlineContentDto) => {
   //     return {
-  //       // onClose: () => {
+  //       // closeRequested: () => {
   //       //   instance.closeInlineContent()
   //       // },
-  //       // onOpenRoutedContent: (routes: string[]) => {
+  //       // openRoutedContentRequested: (routes: string[]) => {
   //       //   instance.openRoutedContent(routes)
   //       // },
   //     }
@@ -233,10 +233,10 @@ const BUSINESS_RULES_CONTENT_REGISTRY: Partial<
     },
     outputBindings: () => {
       return {
-        // onClose: () => {
+        // closeRequested: () => {
         //   instance.modalService.close(instance)
         // },
-        // onOpenRoutedContent: (routes: string[]) => {
+        // openRoutedContentRequested: (routes: string[]) => {
         //   instance.openRoutedContent(routes)
         // },
       };
@@ -274,10 +274,10 @@ const BUSINESS_RULES_CONTENT_REGISTRY: Partial<
     },
     outputBindings: (instance: BusinessRulesContentComponent) => {
       return {
-        onClose: () => {
+        closeRequested: () => {
           instance.closeInlineContent();
         },
-        onOpenRoutedContent: (routes: string[]) => {
+        openRoutedContentRequested: (routes: string[]) => {
           instance.openRoutedContent(routes);
         },
       };

@@ -26,8 +26,8 @@ export class BusinessRulesHeaderContainerComponent implements OnDestroy {
 
   loadedTitle = signal<string | null>(null);
 
-  onClose = output<void>();
-  onOpenRoutedContent = output<string[]>();
+  closeRequested = output<void>();
+  openRoutedContentRequested = output<string[]>();
 
   httpClient = inject(HttpClient);
 
@@ -87,7 +87,7 @@ export class BusinessRulesHeaderContainerComponent implements OnDestroy {
   }
 
   closeContent() {
-    this.onClose.emit();
+    this.closeRequested.emit();
   }
 
   clearGlobalEventListeners() {

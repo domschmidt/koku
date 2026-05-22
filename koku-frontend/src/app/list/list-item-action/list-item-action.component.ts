@@ -25,7 +25,7 @@ export class ListItemActionComponent {
 
   componentRef = UNIQUE_REF_GENERATOR.generate();
 
-  onOpenInlineContent = output<ListInlineItem>();
-  onOpenRoutedContent = output<string[]>();
-  onReload = output<void>();
+  openInlineContentRequested = output<ListInlineItem>();
+  openRoutedContentRequested = output<string[]>();
+  reloadRequested = output<void>();
 }

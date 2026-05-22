@@ -37,9 +37,9 @@ export class DocumentDesignerFieldComponent implements OnDestroy {
   disabled = input(false, { transform: booleanAttribute });
   valueOnly = input(false, { transform: booleanAttribute });
 
-  onChange = output<string>();
-  onBlur = output<Event>();
-  onFocus = output<Event>();
+  changed = output<string>();
+  blurred = output<Event>();
+  focused = output<Event>();
 
   destroyRef = inject(DestroyRef);
   private designer: Designer | undefined;
@@ -86,7 +86,7 @@ export class DocumentDesignerFieldComponent implements OnDestroy {
       });
       this.designer.onChangeTemplate((onChangeTemplate) => {
         if (!deepEqual(onChangeTemplate, this.lastSubscribedValue)) {
-          this.onChange.emit(JSON.stringify(onChangeTemplate));
+          this.changed.emit(JSON.stringify(onChangeTemplate));
         }
       });
     } else {

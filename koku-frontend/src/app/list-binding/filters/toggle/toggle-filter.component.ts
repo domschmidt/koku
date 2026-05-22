@@ -11,7 +11,7 @@ export class ToggleFilterComponent {
   label = input.required<string>();
   inputElement = viewChild<ElementRef<HTMLInputElement>>('inputElement');
   state = signal<ToggleFilterTriState>('unchecked');
-  onFilterChange = output<ToggleFilterTriState>();
+  filterChanged = output<ToggleFilterTriState>();
 
   onToggle() {
     let newState: ToggleFilterTriState;
@@ -36,6 +36,6 @@ export class ToggleFilterComponent {
       inputElSnapshot.nativeElement.checked = newState === 'checked';
     }
 
-    this.onFilterChange.emit(newState);
+    this.filterChanged.emit(newState);
   }
 }

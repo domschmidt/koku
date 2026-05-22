@@ -41,8 +41,8 @@ export class BusinessRulesDockContainerComponent {
   router = inject(Router);
   destroyRef = inject(DestroyRef);
 
-  onClose = output<void>();
-  onOpenRoutedContent = output<string[]>();
+  closeRequested = output<void>();
+  openRoutedContentRequested = output<string[]>();
 
   private dockContentIndex: Record<string, ExtendedDockContentItem> = {};
   private routerUrlSubscription: Subscription | undefined;
@@ -184,23 +184,23 @@ export class BusinessRulesDockContainerComponent {
   }
 
   closeInlineContent() {
-    this.onClose.emit();
+    this.closeRequested.emit();
   }
 
   openRoutedContent(routes: string[]) {
-    this.onOpenRoutedContent.emit(routes);
+    this.openRoutedContentRequested.emit(routes);
   }
 
-  onDockContentActivated(activatedDockContent: DockContentItem) {
-    const afterContentActivated = () => {
+  onDockContentActivationRequested(requestedDockContent: DockContentItem) {
+    const afterContentActivation = () => {
       const dockConfigSnapshot = this.dockConfig();
       for (const currentDockConfig of dockConfigSnapshot) {
-        currentDockConfig.active = activatedDockContent.id == currentDockConfig.id;
+        currentDockConfig.active = requestedDockContent.id == currentDockConfig.id;
       }
       this.dockConfig.set(dockConfigSnapshot);
     };
 
-    const contentLookup = this.dockContentIndex[activatedDockContent.id];
+    const contentLookup = this.dockContentIndex[requestedDockContent.id];
     if (contentLookup) {
       if (contentLookup.route !== undefined) {
         const routeParts: string[] = [];
@@ -217,12 +217,12 @@ export class BusinessRulesDockContainerComponent {
           })
           .then((success) => {
             if (success) {
-              afterContentActivated();
+              afterContentActivation();
             }
           });
       } else {
         this.activeContent.set(contentLookup);
-        afterContentActivated();
+        afterContentActivation();
       }
     }
   }

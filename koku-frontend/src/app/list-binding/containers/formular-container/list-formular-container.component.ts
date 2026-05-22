@@ -23,16 +23,16 @@ export class ListFormularContainerComponent {
   buttonDockOutlet = input<OutletDirective>();
   context = input<Record<string, any>>();
 
-  onClose = output<void>();
-  onOpenRoutedContent = output<string[]>();
+  closeRequested = output<void>();
+  openRoutedContentRequested = output<string[]>();
 
   closeInlineContent() {
-    this.onClose.emit();
+    this.closeRequested.emit();
   }
 
   onFormularSave(payload: any) {
-    const onSaveSnapshot = this.onSaveEvents();
-    for (const currentSaveEventJob of onSaveSnapshot || []) {
+    const savedSnapshot = this.onSaveEvents();
+    for (const currentSaveEventJob of savedSnapshot || []) {
       switch (currentSaveEventJob['@type']) {
         case 'propagate-global-event': {
           const castedEventJob =
@@ -74,12 +74,12 @@ export class ListFormularContainerComponent {
             }
           }
 
-          this.onOpenRoutedContent.emit(replacedRouteParts);
+          this.openRoutedContentRequested.emit(replacedRouteParts);
 
           break;
         }
         default: {
-          throw new Error(`Unknown onSave event type ${currentSaveEventJob['@type']}`);
+          throw new Error(`Unknown saved event type ${currentSaveEventJob['@type']}`);
         }
       }
     }

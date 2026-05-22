@@ -29,9 +29,9 @@
           [attr.required]="required() ? true : null"
           [class.skeleton]="loading()"
           [value]="!loading() ? searchTerm() : defaultValue()"
-          (input)="onInputRaw($event)"
-          (focus)="onFocusRaw($event)"
-          (blur)="onBlurRaw($event)"
+          (input)="typeRaw($event)"
+          (focus)="focusedRaw($event)"
+          (blur)="blurredRaw($event)"
           (keydown)="onKeyDownRaw($event)"
         />
 
@@ -58,6 +58,11 @@
                           <li
                             (pointerdown)="onOptionPointerDown()"
                             (click)="selectOption(possibleSelection); $event.preventDefault()"
+                            (keydown.enter)="selectOption(possibleSelection); $event.preventDefault()"
+                            (keydown.space)="selectOption(possibleSelection); $event.preventDefault()"
+                            [attr.tabindex]="possibleSelection.disabled === true ? -1 : 0"
+                            role="option"
+                            [attr.aria-selected]="possibleSelection.id === selectedId()"
                             [class.menu-disabled]="possibleSelection.disabled === true"
                             [class.text-neutral]="possibleSelection.color === 'NEUTRAL'"
                             [class.text-primary]="
@@ -85,6 +90,11 @@
                       <li
                         (pointerdown)="onOptionPointerDown()"
                         (click)="selectOption(possibleSelection); $event.preventDefault()"
+                        (keydown.enter)="selectOption(possibleSelection); $event.preventDefault()"
+                        (keydown.space)="selectOption(possibleSelection); $event.preventDefault()"
+                        [attr.tabindex]="possibleSelection.disabled === true ? -1 : 0"
+                        role="option"
+                        [attr.aria-selected]="possibleSelection.id === selectedId()"
                         [class.menu-disabled]="possibleSelection.disabled === true"
                         [class.text-neutral]="possibleSelection.color === 'NEUTRAL'"
                         [class.text-primary]="
