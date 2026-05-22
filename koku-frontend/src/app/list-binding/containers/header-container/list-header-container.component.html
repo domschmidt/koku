@@ -24,8 +24,8 @@
       [buttonDockOutlet]="buttonDockOutlet"
       [parentRoutePath]="parentRoutePath()"
       [context]="context()"
-      (onClose)="closeInlineContent()"
-      (onOpenRoutedContent)="openRoutedContent($event)"
+      (closeRequested)="closeInlineContent()"
+      (openRoutedContentRequested)="openRoutedContent($event)"
       class="flex overflow-auto"
     ></div>
   }

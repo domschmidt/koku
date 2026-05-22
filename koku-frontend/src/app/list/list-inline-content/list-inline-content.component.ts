@@ -19,14 +19,14 @@ export class ListInlineContentComponent {
   buttonDockOutlet = input<OutletDirective>();
   context = input<Record<string, any>>();
 
-  onClose = output<void>();
-  onOpenRoutedContent = output<string[]>();
+  closeRequested = output<void>();
+  openRoutedContentRequested = output<string[]>();
 
   closeInlineContent() {
-    this.onClose.emit();
+    this.closeRequested.emit();
   }
 
   openRoutedContent(routes: string[]) {
-    this.onOpenRoutedContent.emit(routes);
+    this.openRoutedContentRequested.emit(routes);
   }
 }

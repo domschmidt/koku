@@ -18,22 +18,22 @@ export class CheckboxFieldComponent {
   required = input(false, { transform: booleanAttribute });
   disabled = input(false, { transform: booleanAttribute });
   valueOnly = input(false, { transform: booleanAttribute });
-  onChange = output<boolean>();
-  onInput = output<boolean>();
-  onBlur = output<void>();
-  onFocus = output<void>();
+  changed = output<boolean>();
+  typed = output<boolean>();
+  blurred = output<void>();
+  focused = output<void>();
 
-  onInputRaw($event: Event) {
+  typeRaw($event: Event) {
     if ($event.target) {
       const value = ($event.target as HTMLInputElement).checked;
-      this.onInput.emit(value);
+      this.typed.emit(value);
     }
   }
 
-  onChangeRaw($event: Event) {
+  changeRaw($event: Event) {
     if ($event.target) {
       const value = ($event.target as HTMLInputElement).checked;
-      this.onChange.emit(value);
+      this.changed.emit(value);
     }
   }
 

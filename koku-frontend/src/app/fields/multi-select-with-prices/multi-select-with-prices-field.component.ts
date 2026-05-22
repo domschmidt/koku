@@ -38,9 +38,9 @@ export class MultiSelectWithPricesFieldComponent {
   selectionValues = signal<any[]>([]);
   // selectionIdx = signal<{ [key: string]: { [key: string]: any } }>({});
 
-  onChange = output<Record<string, any>[] | null>();
-  onBlur = output<Event>();
-  onFocus = output<Event>();
+  changed = output<Record<string, any>[] | null>();
+  blurred = output<Event>();
+  focused = output<Event>();
 
   constructor() {
     toObservable(this.value).subscribe((newValue) => {
@@ -64,7 +64,7 @@ export class MultiSelectWithPricesFieldComponent {
     });
   }
 
-  onSelectItemClick(payload: { event: Event; id: string; pos: number }) {
+  selectItemClicked(payload: { event: Event; id: string; pos: number }) {
     const selectedItem = this.selectionValues()[payload.pos];
     if (!selectedItem) {
       throw new Error(`Selected item with pos ${payload.pos} not found`);
@@ -101,10 +101,10 @@ export class MultiSelectWithPricesFieldComponent {
   }
 
   private emitChange() {
-    this.onChange.emit(this.selectionValues());
+    this.changed.emit(this.selectionValues());
   }
 
-  onSelectionDeleted($event: { position: number; id: string }) {
+  handleDeleteSelectionRequested($event: { position: number; id: string }) {
     const selectionIdsSnapshot = this.selectionIds();
     const selectionValuesSnapshot = this.selectionValues();
     selectionIdsSnapshot.splice($event.position, 1);
@@ -114,7 +114,7 @@ export class MultiSelectWithPricesFieldComponent {
     this.emitChange();
   }
 
-  onSelectionMoved($event: { oldPosition: number; newPosition: number; id: string }) {
+  handleMoveSelectionRequested($event: { oldPosition: number; newPosition: number; id: string }) {
     const selectionIdsSnapshot = this.selectionIds();
     const selectionValuesSnapshot = this.selectionValues();
     moveItemInArray(selectionIdsSnapshot, $event.oldPosition, $event.newPosition);
@@ -124,7 +124,7 @@ export class MultiSelectWithPricesFieldComponent {
     this.emitChange();
   }
 
-  onSelectionAdded(id: string) {
+  handleAddSelectionRequested(id: string) {
     this.selectionIds().push(id);
     this.selectionValues().push({
       [this.idPathMapping()]: id,

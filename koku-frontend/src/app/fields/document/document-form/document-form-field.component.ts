@@ -52,7 +52,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
 
   submitting = signal<boolean>(false);
 
-  onSubmit = output<any>();
+  submitted = output<any>();
 
   private form: Form | undefined;
   private document: KokuDto.KokuDocumentDto | undefined;
@@ -271,7 +271,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
               .subscribe(
                 (payload) => {
                   this.submitting.set(false);
-                  this.onSubmit.emit(payload);
+                  this.submitted.emit(payload);
                   this.toastService.add('Dokument erstellt');
                 },
                 () => {

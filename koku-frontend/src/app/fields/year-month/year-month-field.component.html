@@ -5,7 +5,7 @@
   class="input w-full"
   [attr.required]="required()"
   [value]="value()"
-  (input)="onInputRaw($event)"
-  (blur)="onBlurRaw($event)"
-  (focus)="onFocus.emit()"
+  (input)="typeRaw($event)"
+  (blur)="blurredRaw($event)"
+  (focus)="focused.emit()"
 />

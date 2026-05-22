@@ -1,5 +1,5 @@
 <div class="flex flex-col overflow-auto h-full">
-  <koku-dock [content]="dockConfig()" (onActivate)="onDockContentActivated($event)">
+  <koku-dock [content]="dockConfig()" (activationRequested)="onDockContentActivationRequested($event)">
     <div class="flex-1"></div>
     @if (activeContent(); as activeContent) {
       @if (activeContent.content; as activeContentContent) {
@@ -10,8 +10,8 @@
           [urlSegments]="urlSegments()"
           [buttonDockOutlet]="buttonDockOutlet()"
           [parentRoutePath]="activeContent.parentRoutePath || ''"
-          (onClose)="closeInlineContent()"
-          (onOpenRoutedContent)="openRoutedContent($event)"
+          (closeRequested)="closeInlineContent()"
+          (openRoutedContentRequested)="openRoutedContent($event)"
           class="flex overflow-auto"
         ></div>
       }

@@ -212,7 +212,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
   containerRegister = signal<ContainerRegistrationType>({});
   layoutRegister = signal<LayoutRegistrationType>({});
 
-  onSave = output<any>();
+  saved = output<any>();
 
   source = signal<any>({});
   private lastSourceSubscription: Subscription | undefined;
@@ -408,7 +408,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
             }).subscribe({
               next: (response: any) => {
                 this.source.set(response);
-                this.onSave.emit(response);
+                this.saved.emit(response);
                 observer.next(response);
                 observer.complete();
               },

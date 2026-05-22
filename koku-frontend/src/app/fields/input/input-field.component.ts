@@ -38,23 +38,23 @@ export class InputFieldComponent {
   disabled = input(false, { transform: booleanAttribute });
   valueOnly = input(false, { transform: booleanAttribute });
   cls = input<string>('');
-  onChange = output<string>();
-  onInput = output<string>();
-  onBlur = output<void>();
-  onFocus = output<void>();
+  changed = output<string>();
+  typed = output<string>();
+  blurred = output<void>();
+  focused = output<void>();
   id = `input-field-${uniqueId++}`;
 
-  onInputRaw($event: Event) {
+  typeRaw($event: Event) {
     if ($event.target) {
       const value = ($event.target as HTMLInputElement).value;
-      this.onInput.emit(value);
+      this.typed.emit(value);
     }
   }
 
-  onChangeRaw($event: Event) {
+  changeRaw($event: Event) {
     if ($event.target) {
       const value = ($event.target as HTMLInputElement).value;
-      this.onChange.emit(value);
+      this.changed.emit(value);
     }
   }
 

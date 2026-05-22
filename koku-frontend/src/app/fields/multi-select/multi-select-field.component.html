@@ -3,14 +3,14 @@
   value=""
   [label]="label()"
   [placeholder]="placeholder()"
-  (onChange)="selectById($event)"
+  (changed)="selectById($event)"
   [possibleValues]="filteredPossibleValues()"
   [clearOnSelect]="true"
   [valueOnly]="valueOnly()"
   [loading]="loading()"
   [keepOpenOnSelect]="true"
-  (onBlur)="onBlur.emit($event)"
-  (onFocus)="onFocus.emit($event)"
+  (blurred)="blurred.emit($event)"
+  (focused)="focused.emit($event)"
 >
   <ng-container ngProjectAs="prepend-outer">
     <ng-content select="prepend-outer"></ng-content>
@@ -25,11 +25,11 @@
               class="badge badge-lg pr-0 cursor-grab text-wrap h-auto"
               type="button"
               cdkDrag
-              (click)="onSelectItemClick.emit({ event: $event, id: currentSelectionId, pos: currentSelectionIdx })"
-              (keydown)="onSelectItemKeyDownRaw($event, currentSelectionId)"
+              (click)="selectItemClicked.emit({ event: $event, id: currentSelectionId, pos: currentSelectionIdx })"
+              (keydown)="selectItemKeyDownRaw($event, currentSelectionId)"
               tabindex="0"
-              (blur)="onBlur.emit($event)"
-              (focus)="onFocus.emit($event)"
+              (blur)="blurred.emit($event)"
+              (focus)="focused.emit($event)"
               [class.badge-neutral]="possibleValue.color === 'NEUTRAL'"
               [class.badge-primary]="possibleValue.color === undefined || possibleValue.color === 'PRIMARY'"
               [class.badge-secondary]="possibleValue.color === 'SECONDARY'"
@@ -57,9 +57,9 @@
               <button
                 class="btn btn-xs btn-circle btn-ghost text-neutral"
                 type="button"
-                (click)="onSelectionDelete($event, currentSelectionIdx)"
-                (blur)="onBlur.emit($event)"
-                (focus)="onFocus.emit($event)"
+                (click)="requestSelectionDelete($event, currentSelectionIdx)"
+                (blur)="blurred.emit($event)"
+                (focus)="focused.emit($event)"
                 tabindex="0"
               >
                 ✕

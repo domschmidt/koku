@@ -1,4 +1,4 @@
-import { Directive, ViewContainerRef } from '@angular/core';
+import { Directive, inject, ViewContainerRef } from '@angular/core';
 
 @Directive({
   standalone: true,
@@ -6,5 +6,5 @@ import { Directive, ViewContainerRef } from '@angular/core';
   exportAs: 'koku-outlet',
 })
 export class OutletDirective {
-  constructor(public viewContainerRef: ViewContainerRef) {}
+  viewContainerRef = inject(ViewContainerRef);
 }

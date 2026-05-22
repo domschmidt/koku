@@ -59,21 +59,21 @@ export class MultiSelectFieldComponent {
 
   @ViewChildren('badgeEl') badgeEls: QueryList<ElementRef<HTMLButtonElement>> | undefined;
 
-  onSelectItemClick = output<{
+  selectItemClicked = output<{
     event: Event;
     id: string;
     pos: number;
   }>();
-  onChange = output<any[]>();
-  onBlur = output<Event>();
-  onFocus = output<Event>();
-  onSelect = output<string>();
-  onMove = output<{
+  changed = output<any[]>();
+  blurred = output<Event>();
+  focused = output<Event>();
+  addSelectionRequested = output<string>();
+  moveSelectionRequested = output<{
     oldPosition: number;
     newPosition: number;
     id: string;
   }>();
-  onDelete = output<{
+  deleteSelectionRequested = output<{
     position: number;
     id: string;
   }>();
@@ -111,12 +111,12 @@ export class MultiSelectFieldComponent {
       const newSelectionIds = [...this.selectionIds(), $event];
       this.selectionIds.set(newSelectionIds);
       this.filteredPossibleValues.set(this.filterPossibleValues(newSelectionIds));
-      this.onSelect.emit($event);
+      this.addSelectionRequested.emit($event);
       this.emitOnChange(newSelectionIds);
     }
   }
 
-  onSelectionDelete(event: Event, currentSelectionIdx: number) {
+  requestSelectionDelete(event: Event, currentSelectionIdx: number) {
     event.preventDefault();
     event.stopPropagation();
     const selectionIdsSnapshot = this.selectionIds();
@@ -124,7 +124,7 @@ export class MultiSelectFieldComponent {
     selectionIdsSnapshot.splice(currentSelectionIdx, 1);
     this.selectionIds.set(selectionIdsSnapshot);
     this.filteredPossibleValues.set(this.filterPossibleValues(selectionIdsSnapshot));
-    this.onDelete.emit({
+    this.deleteSelectionRequested.emit({
       position: currentSelectionIdx,
       id: deletedId,
     });
@@ -136,7 +136,7 @@ export class MultiSelectFieldComponent {
     const movedId = selectionIdsSnapshot[event.currentIndex];
     moveItemInArray(selectionIdsSnapshot, event.previousIndex, event.currentIndex);
     this.selectionIds.set(selectionIdsSnapshot);
-    this.onMove.emit({
+    this.moveSelectionRequested.emit({
       oldPosition: event.previousIndex,
       newPosition: event.currentIndex,
       id: movedId,
@@ -155,7 +155,7 @@ export class MultiSelectFieldComponent {
     }
   }
 
-  onSelectItemKeyDownRaw(event: KeyboardEvent, currentSelectionId: string) {
+  selectItemKeyDownRaw(event: KeyboardEvent, currentSelectionId: string) {
     const selectionIdsSnapshot = this.selectionIds();
     const oldIdx = selectionIdsSnapshot.indexOf(currentSelectionId);
     if (['ArrowDown', 'ArrowRight'].indexOf(event.key) >= 0) {
@@ -178,7 +178,7 @@ export class MultiSelectFieldComponent {
     } else if (['Backspace', 'Delete'].indexOf(event.key) >= 0) {
       event.preventDefault();
       const newIdx = Math.max(0, oldIdx - 1);
-      this.onSelectionDelete(event, oldIdx);
+      this.requestSelectionDelete(event, oldIdx);
       setTimeout(() => {
         if (this.badgeEls) {
           const firstBadge = this.badgeEls.get(newIdx);
@@ -209,6 +209,6 @@ export class MultiSelectFieldComponent {
         resultToBePublished.push(currentValue.id);
       }
     }
-    this.onChange.emit(resultToBePublished);
+    this.changed.emit(resultToBePublished);
   }
 }

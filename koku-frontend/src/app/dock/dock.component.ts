@@ -16,5 +16,5 @@ export interface DockContentItem {
 })
 export class DockComponent {
   content = input.required<DockContentItem[]>();
-  onActivate = output<DockContentItem>();
+  activationRequested = output<DockContentItem>();
 }

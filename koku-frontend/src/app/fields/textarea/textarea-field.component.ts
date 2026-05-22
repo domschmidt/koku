@@ -20,10 +20,10 @@ export class TextareaFieldComponent {
   required = input(false, { transform: booleanAttribute });
   disabled = input(false, { transform: booleanAttribute });
   valueOnly = input(false, { transform: booleanAttribute });
-  onChange = output<string>();
-  onInput = output<string>();
-  onBlur = output<void>();
-  onFocus = output<void>();
+  changed = output<string>();
+  typed = output<string>();
+  blurred = output<void>();
+  focused = output<void>();
   private supportsFieldSizingNatively: boolean;
   id = `textarea-field-${uniqueId++}`;
 
@@ -31,11 +31,11 @@ export class TextareaFieldComponent {
     this.supportsFieldSizingNatively = CSS.supports('field-sizing', 'content');
   }
 
-  onInputRaw($event: Event) {
+  typeRaw($event: Event) {
     if ($event.target) {
       const targetEl = $event.target as HTMLTextAreaElement;
       const value = targetEl.value;
-      this.onInput.emit(value);
+      this.typed.emit(value);
       if (!this.supportsFieldSizingNatively) {
         setTimeout(() => {
           this.applyAutoHeight(targetEl);
@@ -58,10 +58,10 @@ export class TextareaFieldComponent {
       ')';
   }
 
-  onChangeRaw($event: Event) {
+  changeRaw($event: Event) {
     if ($event.target) {
       const value = ($event.target as HTMLTextAreaElement).value;
-      this.onChange.emit(value);
+      this.changed.emit(value);
     }
   }
 

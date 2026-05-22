@@ -16,10 +16,10 @@ export class YearMonthFieldComponent {
   required = input(false, { transform: booleanAttribute });
   loading = input(false, { transform: booleanAttribute });
   disabled = input(false, { transform: booleanAttribute });
-  onChange = output<string>();
-  onInput = output<string>();
-  onBlur = output<void>();
-  onFocus = output<void>();
+  changed = output<string>();
+  typed = output<string>();
+  blurred = output<void>();
+  focused = output<void>();
   tmpValue = '';
 
   constructor() {
@@ -28,18 +28,18 @@ export class YearMonthFieldComponent {
     });
   }
 
-  onInputRaw($event: Event) {
+  typeRaw($event: Event) {
     if ($event.target) {
       const value = ($event.target as HTMLInputElement).value;
       this.tmpValue = value;
-      this.onInput.emit(value);
+      this.typed.emit(value);
     }
   }
 
-  onBlurRaw() {
-    this.onBlur.emit();
+  blurredRaw() {
+    this.blurred.emit();
     if (this.tmpValue !== this.value()) {
-      this.onChange.emit(this.tmpValue);
+      this.changed.emit(this.tmpValue);
     }
   }
 }

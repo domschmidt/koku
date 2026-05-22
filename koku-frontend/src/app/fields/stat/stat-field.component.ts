@@ -19,6 +19,6 @@ export class StatFieldComponent {
   readonly = input(false, { transform: booleanAttribute });
   required = input(false, { transform: booleanAttribute });
   disabled = input(false, { transform: booleanAttribute });
-  onBlur = output<void>();
-  onFocus = output<void>();
+  blurred = output<void>();
+  focused = output<void>();
 }

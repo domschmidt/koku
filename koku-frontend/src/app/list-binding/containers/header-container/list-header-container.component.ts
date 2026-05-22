@@ -1,5 +1,4 @@
 import { Component, inject, input, OnDestroy, output, signal } from '@angular/core';
-import { DockContentItem } from '../../../dock/dock.component';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { ListInlineContentComponent } from '../../../list/list-inline-content/list-inline-content.component';
 import { ListContentSetup } from '../../../list/list.component';
@@ -28,8 +27,8 @@ export class ListHeaderContainerComponent implements OnDestroy {
 
   loadedTitle = signal<string | null>(null);
 
-  onClose = output<void>();
-  onOpenRoutedContent = output<string[]>();
+  closeRequested = output<void>();
+  openRoutedContentRequested = output<string[]>();
 
   httpClient = inject(HttpClient);
 
@@ -89,11 +88,11 @@ export class ListHeaderContainerComponent implements OnDestroy {
   }
 
   closeInlineContent() {
-    this.onClose.emit();
+    this.closeRequested.emit();
   }
 
   openRoutedContent(routes: string[]) {
-    this.onOpenRoutedContent.emit(routes);
+    this.openRoutedContentRequested.emit(routes);
   }
 
   clearGlobalEventListeners() {

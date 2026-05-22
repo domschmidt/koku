@@ -20,7 +20,7 @@
           name="globalSearchTerm"
           placeholder="Suche"
           value=""
-          (onInput)="globalSearchTermSubject.next($event)"
+          (typed)="globalSearchTermSubject.next($event)"
         >
           <button class="btn join-item" (click)="setGlobalSearchTerm('')">
             <koku-icon name="CLOSE" class="w-4"></koku-icon>
@@ -44,7 +44,7 @@
                 list-filter
                 [contentSetup]="contentSetup()"
                 [filter]="currentFilter"
-                (onFilterChange)="onFilterChange(currentFilter.id, currentFilter.valuePath, $event)"
+                (filterChanged)="onFilterChange(currentFilter.id, currentFilter.valuePath, $event)"
                 class="w-full"
               ></div>
             }
@@ -117,9 +117,9 @@
                   [listRegister]="listRegister()"
                   [contentSetup]="contentSetup()"
                   [urlSegments]="urlSegments()"
-                  (onOpenInlineContent)="openInlineContent($event)"
-                  (onOpenRoutedContent)="openRoutedContent($event)"
-                  (onReload)="loadListSource()"
+                  (openInlineContentRequested)="openInlineContent($event)"
+                  (openRoutedContentRequested)="openRoutedContent($event)"
+                  (reloadRequested)="loadListSource()"
                   class="flex"
                 ></div>
               </button>
@@ -161,8 +161,8 @@
           [loading]="sourceLoading()"
           [parentRoutePath]="activeContent.parentRoutePath || ''"
           [context]="context()"
-          (onClose)="closeInlineContent().subscribe()"
-          (onOpenRoutedContent)="openRoutedContent($event)"
+          (closeRequested)="closeInlineContent().subscribe()"
+          (openRoutedContentRequested)="openRoutedContent($event)"
           class="flex overflow-auto grow-1"
         ></div>
       </div>

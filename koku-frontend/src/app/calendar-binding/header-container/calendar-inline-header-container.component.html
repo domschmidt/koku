@@ -21,8 +21,8 @@
       [urlSegments]="urlSegments()"
       [buttonDockOutlet]="buttonDockOutlet"
       [parentRoutePath]="parentRoutePath()"
-      (onClose)="closeInlineContent()"
-      (onOpenRoutedContent)="openRoutedContent($event)"
+      (closeRequested)="closeInlineContent()"
+      (openRoutedContentRequested)="openRoutedContentRequested.emit($event)"
       class="flex overflow-auto relative"
     ></div>
   }

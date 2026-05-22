@@ -6,7 +6,7 @@ export function convertToString(v: unknown): string {
   if (t === 'string') return v as string;
   if (t === 'number' || t === 'boolean' || t === 'bigint') return String(v);
   if (t === 'symbol') return (v as symbol).toString(); // z.B. "Symbol(foo)"
-  if (t === 'function') return (v as Function).toString(); // Funktionstext
+  if (t === 'function') return String(v); // Funktionstext
   // Objekt (Array wurde vorher ausgeschlossen): JSON.stringify, fallback falls zirkulär
   try {
     return JSON.stringify(v);

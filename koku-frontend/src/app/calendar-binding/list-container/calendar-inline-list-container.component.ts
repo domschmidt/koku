@@ -15,11 +15,11 @@ export class CalendarInlineListContainerComponent {
   contentSetup = input.required<ListContentSetup>();
   parentRoutePath = input<string>('');
 
-  onClose = output<void>();
-  onOpenRoutedContent = output<string[]>();
+  closeRequested = output<void>();
+  openRoutedContentRequested = output<string[]>();
 
   closeInlineContent() {
-    this.onClose.emit();
+    this.closeRequested.emit();
   }
 
   protected readonly Object = Object;

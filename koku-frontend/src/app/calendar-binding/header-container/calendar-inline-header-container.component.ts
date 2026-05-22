@@ -26,8 +26,8 @@ export class CalendarInlineHeaderContainerComponent implements OnDestroy {
 
   loadedTitle = signal<string | null>(null);
 
-  onClose = output<void>();
-  onOpenRoutedContent = output<string[]>();
+  closeRequested = output<void>();
+  openRoutedContentRequested = output<string[]>();
 
   httpClient = inject(HttpClient);
 
@@ -87,11 +87,7 @@ export class CalendarInlineHeaderContainerComponent implements OnDestroy {
   }
 
   closeInlineContent() {
-    this.onClose.emit();
-  }
-
-  openRoutedContent(routes: string[]) {
-    this.onOpenRoutedContent.emit(routes);
+    this.closeRequested.emit();
   }
 
   clearGlobalEventListeners() {

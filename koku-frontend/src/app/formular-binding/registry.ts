@@ -224,7 +224,7 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: FieldRendererComponent) => {
       return {
-        onChange: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
       };
     },
   },
@@ -241,10 +241,10 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: FieldRendererComponent) => {
       return {
-        onChange: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        onInput: (data: any) => instance.emitToFieldEventBus('onInput', data),
-        onBlur: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        onFocus: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
       };
     },
   },
@@ -261,9 +261,9 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: FieldRendererComponent) => {
       return {
-        onChange: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        onBlur: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        onFocus: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
       };
     },
   },
@@ -280,8 +280,8 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: FieldRendererComponent) => {
       return {
-        onBlur: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        onFocus: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
       };
     },
   },
@@ -297,10 +297,10 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: FieldRendererComponent) => {
       return {
-        onChange: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        onInput: (data: any) => instance.emitToFieldEventBus('onInput', data),
-        onBlur: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        onFocus: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
       };
     },
   },
@@ -316,10 +316,10 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: FieldRendererComponent) => {
       return {
-        onChange: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        onInput: (data: any) => instance.emitToFieldEventBus('onInput', data),
-        onBlur: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        onFocus: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
       };
     },
   },
@@ -342,9 +342,9 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: FieldRendererComponent) => {
       return {
-        onChange: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        onBlur: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        onFocus: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
       };
     },
   },
@@ -363,9 +363,9 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: FieldRendererComponent) => {
       return {
-        onChange: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        onBlur: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        onFocus: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
       };
     },
   },
@@ -379,9 +379,9 @@ const FIELD_REGISTRY: Partial<
     },
     outputBindings: (instance: FieldRendererComponent) => {
       return {
-        onChange: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        onBlur: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        onFocus: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
       };
     },
   },
@@ -447,7 +447,7 @@ const BUTTON_REGISTRY: Partial<
     },
     outputBindings: (instance: ButtonRendererComponent) => {
       return {
-        onClick: (data: any) => instance.emitToButtonEventBus('onClick', data),
+        clicked: (data: any) => instance.emitToButtonEventBus('onClick', data),
       };
     },
   },
@@ -484,9 +484,9 @@ const FIELD_SLOT_REGISTRY: Partial<
     },
     outputBindings: (instance: FieldSlotRendererComponent) => {
       return {
-        onClick: (data: any) => instance.emitToFieldEventBus(instance.clickEventName(), data),
-        onFocus: (data: any) => instance.emitToFieldEventBus(instance.focusEventName(), data),
-        onBlur: (data: any) => instance.emitToFieldEventBus(instance.blurEventName(), data),
+        clicked: (data: any) => instance.emitToFieldEventBus(instance.clickEventName(), data),
+        focused: (data: any) => instance.emitToFieldEventBus(instance.focusEventName(), data),
+        blurred: (data: any) => instance.emitToFieldEventBus(instance.blurEventName(), data),
       };
     },
   },

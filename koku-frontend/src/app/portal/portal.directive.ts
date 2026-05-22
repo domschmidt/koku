@@ -1,4 +1,4 @@
-import { AfterViewInit, Directive, EmbeddedViewRef, input, OnDestroy, TemplateRef } from '@angular/core';
+import { AfterViewInit, Directive, EmbeddedViewRef, inject, input, OnDestroy, TemplateRef } from '@angular/core';
 import { OutletDirective } from './outlet.directive';
 
 @Directive({
@@ -10,8 +10,7 @@ export class PortalDirective implements AfterViewInit, OnDestroy {
   append = input<boolean>();
 
   private viewRef?: EmbeddedViewRef<unknown>;
-
-  constructor(private templateRef: TemplateRef<any>) {}
+  private templateRef = inject(TemplateRef<unknown>);
 
   ngAfterViewInit() {
     const outletSnapshot = this.portalOutlet();

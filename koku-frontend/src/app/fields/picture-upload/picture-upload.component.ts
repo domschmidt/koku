@@ -24,7 +24,7 @@ export class PictureUploadComponent {
   required = input(false, { transform: booleanAttribute });
   disabled = input(false, { transform: booleanAttribute });
   loading = input(false, { transform: booleanAttribute });
-  onChange = output<string>();
+  changed = output<string>();
 
   onFileSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -40,7 +40,7 @@ export class PictureUploadComponent {
             const reader = new FileReader();
             reader.onload = (e) => {
               const result = e.target?.result as string;
-              this.onChange.emit(result);
+              this.changed.emit(result);
             };
             reader.readAsDataURL(result);
           },
@@ -53,6 +53,6 @@ export class PictureUploadComponent {
   }
 
   clearImage() {
-    this.onChange.emit('');
+    this.changed.emit('');
   }
 }

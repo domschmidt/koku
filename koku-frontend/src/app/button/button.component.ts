@@ -43,12 +43,12 @@ export class ButtonComponent {
 
   indexedStyles = computed(() => new Set(this.styles()));
 
-  onClick = output<Event>();
-  onBlur = output<Event>();
-  onFocus = output<Event>();
+  clicked = output<Event>();
+  blurred = output<Event>();
+  focused = output<Event>();
 
   onClickRaw(event: Event) {
-    this.onClick.emit(event);
+    this.clicked.emit(event);
     const hrefSnapshot = this.href();
     const hrefTargetSnapshot = this.hrefTarget();
     if (hrefSnapshot) {
