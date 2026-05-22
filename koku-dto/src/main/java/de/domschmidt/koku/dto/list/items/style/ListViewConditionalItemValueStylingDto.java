@@ -2,7 +2,6 @@ package de.domschmidt.koku.dto.list.items.style;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.list.dto.response.items.style.AbstractListViewGlobalItemStylingDto;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
 import lombok.Singular;
@@ -16,7 +15,7 @@ public class ListViewConditionalItemValueStylingDto extends AbstractListViewGlob
     String compareValuePath;
 
     @Singular
-    List<Object> expectedValues = new ArrayList<>();
+    List<Object> expectedValues;
 
     ListViewItemStylingDto positiveStyling;
     ListViewItemStylingDto negativeStyling;

@@ -3,7 +3,6 @@ package de.domschmidt.chart.dto.response.types;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import de.domschmidt.chart.dto.response.filters.AbstractChartFilterDto;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,7 +24,7 @@ public abstract class AbstractChartDto {
     String title;
 
     @Singular
-    List<AbstractChartFilterDto> filters = new ArrayList<>();
+    List<AbstractChartFilterDto> filters;
 
     AnnotationsDto annotations;
 }

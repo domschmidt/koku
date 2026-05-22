@@ -15,5 +15,7 @@ public class YAxisDto {
 
     Boolean opposite;
     String text;
+
+    @Builder.Default
     List<String> seriesName = new ArrayList<>();
 }
