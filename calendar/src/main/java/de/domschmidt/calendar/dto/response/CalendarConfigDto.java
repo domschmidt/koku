@@ -14,9 +14,16 @@ import lombok.experimental.FieldNameConstants;
 public class CalendarConfigDto {
 
     String id;
+
+    @Builder.Default
     List<AbstractCalendarListSourceConfigDto> listSources = new ArrayList<>();
+
+    @Builder.Default
     List<AbstractCalendarActionDto> calendarActions = new ArrayList<>();
+
     AbstractCalendarClickActionDto calendarClickAction;
+
+    @Builder.Default
     List<AbstractCalendarGlobalEventListenerDto> globalEventListeners = new ArrayList<>();
 
     @Builder.Default

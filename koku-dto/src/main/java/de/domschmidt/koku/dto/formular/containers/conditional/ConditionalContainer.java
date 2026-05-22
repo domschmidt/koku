@@ -18,7 +18,7 @@ public class ConditionalContainer extends AbstractFormContainer {
     String compareValuePath;
 
     @Singular
-    List<Object> expectedValues = new ArrayList<>();
+    List<Object> expectedValues;
 
     @Builder.Default
     List<IFormularContent> content = new ArrayList<>();

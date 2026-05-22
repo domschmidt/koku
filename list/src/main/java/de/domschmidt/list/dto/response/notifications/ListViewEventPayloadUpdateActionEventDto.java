@@ -5,6 +5,7 @@ import de.domschmidt.list.dto.response.ListViewReference;
 import de.domschmidt.list.dto.response.actions.AbstractListViewActionEventDto;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
@@ -14,5 +15,7 @@ import lombok.experimental.SuperBuilder;
 public class ListViewEventPayloadUpdateActionEventDto extends AbstractListViewActionEventDto {
 
     String idPath;
+
+    @Builder.Default
     Map<String, ListViewReference> valueMapping = new HashMap<>();
 }

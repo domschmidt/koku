@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.list.dto.response.actions.AbstractListViewActionEventDto;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
@@ -14,5 +15,7 @@ public class ListViewNotificationEvent extends AbstractListViewActionEventDto {
 
     ListViewNotificationEventSerenityEnumDto serenity;
     String text;
+
+    @Builder.Default
     List<AbstractListViewNotificationEventParamDto> params = new ArrayList<>();
 }

@@ -11,5 +11,7 @@ public class ListViewUserConfirmationDto {
 
     String headline;
     String content;
+
+    @Builder.Default
     List<AbstractListViewUserConfirmationParamDto> params = new ArrayList<>();
 }

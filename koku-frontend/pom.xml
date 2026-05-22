@@ -12,6 +12,7 @@
 
   <artifactId>koku-frontend</artifactId>
   <version>0.0.0</version>
+  <packaging>pom</packaging>
 
   <name>${project.artifactId}-${project.version}</name>
 
