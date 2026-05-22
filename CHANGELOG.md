@@ -1,3 +1,10 @@
+## [2.4.2](https://github.com/domschmidt/koku/compare/v2.4.1...v2.4.2) (2026-05-22)
+
+
+### Bug Fixes
+
+* lombok issues ([45b39a2](https://github.com/domschmidt/koku/commit/45b39a2349c02757d3ba7cef2f435272c533ebb8))
+
 ## [2.4.1](https://github.com/domschmidt/koku/compare/v2.4.0...v2.4.1) (2026-05-19)
 
 
