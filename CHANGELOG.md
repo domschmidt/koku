@@ -1,3 +1,10 @@
+## [2.4.3](https://github.com/domschmidt/koku/compare/v2.4.2...v2.4.3) (2026-05-23)
+
+
+### Bug Fixes
+
+* ci, linting ([a1bcc89](https://github.com/domschmidt/koku/commit/a1bcc89a4eb4802d81e42ceb0388892e439bd28b))
+
 ## [2.4.2](https://github.com/domschmidt/koku/compare/v2.4.1...v2.4.2) (2026-05-22)
 
 
