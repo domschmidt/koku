@@ -668,9 +668,11 @@ export class CalendarComponent implements OnDestroy {
     this.hiddenSources.update((setInst) => {
       if (setInst.has(id)) {
         setInst.delete(id);
-        this.calendarComponent()
-          ?.getApi()
-          .addEventSource(this.registeredEventSourceFactories[id].generateEventSource());
+        const eventSourceFactory = this.registeredEventSourceFactories[id];
+        if (!eventSourceFactory) {
+          throw new Error(`Event source factory not found for '${id}'`);
+        }
+        this.calendarComponent()?.getApi().addEventSource(eventSourceFactory.generateEventSource());
       } else {
         setInst.add(id);
         this.calendarComponent()?.getApi().getEventSourceById(id)?.remove();

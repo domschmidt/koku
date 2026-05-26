@@ -1,3 +1,4 @@
 /koku-backend/target/
+**/target/
 /.idea/
 /log/

@@ -8,21 +8,27 @@ import { CalendarInlineHeaderContainerComponent } from '../calendar-binding/head
 import { BusinessRulesContentComponent } from './business-rules-content/business-rules-content.component';
 import { BusinessRulesDockContainerComponent } from './dock-container/business-rules-dock-container.component';
 import { CALENDAR_CONTENT_SETUP } from '../calendar-binding/registry';
+import {
+  KokuBusinessRuleContent,
+  KokuBusinessRuleDockContent,
+  KokuBusinessRuleFormularContent,
+  KokuBusinessRuleHeaderContent,
+} from '../../types/generated/business-logic';
 
 const MODAL_CONTENT_REGISTRY: Partial<
   Record<
-    KokuDto.AbstractKokuBusinessRuleContentDto['@type'],
+    KokuBusinessRuleContent['type'],
     {
       componentType: any;
       inputBindings?(
         instance: ModalComponent,
         modal: RenderedModalType,
-        content: KokuDto.AbstractKokuBusinessRuleContentDto,
+        content: KokuBusinessRuleContent,
       ): Record<string, any>;
       outputBindings?(
         instance: ModalComponent,
         modal: RenderedModalType,
-        content: KokuDto.AbstractKokuBusinessRuleContentDto,
+        content: KokuBusinessRuleContent,
       ): Record<string, any>;
     }
   >
@@ -32,16 +38,15 @@ const MODAL_CONTENT_REGISTRY: Partial<
     inputBindings(
       instance: ModalComponent,
       modal: RenderedModalType,
-      content: KokuDto.KokuBusinessRuleFormularContentDto,
+      content: KokuBusinessRuleFormularContent,
     ): Record<string, any> {
       const formularUrl = content.formularUrl || '';
       const sourceUrl = content.sourceUrl || '';
       const fieldOverrides: FormularFieldOverride[] = [];
       for (const currentFieldOverride of content.fieldOverrides || []) {
         if (currentFieldOverride.fieldId !== undefined) {
-          if (currentFieldOverride['@type'] === 'route-based-override') {
-            const castedFieldOverride = currentFieldOverride as KokuDto.ListViewRouteBasedFormularFieldOverrideDto;
-            const newFieldValue = (modal.urlSegments || {})[castedFieldOverride.routeParam || ''];
+          if (currentFieldOverride.type === 'route-based-override') {
+            const newFieldValue = (modal.urlSegments || {})[currentFieldOverride.routeParam || ''];
             if (newFieldValue !== undefined) {
               fieldOverrides.push({
                 fieldId: currentFieldOverride.fieldId,
@@ -73,7 +78,7 @@ const MODAL_CONTENT_REGISTRY: Partial<
     inputBindings(
       instance: ModalComponent,
       modal: RenderedModalType,
-      content: KokuDto.CalendarDockInlineContentDto,
+      content: KokuBusinessRuleDockContent,
     ): Record<string, any> {
       return {
         content: content.content,
@@ -100,7 +105,7 @@ const MODAL_CONTENT_REGISTRY: Partial<
     inputBindings(
       instance: ModalComponent,
       modal: RenderedModalType,
-      inlineContent: KokuDto.CalendarHeaderInlineContentDto,
+      inlineContent: KokuBusinessRuleHeaderContent,
     ): Record<string, any> {
       const segmentMapping: Record<string, string> = { ...(modal.urlSegments || {}) };
       let sourceUrl = undefined;
@@ -108,7 +113,11 @@ const MODAL_CONTENT_REGISTRY: Partial<
         const mappedSourceParts: string[] = [];
         for (const currentRoutePathToMatch of inlineContent.sourceUrl.split('/')) {
           if (currentRoutePathToMatch.indexOf(':') === 0) {
-            mappedSourceParts.push(segmentMapping[currentRoutePathToMatch]);
+            const mappedSegment = segmentMapping[currentRoutePathToMatch];
+            if (!mappedSegment) {
+              throw new Error(`Missing route segment mapping for '${currentRoutePathToMatch}'`);
+            }
+            mappedSourceParts.push(mappedSegment);
           } else {
             mappedSourceParts.push(currentRoutePathToMatch);
           }
@@ -176,16 +185,16 @@ const MODAL_CONTENT_REGISTRY: Partial<
 
 const BUSINESS_RULES_CONTENT_REGISTRY: Partial<
   Record<
-    KokuDto.AbstractKokuBusinessRuleContentDto['@type'] | string,
+    KokuBusinessRuleContent['type'] | string,
     {
       componentType: any;
       inputBindings?(
         instance: BusinessRulesContentComponent,
-        content: KokuDto.AbstractKokuBusinessRuleContentDto,
+        content: KokuBusinessRuleContent,
       ): Record<string, any>;
       outputBindings?(
         instance: BusinessRulesContentComponent,
-        content: KokuDto.AbstractKokuBusinessRuleContentDto,
+        content: KokuBusinessRuleContent,
       ): Record<string, any>;
     }
   >
@@ -194,16 +203,15 @@ const BUSINESS_RULES_CONTENT_REGISTRY: Partial<
     componentType: BusinessRulesFormularContainerComponent,
     inputBindings(
       instance: BusinessRulesContentComponent,
-      content: KokuDto.KokuBusinessRuleFormularContentDto,
+      content: KokuBusinessRuleFormularContent,
     ): Record<string, any> {
       let formularUrl = content.formularUrl || '';
       let sourceUrl = content.sourceUrl || '';
       const fieldOverrides: FormularFieldOverride[] = [];
       for (const currentFieldOverride of content.fieldOverrides || []) {
         if (currentFieldOverride.fieldId !== undefined) {
-          if (currentFieldOverride['@type'] === 'route-based-override') {
-            const castedFieldOverride = currentFieldOverride as KokuDto.ListViewRouteBasedFormularFieldOverrideDto;
-            const newFieldValue = (instance.urlSegments() || {})[castedFieldOverride.routeParam || ''];
+          if (currentFieldOverride.type === 'route-based-override') {
+            const newFieldValue = (instance.urlSegments() || {})[currentFieldOverride.routeParam || ''];
             if (newFieldValue !== undefined) {
               fieldOverrides.push({
                 fieldId: currentFieldOverride.fieldId,
@@ -246,7 +254,7 @@ const BUSINESS_RULES_CONTENT_REGISTRY: Partial<
     componentType: CalendarInlineHeaderContainerComponent,
     inputBindings(
       instance: BusinessRulesContentComponent,
-      inlineContent: KokuDto.KokuBusinessRuleHeaderContentDto,
+      inlineContent: KokuBusinessRuleHeaderContent,
     ): Record<string, any> {
       const segmentMapping: Record<string, string> = { ...(instance.urlSegments() || {}) };
       let sourceUrl = undefined;
@@ -254,7 +262,11 @@ const BUSINESS_RULES_CONTENT_REGISTRY: Partial<
         const mappedSourceParts: string[] = [];
         for (const currentRoutePathToMatch of inlineContent.sourceUrl.split('/')) {
           if (currentRoutePathToMatch.indexOf(':') === 0) {
-            mappedSourceParts.push(segmentMapping[currentRoutePathToMatch]);
+            const mappedSegment = segmentMapping[currentRoutePathToMatch];
+            if (!mappedSegment) {
+              throw new Error(`Missing route segment mapping for '${currentRoutePathToMatch}'`);
+            }
+            mappedSourceParts.push(mappedSegment);
           } else {
             mappedSourceParts.push(currentRoutePathToMatch);
           }
@@ -286,19 +298,19 @@ const BUSINESS_RULES_CONTENT_REGISTRY: Partial<
 };
 
 export interface BusinessRulesContentRegistry {
-  modalContentRegistry: ModalContentSetup;
+  modalContentRegistry: Partial<ModalContentSetup>;
   contentRegistry: Partial<
     Record<
-      KokuDto.AbstractKokuBusinessRuleContentDto['@type'] | string,
+      KokuBusinessRuleContent['type'] | string,
       {
         componentType: any;
         inputBindings?(
           instance: BusinessRulesContentComponent,
-          content: KokuDto.AbstractKokuBusinessRuleContentDto,
+          content: KokuBusinessRuleContent,
         ): Record<string, any>;
         outputBindings?(
           instance: BusinessRulesContentComponent,
-          content: KokuDto.AbstractKokuBusinessRuleContentDto,
+          content: KokuBusinessRuleContent,
         ): Record<string, any>;
       }
     >

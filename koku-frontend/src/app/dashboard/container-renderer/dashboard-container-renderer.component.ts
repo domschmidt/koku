@@ -4,6 +4,7 @@ import { SignalComponentIoModule } from 'ng-dynamic-component/signal-component-i
 import { ComponentOutletInjectorModule } from 'ng-dynamic-component';
 import { DashboardContentSetup } from '../dashboard.component';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { KokuDashboardContainer } from '../../../types/generated/dashboard';
 
 @Component({
   selector: '[dashboard-container-renderer],dashboard-container-renderer',
@@ -11,7 +12,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
   templateUrl: './dashboard-container-renderer.component.html',
 })
 export class DashboardContainerRendererComponent {
-  content = input.required<KokuDto.AbstractDashboardContainer>();
+  content = input.required<KokuDashboardContainer>();
   contentSetup = input.required<DashboardContentSetup>();
 
   inputBindings = signal<Record<string, any>>({});
@@ -20,7 +21,7 @@ export class DashboardContainerRendererComponent {
   constructor() {
     toObservable(this.content).subscribe(() => {
       const contentSnapshot = this.content();
-      const contentSetup = this.contentSetup().containerRegistry[contentSnapshot['@type']];
+      const contentSetup = this.contentSetup().containerRegistry[contentSnapshot['type']];
       if (contentSetup) {
         let inputBindings = {};
         if (contentSetup.inputBindings) {

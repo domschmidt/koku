@@ -120,7 +120,11 @@ const MODAL_CONTENT_REGISTRY: Partial<
         const mappedSourceParts: string[] = [];
         for (const currentRoutePathToMatch of inlineContent.sourceUrl.split('/')) {
           if (currentRoutePathToMatch.indexOf(':') === 0) {
-            mappedSourceParts.push(segmentMapping[currentRoutePathToMatch]);
+            const mappedSegment = segmentMapping[currentRoutePathToMatch];
+            if (!mappedSegment) {
+              throw new Error(`Missing route segment mapping for '${currentRoutePathToMatch}'`);
+            }
+            mappedSourceParts.push(mappedSegment);
           } else {
             mappedSourceParts.push(currentRoutePathToMatch);
           }
@@ -440,7 +444,11 @@ const INLINE_CONTENT_REGISTRY: Partial<
         const mappedSourceParts: string[] = [];
         for (const currentRoutePathToMatch of inlineContent.sourceUrl.split('/')) {
           if (currentRoutePathToMatch.indexOf(':') === 0) {
-            mappedSourceParts.push(segmentMapping[currentRoutePathToMatch]);
+            const mappedSegment = segmentMapping[currentRoutePathToMatch];
+            if (!mappedSegment) {
+              throw new Error(`Missing route segment mapping for '${currentRoutePathToMatch}'`);
+            }
+            mappedSourceParts.push(mappedSegment);
           } else {
             mappedSourceParts.push(currentRoutePathToMatch);
           }

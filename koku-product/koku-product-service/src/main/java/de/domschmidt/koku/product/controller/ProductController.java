@@ -17,7 +17,7 @@ import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButto
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
-import de.domschmidt.koku.business_logic.dto.*;
+import de.domschmidt.koku.business_logic.contract.dto.*;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
 import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
@@ -135,34 +135,24 @@ public class ProductController {
                         .title("Neuer Hersteller anlegen")
                         .build())
                 .build());
-        formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
+        formFactory.addBusinessRule(new KokuBusinessRule()
                 .id("CreateProductManufacturer")
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(productManufacturerFieldRef)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
-                                .build())
-                        .build())
-                .execution(KokuBusinessRuleOpenDialogContentDto.builder()
-                        .content(KokuBusinessRuleHeaderContentDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CLICK_APPEND_OUTER)))
+                .execution(new KokuBusinessRuleOpenDialogContent()
+                        .content(new KokuBusinessRuleHeaderContent()
                                 .title("Neuer Hersteller")
-                                .content(KokuBusinessRuleFormularContentDto.builder()
+                                .content(new KokuBusinessRuleFormularContent()
                                         .formularUrl("services/products/productmanufacturers/form")
                                         .submitUrl("services/products/productmanufacturers")
-                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
+                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethod.POST)
                                         .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
-                                                        .builder()
-                                                        .eventName("productmanufacturer-created")
-                                                        .build()))
-                                        .build())
-                                .build())
-                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("productmanufacturer-created")
-                                .build())
-                        .build())
-                .build());
+                                        .addOnSaveEventsItem(new KokuBusinessRuleFormularContentSaveEvent()
+                                                .eventName("productmanufacturer-created"))))
+                        .addCloseEventListenersItem(new KokuBusinessRuleOpenContentCloseListener()
+                                .eventName("productmanufacturer-created"))));
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("productmanufacturer-created")
                 .fieldValueMapping(Map.of(

@@ -50,6 +50,9 @@ export class FieldSlotRendererComponent {
       throw new Error(`Missing id for content: ${contentSnapshot}`);
     }
     const fieldRegisterSnapshot = this.fieldRegister()[contentSnapshot.id];
+    if (!fieldRegisterSnapshot) {
+      throw new Error(`Missing field register field having id ${contentSnapshot.id}`);
+    }
     if (fieldRegisterSnapshot.fieldEventBus) {
       fieldRegisterSnapshot.fieldEventBus.next({
         eventName,

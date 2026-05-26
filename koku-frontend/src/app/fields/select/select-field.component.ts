@@ -141,6 +141,9 @@ export class SelectFieldComponent {
         this.changed.emit(null);
       } else {
         const currentValue = this.filteredPossibleValues()[this.selectedIdx()];
+        if (!currentValue) {
+          throw new Error(`Selected option not found at index ${this.selectedIdx()}`);
+        }
         this.searchTerm.set(currentValue.text || '');
       }
     }

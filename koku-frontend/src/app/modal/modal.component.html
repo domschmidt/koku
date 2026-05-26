@@ -23,7 +23,7 @@
           <h3 class="text-lg font-bold">{{ modal.headline }}</h3>
         }
         @if (modal.dynamicContent; as dynamicContent) {
-          @if ((modal.dynamicContentSetup || {})[dynamicContent['@type']]; as contentRegistry) {
+          @if ((modal.dynamicContentSetup || {})[dynamicContent.type || dynamicContent['@type'] || '']; as contentRegistry) {
             <ndc-dynamic
               [ndcDynamicComponent]="contentRegistry.componentType"
               [ndcDynamicInputs]="{}"

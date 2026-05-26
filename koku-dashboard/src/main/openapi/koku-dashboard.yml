@@ -1,0 +1,244 @@
+openapi: 3.0.3
+info:
+  title: Koku Dashboard Contract
+  version: 1.0.0
+  description: Koku-specific dashboard contract extending the generic dashboard contract.
+paths: {}
+components:
+  schemas:
+    KokuDashboardView:
+      allOf:
+        - $ref: '../../../../dashboard/src/main/openapi/dashboard.yml#/components/schemas/DashboardView'
+        - type: object
+          description: Koku dashboard view whose root content uses Koku dashboard content types.
+          properties:
+            contentRoot:
+              $ref: '#/components/schemas/KokuDashboardContent'
+
+    KokuDashboardContent:
+      type: object
+      description: Polymorphic root type for Koku dashboard content.
+      discriminator:
+        propertyName: type
+        mapping:
+          grid: '#/components/schemas/KokuDashboardGridContainer'
+          appointments: '#/components/schemas/KokuDashboardAppointmentsPanel'
+          text: '#/components/schemas/KokuDashboardTextPanel'
+          async-text: '#/components/schemas/KokuDashboardAsyncTextPanel'
+          async-chart: '#/components/schemas/KokuDashboardAsyncChartPanel'
+      oneOf:
+        - $ref: '#/components/schemas/KokuDashboardGridContainer'
+        - $ref: '#/components/schemas/KokuDashboardAppointmentsPanel'
+        - $ref: '#/components/schemas/KokuDashboardTextPanel'
+        - $ref: '#/components/schemas/KokuDashboardAsyncTextPanel'
+        - $ref: '#/components/schemas/KokuDashboardAsyncChartPanel'
+
+    KokuDashboardContainer:
+      allOf:
+        - $ref: '../../../../dashboard/src/main/openapi/dashboard.yml#/components/schemas/DashboardContent'
+        - type: object
+          description: Base type for Koku dashboard containers.
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/KokuDashboardContent'
+
+    KokuDashboardPanel:
+      type: object
+      description: Polymorphic root type for Koku dashboard panels.
+      discriminator:
+        propertyName: type
+        mapping:
+          appointments: '#/components/schemas/KokuDashboardAppointmentsPanel'
+          text: '#/components/schemas/KokuDashboardTextPanel'
+          async-text: '#/components/schemas/KokuDashboardAsyncTextPanel'
+          async-chart: '#/components/schemas/KokuDashboardAsyncChartPanel'
+      oneOf:
+        - $ref: '#/components/schemas/KokuDashboardAppointmentsPanel'
+        - $ref: '#/components/schemas/KokuDashboardTextPanel'
+        - $ref: '#/components/schemas/KokuDashboardAsyncTextPanel'
+        - $ref: '#/components/schemas/KokuDashboardAsyncChartPanel'
+
+    KokuDashboardGridContainer:
+      allOf:
+        - $ref: '#/components/schemas/KokuDashboardContainer'
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              type: string
+              default: grid
+              readOnly: true
+            sm:
+              type: integer
+              format: int32
+            md:
+              type: integer
+              format: int32
+            lg:
+              type: integer
+              format: int32
+            xl:
+              type: integer
+              format: int32
+            xl2:
+              type: integer
+              format: int32
+            xl3:
+              type: integer
+              format: int32
+            xl4:
+              type: integer
+              format: int32
+            xl5:
+              type: integer
+              format: int32
+            cols:
+              type: integer
+              format: int32
+            maxWidthInPx:
+              type: integer
+              format: int32
+
+    KokuDashboardAsyncChartPanel:
+      allOf:
+        - $ref: '../../../../dashboard/src/main/openapi/dashboard.yml#/components/schemas/DashboardPanel'
+        - type: object
+          required:
+            - type
+            - chartUrl
+          properties:
+            type:
+              type: string
+              default: async-chart
+              readOnly: true
+            chartUrl:
+              type: string
+
+    KokuDashboardTextPanel:
+      allOf:
+        - $ref: '../../../../dashboard/src/main/openapi/dashboard.yml#/components/schemas/DashboardPanel'
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              type: string
+              default: text
+              readOnly: true
+            color:
+              $ref: '../../../../koku-contracts/src/main/openapi/koku-colors.yml#/components/schemas/KokuColor'
+            topHeadline:
+              type: string
+            headline:
+              type: string
+            subHeadline:
+              type: string
+            progressDetails:
+              type: array
+              items:
+                $ref: '#/components/schemas/KokuDashboardTextPanelProgressDetails'
+            explanations:
+              type: array
+              items:
+                $ref: '#/components/schemas/KokuDashboardTextPanelExplanationItem'
+            progress:
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 100
+
+    KokuDashboardAsyncTextPanel:
+      allOf:
+        - $ref: '../../../../dashboard/src/main/openapi/dashboard.yml#/components/schemas/DashboardPanel'
+        - type: object
+          required:
+            - type
+            - sourceUrl
+          properties:
+            type:
+              type: string
+              default: async-text
+              readOnly: true
+            sourceUrl:
+              type: string
+
+    KokuDashboardTextPanelProgressDetails:
+      type: object
+      properties:
+        headline:
+          type: string
+        headlineColor:
+          $ref: '../../../../koku-contracts/src/main/openapi/koku-colors.yml#/components/schemas/KokuColor'
+        subHeadline:
+          type: string
+
+    KokuDashboardTextPanelExplanationItem:
+      type: object
+      properties:
+        left:
+          type: string
+        right:
+          type: string
+
+    KokuDashboardAppointmentsPanel:
+      allOf:
+        - $ref: '../../../../dashboard/src/main/openapi/dashboard.yml#/components/schemas/DashboardPanel'
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              type: string
+              default: appointments
+              readOnly: true
+            headline:
+              type: string
+            emptyMessage:
+              type: string
+            start:
+              type: string
+              format: date-time
+            end:
+              type: string
+              format: date-time
+            listSources:
+              type: array
+              items:
+                $ref: '#/components/schemas/KokuDashboardAppointmentsPanelListSource'
+
+    KokuDashboardAppointmentsPanelListSource:
+      type: object
+      properties:
+        sourceUrl:
+          type: string
+        idPath:
+          type: string
+        startDateFieldSelectionPath:
+          type: string
+        endDateFieldSelectionPath:
+          type: string
+        startTimeFieldSelectionPath:
+          type: string
+        endTimeFieldSelectionPath:
+          type: string
+        searchOperatorHint:
+          type: string
+          enum:
+            - YEARLY_RECURRING
+        textFieldSelectionPath:
+          type: string
+        notesTextFieldSelectionPath:
+          type: string
+        sourceItemText:
+          type: string
+        sourceItemColor:
+          $ref: '../../../../koku-contracts/src/main/openapi/koku-colors.yml#/components/schemas/KokuColor'
+        allDay:
+          type: boolean
+        userIdFieldSelectionPath:
+          type: string
+        deletedFieldSelectionPath:
+          type: string

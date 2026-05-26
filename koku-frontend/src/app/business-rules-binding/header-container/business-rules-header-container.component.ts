@@ -8,6 +8,7 @@ import { GLOBAL_EVENT_BUS } from '../../events/global-events';
 import { UNIQUE_REF_GENERATOR } from '../../utils/uniqueRef';
 import { BusinessRulesContentRegistry } from '../registry';
 import { BusinessRulesContentComponent } from '../business-rules-content/business-rules-content.component';
+import { KokuBusinessRuleHeaderContent } from '../../../types/generated/business-logic';
 
 @Component({
   selector: '[business-rules-header-container],business-rules-header-container',
@@ -16,7 +17,7 @@ import { BusinessRulesContentComponent } from '../business-rules-content/busines
   styleUrl: './business-rules-header-container.component.css',
 })
 export class BusinessRulesHeaderContainerComponent implements OnDestroy {
-  content = input.required<KokuDto.KokuBusinessRuleHeaderContentDto>();
+  content = input.required<KokuBusinessRuleHeaderContent>();
   contentSetup = input.required<BusinessRulesContentRegistry>();
   urlSegments = input<Record<string, string> | null>(null);
   sourceUrl = input<string>();
@@ -58,10 +59,9 @@ export class BusinessRulesHeaderContainerComponent implements OnDestroy {
           String(this.componentRef),
           currentEventListener.eventName,
           (eventPayload) => {
-            switch (currentEventListener['@type']) {
+            switch (currentEventListener.type) {
               case 'event-payload': {
-                const castedEventListener =
-                  currentEventListener as KokuDto.ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto;
+                const castedEventListener = currentEventListener;
 
                 if (!castedEventListener.idPath) {
                   throw new Error('Missing idPath configuration in EventListener');
@@ -73,7 +73,7 @@ export class BusinessRulesHeaderContainerComponent implements OnDestroy {
                 break;
               }
               default: {
-                throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
+                throw new Error(`Unknown EventListenerType ${currentEventListener.type}`);
               }
             }
           },

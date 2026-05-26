@@ -251,10 +251,11 @@ export class ListComponent implements OnDestroy, OnChanges {
               if (!currentEventListener.eventName) {
                 throw new Error('Missing eventName in Global Listener Configuration');
               }
-              if (!registeredEventListeners[currentEventListener.eventName]) {
-                registeredEventListeners[currentEventListener.eventName] = [];
+              let registeredEventListener = registeredEventListeners[currentEventListener.eventName];
+              if (!registeredEventListener) {
+                registeredEventListener = registeredEventListeners[currentEventListener.eventName] = [];
               }
-              registeredEventListeners[currentEventListener.eventName].push((eventPayload: any) => {
+              registeredEventListener.push((eventPayload: any) => {
                 switch (currentEventListener['@type']) {
                   case 'event-payload-search-term': {
                     const castedEventListener =
@@ -487,16 +488,14 @@ export class ListComponent implements OnDestroy, OnChanges {
       const fieldPredicates: Record<string, KokuDto.ListFieldQuery> = {};
 
       for (const currentFilter of Object.values(this.filters)) {
-        if (!fieldPredicates[currentFilter.valuePath]) {
-          fieldPredicates[currentFilter.valuePath] = {
+        const valuePath = currentFilter.valuePath;
+        if (!fieldPredicates[valuePath]) {
+          fieldPredicates[valuePath] = {
             predicates: currentFilter.predicates,
           };
         } else {
-          fieldPredicates[currentFilter.valuePath] = {
-            predicates: [
-              ...(fieldPredicates[currentFilter.valuePath].predicates || []),
-              ...(currentFilter.predicates || []),
-            ],
+          fieldPredicates[valuePath] = {
+            predicates: [...(fieldPredicates[valuePath].predicates || []), ...(currentFilter.predicates || [])],
           };
         }
       }

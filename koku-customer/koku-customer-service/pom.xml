@@ -118,6 +118,24 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
+            <artifactId>dashboard</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.domschmidt</groupId>
+            <artifactId>koku-dashboard</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.domschmidt</groupId>
+            <artifactId>koku-contracts</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.domschmidt</groupId>
             <artifactId>list</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -134,7 +152,7 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>business-logic</artifactId>
+            <artifactId>koku-business-logic</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>

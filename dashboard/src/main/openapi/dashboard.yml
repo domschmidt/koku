@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Dashboard Contract
+  version: 1.0.0
+  description: Generic declarative dashboard contract for views, content, containers and panels.
+paths: {}
+components:
+  schemas:
+    DashboardView:
+      type: object
+      description: Root object returned by a dashboard endpoint.
+      required:
+        - contentRoot
+      properties:
+        contentRoot:
+          $ref: '#/components/schemas/DashboardContent'
+
+    DashboardContent:
+      type: object
+      description: Polymorphic root type for every dashboard content element.
+      required:
+        - id
+        - type
+      discriminator:
+        propertyName: type
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+
+    DashboardContainer:
+      allOf:
+        - $ref: '#/components/schemas/DashboardContent'
+        - type: object
+          description: Base type for content elements that can contain other dashboard content.
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/DashboardContent'
+
+    DashboardPanel:
+      allOf:
+        - $ref: '#/components/schemas/DashboardContent'
+        - type: object
+          description: Base type for leaf dashboard content elements.

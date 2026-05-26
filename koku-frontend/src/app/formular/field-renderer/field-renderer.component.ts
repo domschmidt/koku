@@ -56,6 +56,9 @@ export class FieldRendererComponent {
     const contentSnapshot = this.content();
     if (contentSnapshot.id) {
       const fieldSnapshot = this.fieldRegister()[contentSnapshot.id];
+      if (!fieldSnapshot) {
+        throw new Error(`Field register lookup failed for id ${contentSnapshot.id}`);
+      }
       if (fieldSnapshot.fieldEventBus) {
         fieldSnapshot.fieldEventBus.next({ eventName, payload: data });
       }

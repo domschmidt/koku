@@ -8,13 +8,19 @@ import { NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { BusinessRulesContentRegistry } from '../registry';
 import { BusinessRulesContentComponent } from '../business-rules-content/business-rules-content.component';
+import {
+  KokuBusinessRuleContent,
+  KokuBusinessRuleDockContentItem,
+  KokuBusinessRuleDockContentItemWithContent,
+} from '../../../types/generated/business-logic';
 
 interface ExtendedDockContentItem extends DockContentItem {
-  content: KokuDto.AbstractKokuBusinessRuleContentDto;
+  content: KokuBusinessRuleContent;
   route?: string;
+  parentRoutePath?: string;
 }
 
-interface ExtendedKokuBusinessRuleDockContentItemDto extends KokuDto.KokuBusinessRuleDockContentItemDto {
+interface ExtendedKokuBusinessRuleDockContentItem extends KokuBusinessRuleDockContentItemWithContent {
   parentRoutePath?: string;
 }
 
@@ -25,7 +31,7 @@ interface ExtendedKokuBusinessRuleDockContentItemDto extends KokuDto.KokuBusines
   styleUrl: './business-rules-dock-container.component.css',
 })
 export class BusinessRulesDockContainerComponent {
-  content = input.required<KokuDto.KokuBusinessRuleDockContentItemDto[]>();
+  content = input.required<KokuBusinessRuleDockContentItem[]>();
   contentSetup = input.required<BusinessRulesContentRegistry>();
   urlSegments = input<Record<string, string> | null>(null);
   buttonDockOutlet = input<OutletDirective>();
@@ -34,7 +40,7 @@ export class BusinessRulesDockContainerComponent {
   parentRoutePath = input<string>('');
 
   dockConfig = signal<ExtendedDockContentItem[]>([]);
-  activeContent = signal<ExtendedKokuBusinessRuleDockContentItemDto | null>(null);
+  activeContent = signal<ExtendedDockContentItem | null>(null);
   title = signal<string | null>(null);
 
   httpClient = inject(HttpClient);
@@ -87,8 +93,11 @@ export class BusinessRulesDockContainerComponent {
       }
 
       const afterNavigationUrlChange = () => {
-        const segments = this.router.url
-          .split('?')[0]
+        const currentUrl = this.router.url.split('?')[0];
+        if (!currentUrl) {
+          throw new Error('Router url is empty');
+        }
+        const segments = currentUrl
           .split('/')
           .filter((value) => value !== '')
           .slice(
@@ -119,15 +128,21 @@ export class BusinessRulesDockContainerComponent {
               }
             }
             if (!failedLookup) {
-              if (currentRoutedContent.id) {
-                const dockConfigSnapshot = this.dockConfig();
-                for (const currentDockConfig of dockConfigSnapshot) {
-                  currentDockConfig.active = currentRoutedContent.id == currentDockConfig.id;
-                }
-                this.dockConfig.set(dockConfigSnapshot);
+              if (!currentRoutedContent.id) {
+                throw new Error('Missing dock content item id');
               }
+              if (!currentRoutedContent.content) {
+                throw new Error(`Missing dock content item content for '${currentRoutedContent.id}'`);
+              }
+              const dockConfigSnapshot = this.dockConfig();
+              for (const currentDockConfig of dockConfigSnapshot) {
+                currentDockConfig.active = currentRoutedContent.id == currentDockConfig.id;
+              }
+              this.dockConfig.set(dockConfigSnapshot);
               this.activeContent.set({
                 ...currentRoutedContent,
+                id: currentRoutedContent.id,
+                content: currentRoutedContent.content,
                 parentRoutePath: [
                   ...(this.parentRoutePath() + '/' + currentRoutedContent.route).split('/').map(
                     (value) =>
@@ -146,12 +161,20 @@ export class BusinessRulesDockContainerComponent {
           }
         }
         if (!newActiveContentFound) {
-          let firstEntry: ExtendedKokuBusinessRuleDockContentItemDto | null = null;
+          let firstEntry: ExtendedKokuBusinessRuleDockContentItem | null = null;
           const firstEntryRaw = (content || [])[0];
           if (firstEntryRaw) {
+            if (!firstEntryRaw.id) {
+              throw new Error('Missing dock content item id');
+            }
+            if (!firstEntryRaw.content) {
+              throw new Error(`Missing dock content item content for '${firstEntryRaw.id}'`);
+            }
             const segmentMapping: Record<string, string> = { ...(this.urlSegments() || {}) };
             firstEntry = {
               ...firstEntryRaw,
+              id: firstEntryRaw.id,
+              content: firstEntryRaw.content,
               parentRoutePath: [
                 ...(this.parentRoutePath() + '/' + firstEntryRaw.route).split('/').map(
                   (value) =>
@@ -168,7 +191,7 @@ export class BusinessRulesDockContainerComponent {
           this.activeContent.set(firstEntry);
           const dockConfigSnapshot = this.dockConfig();
           for (const currentDockConfig of dockConfigSnapshot) {
-            currentDockConfig.active = firstEntryRaw.id == currentDockConfig.id;
+            currentDockConfig.active = firstEntry?.id == currentDockConfig.id;
           }
           this.dockConfig.set(dockConfigSnapshot);
         }

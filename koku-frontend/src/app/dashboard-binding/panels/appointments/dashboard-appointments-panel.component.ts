@@ -7,6 +7,8 @@ import { finalize, tap } from 'rxjs/operators';
 import { MyUserDetailsService } from '../../../user/my-user-details.service';
 import { ToastService } from '../../../toast/toast.service';
 import dayjs from 'dayjs';
+import { KokuColor, KokuDashboardAppointmentsPanel } from '../../../../types/generated/dashboard';
+import { KokuDashboardAppointmentsPanelListSource } from '../../../../types/generated/dashboard';
 
 interface AppointmentItem {
   id: string;
@@ -26,7 +28,7 @@ interface AppointmentItem {
   templateUrl: './dashboard-appointments-panel.component.html',
 })
 export class DashboardAppointmentsPanelComponent {
-  content = input.required<KokuDto.DashboardAppointmentsPanelDto>();
+  content = input.required<KokuDashboardAppointmentsPanel>();
   appointments = signal<AppointmentItem[] | null>(null);
   loading = signal<boolean>(false);
 
@@ -34,7 +36,7 @@ export class DashboardAppointmentsPanelComponent {
   httpClient = inject(HttpClient);
   myUserDetailsService = inject(MyUserDetailsService);
 
-  private colorClass: Record<Partial<KokuDto.KokuColorEnum>, string> = {
+  private colorClass: Record<KokuColor, string> = {
     PRIMARY: 'border-primary-600',
     SECONDARY: 'border-secondary-600',
     ACCENT: 'border-accent-600',
@@ -68,7 +70,7 @@ export class DashboardAppointmentsPanelComponent {
 
   constructor() {
     toObservable(this.content).subscribe((content) => {
-      const listObservables: Observable<[KokuDto.DashboardAppointmentsPanelListSourceDto, KokuDto.ListPage]>[] = [];
+      const listObservables: Observable<[KokuDashboardAppointmentsPanelListSource, KokuDto.ListPage]>[] = [];
 
       for (const currentListSource of content.listSources || []) {
         const fieldSelection: Set<string> = new Set<string>();
@@ -151,9 +153,10 @@ export class DashboardAppointmentsPanelComponent {
                       fieldPredicates: fieldPredicates,
                     })
                     .pipe(
-                      map<KokuDto.ListPage, [KokuDto.DashboardAppointmentsPanelListSourceDto, KokuDto.ListPage]>(
-                        (value) => [currentListSource, value],
-                      ),
+                      map<KokuDto.ListPage, [KokuDashboardAppointmentsPanelListSource, KokuDto.ListPage]>((value) => [
+                        currentListSource,
+                        value,
+                      ]),
                     );
                 }),
               ),
@@ -168,9 +171,10 @@ export class DashboardAppointmentsPanelComponent {
                   fieldPredicates: fieldPredicates,
                 })
                 .pipe(
-                  map<KokuDto.ListPage, [KokuDto.DashboardAppointmentsPanelListSourceDto, KokuDto.ListPage]>(
-                    (value) => [currentListSource, value],
-                  ),
+                  map<KokuDto.ListPage, [KokuDashboardAppointmentsPanelListSource, KokuDto.ListPage]>((value) => [
+                    currentListSource,
+                    value,
+                  ]),
                 ),
             );
           }
@@ -187,7 +191,7 @@ export class DashboardAppointmentsPanelComponent {
           }),
         )
         .subscribe(
-          (data: [KokuDto.DashboardAppointmentsPanelListSourceDto, KokuDto.ListPage][]) => {
+          (data: [KokuDashboardAppointmentsPanelListSource, KokuDto.ListPage][]) => {
             const appointments: AppointmentItem[] = [];
             for (const currentResultData of data || []) {
               const listSource = currentResultData[0];

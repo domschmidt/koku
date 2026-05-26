@@ -1,7 +1,7 @@
 package de.domschmidt.koku.dto.list.fields.input;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import de.domschmidt.koku.dto.KokuColorEnum;
+import de.domschmidt.koku.contracts.dto.KokuColor;
 import de.domschmidt.koku.dto.KokuRoundedEnum;
 import de.domschmidt.list.dto.response.fields.AbstractListViewFieldDto;
 import lombok.Builder;
@@ -18,7 +18,7 @@ public class ListViewInputFieldDto extends AbstractListViewFieldDto<String> {
 
     String label;
     KokuRoundedEnum rounded;
-    KokuColorEnum backgroundColor;
+    KokuColor backgroundColor;
 
     @Builder.Default
     String defaultValue = "";

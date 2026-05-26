@@ -1,5 +1,5 @@
 @if (content(); as content) {
-  @if (contentSetup().contentRegistry[content['@type']]; as contentRegistration) {
+  @if (contentSetup().contentRegistry[content.type]; as contentRegistration) {
     <ndc-dynamic
       [ndcDynamicComponent]="contentRegistration.componentType"
       [ndcDynamicInputs]="{}"

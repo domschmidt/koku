@@ -1,0 +1,383 @@
+openapi: 3.1.0
+info:
+  title: Koku Business Logic Contract
+  version: 1.0.0
+  description: Koku-specific declarative business logic contract extending the generic business logic base contract.
+paths: {}
+components:
+  schemas:
+    KokuBusinessRuleDescriptor:
+      type: object
+      description: Polymorphic root type for Koku business rules.
+      discriminator:
+        propertyName: type
+        mapping:
+          business-rule: '#/components/schemas/KokuBusinessRule'
+      oneOf:
+        - $ref: '#/components/schemas/KokuBusinessRule'
+
+    KokuBusinessRule:
+      x-implements:
+        - de.domschmidt.business_logic.api.BusinessRule
+      allOf:
+        - $ref: '../../../../business-logic/src/main/openapi/business-logic.yml#/components/schemas/BusinessRule'
+        - type: object
+          description: Koku-specific business rule with field references and executable behavior.
+          required:
+            - type
+          properties:
+            type:
+              type: string
+              default: business-rule
+              readOnly: true
+            references:
+              type: array
+              items:
+                $ref: '#/components/schemas/KokuBusinessRuleFieldReference'
+            execution:
+              $ref: '#/components/schemas/KokuBusinessRuleExecution'
+
+    KokuBusinessRuleFieldReferenceDescriptor:
+      type: object
+      description: Polymorphic root type for Koku business rule field references.
+      discriminator:
+        propertyName: type
+        mapping:
+          field-reference: '#/components/schemas/KokuBusinessRuleFieldReference'
+      oneOf:
+        - $ref: '#/components/schemas/KokuBusinessRuleFieldReference'
+
+    KokuBusinessRuleFieldReference:
+      type: object
+      description: Field reference used to map request values, result values and listener-driven updates.
+      required:
+        - type
+        - reference
+      properties:
+        type:
+          type: string
+          default: field-reference
+          readOnly: true
+        reference:
+          type: string
+        requestParam:
+          type: string
+        resultValuePath:
+          type: string
+        loadingAnimation:
+          type: boolean
+        resultUpdateMode:
+          $ref: '#/components/schemas/KokuBusinessRuleFieldReferenceUpdateMode'
+        listeners:
+          type: array
+          items:
+            $ref: '#/components/schemas/KokuBusinessRuleFieldReferenceListener'
+
+    KokuBusinessRuleFieldReferenceUpdateMode:
+      type: string
+      enum:
+        - always
+        - set
+        - append
+        - prepend
+
+    KokuBusinessRuleFieldReferenceListener:
+      type: object
+      description: Koku-specific listener configuration for a field reference.
+      required:
+        - event
+      properties:
+        event:
+          $ref: '#/components/schemas/KokuBusinessRuleFieldReferenceListenerEvent'
+
+    KokuBusinessRuleFieldReferenceListenerEvent:
+      type: string
+      enum:
+        - change
+        - input
+        - click
+        - blur
+        - focus
+        - click-prepend-outer
+        - blur-prepend-outer
+        - focus-prepend-outer
+        - click-prepend-inner
+        - blur-prepend-inner
+        - focus-prepend-inner
+        - click-append-inner
+        - blur-append-inner
+        - focus-append-inner
+        - click-append-outer
+        - blur-append-outer
+        - focus-append-outer
+        - init
+        - reinit
+
+    KokuBusinessRuleExecution:
+      type: object
+      description: Polymorphic root type for Koku business rule executions.
+      discriminator:
+        propertyName: type
+        mapping:
+          call-http-endpoint: '#/components/schemas/KokuBusinessRuleCallHttpEndpoint'
+          open-dialog-content: '#/components/schemas/KokuBusinessRuleOpenDialogContent'
+      oneOf:
+        - $ref: '#/components/schemas/KokuBusinessRuleCallHttpEndpoint'
+        - $ref: '#/components/schemas/KokuBusinessRuleOpenDialogContent'
+
+    KokuBusinessRuleCallHttpEndpoint:
+      allOf:
+        - $ref: '../../../../business-logic/src/main/openapi/business-logic.yml#/components/schemas/BusinessRuleExecution'
+        - type: object
+          required:
+            - type
+            - url
+            - method
+          properties:
+            type:
+              type: string
+              default: call-http-endpoint
+              readOnly: true
+            url:
+              type: string
+            method:
+              $ref: '#/components/schemas/KokuBusinessRuleCallHttpEndpointMethod'
+
+    KokuBusinessRuleCallHttpEndpointMethod:
+      type: string
+      enum:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+
+    KokuBusinessRuleOpenDialogContent:
+      allOf:
+        - $ref: '../../../../business-logic/src/main/openapi/business-logic.yml#/components/schemas/BusinessRuleExecution'
+        - type: object
+          required:
+            - type
+            - content
+          properties:
+            type:
+              type: string
+              default: open-dialog-content
+              readOnly: true
+            content:
+              $ref: '#/components/schemas/KokuBusinessRuleContent'
+            closeEventListeners:
+              type: array
+              items:
+                $ref: '#/components/schemas/KokuBusinessRuleOpenContentCloseListener'
+
+    KokuBusinessRuleContent:
+      type: object
+      description: Polymorphic root type for Koku business rule content.
+      discriminator:
+        propertyName: type
+        mapping:
+          dock: '#/components/schemas/KokuBusinessRuleDockContent'
+          formular: '#/components/schemas/KokuBusinessRuleFormularContent'
+          header: '#/components/schemas/KokuBusinessRuleHeaderContent'
+      oneOf:
+        - $ref: '#/components/schemas/KokuBusinessRuleDockContent'
+        - $ref: '#/components/schemas/KokuBusinessRuleFormularContent'
+        - $ref: '#/components/schemas/KokuBusinessRuleHeaderContent'
+
+    KokuBusinessRuleDockContent:
+      allOf:
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              type: string
+              default: dock
+              readOnly: true
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/KokuBusinessRuleDockContentItem'
+
+    KokuBusinessRuleDockContentItem:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        route:
+          type: string
+        icon:
+          type: string
+        content:
+          $ref: '#/components/schemas/KokuBusinessRuleContent'
+
+    KokuBusinessRuleFormularContent:
+      allOf:
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              type: string
+              default: formular
+              readOnly: true
+        - type: object
+          properties:
+            formularUrl:
+              type: string
+            sourceUrl:
+              type: string
+            submitUrl:
+              type: string
+            submitMethod:
+              $ref: '#/components/schemas/KokuBusinessRuleFormularActionSubmitMethod'
+            maxWidthInPx:
+              type: integer
+              format: int32
+            onSaveEvents:
+              type: array
+              items:
+                $ref: '#/components/schemas/KokuBusinessRuleFormularContentSaveEvent'
+            fieldOverrides:
+              type: array
+              items:
+                $ref: '#/components/schemas/KokuBusinessRuleFormularFieldOverride'
+
+    KokuBusinessRuleFormularActionSubmitMethod:
+      type: string
+      enum:
+        - POST
+        - PUT
+        - PATCH
+
+    KokuBusinessRuleFormularContentSaveEventDescriptor:
+      type: object
+      description: Polymorphic root type for Koku business rule formular save events.
+      discriminator:
+        propertyName: type
+        mapping:
+          propagate-global-event: '#/components/schemas/KokuBusinessRuleFormularContentSaveEvent'
+      oneOf:
+        - $ref: '#/components/schemas/KokuBusinessRuleFormularContentSaveEvent'
+
+    KokuBusinessRuleFormularContentSaveEvent:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          default: propagate-global-event
+          readOnly: true
+        eventName:
+          type: string
+
+    KokuBusinessRuleFormularFieldOverrideDescriptor:
+      type: object
+      description: Polymorphic root type for Koku business rule formular field overrides.
+      discriminator:
+        propertyName: type
+        mapping:
+          route-based-override: '#/components/schemas/KokuBusinessRuleFormularFieldOverride'
+      oneOf:
+        - $ref: '#/components/schemas/KokuBusinessRuleFormularFieldOverride'
+
+    KokuBusinessRuleFormularFieldOverride:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          default: route-based-override
+          readOnly: true
+        fieldId:
+          type: string
+        routeParam:
+          type: string
+        disable:
+          type: boolean
+        fieldName:
+          type: string
+        value:
+          type: object
+
+    KokuBusinessRuleHeaderContent:
+      allOf:
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              type: string
+              default: header
+              readOnly: true
+        - type: object
+          properties:
+            title:
+              type: string
+            sourceUrl:
+              type: string
+            titlePath:
+              type: string
+            subtitle:
+              type: string
+            content:
+              $ref: '#/components/schemas/KokuBusinessRuleContent'
+            globalEventListeners:
+              type: array
+              items:
+                $ref: '#/components/schemas/KokuBusinessRuleHeaderContentGlobalEventListener'
+
+    KokuBusinessRuleHeaderContentGlobalEventListenerDescriptor:
+      type: object
+      description: Polymorphic root type for Koku business rule header content global event listeners.
+      discriminator:
+        propertyName: type
+        mapping:
+          event-payload: '#/components/schemas/KokuBusinessRuleHeaderContentGlobalEventListener'
+      oneOf:
+        - $ref: '#/components/schemas/KokuBusinessRuleHeaderContentGlobalEventListener'
+
+    KokuBusinessRuleHeaderContentGlobalEventListener:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          default: event-payload
+          readOnly: true
+        eventName:
+          type: string
+        idPath:
+          type: string
+        titleValuePath:
+          type: string
+
+    KokuBusinessRuleOpenContentCloseListenerDescriptor:
+      type: object
+      description: Polymorphic root type for Koku business rule open content close listeners.
+      discriminator:
+        propertyName: type
+        mapping:
+          global-event-listener: '#/components/schemas/KokuBusinessRuleOpenContentCloseListener'
+      oneOf:
+        - $ref: '#/components/schemas/KokuBusinessRuleOpenContentCloseListener'
+
+    KokuBusinessRuleOpenContentCloseListener:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          default: global-event-listener
+          readOnly: true
+        eventName:
+          type: string

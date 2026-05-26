@@ -14,10 +14,6 @@ import de.domschmidt.chart.dto.response.axis.YAxisDto;
 import de.domschmidt.chart.dto.response.colors.ColorsEnumDto;
 import de.domschmidt.chart.dto.response.types.*;
 import de.domschmidt.chart.dto.response.values.NumericSeriesDto;
-import de.domschmidt.dashboard.dto.DashboardViewDto;
-import de.domschmidt.dashboard.dto.content.panels.DashboardAsyncChartPanelDto;
-import de.domschmidt.dashboard.factory.DashboardViewFactory;
-import de.domschmidt.dashboard.factory.DefaultDashboardViewContentIdGenerator;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
@@ -27,7 +23,8 @@ import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButto
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
-import de.domschmidt.koku.business_logic.dto.*;
+import de.domschmidt.koku.business_logic.contract.dto.*;
+import de.domschmidt.koku.contracts.dto.KokuColor;
 import de.domschmidt.koku.customer.exceptions.*;
 import de.domschmidt.koku.customer.kafka.activities.service.ActivityKTableProcessor;
 import de.domschmidt.koku.customer.kafka.activity_steps.service.ActivityStepKTableProcessor;
@@ -38,18 +35,21 @@ import de.domschmidt.koku.customer.kafka.promotions.service.PromotionKTableProce
 import de.domschmidt.koku.customer.kafka.users.service.UserKTableProcessor;
 import de.domschmidt.koku.customer.persistence.*;
 import de.domschmidt.koku.customer.transformer.CustomerAppointmentToCustomerAppointmentDtoTransformer;
-import de.domschmidt.koku.dto.KokuColorEnum;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardAsyncChartPanel;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardAsyncTextPanel;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardGridContainer;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardTextPanel;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardTextPanelExplanationItem;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardTextPanelProgressDetails;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardView;
+import de.domschmidt.koku.dashboard.factory.DefaultDashboardViewContentIdGenerator;
+import de.domschmidt.koku.dashboard.factory.KokuDashboardViewFactory;
 import de.domschmidt.koku.dto.KokuRoundedEnum;
 import de.domschmidt.koku.dto.activity.KokuActivityDto;
 import de.domschmidt.koku.dto.activity.KokuActivityStepDto;
 import de.domschmidt.koku.dto.chart.filter.types.EnumInputChartFilterType;
 import de.domschmidt.koku.dto.chart.filter.types.InputChartFilterDto;
 import de.domschmidt.koku.dto.customer.*;
-import de.domschmidt.koku.dto.dashboard.containers.grid.DashboardGridContainerDto;
-import de.domschmidt.koku.dto.dashboard.panels.text.DashboardAsyncTextPanelDto;
-import de.domschmidt.koku.dto.dashboard.panels.text.DashboardTextPanelDto;
-import de.domschmidt.koku.dto.dashboard.panels.text.DashboardTextPanelExplanationItemDto;
-import de.domschmidt.koku.dto.dashboard.panels.text.DashboardTextPanelProgressDetailsDto;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
 import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
@@ -208,34 +208,24 @@ public class CustomerAppointmentController {
                         .build())
                 .required(true)
                 .build());
-        formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
+        formFactory.addBusinessRule(new KokuBusinessRule()
                 .id("CreateCustomer")
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(customerSelectionFieldRef)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
-                                .build())
-                        .build())
-                .execution(KokuBusinessRuleOpenDialogContentDto.builder()
-                        .content(KokuBusinessRuleHeaderContentDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CLICK_APPEND_OUTER)))
+                .execution(new KokuBusinessRuleOpenDialogContent()
+                        .content(new KokuBusinessRuleHeaderContent()
                                 .title("Neuer Kunde")
-                                .content(KokuBusinessRuleFormularContentDto.builder()
+                                .content(new KokuBusinessRuleFormularContent()
                                         .formularUrl("services/customers/customers/form")
                                         .submitUrl("services/customers/customers")
-                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
+                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethod.POST)
                                         .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
-                                                        .builder()
-                                                        .eventName("customer-created")
-                                                        .build()))
-                                        .build())
-                                .build())
-                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("customer-created")
-                                .build())
-                        .build())
-                .build());
+                                        .addOnSaveEventsItem(new KokuBusinessRuleFormularContentSaveEvent()
+                                                .eventName("customer-created"))))
+                        .addCloseEventListenersItem(
+                                new KokuBusinessRuleOpenContentCloseListener().eventName("customer-created"))));
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("customer-created")
                 .fieldValueMapping(Map.of(
@@ -316,34 +306,24 @@ public class CustomerAppointmentController {
                         .build())
                 .uniqueValues(true)
                 .build());
-        formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
+        formFactory.addBusinessRule(new KokuBusinessRule()
                 .id("CreateActivity")
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(activityFieldRef)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
-                                .build())
-                        .build())
-                .execution(KokuBusinessRuleOpenDialogContentDto.builder()
-                        .content(KokuBusinessRuleHeaderContentDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CLICK_APPEND_OUTER)))
+                .execution(new KokuBusinessRuleOpenDialogContent()
+                        .content(new KokuBusinessRuleHeaderContent()
                                 .title("Neue Tätigkeit")
-                                .content(KokuBusinessRuleFormularContentDto.builder()
+                                .content(new KokuBusinessRuleFormularContent()
                                         .formularUrl("services/activities/activities/form")
                                         .submitUrl("services/activities/activities")
-                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
+                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethod.POST)
                                         .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
-                                                        .builder()
-                                                        .eventName("activity-created")
-                                                        .build()))
-                                        .build())
-                                .build())
-                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("activity-created")
-                                .build())
-                        .build())
-                .build());
+                                        .onSaveEvents(Arrays.asList(new KokuBusinessRuleFormularContentSaveEvent()
+                                                .eventName("activity-created")))))
+                        .addCloseEventListenersItem(
+                                new KokuBusinessRuleOpenContentCloseListener().eventName("activity-created"))));
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("activity-created")
                 .fieldValueMapping(Map.of(
@@ -411,7 +391,7 @@ public class CustomerAppointmentController {
                                     .build())
                             .text(activityStep.value.getName())
                             .disabled(Boolean.TRUE.equals(activityStep.value.getDeleted()))
-                            .color(KokuColorEnum.SECONDARY)
+                            .color(KokuColor.SECONDARY)
                             .category("Behandlungsschritte")
                             .build();
                 })
@@ -434,7 +414,7 @@ public class CustomerAppointmentController {
                                             .getName(),
                                     product.value.getName()))
                             .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
-                            .color(KokuColorEnum.PRIMARY)
+                            .color(KokuColor.PRIMARY)
                             .category("Produkte")
                             .build();
                 })
@@ -452,67 +432,63 @@ public class CustomerAppointmentController {
                         .build())
                 .uniqueValues(false)
                 .build());
-        formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
+        formFactory.addBusinessRule(new KokuBusinessRule()
                 .id("CreateTreatment")
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(treatmentSequenceFieldRef)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
-                                .build())
-                        .build())
-                .execution(KokuBusinessRuleOpenDialogContentDto.builder()
-                        .content(KokuBusinessRuleDockContentDto.builder()
-                                .content(List.of(
-                                        KokuBusinessRuleDockContentItemDto.builder()
-                                                .id("products")
-                                                .title("Produkt")
-                                                .content(KokuBusinessRuleHeaderContentDto.builder()
-                                                        .title("Neues Produkt")
-                                                        .content(KokuBusinessRuleFormularContentDto.builder()
-                                                                .formularUrl("services/products/products/form")
-                                                                .submitUrl("services/products/products")
-                                                                .submitMethod(
-                                                                        KokuBusinessRuleFormularActionSubmitMethodEnumDto
-                                                                                .POST)
-                                                                .maxWidthInPx(800)
-                                                                .onSaveEvents(Arrays.asList(
-                                                                        KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
-                                                                                .builder()
-                                                                                .eventName("treatment-product-created")
-                                                                                .build()))
-                                                                .build())
-                                                        .build())
-                                                .build(),
-                                        KokuBusinessRuleDockContentItemDto.builder()
-                                                .id("activitySteps")
-                                                .title("Behandlungsschritt")
-                                                .content(KokuBusinessRuleHeaderContentDto.builder()
-                                                        .title("Neuer Behandlungsschritt")
-                                                        .content(KokuBusinessRuleFormularContentDto.builder()
-                                                                .formularUrl("services/activities/activitysteps/form")
-                                                                .submitUrl("services/activities/activitysteps")
-                                                                .submitMethod(
-                                                                        KokuBusinessRuleFormularActionSubmitMethodEnumDto
-                                                                                .POST)
-                                                                .maxWidthInPx(800)
-                                                                .onSaveEvents(Arrays.asList(
-                                                                        KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
-                                                                                .builder()
-                                                                                .eventName(
-                                                                                        "treatment-activitystep-created")
-                                                                                .build()))
-                                                                .build())
-                                                        .build())
-                                                .build()))
-                                .build())
-                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("treatment-activitystep-created")
-                                .build())
-                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("treatment-product-created")
-                                .build())
-                        .build())
-                .build());
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CLICK_APPEND_OUTER)))
+                .execution(new KokuBusinessRuleOpenDialogContent()
+                        .content(
+                                new KokuBusinessRuleDockContent()
+                                        .content(
+                                                List.of(
+                                                        new KokuBusinessRuleDockContentItem()
+                                                                .id("products")
+                                                                .title("Produkt")
+                                                                .content(
+                                                                        new KokuBusinessRuleHeaderContent()
+                                                                                .title("Neues Produkt")
+                                                                                .content(
+                                                                                        new KokuBusinessRuleFormularContent()
+                                                                                                .formularUrl(
+                                                                                                        "services/products/products/form")
+                                                                                                .submitUrl(
+                                                                                                        "services/products/products")
+                                                                                                .submitMethod(
+                                                                                                        KokuBusinessRuleFormularActionSubmitMethod
+                                                                                                                .POST)
+                                                                                                .maxWidthInPx(800)
+                                                                                                .onSaveEvents(
+                                                                                                        Arrays.asList(
+                                                                                                                new KokuBusinessRuleFormularContentSaveEvent()
+                                                                                                                        .eventName(
+                                                                                                                                "treatment-product-created"))))),
+                                                        new KokuBusinessRuleDockContentItem()
+                                                                .id("activitySteps")
+                                                                .title("Behandlungsschritt")
+                                                                .content(
+                                                                        new KokuBusinessRuleHeaderContent()
+                                                                                .title("Neuer Behandlungsschritt")
+                                                                                .content(
+                                                                                        new KokuBusinessRuleFormularContent()
+                                                                                                .formularUrl(
+                                                                                                        "services/activities/activitysteps/form")
+                                                                                                .submitUrl(
+                                                                                                        "services/activities/activitysteps")
+                                                                                                .submitMethod(
+                                                                                                        KokuBusinessRuleFormularActionSubmitMethod
+                                                                                                                .POST)
+                                                                                                .maxWidthInPx(800)
+                                                                                                .onSaveEvents(
+                                                                                                        Arrays.asList(
+                                                                                                                new KokuBusinessRuleFormularContentSaveEvent()
+                                                                                                                        .eventName(
+                                                                                                                                "treatment-activitystep-created"))))))))
+                        .addCloseEventListenersItem(new KokuBusinessRuleOpenContentCloseListener()
+                                .eventName("treatment-activitystep-created"))
+                        .addCloseEventListenersItem(new KokuBusinessRuleOpenContentCloseListener()
+                                .eventName("treatment-product-created"))));
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("treatment-activitystep-created")
                 .fieldValueMapping(Map.of(
@@ -689,34 +665,24 @@ public class CustomerAppointmentController {
                         .build())
                 .uniqueValues(false)
                 .build());
-        formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
+        formFactory.addBusinessRule(new KokuBusinessRule()
                 .id("CreateProduct")
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(soldProductsFieldRef)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
-                                .build())
-                        .build())
-                .execution(KokuBusinessRuleOpenDialogContentDto.builder()
-                        .content(KokuBusinessRuleHeaderContentDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CLICK_APPEND_OUTER)))
+                .execution(new KokuBusinessRuleOpenDialogContent()
+                        .content(new KokuBusinessRuleHeaderContent()
                                 .title("Neues Produkt")
-                                .content(KokuBusinessRuleFormularContentDto.builder()
+                                .content(new KokuBusinessRuleFormularContent()
                                         .formularUrl("services/products/products/form")
                                         .submitUrl("services/products/products")
-                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
+                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethod.POST)
                                         .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
-                                                        .builder()
-                                                        .eventName("product-created")
-                                                        .build()))
-                                        .build())
-                                .build())
-                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("product-created")
-                                .build())
-                        .build())
-                .build());
+                                        .onSaveEvents(Arrays.asList(new KokuBusinessRuleFormularContentSaveEvent()
+                                                .eventName("product-created")))))
+                        .addCloseEventListenersItem(
+                                new KokuBusinessRuleOpenContentCloseListener().eventName("product-created"))));
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("product-created")
                 .fieldValueMapping(Map.of(
@@ -789,34 +755,24 @@ public class CustomerAppointmentController {
                         .build())
                 .uniqueValues(true)
                 .build());
-        formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
+        formFactory.addBusinessRule(new KokuBusinessRule()
                 .id("CreatePromotion")
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(promotionFieldRef)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
-                                .build())
-                        .build())
-                .execution(KokuBusinessRuleOpenDialogContentDto.builder()
-                        .content(KokuBusinessRuleHeaderContentDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CLICK_APPEND_OUTER)))
+                .execution(new KokuBusinessRuleOpenDialogContent()
+                        .content(new KokuBusinessRuleHeaderContent()
                                 .title("Neue Aktion")
-                                .content(KokuBusinessRuleFormularContentDto.builder()
+                                .content(new KokuBusinessRuleFormularContent()
                                         .formularUrl("services/promotions/promotions/form")
                                         .submitUrl("services/promotions/promotions")
-                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethodEnumDto.POST)
+                                        .submitMethod(KokuBusinessRuleFormularActionSubmitMethod.POST)
                                         .maxWidthInPx(800)
-                                        .onSaveEvents(Arrays.asList(
-                                                KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
-                                                        .builder()
-                                                        .eventName("promotion-created")
-                                                        .build()))
-                                        .build())
-                                .build())
-                        .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("promotion-created")
-                                .build())
-                        .build())
-                .build());
+                                        .onSaveEvents(Arrays.asList(new KokuBusinessRuleFormularContentSaveEvent()
+                                                .eventName("promotion-created")))))
+                        .addCloseEventListenersItem(
+                                new KokuBusinessRuleOpenContentCloseListener().eventName("promotion-created"))));
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
                 .eventName("promotion-created")
                 .fieldValueMapping(Map.of(
@@ -889,126 +845,96 @@ public class CustomerAppointmentController {
                 .postProcessingAction(FormButtonReloadAction.builder().build())
                 .build());
 
-        formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
+        formFactory.addBusinessRule(new KokuBusinessRule()
                 .id("ActivitySummary")
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(activityFieldRef)
                         .requestParam(KokuActivityPriceSummaryRequestDto.Fields.activities)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CHANGE)
-                                .build())
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CHANGE)))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(promotionFieldRef)
                         .requestParam(KokuActivityPriceSummaryRequestDto.Fields.promotions)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CHANGE)
-                                .build())
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CHANGE)))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(dateFieldRef)
-                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.date)
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.date))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(timeFieldRef)
-                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.time)
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.time))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(activityPriceSumStatFieldRef)
-                        .resultUpdateMode(KokuBusinessRuleFieldReferenceUpdateModeEnum.ALWAYS)
+                        .resultUpdateMode(KokuBusinessRuleFieldReferenceUpdateMode.ALWAYS)
                         .resultValuePath(KokuCustomerActivityPriceSummaryDto.Fields.priceSum)
-                        .loadingAnimation(true)
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .loadingAnimation(true))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(activityDurationSumStatFieldRef)
-                        .resultUpdateMode(KokuBusinessRuleFieldReferenceUpdateModeEnum.ALWAYS)
+                        .resultUpdateMode(KokuBusinessRuleFieldReferenceUpdateMode.ALWAYS)
                         .resultValuePath(KokuCustomerActivityPriceSummaryDto.Fields.durationSum)
-                        .loadingAnimation(true)
-                        .build())
-                .execution(KokuBusinessRuleCallHttpEndpoint.builder()
+                        .loadingAnimation(true))
+                .execution(new KokuBusinessRuleCallHttpEndpoint()
                         .url("services/customers/customers/appointments/activitysummary")
-                        .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
-                        .build())
-                .build());
+                        .method(KokuBusinessRuleCallHttpEndpointMethod.GET)));
 
-        formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
+        formFactory.addBusinessRule(new KokuBusinessRule()
                 .id("OverallSummary")
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(activityFieldRef)
                         .requestParam(KokuActivityPriceSummaryRequestDto.Fields.activities)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CHANGE)
-                                .build())
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CHANGE)))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(soldProductsFieldRef)
                         .requestParam(KokuActivitySoldProductSummaryRequestDto.Fields.soldProducts)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CHANGE)
-                                .build())
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CHANGE)))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(promotionFieldRef)
                         .requestParam(KokuActivityPriceSummaryRequestDto.Fields.promotions)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CHANGE)
-                                .build())
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CHANGE)))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(dateFieldRef)
-                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.date)
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.date))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(timeFieldRef)
-                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.time)
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .requestParam(KokuActivityPriceSummaryRequestDto.Fields.time))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(overallPriceSumStatFieldRef)
-                        .resultUpdateMode(KokuBusinessRuleFieldReferenceUpdateModeEnum.ALWAYS)
+                        .resultUpdateMode(KokuBusinessRuleFieldReferenceUpdateMode.ALWAYS)
                         .resultValuePath(KokuCustomerAppointmentOverallPriceSummaryDto.Fields.priceSum)
-                        .loadingAnimation(true)
-                        .build())
-                .execution(KokuBusinessRuleCallHttpEndpoint.builder()
+                        .loadingAnimation(true))
+                .execution(new KokuBusinessRuleCallHttpEndpoint()
                         .url("services/customers/customers/appointments/overallsummary")
-                        .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
-                        .build())
-                .build());
+                        .method(KokuBusinessRuleCallHttpEndpointMethod.GET)));
 
-        formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
+        formFactory.addBusinessRule(new KokuBusinessRule()
                 .id("ProductSummary")
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(soldProductsFieldRef)
                         .requestParam(KokuActivitySoldProductSummaryRequestDto.Fields.soldProducts)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CHANGE)
-                                .build())
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CHANGE)))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(promotionFieldRef)
                         .requestParam(KokuActivityPriceSummaryRequestDto.Fields.promotions)
-                        .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CHANGE)
-                                .build())
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .addListenersItem(new KokuBusinessRuleFieldReferenceListener()
+                                .event(KokuBusinessRuleFieldReferenceListenerEvent.CHANGE)))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(dateFieldRef)
-                        .requestParam(KokuActivitySoldProductSummaryRequestDto.Fields.date)
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .requestParam(KokuActivitySoldProductSummaryRequestDto.Fields.date))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(timeFieldRef)
-                        .requestParam(KokuActivitySoldProductSummaryRequestDto.Fields.time)
-                        .build())
-                .reference(KokuBusinessRuleFieldReferenceDto.builder()
+                        .requestParam(KokuActivitySoldProductSummaryRequestDto.Fields.time))
+                .addReferencesItem(new KokuBusinessRuleFieldReference()
                         .reference(productPriceSumStatFieldRef)
-                        .resultUpdateMode(KokuBusinessRuleFieldReferenceUpdateModeEnum.ALWAYS)
+                        .resultUpdateMode(KokuBusinessRuleFieldReferenceUpdateMode.ALWAYS)
                         .resultValuePath(KokuActivitySoldProductPriceSummaryDto.Fields.priceSum)
-                        .loadingAnimation(true)
-                        .build())
-                .execution(KokuBusinessRuleCallHttpEndpoint.builder()
+                        .loadingAnimation(true))
+                .execution(new KokuBusinessRuleCallHttpEndpoint()
                         .url("services/customers/customers/appointments/productsummary")
-                        .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
-                        .build())
-                .build());
+                        .method(KokuBusinessRuleCallHttpEndpointMethod.GET)));
 
         return formFactory.create();
     }
@@ -1033,14 +959,14 @@ public class CustomerAppointmentController {
                 ListViewInputFieldDto.builder()
                         .label("Aktivitäten")
                         .rounded(KokuRoundedEnum.XL)
-                        .backgroundColor(KokuColorEnum.PRIMARY)
+                        .backgroundColor(KokuColor.PRIMARY)
                         .build());
         final ListViewFieldReference soldProductSummarySnapshotField = listViewFactory.addField(
                 KokuCustomerAppointmentDto.Fields.soldProductSummarySnapshot,
                 ListViewInputFieldDto.builder()
                         .label("Verkaufte Produkte")
                         .rounded(KokuRoundedEnum.XL)
-                        .backgroundColor(KokuColorEnum.ACCENT)
+                        .backgroundColor(KokuColor.ACCENT)
                         .build());
         final ListViewSourcePathReference deletedSourcePathRef =
                 listViewFactory.addSourcePath(KokuCustomerAppointmentDto.Fields.deleted);
@@ -1990,7 +1916,7 @@ public class CustomerAppointmentController {
     }
 
     @GetMapping("/customers/dashboard/appointments")
-    public DashboardTextPanelDto getAppointmentDashboardContent() {
+    public KokuDashboardTextPanel getAppointmentDashboardContent() {
         final LocalDateTime now = LocalDateTime.now();
         final YearMonth currentMonth = YearMonth.from(now);
 
@@ -2011,26 +1937,25 @@ public class CustomerAppointmentController {
                         .and(qClazz.start.loe(now))
                         .and(qClazz.deleted.ne(Boolean.TRUE)))
                 .fetchOne();
-        return DashboardTextPanelDto.builder()
-                .color(KokuColorEnum.PURPLE)
+        return new KokuDashboardTextPanel()
+                .color(KokuColor.PURPLE)
                 .headline(String.valueOf(countAllAppointmentsThisMonth))
                 .subHeadline("Termine "
                         + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
                         + " "
                         + currentMonth.getYear()
                         + "  \uD83D\uDCC5")
-                .progress((short)
+                .progress(
                         (countAllAppointmentsThisMonth != 0L
                                 ? Math.round(
                                         (float) countPassedAppointmentsThisMonth * 100 / countAllAppointmentsThisMonth)
                                 : 0))
                 .progressDetails(List.of(
-                        DashboardTextPanelProgressDetailsDto.builder()
+                        new KokuDashboardTextPanelProgressDetails()
                                 .headline(String.valueOf(countPassedAppointmentsThisMonth))
                                 .subHeadline("Erledigt ✅")
-                                .headlineColor(KokuColorEnum.GREEN)
-                                .build(),
-                        DashboardTextPanelProgressDetailsDto.builder()
+                                .headlineColor(KokuColor.GREEN),
+                        new KokuDashboardTextPanelProgressDetails()
                                 .headline(new JPAQuery<>(this.entityManager)
                                         .select(qClazz.count().stringValue())
                                         .from(qClazz)
@@ -2042,9 +1967,7 @@ public class CustomerAppointmentController {
                                                 .and(qClazz.deleted.ne(Boolean.TRUE)))
                                         .fetchOne())
                                 .subHeadline("Offen ⏳")
-                                .headlineColor(KokuColorEnum.YELLOW)
-                                .build()))
-                .build();
+                                .headlineColor(KokuColor.YELLOW)));
     }
 
     @GetMapping("/customers/dashboard/revenueschart")
@@ -2119,7 +2042,7 @@ public class CustomerAppointmentController {
     }
 
     @GetMapping("/customers/dashboard/revenues/current")
-    public DashboardTextPanelDto getRevenuesCurrentDashboardContent() {
+    public KokuDashboardTextPanel getRevenuesCurrentDashboardContent() {
         final LocalDateTime now = LocalDateTime.now();
         final YearMonth currentMonth = YearMonth.from(now);
 
@@ -2137,8 +2060,8 @@ public class CustomerAppointmentController {
                 sameMonthLastYear.atDay(1).atTime(LocalTime.MIN),
                 sameMonthLastYear.atEndOfMonth().atTime(LocalTime.MAX));
 
-        return DashboardTextPanelDto.builder()
-                .color(KokuColorEnum.BLUE)
+        return new KokuDashboardTextPanel()
+                .color(KokuColor.BLUE)
                 .topHeadline("Monatsumsatz")
                 .headline(NumberFormat.getCurrencyInstance(Locale.GERMANY).format(overallRevenueThisMonth))
                 .subHeadline("Umsatz "
@@ -2151,32 +2074,29 @@ public class CustomerAppointmentController {
                                 ? achievedRevenueThisMonth
                                         .multiply(BigDecimal.valueOf(100))
                                         .divide(overallRevenueThisMonth, 0, RoundingMode.HALF_UP)
-                                        .shortValue()
+                                        .intValue()
                                 : 0)
                 .progressDetails(List.of(
-                        DashboardTextPanelProgressDetailsDto.builder()
+                        new KokuDashboardTextPanelProgressDetails()
                                 .headline(
                                         calculatedFormattedDifference(overallRevenueThisMonth, overallRevenueLastMonth))
                                 .subHeadline("vs. "
                                         + lastMonth.getMonth().getDisplayName(TextStyle.SHORT, Locale.GERMAN)
                                         + " "
                                         + currentMonth.getYear())
-                                .headlineColor(KokuColorEnum.GREEN)
-                                .build(),
-                        DashboardTextPanelProgressDetailsDto.builder()
+                                .headlineColor(KokuColor.GREEN),
+                        new KokuDashboardTextPanelProgressDetails()
                                 .headline(calculatedFormattedDifference(
                                         overallRevenueThisMonth, overallRevenueSameMonthLastYear))
                                 .subHeadline("vs. "
                                         + sameMonthLastYear.getMonth().getDisplayName(TextStyle.SHORT, Locale.GERMAN)
                                         + " "
                                         + sameMonthLastYear.getYear())
-                                .headlineColor(KokuColorEnum.YELLOW)
-                                .build()))
-                .build();
+                                .headlineColor(KokuColor.YELLOW)));
     }
 
     @GetMapping("/customers/dashboard/revenues/preview")
-    public DashboardTextPanelDto getRevenuesPreviewDashboardContent() {
+    public KokuDashboardTextPanel getRevenuesPreviewDashboardContent() {
         final LocalDateTime now = LocalDateTime.now();
         final YearMonth currentMonth = YearMonth.from(now);
 
@@ -2190,26 +2110,23 @@ public class CustomerAppointmentController {
                 currentMonth.plusMonths(2).atDay(1).atTime(LocalTime.MIN),
                 currentMonth.plusMonths(2).atEndOfMonth().atTime(LocalTime.MAX));
 
-        return DashboardTextPanelDto.builder()
+        return new KokuDashboardTextPanel()
                 .topHeadline("Umsatzerwartungen")
                 .headline(NumberFormat.getCurrencyInstance(Locale.GERMANY).format(overallRevenuePlanned))
-                .color(KokuColorEnum.EMERALD)
+                .color(KokuColor.EMERALD)
                 .explanations(List.of(
-                        DashboardTextPanelExplanationItemDto.builder()
+                        new KokuDashboardTextPanelExplanationItem()
                                 .left("Nächster Monat")
                                 .right(NumberFormat.getCurrencyInstance(Locale.GERMANY)
-                                        .format(overallRevenueNextMonth))
-                                .build(),
-                        DashboardTextPanelExplanationItemDto.builder()
+                                        .format(overallRevenueNextMonth)),
+                        new KokuDashboardTextPanelExplanationItem()
                                 .left("Übernächster Monat")
                                 .right(NumberFormat.getCurrencyInstance(Locale.GERMANY)
-                                        .format(overallRevenueNextNextMonth))
-                                .build()))
-                .build();
+                                        .format(overallRevenueNextNextMonth))));
     }
 
     @GetMapping("/customers/dashboard/topproduct")
-    public DashboardTextPanelDto getTopProductDashboardContent() {
+    public KokuDashboardTextPanel getTopProductDashboardContent() {
         final LocalDateTime now = LocalDateTime.now();
         final YearMonth currentMonth = YearMonth.from(now);
 
@@ -2229,19 +2146,18 @@ public class CustomerAppointmentController {
                     .getName();
         }
 
-        return DashboardTextPanelDto.builder()
-                .color(KokuColorEnum.PINK)
+        return new KokuDashboardTextPanel()
+                .color(KokuColor.PINK)
                 .headline(name)
                 .subHeadline("Top Produkt im "
                         + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
                         + " "
                         + currentMonth.getYear()
-                        + " \uD83D\uDC84")
-                .build();
+                        + " \uD83D\uDC84");
     }
 
     @GetMapping("/customers/dashboard/topactivity")
-    public DashboardTextPanelDto getTopActivityDashboardContent() {
+    public KokuDashboardTextPanel getTopActivityDashboardContent() {
         final LocalDateTime now = LocalDateTime.now();
         final YearMonth currentMonth = YearMonth.from(now);
 
@@ -2261,26 +2177,25 @@ public class CustomerAppointmentController {
                     .getName();
         }
 
-        return DashboardTextPanelDto.builder()
-                .color(KokuColorEnum.TEAL)
+        return new KokuDashboardTextPanel()
+                .color(KokuColor.TEAL)
                 .headline(name)
                 .subHeadline("Top Dienstleistung im "
                         + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
                         + " "
                         + currentMonth.getYear()
-                        + " ✂\uFE0F")
-                .build();
+                        + " ✂\uFE0F");
     }
 
     @GetMapping("/customers/dashboard/newcustomers")
-    public DashboardTextPanelDto getNewCustomerDashboardContent() {
+    public KokuDashboardTextPanel getNewCustomerDashboardContent() {
         final LocalDateTime now = LocalDateTime.now();
         final YearMonth currentMonth = YearMonth.from(now);
 
         final QCustomer qClazz = customer;
 
-        return DashboardTextPanelDto.builder()
-                .color(KokuColorEnum.CYAN)
+        return new KokuDashboardTextPanel()
+                .color(KokuColor.CYAN)
                 .headline(String.valueOf(new JPAQuery<>(this.entityManager)
                         .select(qClazz.count())
                         .from(qClazz)
@@ -2293,12 +2208,11 @@ public class CustomerAppointmentController {
                         + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
                         + " "
                         + currentMonth.getYear()
-                        + " \uD83C\uDF89")
-                .build();
+                        + " \uD83C\uDF89");
     }
 
     @GetMapping("/customers/dashboard/topcustomers")
-    public DashboardTextPanelDto getTopCustomerDashboardContent() {
+    public KokuDashboardTextPanel getTopCustomerDashboardContent() {
         final LocalDateTime now = LocalDateTime.now();
         final YearMonth currentMonth = YearMonth.from(now);
 
@@ -2331,64 +2245,52 @@ public class CustomerAppointmentController {
             revenue = NumberFormat.getCurrencyInstance(Locale.GERMANY).format(maxEntry.getValue());
         }
 
-        return DashboardTextPanelDto.builder()
-                .color(KokuColorEnum.YELLOW)
+        return new KokuDashboardTextPanel()
+                .color(KokuColor.YELLOW)
                 .topHeadline(name)
                 .headline(revenue)
                 .subHeadline("Top Kunde im "
                         + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
                         + " "
                         + currentMonth.getYear()
-                        + " \uD83D\uDC8E")
-                .build();
+                        + " \uD83D\uDC8E");
     }
 
     @GetMapping("/customers/dashboard")
-    public DashboardViewDto getDashboardView() {
-        final DashboardViewFactory dashboardFactory = new DashboardViewFactory(
-                new DefaultDashboardViewContentIdGenerator(),
-                DashboardGridContainerDto.builder().cols(1).build());
+    public KokuDashboardView getDashboardView() {
+        final KokuDashboardViewFactory dashboardFactory = new KokuDashboardViewFactory(
+                new DefaultDashboardViewContentIdGenerator(), new KokuDashboardGridContainer().cols(1));
 
-        dashboardFactory.addContainer(
-                DashboardGridContainerDto.builder().cols(1).md(2).build());
+        dashboardFactory.addContainer(new KokuDashboardGridContainer().cols(1).md(2));
 
-        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
-                .sourceUrl("services/customers/customers/dashboard/revenues/current")
-                .build());
-        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
-                .sourceUrl("services/customers/customers/dashboard/revenues/preview")
-                .build());
+        dashboardFactory.addPanel(
+                new KokuDashboardAsyncTextPanel().sourceUrl("services/customers/customers/dashboard/revenues/current"));
+        dashboardFactory.addPanel(
+                new KokuDashboardAsyncTextPanel().sourceUrl("services/customers/customers/dashboard/revenues/preview"));
         dashboardFactory.endContainer();
 
         dashboardFactory.addContainer(
-                DashboardGridContainerDto.builder().cols(1).md(2).xl2(3).build());
+                new KokuDashboardGridContainer().cols(1).md(2).xl2(3));
 
-        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
-                .sourceUrl("services/customers/customers/dashboard/topproduct")
-                .build());
-        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
-                .sourceUrl("services/customers/customers/dashboard/topactivity")
-                .build());
-        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
-                .sourceUrl("services/customers/customers/dashboard/newcustomers")
-                .build());
+        dashboardFactory.addPanel(
+                new KokuDashboardAsyncTextPanel().sourceUrl("services/customers/customers/dashboard/topproduct"));
+        dashboardFactory.addPanel(
+                new KokuDashboardAsyncTextPanel().sourceUrl("services/customers/customers/dashboard/topactivity"));
+        dashboardFactory.addPanel(
+                new KokuDashboardAsyncTextPanel().sourceUrl("services/customers/customers/dashboard/newcustomers"));
         dashboardFactory.endContainer();
 
-        dashboardFactory.addContainer(
-                DashboardGridContainerDto.builder().cols(1).md(2).build());
+        dashboardFactory.addContainer(new KokuDashboardGridContainer().cols(1).md(2));
 
-        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
-                .sourceUrl("services/customers/customers/dashboard/appointments")
-                .build());
-        dashboardFactory.addPanel(DashboardAsyncTextPanelDto.builder()
-                .sourceUrl("services/customers/customers/dashboard/topcustomers")
-                .build());
+        dashboardFactory.addPanel(
+                new KokuDashboardAsyncTextPanel().sourceUrl("services/customers/customers/dashboard/appointments"));
+        dashboardFactory.addPanel(
+                new KokuDashboardAsyncTextPanel().sourceUrl("services/customers/customers/dashboard/topcustomers"));
 
         dashboardFactory.endContainer();
 
-        dashboardFactory.addPanel(DashboardAsyncChartPanelDto.builder()
-                .chartUrl("services/customers/customers/dashboard/revenueschart")
-                .build());
+        dashboardFactory.addPanel(
+                new KokuDashboardAsyncChartPanel().chartUrl("services/customers/customers/dashboard/revenueschart"));
 
         return dashboardFactory.create();
     }

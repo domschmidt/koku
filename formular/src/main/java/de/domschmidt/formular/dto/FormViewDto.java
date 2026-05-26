@@ -1,7 +1,7 @@
 package de.domschmidt.formular.dto;
 
+import de.domschmidt.business_logic.api.BusinessRule;
 import de.domschmidt.formular.dto.content.IFormularContent;
-import de.domschmidt.koku.business_logic.dto.KokuBusinessRuleDto;
 import java.util.List;
 import lombok.Data;
 
@@ -9,6 +9,6 @@ import lombok.Data;
 public class FormViewDto {
 
     IFormularContent contentRoot;
-    List<KokuBusinessRuleDto> businessRules;
+    List<BusinessRule> businessRules;
     List<AbstractFormViewGlobalEventListenerDto> globalEventListeners;
 }

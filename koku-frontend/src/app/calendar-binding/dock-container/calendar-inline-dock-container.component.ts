@@ -87,8 +87,15 @@ export class CalendarInlineDockContainerComponent {
       }
 
       const afterNavigationUrlChange = () => {
-        const segments = this.router.url
-          .split('?')[0]
+        const router = this.router;
+        if (!router) {
+          throw new Error('Router not available');
+        }
+        const currentUrl = router.url.split('?')[0];
+        if (!currentUrl) {
+          throw new Error('Router url is empty');
+        }
+        const segments = currentUrl
           .split('/')
           .filter((value) => value !== '')
           .slice(

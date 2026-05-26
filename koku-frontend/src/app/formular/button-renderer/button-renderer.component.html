@@ -6,11 +6,8 @@
           <ng-container
             [ngComponentOutlet]="buttonComponent.componentType"
             [ndcDynamicInputs]="{
-              loading:
-                (submitting() && buttonRegister()[content.id].config.buttonType === 'SUBMIT') ||
-                buttonRegister()[content.id].loadingCauses.size > 0 ||
-                loading(),
-              disabled: submitting() || buttonRegister()[content.id].disabledCauses.size > 0,
+              loading: isButtonLoading(content.id),
+              disabled: isButtonDisabled(content.id),
             }"
             [ngComponentOutletNdcDynamicInputs]="inputBindings()"
             [ngComponentOutletNdcDynamicOutputs]="outputBindings()"
@@ -20,11 +17,8 @@
         <ng-container
           [ngComponentOutlet]="buttonComponent.componentType"
           [ndcDynamicInputs]="{
-            loading:
-              (submitting() && buttonRegister()[content.id].config.buttonType === 'SUBMIT') ||
-              buttonRegister()[content.id].loadingCauses.size > 0 ||
-              loading(),
-            disabled: submitting() || buttonRegister()[content.id].disabledCauses.size > 0,
+            loading: isButtonLoading(content.id),
+            disabled: isButtonDisabled(content.id),
           }"
           [ngComponentOutletNdcDynamicInputs]="inputBindings()"
           [ngComponentOutletNdcDynamicOutputs]="outputBindings()"

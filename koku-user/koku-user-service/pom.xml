@@ -111,6 +111,21 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
+            <artifactId>dashboard</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.domschmidt</groupId>
+            <artifactId>koku-dashboard</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.domschmidt</groupId>
+            <artifactId>koku-contracts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.domschmidt</groupId>
             <artifactId>list</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -120,7 +135,7 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>business-logic</artifactId>
+            <artifactId>koku-business-logic</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -131,11 +146,6 @@
         <dependency>
             <groupId>de.domschmidt</groupId>
             <artifactId>business-exception</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.domschmidt</groupId>
-            <artifactId>list-query</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

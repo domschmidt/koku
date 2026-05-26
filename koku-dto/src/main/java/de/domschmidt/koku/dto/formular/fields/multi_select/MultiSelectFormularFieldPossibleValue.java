@@ -1,7 +1,7 @@
 package de.domschmidt.koku.dto.formular.fields.multi_select;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import de.domschmidt.koku.dto.KokuColorEnum;
+import de.domschmidt.koku.contracts.dto.KokuColor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
@@ -18,6 +18,6 @@ public class MultiSelectFormularFieldPossibleValue {
 
     String text;
     Boolean disabled;
-    KokuColorEnum color;
+    KokuColor color;
     String category;
 }

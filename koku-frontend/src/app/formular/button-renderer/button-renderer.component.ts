@@ -35,10 +35,33 @@ export class ButtonRendererComponent {
     const contentSnapshot = this.content();
     if (contentSnapshot.id) {
       const fieldSnapshot = this.buttonRegister()[contentSnapshot.id];
+      if (!fieldSnapshot) {
+        throw new Error(`Field register lookup failed for id ${contentSnapshot.id}`);
+      }
       if (fieldSnapshot.buttonEventBus) {
         fieldSnapshot.buttonEventBus.next({ eventName, payload: data });
       }
     }
+  }
+
+  isButtonLoading(id: string) {
+    const registration = this.buttonRegister()[id];
+    if (!registration) {
+      throw new Error(`Button registration not found for '${id}'`);
+    }
+    return (
+      (this.submitting() && registration.config.buttonType === 'SUBMIT') ||
+      registration.loadingCauses.size > 0 ||
+      this.loading()
+    );
+  }
+
+  isButtonDisabled(id: string) {
+    const registration = this.buttonRegister()[id];
+    if (!registration) {
+      throw new Error(`Button registration not found for '${id}'`);
+    }
+    return this.submitting() || registration.disabledCauses.size > 0;
   }
 
   constructor() {

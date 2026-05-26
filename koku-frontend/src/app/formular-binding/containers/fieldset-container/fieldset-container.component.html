@@ -3,36 +3,40 @@
     @if (content.title; as title) {
       <legend class="fieldset-legend">{{ title }}</legend>
       @if (content.content; as contents) {
-        @if (content.id) {
-          @for (content of contents; track content.id) {
-            @if (contentSetup().fieldRegistry[content['@type']]) {
-              <div
-                field-renderer
-                [content]="fieldRegister()[content.id || ''].config"
-                [fieldRegister]="fieldRegister()"
-                [loading]="loading()"
-                [submitting]="submitting()"
-                [contentSetup]="contentSetup()"
-                [context]="context()"
-              ></div>
+        @for (contentItem of contents; track contentItem.id) {
+          @if (contentItem.id; as contentItemId) {
+            @if (contentSetup().fieldRegistry[contentItem['@type']]) {
+              @if (fieldRegister()[contentItemId]; as fieldRegistration) {
+                <div
+                  field-renderer
+                  [content]="fieldRegistration.config"
+                  [fieldRegister]="fieldRegister()"
+                  [loading]="loading()"
+                  [submitting]="submitting()"
+                  [contentSetup]="contentSetup()"
+                  [context]="context()"
+                ></div>
+              }
             }
 
-            @if (contentSetup().buttonRegistry[content['@type']]) {
-              <div
-                button-renderer
-                [content]="buttonRegister()[content.id || ''].config"
-                [buttonRegister]="buttonRegister()"
-                [loading]="loading()"
-                [submitting]="submitting()"
-                [contentSetup]="contentSetup()"
-                [buttonDockOutlet]="buttonDockOutlet()"
-              ></div>
+            @if (contentSetup().buttonRegistry[contentItem['@type']]) {
+              @if (buttonRegister()[contentItemId]; as buttonRegistration) {
+                <div
+                  button-renderer
+                  [content]="buttonRegistration.config"
+                  [buttonRegister]="buttonRegister()"
+                  [loading]="loading()"
+                  [submitting]="submitting()"
+                  [contentSetup]="contentSetup()"
+                  [buttonDockOutlet]="buttonDockOutlet()"
+                ></div>
+              }
             }
 
-            @if (contentSetup().containerRegistry[content['@type']]) {
+            @if (contentSetup().containerRegistry[contentItem['@type']]) {
               <div
                 container-renderer
-                [content]="$any(content)"
+                [content]="$any(contentItem)"
                 [fieldRegister]="fieldRegister()"
                 [containerRegister]="containerRegister()"
                 [buttonRegister]="buttonRegister()"
@@ -46,10 +50,10 @@
               ></div>
             }
 
-            @if (contentSetup().layoutRegistry[content['@type']]) {
+            @if (contentSetup().layoutRegistry[contentItem['@type']]) {
               <div
                 layout-renderer
-                [content]="$any(content)"
+                [content]="$any(contentItem)"
                 [layoutRegister]="layoutRegister()"
                 [loading]="loading()"
                 [submitting]="submitting()"

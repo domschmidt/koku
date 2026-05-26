@@ -48,7 +48,7 @@ const ROUNDED_MAPPING: Partial<Record<KokuDto.KokuRoundedEnum, string>> = {
   XL3: 'rounded-3xl',
   XL4: 'rounded-4xl',
 };
-const COLOR_MAPPING: Partial<Record<KokuDto.KokuColorEnum, string>> = {
+const COLOR_MAPPING: Partial<Record<KokuDto.KokuColor, string>> = {
   PRIMARY: 'bg-primary text-primary-content',
   SECONDARY: 'bg-secondary text-secondary-content',
   ACCENT: 'bg-accent text-accent-content',
@@ -385,7 +385,11 @@ const INLINE_CONTENT_REGISTRY: Partial<
         const mappedSourceParts: string[] = [];
         for (const currentRoutePathToMatch of inlineContent.sourceUrl.split('/')) {
           if (currentRoutePathToMatch.indexOf(':') === 0) {
-            mappedSourceParts.push(segmentMapping[currentRoutePathToMatch]);
+            const segmentMappingElement = segmentMapping[currentRoutePathToMatch];
+            if (segmentMappingElement === undefined) {
+              throw new Error(`Missing segment having name ${currentRoutePathToMatch}`);
+            }
+            mappedSourceParts.push(segmentMappingElement);
           } else {
             mappedSourceParts.push(currentRoutePathToMatch);
           }
@@ -631,7 +635,11 @@ const MODAL_REGISTRY: ModalContentSetup = {
         const mappedSourceParts: string[] = [];
         for (const currentRoutePathToMatch of modalContent.sourceUrl.split('/')) {
           if (currentRoutePathToMatch.indexOf(':') === 0) {
-            mappedSourceParts.push(segmentMapping[currentRoutePathToMatch]);
+            const segmentMappingElement = segmentMapping[currentRoutePathToMatch];
+            if (segmentMappingElement === undefined) {
+              throw new Error(`Missing segment having name ${currentRoutePathToMatch}`);
+            }
+            mappedSourceParts.push(segmentMappingElement);
           } else {
             mappedSourceParts.push(currentRoutePathToMatch);
           }

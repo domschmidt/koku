@@ -4,6 +4,8 @@ import { ToastService } from '../../../toast/toast.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subscription } from 'rxjs';
 import { DashboardTextPanelComponent } from './dashboard-text-panel.component';
+import { KokuDashboardAsyncTextPanel } from '../../../../types/generated/dashboard';
+import { KokuDashboardTextPanel } from '../../../../types/generated/dashboard';
 
 @Component({
   selector: 'dashboard-async-text-panel',
@@ -11,8 +13,8 @@ import { DashboardTextPanelComponent } from './dashboard-text-panel.component';
   templateUrl: './dashboard-async-text-panel.component.html',
 })
 export class DashboardAsyncTextPanelComponent implements OnChanges {
-  content = input.required<KokuDto.DashboardAsyncTextPanelDto>();
-  loadedContent = signal<KokuDto.DashboardTextPanelDto | null>(null);
+  content = input.required<KokuDashboardAsyncTextPanel>();
+  loadedContent = signal<KokuDashboardTextPanel | null>(null);
   httpClient = inject(HttpClient);
   toastService = inject(ToastService);
   destroyRef = inject(DestroyRef);
@@ -35,7 +37,7 @@ export class DashboardAsyncTextPanelComponent implements OnChanges {
     }
 
     this.lastContentSubscription = this.httpClient
-      .get<KokuDto.DashboardTextPanelDto>(contentSnapshot.sourceUrl)
+      .get<KokuDashboardTextPanel>(contentSnapshot.sourceUrl)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(
         (loadedContent) => {

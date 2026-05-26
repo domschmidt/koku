@@ -6,7 +6,7 @@
           @if (contentSetup().fieldRegistry[content['@type']]) {
             <div
               field-renderer
-              [content]="fieldRegister()[content.id].config"
+              [content]="getFieldConfig(content.id)"
               [fieldRegister]="fieldRegister()"
               [loading]="loading()"
               [submitting]="submitting()"
@@ -18,7 +18,7 @@
           @if (contentSetup().buttonRegistry[content['@type']]) {
             <div
               button-renderer
-              [content]="buttonRegister()[content.id || ''].config"
+              [content]="getButtonConfig(content.id)"
               [buttonRegister]="buttonRegister()"
               [loading]="loading()"
               [submitting]="submitting()"

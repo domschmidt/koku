@@ -18,11 +18,15 @@ export class ListItemComponent {
   contentSetup = input.required<ListContentSetup>();
 
   fieldEventBus: ListFieldEventBus = (key: string, eventName: string, payload: any) => {
+    const fieldInstance = this.register().fields[key];
+    if (!fieldInstance) {
+      throw new Error(`Unknown field reference: ${key}`);
+    }
     if (eventName === 'onInit') {
-      this.register().fields[key].instance = payload;
+      fieldInstance.instance = payload;
     }
     if (eventName === 'onChange') {
-      this.register().fields[key].value = payload;
+      fieldInstance.value = payload;
     }
   };
 }

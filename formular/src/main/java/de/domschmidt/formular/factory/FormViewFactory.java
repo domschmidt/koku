@@ -1,12 +1,12 @@
 package de.domschmidt.formular.factory;
 
+import de.domschmidt.business_logic.api.BusinessRule;
 import de.domschmidt.formular.dto.AbstractFormViewGlobalEventListenerDto;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.AbstractFormButton;
 import de.domschmidt.formular.dto.content.containers.AbstractFormContainer;
 import de.domschmidt.formular.dto.content.fields.AbstractFormField;
 import de.domschmidt.formular.dto.content.layouts.AbstractFormLayout;
-import de.domschmidt.koku.business_logic.dto.KokuBusinessRuleDto;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +20,7 @@ public class FormViewFactory {
     private final HashMap<String, AbstractFormContainer> containers = new HashMap<>();
     private final HashMap<String, AbstractFormButton> buttons = new HashMap<>();
     private final HashMap<String, AbstractFormLayout> layouts = new HashMap<>();
-    private final List<KokuBusinessRuleDto> businessRules = new ArrayList<>();
+    private final List<BusinessRule> businessRules = new ArrayList<>();
     private final List<AbstractFormViewGlobalEventListenerDto> globalEventListeners = new ArrayList<>();
 
     public FormViewFactory(final IFormViewContentIdGenerator idGenerator, final AbstractFormContainer rootContainer) {
@@ -43,8 +43,8 @@ public class FormViewFactory {
         this.buttons.put(button.getId(), button);
     }
 
-    public void addBusinessRule(final KokuBusinessRuleDto businessRule) {
-        businessRule.setId(this.idGenerator.generateUniqueId(businessRule.getId(), "field"));
+    public void addBusinessRule(final BusinessRule businessRule) {
+        businessRule.setId(this.idGenerator.generateUniqueId(businessRule.getId(), "business-rule"));
         this.businessRules.add(businessRule);
     }
 
@@ -71,6 +71,10 @@ public class FormViewFactory {
 
     public void addGlobalEventListener(final AbstractFormViewGlobalEventListenerDto listener) {
         this.globalEventListeners.add(listener);
+    }
+
+    protected String generateUniqueId(final String id, final String prefix) {
+        return this.idGenerator.generateUniqueId(id, prefix);
     }
 
     public FormViewDto create() {

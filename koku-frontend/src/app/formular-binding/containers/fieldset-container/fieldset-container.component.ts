@@ -34,4 +34,15 @@ export class FieldsetContainerComponent {
   buttonDockOutlet = input<OutletDirective>();
   context = input<Record<string, any>>();
   source = input<any>();
+
+  getFieldConfig(id: string | undefined) {
+    if (!id) {
+      throw new Error('Missing field content id');
+    }
+    const registration = this.fieldRegister()[id];
+    if (!registration) {
+      throw new Error(`Field registration not found for '${id}'`);
+    }
+    return registration.config;
+  }
 }

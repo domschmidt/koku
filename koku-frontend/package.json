@@ -4,7 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "prebuild": "npm run generate:openapi-types",
     "build": "ng build",
+    "generate:openapi-types": "npm run generate:openapi-types:dashboard && npm run generate:openapi-types:business-logic",
+    "generate:openapi-types:dashboard": "openapi-typescript ../koku-dashboard/src/main/openapi/koku-dashboard.yml -o src/types/generated/koku-dashboard.d.ts --root-types --root-types-no-schema-prefix",
+    "generate:openapi-types:business-logic": "openapi-typescript ../koku-business-logic/src/main/openapi/koku-business-logic.yml -o src/types/generated/koku-business-logic.d.ts --root-types --root-types-no-schema-prefix",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint"
@@ -66,6 +70,7 @@
     "karma-coverage": "~2.2.1",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.2.0",
+    "openapi-typescript": "^7.13.0",
     "postcss": "^8.5.8",
     "prettier": "^3.8.1",
     "typescript": "~5.9.3",

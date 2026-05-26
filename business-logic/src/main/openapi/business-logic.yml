@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: Business Logic Contract
+  version: 1.0.0
+  description: Generic declarative business logic contract for rules, references and executions.
+paths: {}
+components:
+  schemas:
+    BusinessRule:
+      type: object
+      description: Generic business rule. Implementations provide concrete references and execution types.
+      required:
+        - id
+        - type
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/BusinessRuleReference'
+        execution:
+          $ref: '#/components/schemas/BusinessRuleExecution'
+
+    BusinessRuleReference:
+      type: object
+      description: Generic reference to a source, target or runtime value used by a business rule.
+      required:
+        - type
+        - reference
+      discriminator:
+        propertyName: type
+      properties:
+        type:
+          type: string
+        reference:
+          type: string
+
+    BusinessRuleExecution:
+      type: object
+      description: Generic execution extension point. Concrete contracts define executable rule behavior.
+      required:
+        - type
+      discriminator:
+        propertyName: type
+      properties:
+        type:
+          type: string

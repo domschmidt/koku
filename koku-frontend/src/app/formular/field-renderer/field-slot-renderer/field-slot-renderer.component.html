@@ -1,19 +1,23 @@
 @if (content(); as content) {
   @if (contentSetup().fieldSlotRegistry[contentSlot()['@type']]; as fieldSlotComponent) {
-    @if (content.id && fieldSlotComponent) {
-      <ndc-dynamic
-        [ndcDynamicComponent]="fieldSlotComponent.componentType"
-        [ndcDynamicInputs]="{
-          name: content.id + '-' + slotName(),
-          disabled: submitting() || fieldRegister()[content.id].disabledCauses().size > 0,
-          required: fieldRegister()[content.id].requiredCauses().size > 0,
-          readonly: fieldRegister()[content.id].readonlyCauses().size > 0,
-          loading: loading() || fieldRegister()[content.id].loadingCauses().size > 0,
-        }"
-        [ngComponentOutletNdcDynamicInputs]="inputBindings()"
-        [ngComponentOutletNdcDynamicOutputs]="outputBindings()"
-      >
-      </ndc-dynamic>
+    @if (fieldSlotComponent) {
+      @if (content.id; as contentId) {
+        @if (fieldRegister()[contentId]; as fieldRegisterDef) {
+          <ndc-dynamic
+            [ndcDynamicComponent]="fieldSlotComponent.componentType"
+            [ndcDynamicInputs]="{
+              name: contentId + '-' + slotName(),
+              disabled: submitting() || fieldRegisterDef.disabledCauses().size > 0,
+              required: fieldRegisterDef.requiredCauses().size > 0,
+              readonly: fieldRegisterDef.readonlyCauses().size > 0,
+              loading: loading() || fieldRegisterDef.loadingCauses().size > 0,
+            }"
+            [ngComponentOutletNdcDynamicInputs]="inputBindings()"
+            [ngComponentOutletNdcDynamicOutputs]="outputBindings()"
+          >
+          </ndc-dynamic>
+        }
+      }
     }
   }
 }

@@ -3,25 +3,28 @@ import { DashboardContainerRendererComponent } from './container-renderer/dashbo
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../toast/toast.service';
 import { Observable, Subscription } from 'rxjs';
+import { KokuDashboardView } from '../../types/generated/dashboard';
+import { KokuDashboardPanel } from '../../types/generated/dashboard';
+import { KokuDashboardContainer } from '../../types/generated/dashboard';
 
 export interface DashboardContentSetup {
   containerRegistry: Partial<
     Record<
-      KokuDto.AbstractDashboardContainer['@type'] | string,
+      KokuDashboardContainer['type'] | string,
       {
         componentType: any;
-        inputBindings?(instance: any, content: KokuDto.AbstractDashboardContainer): Record<string, any>;
-        outputBindings?(instance: any, content: KokuDto.AbstractDashboardContainer): Record<string, any>;
+        inputBindings?(instance: any, content: KokuDashboardContainer): Record<string, any>;
+        outputBindings?(instance: any, content: KokuDashboardContainer): Record<string, any>;
       }
     >
   >;
   panelRegistry: Partial<
     Record<
-      KokuDto.AbstractDashboardPanel['@type'] | string,
+      KokuDashboardPanel['type'] | string,
       {
         componentType: any;
-        inputBindings?(instance: any, content: KokuDto.AbstractDashboardPanel): Record<string, any>;
-        outputBindings?(instance: any, content: KokuDto.AbstractDashboardPanel): Record<string, any>;
+        inputBindings?(instance: any, content: KokuDashboardPanel): Record<string, any>;
+        outputBindings?(instance: any, content: KokuDashboardPanel): Record<string, any>;
       }
     >
   >;
@@ -46,7 +49,7 @@ export const DASHBOARD_PLUGIN = new InjectionToken<DashboardPluginFactory | Dash
 export class DashboardComponent implements OnDestroy, OnChanges {
   dashboardUrl = input.required<string>();
   contentSetup = input.required<DashboardContentSetup>();
-  dashboardData = signal<KokuDto.DashboardViewDto | null>(null);
+  dashboardData = signal<KokuDashboardView | null>(null);
   private lastDashboardSubscription: Subscription | undefined;
 
   httpClient = inject(HttpClient);
@@ -70,7 +73,7 @@ export class DashboardComponent implements OnDestroy, OnChanges {
         if (this.lastDashboardSubscription && !this.lastDashboardSubscription.closed) {
           this.lastDashboardSubscription.unsubscribe();
         }
-        this.lastDashboardSubscription = this.httpClient.get<KokuDto.DashboardViewDto>(dashboardUrlSnapshot).subscribe({
+        this.lastDashboardSubscription = this.httpClient.get<KokuDashboardView>(dashboardUrlSnapshot).subscribe({
           next: (dashboardData) => {
             this.dashboardData.set(dashboardData);
           },

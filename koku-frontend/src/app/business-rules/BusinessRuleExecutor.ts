@@ -8,11 +8,12 @@ import { ModalService } from '../modal/modal.service';
 import { ModalContentSetup } from '../modal/modal.type';
 import { GLOBAL_EVENT_BUS } from '../events/global-events';
 import { UNIQUE_REF_GENERATOR } from '../utils/uniqueRef';
+import { components } from '../../types/generated/koku-business-logic';
 
 export interface BusinessRuleExecutorFieldInstance {
   value: WritableSignal<any>;
   fieldEventBus: BehaviorSubject<{
-    eventName: KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum;
+    eventName: components['schemas']['KokuBusinessRuleFieldReferenceListenerEvent'];
     payload?: any;
   } | null>;
   disabledCauses: WritableSignal<Set<string>>;
@@ -25,7 +26,7 @@ export type BusinessRuleExecutorFieldInstanceIndex = Record<string, BusinessRule
 
 class BusinessRuleExecutor {
   private readonly fastListenerRegistry: Partial<
-    Record<KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum, () => void>
+    Record<components['schemas']['KokuBusinessRuleFieldReferenceListenerEvent'], () => void>
   > = {};
 
   private loadingAnimationFields = new Set<BusinessRuleExecutorFieldInstance>([]);
@@ -36,8 +37,8 @@ class BusinessRuleExecutor {
   constructor(
     private httpClient: HttpClient,
     private modalService: ModalService,
-    private modalSetup: ModalContentSetup,
-    private config: KokuDto.KokuBusinessRuleDto,
+    private modalSetup: Partial<ModalContentSetup>,
+    private config: components['schemas']['KokuBusinessRule'],
     private fieldInstanceIndex: BusinessRuleExecutorFieldInstanceIndex,
   ) {
     console.log('Created BusinessRuleExecutor');
@@ -120,9 +121,9 @@ class BusinessRuleExecutor {
       this.asyncLoadingSubscription.unsubscribe();
     }
 
-    switch (this.config.execution['@type']) {
+    switch (this.config.execution.type) {
       case 'open-dialog-content': {
-        const castedExecution = this.config.execution as KokuDto.KokuBusinessRuleOpenDialogContentDto;
+        const castedExecution = this.config.execution;
 
         if (!castedExecution.content) {
           throw new Error('open-content content is not defined');
@@ -143,10 +144,9 @@ class BusinessRuleExecutor {
         });
 
         for (const currentCloseEventListener of castedExecution.closeEventListeners || []) {
-          switch (currentCloseEventListener['@type']) {
+          switch (currentCloseEventListener.type) {
             case 'global-event-listener': {
-              const castedCloseEventListener =
-                currentCloseEventListener as KokuDto.KokuBusinessRuleOpenContentCloseGlobalEventListenerDto;
+              const castedCloseEventListener = currentCloseEventListener;
 
               if (!castedCloseEventListener.eventName) {
                 throw new Error('Missing eventName in Listener');
@@ -162,14 +162,14 @@ class BusinessRuleExecutor {
               break;
             }
             default: {
-              throw new Error(`Unknown event listener type ${currentCloseEventListener['@type']}`);
+              throw new Error(`Unknown event listener type ${currentCloseEventListener.type}`);
             }
           }
         }
         break;
       }
       case 'call-http-endpoint': {
-        const castedExecution = this.config.execution as KokuDto.KokuBusinessRuleCallHttpEndpoint;
+        const castedExecution = this.config.execution;
 
         if (!castedExecution.method) {
           throw new Error('Call Http Endpoint Method is not defined');
@@ -235,7 +235,7 @@ class BusinessRuleExecutor {
       }
 
       switch (currentReference.resultUpdateMode) {
-        case 'ALWAYS': {
+        case 'always': {
           if (!currentReference.resultValuePath) {
             throw new Error('Reference resultValuePath not specified');
           }

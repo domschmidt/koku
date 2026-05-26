@@ -2,6 +2,7 @@ import { Component, input, output } from '@angular/core';
 import { FormularComponent, FormularContentSetup, FormularFieldOverride } from '../../formular/formular.component';
 import { OutletDirective } from '../../portal/outlet.directive';
 import { GLOBAL_EVENT_BUS } from '../../events/global-events';
+import { KokuBusinessRuleFormularContentSaveEvent } from '../../../types/generated/business-logic';
 
 @Component({
   selector: '[business-rules-formular-container],business-rules-formular-container',
@@ -15,7 +16,7 @@ export class BusinessRulesFormularContainerComponent {
   submitUrl = input<string>();
   maxWidth = input<string | number>();
   submitMethod = input<string>();
-  onSaveEvents = input<KokuDto.AbstractKokuBusinessRuleFormularContentSaveEventDto[]>([]);
+  onSaveEvents = input<KokuBusinessRuleFormularContentSaveEvent[]>([]);
   fieldOverrides = input<FormularFieldOverride[]>([]);
   contentSetup = input.required<FormularContentSetup>();
   buttonDockOutlet = input<OutletDirective>();
@@ -30,10 +31,9 @@ export class BusinessRulesFormularContainerComponent {
   onFormularSave(payload: any) {
     const savedSnapshot = this.onSaveEvents();
     for (const currentSaveEventJob of savedSnapshot || []) {
-      switch (currentSaveEventJob['@type']) {
+      switch (currentSaveEventJob.type) {
         case 'propagate-global-event': {
-          const castedEventJob =
-            currentSaveEventJob as KokuDto.KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto;
+          const castedEventJob = currentSaveEventJob;
           if (!castedEventJob.eventName) {
             throw new Error(`Missing eventName in saveEvent`);
           }
@@ -41,7 +41,7 @@ export class BusinessRulesFormularContainerComponent {
           break;
         }
         default: {
-          throw new Error(`Unknown saved event type ${currentSaveEventJob['@type']}`);
+          throw new Error(`Unknown saved event type ${currentSaveEventJob.type}`);
         }
       }
     }

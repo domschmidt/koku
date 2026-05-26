@@ -1,5 +1,5 @@
 @if (content(); as content) {
-  @if (contentSetup().containerRegistry[content['@type']]; as containerMapping) {
+  @if (contentSetup().containerRegistry[content['type']]; as containerMapping) {
     <ng-container
       [ngComponentOutlet]="containerMapping.componentType"
       [ngComponentOutletNdcDynamicInputs]="inputBindings()"

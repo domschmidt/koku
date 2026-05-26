@@ -31,6 +31,7 @@
     <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
     <apt-maven-plugin.version>1.1.3</apt-maven-plugin.version>
     <maven-assembly-plugin.version>3.8.0</maven-assembly-plugin.version>
+    <openapi-generator-maven-plugin.version>7.22.0</openapi-generator-maven-plugin.version>
     <typescript-generator-maven-plugin.version>3.2.1263</typescript-generator-maven-plugin.version>
 
     <postgresql.version>42.7.10</postgresql.version>
@@ -58,12 +59,15 @@
     <module>koku-file</module>
     <module>formular</module>
     <module>business-logic</module>
+    <module>koku-business-logic</module>
+    <module>koku-contracts</module>
     <module>business-exception</module>
     <module>list</module>
     <module>list-query</module>
     <module>calendar</module>
     <module>chart</module>
     <module>dashboard</module>
+    <module>koku-dashboard</module>
     <module>migrate</module>
   </modules>
 

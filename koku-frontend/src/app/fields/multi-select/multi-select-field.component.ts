@@ -121,6 +121,9 @@ export class MultiSelectFieldComponent {
     event.stopPropagation();
     const selectionIdsSnapshot = this.selectionIds();
     const deletedId = selectionIdsSnapshot[currentSelectionIdx];
+    if (!deletedId) {
+      throw new Error(`Selection id not found at position ${currentSelectionIdx}`);
+    }
     selectionIdsSnapshot.splice(currentSelectionIdx, 1);
     this.selectionIds.set(selectionIdsSnapshot);
     this.filteredPossibleValues.set(this.filterPossibleValues(selectionIdsSnapshot));
@@ -134,6 +137,9 @@ export class MultiSelectFieldComponent {
   drop(event: CdkDragDrop<string[]>) {
     const selectionIdsSnapshot = this.selectionIds();
     const movedId = selectionIdsSnapshot[event.currentIndex];
+    if (!movedId) {
+      throw new Error(`Selection id not found at position ${event.currentIndex}`);
+    }
     moveItemInArray(selectionIdsSnapshot, event.previousIndex, event.currentIndex);
     this.selectionIds.set(selectionIdsSnapshot);
     this.moveSelectionRequested.emit({

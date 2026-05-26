@@ -3,6 +3,7 @@ import { SignalComponentIoModule } from 'ng-dynamic-component/signal-component-i
 import { ComponentOutletInjectorModule, DynamicComponent, DynamicIoDirective } from 'ng-dynamic-component';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { DashboardContentSetup } from '../dashboard.component';
+import { KokuDashboardPanel } from '../../../types/generated/dashboard';
 
 @Component({
   selector: '[dashboard-panel-renderer],dashboard-panel-renderer',
@@ -10,7 +11,7 @@ import { DashboardContentSetup } from '../dashboard.component';
   templateUrl: './dashboard-panel-renderer.component.html',
 })
 export class DashboardPanelRendererComponent {
-  content = input.required<KokuDto.AbstractDashboardPanel>();
+  content = input.required<KokuDashboardPanel>();
 
   inputBindings = signal<Record<string, any>>({});
   outputBindings = signal<Record<string, any>>({});
@@ -20,7 +21,7 @@ export class DashboardPanelRendererComponent {
   constructor() {
     const updateBindings = () => {
       const contentSnapshot = this.content();
-      const contentSetup = this.contentSetup().panelRegistry[contentSnapshot['@type']];
+      const contentSetup = this.contentSetup().panelRegistry[contentSnapshot['type']];
       if (contentSetup) {
         let inputBindings = {};
         if (contentSetup.inputBindings) {

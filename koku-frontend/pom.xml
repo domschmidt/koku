@@ -55,9 +55,9 @@
             <pattern>de.domschmidt.table.dto.**</pattern>
             <pattern>de.domschmidt.formular.dto.**</pattern>
             <pattern>de.domschmidt.calendar.dto.**</pattern>
-            <pattern>de.domschmidt.dashboard.dto.**</pattern>
+            <pattern>de.domschmidt.koku.contracts.dto.**</pattern>
+            <pattern>de.domschmidt.dashboard.contract.dto.**</pattern>
             <pattern>de.domschmidt.chart.dto.**</pattern>
-            <pattern>de.domschmidt.koku.business_logic.dto.**</pattern>
             <pattern>de.domschmidt.koku.business_exception.dto.**</pattern>
           </classPatterns>
           <excludeClassPatterns>

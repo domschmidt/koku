@@ -53,4 +53,26 @@ export class ConditionalContainerComponent {
     }
     this.matchesPositively.set(result);
   });
+
+  getFieldConfig(id: string | undefined) {
+    if (!id) {
+      throw new Error('Missing field content id');
+    }
+    const registration = this.fieldRegister()[id];
+    if (!registration) {
+      throw new Error(`Field registration not found for '${id}'`);
+    }
+    return registration.config;
+  }
+
+  getButtonConfig(id: string | undefined) {
+    if (!id) {
+      throw new Error('Missing button content id');
+    }
+    const registration = this.buttonRegister()[id];
+    if (!registration) {
+      throw new Error(`Button registration not found for '${id}'`);
+    }
+    return registration.config;
+  }
 }

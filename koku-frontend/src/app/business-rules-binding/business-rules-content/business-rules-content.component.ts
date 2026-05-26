@@ -3,6 +3,7 @@ import { SignalComponentIoModule } from 'ng-dynamic-component/signal-component-i
 import { ComponentOutletInjectorModule, DynamicComponent, DynamicIoDirective } from 'ng-dynamic-component';
 import { OutletDirective } from '../../portal/outlet.directive';
 import { BusinessRulesContentRegistry } from '../registry';
+import { KokuBusinessRuleContent } from '../../../types/generated/business-logic';
 
 @Component({
   selector: '[business-rules-content],business-rules-content',
@@ -11,7 +12,7 @@ import { BusinessRulesContentRegistry } from '../registry';
   styleUrl: './business-rules-content.component.css',
 })
 export class BusinessRulesContentComponent {
-  content = input.required<KokuDto.AbstractKokuBusinessRuleContentDto>();
+  content = input.required<KokuBusinessRuleContent>();
   loading = input(false, { transform: booleanAttribute });
   contentSetup = input.required<BusinessRulesContentRegistry>();
   urlSegments = input<Record<string, string> | null>(null);

@@ -36,6 +36,14 @@ import { LIST_CONTENT_SETUP } from './list-binding/registry';
 import { CalendarInlineHeaderContainerComponent } from './calendar-binding/header-container/calendar-inline-header-container.component';
 import { CalendarInlineListContainerComponent } from './calendar-binding/list-container/calendar-inline-list-container.component';
 import { CALENDAR_CONTENT_SETUP } from './calendar-binding/registry';
+import {
+  KokuBusinessRule,
+  KokuBusinessRuleFieldReferenceListenerEvent,
+} from '../types/generated/business-logic';
+
+type KokuFormViewDto = KokuDto.FormViewDto & {
+  businessRules?: KokuBusinessRule[];
+};
 
 dayjs.extend(dayOfYear);
 
@@ -43,25 +51,25 @@ class BusinessRulePlugin implements FormularPlugin {
   private businessRuleExecutorsInitialized = false;
   private sourceInitialInitialization = true;
   private businessRuleEventNameMapping: Partial<
-    Record<FieldEvent, KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum>
+    Record<FieldEvent, KokuBusinessRuleFieldReferenceListenerEvent>
   > = {
-    onChange: 'CHANGE',
-    onInput: 'INPUT',
-    onBlur: 'BLUR',
-    onFocus: 'FOCUS',
-    onInit: 'INIT',
-    onClickAppendOuter: 'CLICK_APPEND_OUTER',
-    onBlurAppendOuter: 'BLUR_APPEND_OUTER',
-    onFocusAppendOuter: 'FOCUS_APPEND_OUTER',
-    onClickAppendInner: 'CLICK_APPEND_INNER',
-    onBlurAppendInner: 'BLUR_APPEND_INNER',
-    onFocusAppendInner: 'FOCUS_APPEND_INNER',
-    onClickPrependInner: 'CLICK_PREPEND_INNER',
-    onBlurPrependInner: 'BLUR_PREPEND_INNER',
-    onFocusPrependInner: 'FOCUS_PREPEND_INNER',
-    onClickPrependOuter: 'CLICK_PREPEND_OUTER',
-    onBlurPrependOuter: 'BLUR_PREPEND_OUTER',
-    onFocusPrependOuter: 'FOCUS_PREPEND_OUTER',
+    onChange: 'change',
+    onInput: 'input',
+    onBlur: 'blur',
+    onFocus: 'focus',
+    onInit: 'init',
+    onClickAppendOuter: 'click-append-outer',
+    onBlurAppendOuter: 'blur-append-outer',
+    onFocusAppendOuter: 'focus-append-outer',
+    onClickAppendInner: 'click-append-inner',
+    onBlurAppendInner: 'blur-append-inner',
+    onFocusAppendInner: 'focus-append-inner',
+    onClickPrependInner: 'click-prepend-inner',
+    onBlurPrependInner: 'blur-prepend-inner',
+    onFocusPrependInner: 'focus-prepend-inner',
+    onClickPrependOuter: 'click-prepend-outer',
+    onBlurPrependOuter: 'blur-prepend-outer',
+    onFocusPrependOuter: 'focus-prepend-outer',
   };
   private registeredBusinessRuleExecutors: BusinessRuleExecutor[] = [];
 
@@ -71,12 +79,13 @@ class BusinessRulePlugin implements FormularPlugin {
     private formularInstance: FormularComponent,
   ) {}
 
-  onFormularLoaded(formularData: KokuDto.FormViewDto): void {
+  onFormularLoaded(formularData: KokuFormViewDto): void {
     if (!this.businessRuleExecutorsInitialized) {
       this.businessRuleExecutorsInitialized = true;
       for (const currentBusinessRule of formularData.businessRules || []) {
+        const kokuBusinessRule = currentBusinessRule;
         const businessRuleFields: BusinessRuleExecutorFieldInstanceIndex = {};
-        for (const currentReference of currentBusinessRule.references || []) {
+        for (const currentReference of kokuBusinessRule.references || []) {
           if (!currentReference.reference) {
             throw new Error('Unexpected reference');
           }
@@ -86,7 +95,7 @@ class BusinessRulePlugin implements FormularPlugin {
           }
 
           const businessRuleEventBus = new BehaviorSubject<{
-            eventName: KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum;
+            eventName: KokuBusinessRuleFieldReferenceListenerEvent;
             payload?: any;
           } | null>(null);
           lookupField.fieldEventBus.subscribe((value) => {
@@ -112,7 +121,7 @@ class BusinessRulePlugin implements FormularPlugin {
             this.httpClient,
             this.modalService,
             BUSINESS_RULES_CONTENT_SETUP.modalContentRegistry,
-            currentBusinessRule,
+            kokuBusinessRule,
             businessRuleFields,
           ),
         );
@@ -181,6 +190,9 @@ class GlobalEventListenerPlugin implements FormularPlugin {
                 castedEventListener.configMapping || {},
               )) {
                 const registeredField = this.formularInstance.fieldRegister()[fieldRef];
+                if (!registeredField) {
+                  throw new Error(`Field registration not found for '${fieldRef}'`);
+                }
                 switch ((currentMappingDefinition.valueMapping || {})['@type']) {
                   case 'append-list': {
                     const castedMappingDefinition =
@@ -303,6 +315,9 @@ class GlobalEventListenerPlugin implements FormularPlugin {
                 }
 
                 const fieldRegisterField = fieldRegisterSnapshot[currentFieldId];
+                if (!fieldRegisterField) {
+                  throw new Error(`Field registration not found for '${currentFieldId}'`);
+                }
                 let newValue;
                 switch (reference['@type']) {
                   case 'field-reference': {
@@ -937,7 +952,11 @@ class CalendarUserSelectActionPlugin implements CalendarPlugin {
                   const mappedSourceParts: string[] = [];
                   for (const currentRoutePathToMatch of inlineContent.sourceUrl.split('/')) {
                     if (currentRoutePathToMatch.indexOf(':') === 0) {
-                      mappedSourceParts.push(segmentMapping[currentRoutePathToMatch]);
+                      const mappedSegment = segmentMapping[currentRoutePathToMatch];
+                      if (!mappedSegment) {
+                        throw new Error(`Missing route segment mapping for '${currentRoutePathToMatch}'`);
+                      }
+                      mappedSourceParts.push(mappedSegment);
                     } else {
                       mappedSourceParts.push(currentRoutePathToMatch);
                     }

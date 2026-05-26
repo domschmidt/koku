@@ -10,7 +10,11 @@ const getEffectiveScale = (element: HTMLElement | null) => {
     const style = window.getComputedStyle(element);
     const transform = style.transform;
     if (transform && transform !== 'none') {
-      const localScale = parseFloat(transform.match(/matrix\((.+)\)/)?.[1].split(', ')[3] || '1');
+      const matrixValues = transform.match(/matrix\((.+)\)/)?.[1];
+      if (!matrixValues) {
+        throw new Error('Unable to parse signature field transform matrix');
+      }
+      const localScale = parseFloat(matrixValues.split(', ')[3] || '1');
       scale *= localScale;
     }
     element = element.parentElement;

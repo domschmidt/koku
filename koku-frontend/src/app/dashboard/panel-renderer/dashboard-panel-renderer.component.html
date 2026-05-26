@@ -1,6 +1,6 @@
 @if (content(); as content) {
-  @if (contentSetup().panelRegistry[content['@type']]; as panel) {
-    @if (content.id) {
+  @if (contentSetup().panelRegistry[content['type']]; as panel) {
+    @if (content['id']) {
       <ndc-dynamic
         [ndcDynamicComponent]="panel.componentType"
         [ndcDynamicInputs]="{}"

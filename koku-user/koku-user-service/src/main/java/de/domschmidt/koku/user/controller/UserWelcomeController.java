@@ -1,17 +1,16 @@
 package de.domschmidt.koku.user.controller;
 
-import de.domschmidt.dashboard.dto.DashboardViewDto;
-import de.domschmidt.dashboard.factory.DashboardViewFactory;
-import de.domschmidt.dashboard.factory.DefaultDashboardViewContentIdGenerator;
-import de.domschmidt.koku.dto.KokuColorEnum;
+import de.domschmidt.koku.contracts.dto.KokuColor;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardAppointmentsPanel;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardAppointmentsPanelListSource;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardGridContainer;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardTextPanel;
+import de.domschmidt.koku.dashboard.contract.dto.KokuDashboardView;
+import de.domschmidt.koku.dashboard.factory.DefaultDashboardViewContentIdGenerator;
+import de.domschmidt.koku.dashboard.factory.KokuDashboardViewFactory;
 import de.domschmidt.koku.dto.customer.KokuCustomerAppointmentDto;
 import de.domschmidt.koku.dto.customer.KokuCustomerDto;
-import de.domschmidt.koku.dto.dashboard.containers.grid.DashboardGridContainerDto;
-import de.domschmidt.koku.dto.dashboard.panels.calendar.DashboardAppointmentsPanelDto;
-import de.domschmidt.koku.dto.dashboard.panels.calendar.DashboardAppointmentsPanelListSourceDto;
-import de.domschmidt.koku.dto.dashboard.panels.text.DashboardTextPanelDto;
 import de.domschmidt.koku.dto.user.KokuUserAppointmentDto;
-import de.domschmidt.listquery.dto.request.EnumSearchOperatorHint;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -30,30 +29,29 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserWelcomeController {
 
     @GetMapping()
-    public DashboardViewDto getDashboardView(@AuthenticationPrincipal Jwt jwt) {
-        final DashboardViewFactory dashboardFactory = new DashboardViewFactory(
+    public KokuDashboardView getDashboardView(@AuthenticationPrincipal Jwt jwt) {
+        final KokuDashboardViewFactory dashboardFactory = new KokuDashboardViewFactory(
                 new DefaultDashboardViewContentIdGenerator(),
-                DashboardGridContainerDto.builder().cols(1).maxWidthInPx(800).build());
+                new KokuDashboardGridContainer().cols(1).maxWidthInPx(800));
 
-        dashboardFactory.addPanel(DashboardTextPanelDto.builder()
+        dashboardFactory.addPanel(new KokuDashboardTextPanel()
                 .headline(String.format("Willkommen zurück, %s! ✨", jwt.getClaimAsString("name")))
-                .color(KokuColorEnum.PINK)
-                .build());
+                .color(KokuColor.PINK));
 
-        final List<DashboardAppointmentsPanelListSourceDto> appointmentListSources = List.of(
-                DashboardAppointmentsPanelListSourceDto.builder()
+        final List<KokuDashboardAppointmentsPanelListSource> appointmentListSources = List.of(
+                new KokuDashboardAppointmentsPanelListSource()
                         .sourceUrl("/services/customers/customers/query")
                         .idPath(KokuCustomerDto.Fields.id)
                         .startDateFieldSelectionPath(KokuCustomerDto.Fields.birthday)
                         .endDateFieldSelectionPath(KokuCustomerDto.Fields.birthday)
-                        .searchOperatorHint(EnumSearchOperatorHint.YEARLY_RECURRING)
+                        .searchOperatorHint(
+                                KokuDashboardAppointmentsPanelListSource.SearchOperatorHintEnum.YEARLY_RECURRING)
                         .textFieldSelectionPath(KokuCustomerDto.Fields.fullNameWithOnFirstNameBasis)
                         .sourceItemText("Geburtstag")
-                        .sourceItemColor(KokuColorEnum.YELLOW)
+                        .sourceItemColor(KokuColor.YELLOW)
                         .allDay(true)
-                        .deletedFieldSelectionPath(KokuCustomerDto.Fields.deleted)
-                        .build(),
-                DashboardAppointmentsPanelListSourceDto.builder()
+                        .deletedFieldSelectionPath(KokuCustomerDto.Fields.deleted),
+                new KokuDashboardAppointmentsPanelListSource()
                         .sourceUrl("/services/customers/customers/appointments/query")
                         .idPath(KokuCustomerAppointmentDto.Fields.id)
                         .startDateFieldSelectionPath(KokuCustomerAppointmentDto.Fields.date)
@@ -61,13 +59,12 @@ public class UserWelcomeController {
                         .startTimeFieldSelectionPath(KokuCustomerAppointmentDto.Fields.time)
                         .endTimeFieldSelectionPath(KokuCustomerAppointmentDto.Fields.time)
                         .sourceItemText("Kundentermin")
-                        .sourceItemColor(KokuColorEnum.BLUE)
+                        .sourceItemColor(KokuColor.BLUE)
                         .textFieldSelectionPath(KokuCustomerAppointmentDto.Fields.customerName)
                         .notesTextFieldSelectionPath(KokuCustomerAppointmentDto.Fields.additionalInfo)
                         .userIdFieldSelectionPath(KokuCustomerAppointmentDto.Fields.userId)
-                        .deletedFieldSelectionPath(KokuCustomerAppointmentDto.Fields.deleted)
-                        .build(),
-                DashboardAppointmentsPanelListSourceDto.builder()
+                        .deletedFieldSelectionPath(KokuCustomerAppointmentDto.Fields.deleted),
+                new KokuDashboardAppointmentsPanelListSource()
                         .sourceUrl("/services/users/users/appointments/query")
                         .idPath(KokuUserAppointmentDto.Fields.id)
                         .startDateFieldSelectionPath(KokuUserAppointmentDto.Fields.startDate)
@@ -78,30 +75,26 @@ public class UserWelcomeController {
                         .userIdFieldSelectionPath(KokuUserAppointmentDto.Fields.userId)
                         .deletedFieldSelectionPath(KokuUserAppointmentDto.Fields.deleted)
                         .sourceItemText("Privater Termin")
-                        .sourceItemColor(KokuColorEnum.GREEN)
-                        .build());
+                        .sourceItemColor(KokuColor.GREEN));
         final LocalDate now = LocalDate.now();
-        dashboardFactory.addPanel(DashboardAppointmentsPanelDto.builder()
+        dashboardFactory.addPanel(new KokuDashboardAppointmentsPanel()
                 .headline("Heutige Termine")
                 .emptyMessage("Keine Termine")
                 .start(now.atTime(LocalTime.MIN))
                 .end(now.atTime(LocalTime.MAX))
-                .listSources(appointmentListSources)
-                .build());
-        dashboardFactory.addPanel(DashboardAppointmentsPanelDto.builder()
+                .listSources(appointmentListSources));
+        dashboardFactory.addPanel(new KokuDashboardAppointmentsPanel()
                 .headline("Anstehende Termine für Morgen")
                 .emptyMessage("Keine Termine")
                 .start(now.plusDays(1).atTime(LocalTime.MIN))
                 .end(now.plusDays(1).atTime(LocalTime.MAX))
-                .listSources(appointmentListSources)
-                .build());
-        dashboardFactory.addPanel(DashboardAppointmentsPanelDto.builder()
+                .listSources(appointmentListSources));
+        dashboardFactory.addPanel(new KokuDashboardAppointmentsPanel()
                 .headline("Anstehende Termine für Übermorgen")
                 .emptyMessage("Keine Termine")
                 .start(now.plusDays(2).atTime(LocalTime.MIN))
                 .end(now.plusDays(2).atTime(LocalTime.MAX))
-                .listSources(appointmentListSources)
-                .build());
+                .listSources(appointmentListSources));
 
         return dashboardFactory.create();
     }

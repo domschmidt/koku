@@ -1,4 +1,23 @@
 import { Component, computed, input } from '@angular/core';
+import {
+  KokuColor,
+  KokuDashboardTextPanel,
+  KokuDashboardTextPanelExplanationItem,
+  KokuDashboardTextPanelProgressDetails,
+} from '../../../../types/generated/dashboard';
+
+type KokuDashboardTextPanelViewModel = KokuDashboardTextPanel & {
+  _cardColor?: string;
+  _topHeadlineColor?: string;
+  _headlineColor?: string;
+  _subHeadlineColor?: string;
+  _progressColor?: string;
+  _progressBarColor?: string;
+  progressDetails?: (KokuDashboardTextPanelProgressDetails & {
+    _headlineColor?: string;
+  })[];
+  explanations?: KokuDashboardTextPanelExplanationItem[];
+};
 
 @Component({
   selector: 'dashboard-text-panel',
@@ -6,21 +25,10 @@ import { Component, computed, input } from '@angular/core';
   templateUrl: './dashboard-text-panel.component.html',
 })
 export class DashboardTextPanelComponent {
-  content = input.required<KokuDto.DashboardTextPanelDto>();
+  content = input.required<KokuDashboardTextPanel>();
   contentWithColors = computed(() => {
     const contentSnapshot = this.content();
-    let result: KokuDto.DashboardTextPanelDto & {
-      _cardColor?: string;
-      _topHeadlineColor?: string;
-      _headlineColor?: string;
-      _subHeadlineColor?: string;
-      _progressColor?: string;
-      _progressBarColor?: string;
-      progressDetails?: KokuDto.DashboardTextPanelProgressDetailsDto &
-        {
-          _headlineColor?: string;
-        }[];
-    } = {
+    let result: KokuDashboardTextPanelViewModel = {
       ...contentSnapshot,
     };
     switch (contentSnapshot.color) {
@@ -549,7 +557,7 @@ export class DashboardTextPanelComponent {
     return result;
   });
 
-  private getProgressDetailHeadlineColor(headlineColor: KokuDto.KokuColorEnum | undefined) {
+  private getProgressDetailHeadlineColor(headlineColor: KokuColor | undefined) {
     switch (headlineColor) {
       case 'PRIMARY': {
         return 'text-primary-500 dark:text-primary-300';

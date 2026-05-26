@@ -39,25 +39,18 @@ export interface RenderedModalButtonType extends ModalButtonType {
 }
 
 interface ModalDynamicContent {
-  '@type': string;
+  type?: string;
+  '@type'?: string;
 
   [key: string]: any;
 }
 
 type ModalContentSetup = Record<
-  ModalDynamicContent['@type'],
+  string,
   {
     componentType: any;
-    inputBindings?(
-      instance: ModalComponent,
-      modal: RenderedModalType,
-      content: ModalDynamicContent,
-    ): Record<string, any>;
-    outputBindings?(
-      instance: ModalComponent,
-      modal: RenderedModalType,
-      content: ModalDynamicContent,
-    ): Record<string, any>;
+    inputBindings?(instance: ModalComponent, modal: RenderedModalType, content: any): Record<string, any>;
+    outputBindings?(instance: ModalComponent, modal: RenderedModalType, content: any): Record<string, any>;
   }
 >;
 

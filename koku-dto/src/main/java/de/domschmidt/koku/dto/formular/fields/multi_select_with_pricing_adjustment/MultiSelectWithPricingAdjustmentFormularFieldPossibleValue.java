@@ -1,6 +1,6 @@
 package de.domschmidt.koku.dto.formular.fields.multi_select_with_pricing_adjustment;
 
-import de.domschmidt.koku.dto.KokuColorEnum;
+import de.domschmidt.koku.contracts.dto.KokuColor;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +13,6 @@ public class MultiSelectWithPricingAdjustmentFormularFieldPossibleValue {
     String text;
     Boolean disabled;
     BigDecimal defaultPrice;
-    KokuColorEnum color;
+    KokuColor color;
     String category;
 }
