@@ -306,13 +306,13 @@ export class CalendarComponent implements OnDestroy {
 
   constructor() {
     toObservable(this.config).subscribe((config) => {
-      let persistedCalendarSettings: CalendarPersistedSettings = {};
+      let persistedCalendarSettings: CalendarPersistedSettings;
       try {
         persistedCalendarSettings = JSON.parse(
           localStorage.getItem(`calendar-settings-${this.config().id}`) || '{}',
         ) as CalendarPersistedSettings;
-      } finally {
-        /* empty */
+      } catch {
+        persistedCalendarSettings = {};
       }
       this.hiddenSources.set(new Set(persistedCalendarSettings.hiddenSources || []));
       this.viewMode.set(persistedCalendarSettings.viewMode || 'MONTH');
