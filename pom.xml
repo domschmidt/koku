@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.6</version>
     <relativePath/>
   </parent>
 
@@ -33,8 +33,8 @@
     <maven-assembly-plugin.version>3.8.0</maven-assembly-plugin.version>
     <typescript-generator-maven-plugin.version>3.2.1263</typescript-generator-maven-plugin.version>
 
-    <postgresql.version>42.7.10</postgresql.version>
-    <lombok.version>1.18.42</lombok.version>
+    <postgresql.version>42.7.11</postgresql.version>
+    <lombok.version>1.18.46</lombok.version>
     <ez-vcard.version>0.12.2</ez-vcard.version>
     <commons-io.version>2.21.0</commons-io.version>
     <commons-text.version>1.15.0</commons-text.version>
