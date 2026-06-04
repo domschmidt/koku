@@ -1,3 +1,10 @@
+# [2.5.0](https://github.com/domschmidt/koku/compare/v2.4.3...v2.5.0) (2026-06-04)
+
+
+### Features
+
+* replace time, month, week, daypickers ([d711d4a](https://github.com/domschmidt/koku/commit/d711d4a3b222b13400bcb29d51d3a97c74a27688))
+
 ## [2.4.3](https://github.com/domschmidt/koku/compare/v2.4.2...v2.4.3) (2026-05-23)
 
 
