@@ -1,3 +1,10 @@
+## [2.5.1](https://github.com/domschmidt/koku/compare/v2.5.0...v2.5.1) (2026-06-04)
+
+
+### Bug Fixes
+
+* update all deps ([34a60a6](https://github.com/domschmidt/koku/commit/34a60a625a26d10c771aaadc70b1b19026d9abb2))
+
 # [2.5.0](https://github.com/domschmidt/koku/compare/v2.4.3...v2.5.0) (2026-06-04)
 
 
