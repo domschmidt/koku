@@ -2,38 +2,51 @@
   <progress class="progress w-full h-[1px] flex" [class.invisible]="!loading()"></progress>
 
   <div class="flex justify-between w-full left-0 right-0 m-auto p-2 bg-base-100">
-    <div class="join min-w-58">
-      <button class="btn join-item" (click)="calendarComponent()?.getApi()?.prev()">«</button>
+    <div class="min-w-58">
       @switch (viewMode()) {
         @case ('DAY') {
-          <input
-            class="input join-item"
-            type="date"
+          <date-input-field
             placeholder="Datum"
-            (change)="dateChanged($event)"
             [value]="formatDate(currentStartDate(), viewMode())"
-          />
+            (changed)="dateChanged($event)"
+          >
+            <ng-container ngProjectAs="prepend-outer">
+              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.prev()">«</button>
+            </ng-container>
+            <ng-container ngProjectAs="append-outer">
+              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.next()">»</button>
+            </ng-container>
+          </date-input-field>
         }
         @case ('WEEK') {
-          <input
-            class="input join-item"
-            type="week"
+          <week-input-field
             placeholder="Woche"
-            (change)="dateChanged($event)"
             [value]="formatDate(currentStartDate(), viewMode())"
-          />
+            (changed)="dateChanged($event)"
+          >
+            <ng-container ngProjectAs="prepend-outer">
+              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.prev()">«</button>
+            </ng-container>
+            <ng-container ngProjectAs="append-outer">
+              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.next()">»</button>
+            </ng-container>
+          </week-input-field>
         }
         @case ('MONTH') {
-          <input
-            class="input join-item"
-            type="month"
+          <month-input-field
             placeholder="Monat"
-            (change)="dateChanged($event)"
             [value]="formatDate(currentStartDate(), viewMode())"
-          />
+            (changed)="dateChanged($event)"
+          >
+            <ng-container ngProjectAs="prepend-outer">
+              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.prev()">«</button>
+            </ng-container>
+            <ng-container ngProjectAs="append-outer">
+              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.next()">»</button>
+            </ng-container>
+          </month-input-field>
         }
       }
-      <button class="btn join-item" (click)="calendarComponent()?.getApi()?.next()">»</button>
     </div>
 
     <div class="flex gap-2 items-center">
@@ -65,7 +78,7 @@
       </div>
     </div>
   </div>
-  <div class="flex-1 overflow-auto pb-22">
+  <div class="relative z-0 flex-1 overflow-auto pb-22">
     <full-calendar [options]="fullCalendarOptions()" #calendar></full-calendar>
   </div>
 

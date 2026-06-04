@@ -5,12 +5,8 @@ public enum EnumInputChartFilterType {
     PASSWORD,
     EMAIL,
     NUMBER,
-    DATE,
     DATETIME,
-    WEEK,
-    MONTH,
     TEL,
     URL,
     SEARCH,
-    TIME,
 }

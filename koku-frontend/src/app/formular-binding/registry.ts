@@ -5,6 +5,10 @@ import { DividerComponent } from './layouts/divider/divider.component';
 import { GridContainerComponent } from './containers/grid-container/grid-container.component';
 import { LayoutRendererComponent } from '../formular/layout-renderer/layout-renderer.component';
 import { PictureUploadComponent } from '../fields/picture-upload/picture-upload.component';
+import { DateInputFieldComponent } from '../fields/input/date-input-field.component';
+import { TimeInputFieldComponent } from '../fields/input/time-input-field.component';
+import { MonthInputFieldComponent } from '../fields/input/month-input-field.component';
+import { WeekInputFieldComponent } from '../fields/input/week-input-field.component';
 import { InputFieldComponent } from '../fields/input/input-field.component';
 import { TextareaFieldComponent } from '../fields/textarea/textarea-field.component';
 import { CheckboxFieldComponent } from '../fields/checkbox/checkbox-field.component';
@@ -235,6 +239,82 @@ const FIELD_REGISTRY: Partial<
       return {
         ...(formularContent.label && { label: formularContent.label }),
         ...(formularContent.type && { type: formularContent.type }),
+        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
+        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
+      };
+    },
+    outputBindings: (instance: FieldRendererComponent) => {
+      return {
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+      };
+    },
+  },
+  'date-input': {
+    componentType: DateInputFieldComponent,
+    stateInitializer: FIELD_INITIALIZER,
+    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.DateInputFormularField) => {
+      return {
+        ...(formularContent.label && { label: formularContent.label }),
+        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
+        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
+      };
+    },
+    outputBindings: (instance: FieldRendererComponent) => {
+      return {
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+      };
+    },
+  },
+  'time-input': {
+    componentType: TimeInputFieldComponent,
+    stateInitializer: FIELD_INITIALIZER,
+    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.TimeInputFormularField) => {
+      return {
+        ...(formularContent.label && { label: formularContent.label }),
+        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
+        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
+      };
+    },
+    outputBindings: (instance: FieldRendererComponent) => {
+      return {
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+      };
+    },
+  },
+  'month-input': {
+    componentType: MonthInputFieldComponent,
+    stateInitializer: FIELD_INITIALIZER,
+    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.MonthInputFormularField) => {
+      return {
+        ...(formularContent.label && { label: formularContent.label }),
+        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
+        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
+      };
+    },
+    outputBindings: (instance: FieldRendererComponent) => {
+      return {
+        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
+        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
+        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
+        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
+      };
+    },
+  },
+  'week-input': {
+    componentType: WeekInputFieldComponent,
+    stateInitializer: FIELD_INITIALIZER,
+    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.WeekInputFormularField) => {
+      return {
+        ...(formularContent.label && { label: formularContent.label }),
         ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
         ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
       };

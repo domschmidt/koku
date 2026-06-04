@@ -75,6 +75,7 @@
             <mapping>java.time.LocalDateTime:string</mapping>
             <mapping>java.time.Duration:string</mapping>
             <mapping>java.time.YearMonth:string</mapping>
+            <mapping>de.domschmidt.koku.dto.date.YearWeek:string</mapping>
           </customTypeMappings>
         </configuration>
       </plugin>

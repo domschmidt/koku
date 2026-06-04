@@ -15,20 +15,7 @@ export class InputFieldComponent {
   defaultValue = input<string>('');
   name = input<string>();
   label = input<string>();
-  type = input<
-    | 'TEXT'
-    | 'PASSWORD'
-    | 'EMAIL'
-    | 'NUMBER'
-    | 'DATE'
-    | 'DATETIME'
-    | 'WEEK'
-    | 'MONTH'
-    | 'TEL'
-    | 'URL'
-    | 'SEARCH'
-    | 'TIME'
-  >('TEXT');
+  type = input<'TEXT' | 'PASSWORD' | 'EMAIL' | 'NUMBER' | 'DATETIME' | 'TEL' | 'URL' | 'SEARCH'>('TEXT');
   min = input<number>();
   max = input<number>();
   placeholder = input<string>();

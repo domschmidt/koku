@@ -6,7 +6,7 @@
       </div>
     }
   </label>
-  <div class="join w-full flex">
+  <div class="join w-full flex" [class.skeleton]="loading()">
     <ng-content select="prepend-outer"></ng-content>
     <div class="flex w-full input join-item">
       <ng-content select="prepend-inner"></ng-content>
@@ -16,7 +16,6 @@
         [attr.disabled]="disabled() ? '' : null"
         [attr.placeholder]="placeholder() || null"
         [attr.readonly]="readonly() || null"
-        [class.skeleton]="loading()"
         [value]="!loading() ? value() : defaultValue()"
         [attr.required]="required() ? true : null"
         (change)="changeRaw($event)"
@@ -40,10 +39,6 @@
       <div class="content-center {{ cls() }}">
         @if (type() === 'DATETIME') {
           {{ value | date: "dd.MM.yyyy HH:mm 'Uhr'" }}
-        } @else if (type() === 'DATE') {
-          {{ value | date: 'dd.MM.yyyy' }}
-        } @else if (type() === 'TIME') {
-          {{ value | date: "HH:mm 'Uhr'" }}
         } @else {
           {{ value }}
         }

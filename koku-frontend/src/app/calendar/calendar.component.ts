@@ -8,7 +8,6 @@ import rrulePlugin from '@fullcalendar/rrule';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { IconComponent } from '../icon/icon.component';
-import 'cally';
 import { NavigationEnd, Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { ModalService } from '../modal/modal.service';
@@ -21,9 +20,13 @@ import { GLOBAL_EVENT_BUS } from '../events/global-events';
 import { UNIQUE_REF_GENERATOR } from '../utils/uniqueRef';
 import { KeyValuePipe, NgClass } from '@angular/common';
 import { AvatarComponent } from '../avatar/avatar.component';
+import { DateInputFieldComponent } from '../fields/input/date-input-field.component';
+import { MonthInputFieldComponent } from '../fields/input/month-input-field.component';
+import { WeekInputFieldComponent } from '../fields/input/week-input-field.component';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
+import { parseIsoWeekValue } from '../fields/input/temporal-input.utils';
 
 dayjs.extend(isoWeek);
 dayjs.extend(advancedFormat);
@@ -140,7 +143,16 @@ interface CalendarPersistedSettings {
 
 @Component({
   selector: 'calendar',
-  imports: [FullCalendarModule, IconComponent, KeyValuePipe, AvatarComponent, NgClass],
+  imports: [
+    FullCalendarModule,
+    IconComponent,
+    KeyValuePipe,
+    AvatarComponent,
+    NgClass,
+    DateInputFieldComponent,
+    MonthInputFieldComponent,
+    WeekInputFieldComponent,
+  ],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css',
   standalone: true,
@@ -487,23 +499,12 @@ export class CalendarComponent implements OnDestroy {
     this.pluginInstances = pluginInstances;
   }
 
-  dateChanged($event: Event) {
-    if ($event.target) {
-      const value = ($event.target as HTMLInputElement).value;
-      if (value) {
-        let parsedDate: Date;
-
-        if (this.viewMode() === 'WEEK') {
-          parsedDate = dayjs(value, 'YYYY-[W]WW').startOf('isoWeek').toDate();
-        } else if (this.viewMode() === 'MONTH') {
-          parsedDate = dayjs(value, 'YYYY-MM').toDate();
-        } else {
-          parsedDate = dayjs(value, 'YYYY-MM-DD').toDate();
-        }
-
-        this.calendarComponent()?.getApi().gotoDate(parsedDate);
-      }
+  dateChanged(value: string | null) {
+    if (!value) {
+      return;
     }
+    const parsedDate = this.viewMode() === 'WEEK' ? parseIsoWeekValue(value) : dayjs(value);
+    this.calendarComponent()?.getApi().gotoDate(parsedDate.toDate());
   }
 
   formatDate(date: Date, viewMode: 'WEEK' | 'DAY' | 'MONTH') {

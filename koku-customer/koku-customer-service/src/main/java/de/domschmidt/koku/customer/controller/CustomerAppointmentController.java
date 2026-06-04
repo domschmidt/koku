@@ -42,8 +42,7 @@ import de.domschmidt.koku.dto.KokuColorEnum;
 import de.domschmidt.koku.dto.KokuRoundedEnum;
 import de.domschmidt.koku.dto.activity.KokuActivityDto;
 import de.domschmidt.koku.dto.activity.KokuActivityStepDto;
-import de.domschmidt.koku.dto.chart.filter.types.EnumInputChartFilterType;
-import de.domschmidt.koku.dto.chart.filter.types.InputChartFilterDto;
+import de.domschmidt.koku.dto.chart.filter.types.MonthInputChartFilterDto;
 import de.domschmidt.koku.dto.customer.*;
 import de.domschmidt.koku.dto.dashboard.containers.grid.DashboardGridContainerDto;
 import de.domschmidt.koku.dto.dashboard.panels.text.DashboardAsyncTextPanelDto;
@@ -55,8 +54,8 @@ import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
 import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
 import de.domschmidt.koku.dto.formular.containers.fieldset.FieldsetContainer;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
-import de.domschmidt.koku.dto.formular.fields.input.EnumInputFormularFieldType;
-import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
+import de.domschmidt.koku.dto.formular.fields.input.DateInputFormularField;
+import de.domschmidt.koku.dto.formular.fields.input.TimeInputFormularField;
 import de.domschmidt.koku.dto.formular.fields.multi_select.MultiSelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.multi_select.MultiSelectFormularFieldPossibleValue;
 import de.domschmidt.koku.dto.formular.fields.multi_select_with_pricing_adjustment.MultiSelectWithPricingAdjustmentFormularField;
@@ -268,15 +267,13 @@ public class CustomerAppointmentController {
                 .build());
 
         formFactory.addContainer(GridContainer.builder().cols(1).md(2).build());
-        final String dateFieldRef = formFactory.addField(InputFormularField.builder()
+        final String dateFieldRef = formFactory.addField(DateInputFormularField.builder()
                 .valuePath(KokuCustomerAppointmentDto.Fields.date)
-                .type(EnumInputFormularFieldType.DATE)
                 .label("Datum")
                 .required(true)
                 .build());
-        final String timeFieldRef = formFactory.addField(InputFormularField.builder()
+        final String timeFieldRef = formFactory.addField(TimeInputFormularField.builder()
                 .valuePath(KokuCustomerAppointmentDto.Fields.time)
-                .type(EnumInputFormularFieldType.TIME)
                 .label("Zeit")
                 .required(true)
                 .build());
@@ -1523,15 +1520,13 @@ public class CustomerAppointmentController {
 
         return BarChartDto.builder()
                 .title("Umsätze")
-                .filter(InputChartFilterDto.builder()
+                .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(startFilter))
-                        .type(EnumInputChartFilterType.MONTH)
                         .label("Von")
                         .queryParamName("start")
                         .build())
-                .filter(InputChartFilterDto.builder()
+                .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
-                        .type(EnumInputChartFilterType.MONTH)
                         .label("Bis")
                         .queryParamName("end")
                         .build())
@@ -1640,15 +1635,13 @@ public class CustomerAppointmentController {
 
         return BarChartDto.builder()
                 .title("Umsätze")
-                .filter(InputChartFilterDto.builder()
+                .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(startFilter))
-                        .type(EnumInputChartFilterType.MONTH)
                         .label("Von")
                         .queryParamName("start")
                         .build())
-                .filter(InputChartFilterDto.builder()
+                .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
-                        .type(EnumInputChartFilterType.MONTH)
                         .label("Bis")
                         .queryParamName("end")
                         .build())
@@ -1766,15 +1759,13 @@ public class CustomerAppointmentController {
 
         return BarChartDto.builder()
                 .title("Umsätze")
-                .filter(InputChartFilterDto.builder()
+                .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(startFilter))
-                        .type(EnumInputChartFilterType.MONTH)
                         .label("Von")
                         .queryParamName("start")
                         .build())
-                .filter(InputChartFilterDto.builder()
+                .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
-                        .type(EnumInputChartFilterType.MONTH)
                         .label("Bis")
                         .queryParamName("end")
                         .build())
@@ -1881,15 +1872,13 @@ public class CustomerAppointmentController {
 
         return BarChartDto.builder()
                 .title("Umsätze")
-                .filter(InputChartFilterDto.builder()
+                .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(startFilter))
-                        .type(EnumInputChartFilterType.MONTH)
                         .label("Von")
                         .queryParamName("start")
                         .build())
-                .filter(InputChartFilterDto.builder()
+                .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
-                        .type(EnumInputChartFilterType.MONTH)
                         .label("Bis")
                         .queryParamName("end")
                         .build())
