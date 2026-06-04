@@ -1,0 +1,57 @@
+<input-field
+  [name]="name()"
+  type="TEXT"
+  [label]="label()"
+  [value]="displayValue()"
+  [defaultValue]="defaultDisplayValue()"
+  [min]="min()"
+  [max]="max()"
+  [placeholder]="placeholderValue()"
+  [loading]="loading()"
+  [readonly]="readonly()"
+  [required]="required()"
+  [disabled]="disabled()"
+  [valueOnly]="valueOnly()"
+  [cls]="cls()"
+  (typed)="typeWeekInput($event)"
+  (changed)="changeWeekInput($event)"
+  (blurred)="blurred.emit()"
+  (focused)="focused.emit()"
+>
+  <ng-container ngProjectAs="prepend-outer">
+    <ng-content select="prepend-outer"></ng-content>
+  </ng-container>
+  <ng-container ngProjectAs="prepend-inner">
+    <ng-content select="prepend-inner"></ng-content>
+  </ng-container>
+  <ng-container ngProjectAs="append-inner">
+    <ng-content select="append-inner"></ng-content>
+    @if (!valueOnly() && !loading() && nativePickerSupported) {
+      <div class="relative inline-flex self-center">
+        <button
+          type="button"
+          class="btn btn-ghost btn-xs btn-square"
+          title="Woche auswaehlen"
+          aria-label="Woche auswaehlen"
+          [attr.disabled]="disabled() || readonly() ? '' : null"
+          (click)="openNativePicker($event)"
+        >
+          <koku-icon name="CALENDAR_WEEK" class="size-4"></koku-icon>
+        </button>
+        <input
+          #nativePicker
+          [name]="name() ? name() + '-native-picker' : null"
+          type="week"
+          class="pointer-events-none absolute h-0 w-0 opacity-0"
+          [value]="nativePickerValue()"
+          [attr.disabled]="disabled() || readonly() ? '' : null"
+          aria-label="Woche auswaehlen"
+          (change)="selectFromNativePicker($event)"
+        />
+      </div>
+    }
+  </ng-container>
+  <ng-container ngProjectAs="append-outer">
+    <ng-content select="append-outer"></ng-content>
+  </ng-container>
+</input-field>

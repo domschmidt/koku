@@ -26,6 +26,7 @@ import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
 import de.domschmidt.koku.dto.formular.containers.fieldset.FieldsetContainer;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
 import de.domschmidt.koku.dto.formular.fields.checkbox.CheckboxFormularField;
+import de.domschmidt.koku.dto.formular.fields.input.DateInputFormularField;
 import de.domschmidt.koku.dto.formular.fields.input.EnumInputFormularFieldType;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.formular.fields.textarea.TextareaFormularField;
@@ -744,10 +745,9 @@ public class CustomerController {
                 .build());
         formFactory.endContainer();
         formFactory.addContainer(GridContainer.builder().cols(1).build());
-        formFactory.addField(InputFormularField.builder()
+        formFactory.addField(DateInputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.birthday)
                 .label("Geburtstag")
-                .type(EnumInputFormularFieldType.DATE)
                 .build());
         formFactory.addField(TextareaFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.additionalInfo)

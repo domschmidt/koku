@@ -6,6 +6,10 @@ import {
   ListItemSetup,
 } from '../list/list.component';
 import { InputFieldComponent } from '../fields/input/input-field.component';
+import { DateInputFieldComponent } from '../fields/input/date-input-field.component';
+import { TimeInputFieldComponent } from '../fields/input/time-input-field.component';
+import { MonthInputFieldComponent } from '../fields/input/month-input-field.component';
+import { WeekInputFieldComponent } from '../fields/input/week-input-field.component';
 import { PictureUploadComponent } from '../fields/picture-upload/picture-upload.component';
 import { ListItemComponent } from '../list/list-item/list-item.component';
 import { ListItemPreviewComponent } from '../list/list-item-preview/list-item-preview.component';
@@ -131,6 +135,102 @@ const FIELD_REGISTRY: Partial<
 
       return {
         ...(listContent.type && { type: listContent.type }),
+        valueOnly: true,
+        cls: clss.join(' '),
+      };
+    },
+    outputBindings: (instance: ListItemComponent, key: string) => {
+      return {
+        changed: (data: any) => instance.fieldEventBus(key, 'onChange', data),
+        typed: (data: any) => instance.fieldEventBus(key, 'onInput', data),
+        blurred: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
+        focused: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
+      };
+    },
+  },
+  'date-input': {
+    componentType: DateInputFieldComponent,
+    stateInitializer: FIELD_INITIALIZER,
+    inputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewDateInputFieldDto) => {
+      const clss = [
+        listContent.rounded && 'p-1 my-1',
+        listContent.rounded && ROUNDED_MAPPING[listContent.rounded],
+        listContent.backgroundColor && COLOR_MAPPING[listContent.backgroundColor],
+      ];
+
+      return {
+        valueOnly: true,
+        cls: clss.join(' '),
+      };
+    },
+    outputBindings: (instance: ListItemComponent, key: string) => {
+      return {
+        changed: (data: any) => instance.fieldEventBus(key, 'onChange', data),
+        typed: (data: any) => instance.fieldEventBus(key, 'onInput', data),
+        blurred: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
+        focused: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
+      };
+    },
+  },
+  'time-input': {
+    componentType: TimeInputFieldComponent,
+    stateInitializer: FIELD_INITIALIZER,
+    inputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewTimeInputFieldDto) => {
+      const clss = [
+        listContent.rounded && 'p-1 my-1',
+        listContent.rounded && ROUNDED_MAPPING[listContent.rounded as KokuDto.KokuRoundedEnum],
+        listContent.backgroundColor && COLOR_MAPPING[listContent.backgroundColor as KokuDto.KokuColorEnum],
+      ];
+
+      return {
+        valueOnly: true,
+        cls: clss.join(' '),
+      };
+    },
+    outputBindings: (instance: ListItemComponent, key: string) => {
+      return {
+        changed: (data: any) => instance.fieldEventBus(key, 'onChange', data),
+        typed: (data: any) => instance.fieldEventBus(key, 'onInput', data),
+        blurred: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
+        focused: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
+      };
+    },
+  },
+  'month-input': {
+    componentType: MonthInputFieldComponent,
+    stateInitializer: FIELD_INITIALIZER,
+    inputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewMonthInputFieldDto) => {
+      const clss = [
+        listContent.rounded && 'p-1 my-1',
+        listContent.rounded && ROUNDED_MAPPING[listContent.rounded as KokuDto.KokuRoundedEnum],
+        listContent.backgroundColor && COLOR_MAPPING[listContent.backgroundColor as KokuDto.KokuColorEnum],
+      ];
+
+      return {
+        valueOnly: true,
+        cls: clss.join(' '),
+      };
+    },
+    outputBindings: (instance: ListItemComponent, key: string) => {
+      return {
+        changed: (data: any) => instance.fieldEventBus(key, 'onChange', data),
+        typed: (data: any) => instance.fieldEventBus(key, 'onInput', data),
+        blurred: (data: any) => instance.fieldEventBus(key, 'onBlur', data),
+        focused: (data: any) => instance.fieldEventBus(key, 'onFocus', data),
+      };
+    },
+  },
+  'week-input': {
+    componentType: WeekInputFieldComponent,
+    stateInitializer: FIELD_INITIALIZER,
+    inputBindings: (instance: ListItemComponent, key: string, listContent: KokuDto.ListViewWeekInputFieldDto) => {
+      const clss = [
+        listContent.rounded && 'p-1 my-1',
+        listContent.rounded && ROUNDED_MAPPING[listContent.rounded as KokuDto.KokuRoundedEnum],
+        listContent.backgroundColor && COLOR_MAPPING[listContent.backgroundColor as KokuDto.KokuColorEnum],
+      ];
+
+      return {
         valueOnly: true,
         cls: clss.join(' '),
       };

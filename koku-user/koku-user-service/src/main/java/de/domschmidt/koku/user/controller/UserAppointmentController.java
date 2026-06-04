@@ -20,15 +20,15 @@ import de.domschmidt.koku.dto.formular.events.FormNotificationEvent;
 import de.domschmidt.koku.dto.formular.events.FormNotificationEventDateValueParamDto;
 import de.domschmidt.koku.dto.formular.events.FormNotificationEventSerenityEnumDto;
 import de.domschmidt.koku.dto.formular.events.FormPropagateGlobalEventDto;
-import de.domschmidt.koku.dto.formular.fields.input.EnumInputFormularFieldType;
-import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
+import de.domschmidt.koku.dto.formular.fields.input.DateInputFormularField;
+import de.domschmidt.koku.dto.formular.fields.input.TimeInputFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularFieldPossibleValue;
 import de.domschmidt.koku.dto.formular.fields.textarea.TextareaFormularField;
 import de.domschmidt.koku.dto.formular.listeners.FormViewEventPayloadSourceUpdateGlobalEventListenerDto;
 import de.domschmidt.koku.dto.formular.user_confirmation.FormUserConfirmationDto;
+import de.domschmidt.koku.dto.list.fields.input.ListViewDateInputFieldDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
-import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldTypeEnumDto;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDto;
 import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStylingDto;
@@ -152,27 +152,23 @@ public class UserAppointmentController {
                 .build());
 
         formFactory.addContainer(GridContainer.builder().cols(1).md(2).build());
-        formFactory.addField(InputFormularField.builder()
+        formFactory.addField(DateInputFormularField.builder()
                 .valuePath(KokuUserAppointmentDto.Fields.startDate)
-                .type(EnumInputFormularFieldType.DATE)
                 .label("Datum von")
                 .required(true)
                 .build());
-        formFactory.addField(InputFormularField.builder()
+        formFactory.addField(TimeInputFormularField.builder()
                 .valuePath(KokuUserAppointmentDto.Fields.startTime)
-                .type(EnumInputFormularFieldType.TIME)
                 .label("Zeit von")
                 .required(true)
                 .build());
-        formFactory.addField(InputFormularField.builder()
+        formFactory.addField(DateInputFormularField.builder()
                 .valuePath(KokuUserAppointmentDto.Fields.endDate)
-                .type(EnumInputFormularFieldType.DATE)
                 .label("Datum bis")
                 .required(true)
                 .build());
-        formFactory.addField(InputFormularField.builder()
+        formFactory.addField(TimeInputFormularField.builder()
                 .valuePath(KokuUserAppointmentDto.Fields.endTime)
-                .type(EnumInputFormularFieldType.TIME)
                 .label("Zeit bis")
                 .required(true)
                 .build());
@@ -309,10 +305,7 @@ public class UserAppointmentController {
 
         final ListViewFieldReference startDateFieldRef = listViewFactory.addField(
                 KokuUserAppointmentDto.Fields.startDate,
-                ListViewInputFieldDto.builder()
-                        .label("Datum")
-                        .type(ListViewInputFieldTypeEnumDto.DATE)
-                        .build());
+                ListViewDateInputFieldDto.builder().label("Datum").build());
         final ListViewFieldReference startTimeFieldRef = listViewFactory.addField(
                 KokuUserAppointmentDto.Fields.startTime,
                 ListViewInputFieldDto.builder().label("Zeit").build());

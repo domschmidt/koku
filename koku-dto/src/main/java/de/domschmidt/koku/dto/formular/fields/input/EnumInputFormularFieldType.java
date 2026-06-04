@@ -5,12 +5,8 @@ public enum EnumInputFormularFieldType {
     PASSWORD,
     EMAIL,
     NUMBER,
-    DATE,
     DATETIME,
-    WEEK,
-    MONTH,
     TEL,
     URL,
     SEARCH,
-    TIME,
 }
