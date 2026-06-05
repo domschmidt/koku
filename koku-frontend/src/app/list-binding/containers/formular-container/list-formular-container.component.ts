@@ -2,7 +2,7 @@ import { Component, input, output } from '@angular/core';
 import {
   FormularComponent,
   FormularContentRegistry,
-  FormularFieldOverride,
+  FormularContentOverride,
 } from '../../../formular/formular.component';
 import { OutletDirective } from '../../../portal/outlet.directive';
 import { executeInlineFormularSaveEvents } from '../../../formular/inline-formular-save-events';
@@ -21,7 +21,7 @@ export class ListFormularContainerComponent {
   maxWidth = input<string | number>();
   submitMethod = input<string>();
   onSaveEvents = input<KokuDto.AbstractListViewItemInlineFormularContentSaveEventDto[]>([]);
-  fieldOverrides = input<FormularFieldOverride[]>([]);
+  contentOverrides = input<FormularContentOverride[]>([]);
   contentRegistry = input.required<FormularContentRegistry>();
   buttonDockOutlet = input<OutletDirective>();
   context = input<Record<string, any>>();

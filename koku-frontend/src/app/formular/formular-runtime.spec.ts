@@ -58,7 +58,7 @@ describe('FormularRuntime', () => {
     const runtime = new FormularRuntime(() => undefined);
 
     runtime.setContentOverrides([
-      { alias: 'customer', value: 'first', disable: true },
+      { alias: 'customer', value: 'first', disabled: true },
       { alias: 'customer', value: 'second' },
       { alias: 'appointment', value: 'appointment-value' },
     ]);
@@ -66,7 +66,7 @@ describe('FormularRuntime', () => {
     expect(runtime.contentOverridesByAlias().get('customer')).toEqual({
       alias: 'customer',
       value: 'first',
-      disable: true,
+      disabled: true,
     });
     expect(runtime.contentOverridesByAlias().get('appointment')?.value).toBe('appointment-value');
     expect(runtime.contentOverridesByAlias().size).toBe(2);

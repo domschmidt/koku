@@ -18,5 +18,5 @@ public class ListViewFormularContentDto extends AbstractListViewContentDto {
     ListViewFormularActionSubmitMethodEnumDto submitMethod;
     Integer maxWidthInPx;
     List<AbstractListViewItemInlineFormularContentSaveEventDto> onSaveEvents;
-    List<ListViewFormularFieldOverrideDto> fieldOverrides;
+    List<ListViewFormularContentOverrideDto> contentOverrides;
 }

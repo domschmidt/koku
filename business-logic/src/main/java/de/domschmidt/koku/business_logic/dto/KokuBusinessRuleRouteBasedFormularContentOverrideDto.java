@@ -1,4 +1,4 @@
-package de.domschmidt.list.dto.response.inline_content.formular;
+package de.domschmidt.koku.business_logic.dto;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Data;
@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ListViewRouteBasedFormularFieldOverrideDto extends ListViewFormularFieldOverrideDto {
+public class KokuBusinessRuleRouteBasedFormularContentOverrideDto extends KokuBusinessRuleFormularContentOverrideDto {
 
     String routeParam;
 }

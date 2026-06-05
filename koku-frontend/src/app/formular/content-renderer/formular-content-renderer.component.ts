@@ -38,6 +38,10 @@ export class FormularContentRendererComponent {
     const content = this.content();
     return this.runtime().contentConfig(content);
   });
+  contentOverride = computed(() => {
+    const alias = this.activeContent().alias;
+    return alias ? this.runtime().contentOverridesByAlias().get(alias) : undefined;
+  });
   private readonly recipeIdentity = computed(
     () => {
       const content = this.activeContent();
@@ -103,6 +107,7 @@ export class FormularContentRendererComponent {
     const recipe = recipeFactory({
       id: contentId,
       content: this.activeContent,
+      override: this.contentOverride,
       runtime: this.runtime(),
       loading: this.loading,
       submitting: this.submitting,

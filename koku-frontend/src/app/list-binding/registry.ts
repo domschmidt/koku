@@ -20,7 +20,7 @@ import { ToggleFilterTriState } from './filters/toggle/toggle-filter.component';
 import { DynamicOutputs } from '../dynamic-host/dynamic-host.directive';
 import {
   replaceRouteSegments as replaceSegments,
-  resolveRouteBasedFieldOverrides as routeBasedFieldOverrides,
+  resolveRouteBasedContentOverrides as routeBasedContentOverrides,
 } from '../utils/route.utils';
 import { colorBackgroundClasses } from '../utils/color.utils';
 type FieldRegistryItem = NonNullable<ListContentSetup['fieldRegistry'][string]>;
@@ -234,7 +234,7 @@ const INLINE_CONTENT_REGISTRY: Partial<
         submitMethod: content().submitMethod,
         onSaveEvents: content().onSaveEvents,
         contentRegistry: FORMULAR_CONTENT_REGISTRY,
-        fieldOverrides: routeBasedFieldOverrides(content().fieldOverrides, context.urlSegments()),
+        contentOverrides: routeBasedContentOverrides(content().contentOverrides, context.urlSegments()),
         buttonDockOutlet: context.buttonDockOutlet(),
         context: context.context(),
       })),
@@ -421,7 +421,7 @@ const MODAL_REGISTRY: ModalContentSetup = {
         submitMethod: context.content().submitMethod,
         onSaveEvents: context.content().onSaveEvents,
         contentRegistry: FORMULAR_CONTENT_REGISTRY,
-        fieldOverrides: routeBasedFieldOverrides(context.content().fieldOverrides, context.modal.urlSegments),
+        contentOverrides: routeBasedContentOverrides(context.content().contentOverrides, context.modal.urlSegments),
         context: context.modal.urlSegments,
       })),
       outputs: modalCloseOutputs(context),

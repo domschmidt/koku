@@ -1,4 +1,4 @@
-package de.domschmidt.calendar.dto.response;
+package de.domschmidt.koku.business_logic.dto;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
@@ -7,8 +7,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @Data
-public abstract class CalendarFormularFieldOverrideDto {
+public abstract class KokuBusinessRuleFormularContentOverrideDto {
 
     String alias;
-    Boolean disable;
+    Boolean disabled;
 }
