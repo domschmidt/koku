@@ -3,7 +3,7 @@ package de.domschmidt.koku.promotion.controller;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
-import de.domschmidt.formular.factory.DefaultViewContentIdGenerator;
+import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
@@ -75,82 +75,113 @@ public class PromotionController {
 
     @GetMapping("/promotions/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory(
-                new DefaultViewContentIdGenerator(),
-                GridContainer.builder().cols(1).build());
+        final FormViewFactory formFactory = new FormViewFactory();
+        final String rootId =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
 
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuPromotionDto.Fields.name)
-                .type(EnumInputFormularFieldType.TEXT)
-                .label("Name")
-                .required(true)
-                .build());
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuPromotionDto.Fields.name)
+                        .type(EnumInputFormularFieldType.TEXT)
+                        .label("Name")
+                        .required(true)
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addContainer(GridContainer.builder().cols(1).md(2).build());
-        formFactory.addContainer(
+        final String container1Id =
+                formFactory.addContent(GridContainer.builder().cols(1).md(2).build());
+        formFactory.place(container1Id).in(rootId).outlet(FormOutlet.CONTENT);
+        final String container2Id = formFactory.addContent(
                 FieldsetContainer.builder().title("Tätigkeiten").build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuPromotionDto.Fields.activityAbsoluteItemSavings)
-                .type(EnumInputFormularFieldType.NUMBER)
-                .label("Absolute Ersparnis je Tätigkeit")
-                .build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuPromotionDto.Fields.activityAbsoluteSavings)
-                .type(EnumInputFormularFieldType.NUMBER)
-                .label("Absolute Ersparnis")
-                .build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuPromotionDto.Fields.activityRelativeItemSavings)
-                .type(EnumInputFormularFieldType.NUMBER)
-                .label("Relative Ersparnis je Tätigkeit")
-                .build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuPromotionDto.Fields.activityRelativeSavings)
-                .type(EnumInputFormularFieldType.NUMBER)
-                .label("Relative Ersparnis")
-                .build());
-        formFactory.endContainer();
+        formFactory.place(container2Id).in(container1Id).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuPromotionDto.Fields.activityAbsoluteItemSavings)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Absolute Ersparnis je Tätigkeit")
+                        .build()))
+                .in(container2Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuPromotionDto.Fields.activityAbsoluteSavings)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Absolute Ersparnis")
+                        .build()))
+                .in(container2Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuPromotionDto.Fields.activityRelativeItemSavings)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Relative Ersparnis je Tätigkeit")
+                        .build()))
+                .in(container2Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuPromotionDto.Fields.activityRelativeSavings)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Relative Ersparnis")
+                        .build()))
+                .in(container2Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addContainer(FieldsetContainer.builder().title("Produkte").build());
+        final String container3Id = formFactory.addContent(
+                FieldsetContainer.builder().title("Produkte").build());
+        formFactory.place(container3Id).in(container1Id).outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuPromotionDto.Fields.productAbsoluteItemSavings)
-                .type(EnumInputFormularFieldType.NUMBER)
-                .label("Absolute Ersparnis je Produkt")
-                .build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuPromotionDto.Fields.productAbsoluteSavings)
-                .type(EnumInputFormularFieldType.NUMBER)
-                .label("Absolute Ersparnis")
-                .build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuPromotionDto.Fields.productRelativeItemSavings)
-                .type(EnumInputFormularFieldType.NUMBER)
-                .label("Relative Ersparnis je Produkt")
-                .build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuPromotionDto.Fields.productRelativeSavings)
-                .type(EnumInputFormularFieldType.NUMBER)
-                .label("Relative Ersparnis")
-                .build());
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuPromotionDto.Fields.productAbsoluteItemSavings)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Absolute Ersparnis je Produkt")
+                        .build()))
+                .in(container3Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuPromotionDto.Fields.productAbsoluteSavings)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Absolute Ersparnis")
+                        .build()))
+                .in(container3Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuPromotionDto.Fields.productRelativeItemSavings)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Relative Ersparnis je Produkt")
+                        .build()))
+                .in(container3Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuPromotionDto.Fields.productRelativeSavings)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Relative Ersparnis")
+                        .build()))
+                .in(container3Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.endContainer();
-        formFactory.endContainer();
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Speichern")
+                        .title("Jetzt speichern")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK))
+                        .dockable(true)
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("SAVE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
+                                .build())
+                        .postProcessingAction(FormButtonReloadAction.builder().build())
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addButton(KokuFormButton.builder()
-                .buttonType(EnumButtonType.SUBMIT)
-                .text("Speichern")
-                .title("Jetzt speichern")
-                .styles(Arrays.asList(EnumButtonStyle.BLOCK))
-                .dockable(true)
-                .dockableSettings(ButtonDockableSettings.builder()
-                        .icon("SAVE")
-                        .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build())
-                .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build());
-
-        return formFactory.create();
+        return formFactory.create(rootId);
     }
 
     @GetMapping("/promotions/list")

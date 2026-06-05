@@ -1,4 +1,6 @@
-import { ModalComponent } from './modal.component';
+import { Signal } from '@angular/core';
+import { DynamicRenderRecipe } from '../dynamic-host/dynamic-host.directive';
+import type { ModalComponent } from './modal.component';
 
 export interface ModalButtonType {
   loading?: boolean;
@@ -38,28 +40,23 @@ export interface RenderedModalButtonType extends ModalButtonType {
   uid: number;
 }
 
-interface ModalDynamicContent {
+export interface ModalDynamicContent {
   '@type': string;
 
   [key: string]: any;
 }
 
-type ModalContentSetup = Record<
-  ModalDynamicContent['@type'],
-  {
-    componentType: any;
-    inputBindings?(
-      instance: ModalComponent,
-      modal: RenderedModalType,
-      content: ModalDynamicContent,
-    ): Record<string, any>;
-    outputBindings?(
-      instance: ModalComponent,
-      modal: RenderedModalType,
-      content: ModalDynamicContent,
-    ): Record<string, any>;
-  }
->;
+export interface ModalContentRenderContext<TContent extends ModalDynamicContent = ModalDynamicContent> {
+  instance: ModalComponent;
+  modal: RenderedModalType;
+  content: Signal<TContent>;
+}
+
+export type ModalContentRecipeFactory<TContent extends ModalDynamicContent = any> = (
+  context: ModalContentRenderContext<TContent>,
+) => DynamicRenderRecipe;
+
+export type ModalContentSetup = Record<ModalDynamicContent['@type'] | string, ModalContentRecipeFactory>;
 
 export interface ModalType {
   headline?: string;

@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @JsonTypeName("header")
 public class KokuBusinessRuleHeaderContentDto extends AbstractKokuBusinessRuleContentDto {

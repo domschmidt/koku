@@ -1,31 +1,34 @@
-import { Component, inject, InjectionToken, input, OnChanges, OnDestroy, signal, SimpleChanges } from '@angular/core';
-import { DashboardContainerRendererComponent } from './container-renderer/dashboard-container-renderer.component';
+import {
+  Component,
+  inject,
+  InjectionToken,
+  input,
+  OnChanges,
+  OnDestroy,
+  Signal,
+  signal,
+  SimpleChanges,
+} from '@angular/core';
+import { DashboardContentRendererComponent } from './content-renderer/dashboard-content-renderer.component';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../toast/toast.service';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { DynamicRenderRecipe } from '../dynamic-host/dynamic-host.directive';
 
-export interface DashboardContentSetup {
-  containerRegistry: Partial<
-    Record<
-      KokuDto.AbstractDashboardContainer['@type'] | string,
-      {
-        componentType: any;
-        inputBindings?(instance: any, content: KokuDto.AbstractDashboardContainer): Record<string, any>;
-        outputBindings?(instance: any, content: KokuDto.AbstractDashboardContainer): Record<string, any>;
-      }
-    >
-  >;
-  panelRegistry: Partial<
-    Record<
-      KokuDto.AbstractDashboardPanel['@type'] | string,
-      {
-        componentType: any;
-        inputBindings?(instance: any, content: KokuDto.AbstractDashboardPanel): Record<string, any>;
-        outputBindings?(instance: any, content: KokuDto.AbstractDashboardPanel): Record<string, any>;
-      }
-    >
-  >;
+export type DashboardContent = KokuDto.AbstractDashboardContainer | KokuDto.AbstractDashboardPanel;
+
+export interface DashboardContentRenderContext<TContent extends DashboardContent = DashboardContent> {
+  content: Signal<TContent>;
+  contentRegistry: Signal<DashboardContentRegistry>;
 }
+
+export type DashboardContentRecipeFactory<TContent extends DashboardContent = any> = (
+  context: DashboardContentRenderContext<TContent>,
+) => DynamicRenderRecipe;
+
+export type DashboardContentRegistry = Partial<
+  Record<DashboardContent['@type'] | string, DashboardContentRecipeFactory>
+>;
 
 export interface DashboardPlugin {
   destroy(): void;
@@ -41,11 +44,11 @@ export const DASHBOARD_PLUGIN = new InjectionToken<DashboardPluginFactory | Dash
   selector: 'koku-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: [DashboardContainerRendererComponent],
+  imports: [DashboardContentRendererComponent],
 })
 export class DashboardComponent implements OnDestroy, OnChanges {
   dashboardUrl = input.required<string>();
-  contentSetup = input.required<DashboardContentSetup>();
+  contentRegistry = input.required<DashboardContentRegistry>();
   dashboardData = signal<KokuDto.DashboardViewDto | null>(null);
   private lastDashboardSubscription: Subscription | undefined;
 
@@ -59,26 +62,25 @@ export class DashboardComponent implements OnDestroy, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['dashboardUrl']) {
-      this.loadDashboard().subscribe();
+      this.loadDashboard();
     }
   }
 
   private loadDashboard() {
-    return new Observable(() => {
-      const dashboardUrlSnapshot = this.dashboardUrl();
-      if (dashboardUrlSnapshot) {
-        if (this.lastDashboardSubscription && !this.lastDashboardSubscription.closed) {
-          this.lastDashboardSubscription.unsubscribe();
-        }
-        this.lastDashboardSubscription = this.httpClient.get<KokuDto.DashboardViewDto>(dashboardUrlSnapshot).subscribe({
-          next: (dashboardData) => {
-            this.dashboardData.set(dashboardData);
-          },
-          error: () => {
-            this.toastService.add('Fehler beim Laden der Daten', 'error', undefined, Number.POSITIVE_INFINITY);
-          },
-        });
-      }
+    const dashboardUrlSnapshot = this.dashboardUrl();
+    if (!dashboardUrlSnapshot) {
+      this.dashboardData.set(null);
+      return;
+    }
+    this.lastDashboardSubscription?.unsubscribe();
+    this.lastDashboardSubscription = this.httpClient.get<KokuDto.DashboardViewDto>(dashboardUrlSnapshot).subscribe({
+      next: (dashboardData) => {
+        this.dashboardData.set(dashboardData);
+      },
+      error: () => {
+        this.dashboardData.set(null);
+        this.toastService.add('Fehler beim Laden der Daten', 'error', undefined, Number.POSITIVE_INFINITY);
+      },
     });
   }
 
@@ -97,6 +99,7 @@ export class DashboardComponent implements OnDestroy, OnChanges {
   }
 
   ngOnDestroy(): void {
+    this.lastDashboardSubscription?.unsubscribe();
     for (const currentPluginInstance of this.pluginInstances || []) {
       currentPluginInstance.destroy?.();
     }

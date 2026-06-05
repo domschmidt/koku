@@ -7,7 +7,7 @@ import de.domschmidt.chart.dto.response.values.NumericSeriesDto;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
-import de.domschmidt.formular.factory.DefaultViewContentIdGenerator;
+import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.activity.kafka.activity.service.ActivityKafkaService;
 import de.domschmidt.koku.activity.persistence.Activity;
@@ -108,43 +108,55 @@ public class ActivityController {
 
     @GetMapping("/activities/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory(
-                new DefaultViewContentIdGenerator(),
-                GridContainer.builder().cols(1).build());
+        final FormViewFactory formFactory = new FormViewFactory();
+        final String rootId =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
 
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuActivityDto.Fields.name)
-                .label("Name")
-                .required(true)
-                .build());
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuActivityDto.Fields.name)
+                        .label("Name")
+                        .required(true)
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(TimeInputFormularField.builder()
-                .valuePath(KokuActivityDto.Fields.approximatelyDuration)
-                .label("Ungefähre Behandlungsdauer")
-                .required(true)
-                .build());
+        formFactory
+                .place(formFactory.addContent(TimeInputFormularField.builder()
+                        .valuePath(KokuActivityDto.Fields.approximatelyDuration)
+                        .label("Ungefähre Behandlungsdauer")
+                        .required(true)
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuActivityDto.Fields.price)
-                .type(EnumInputFormularFieldType.NUMBER)
-                .label("Preis")
-                .regexp("^\\d{0,19}([\\.]\\d{0,2})?$")
-                .build());
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuActivityDto.Fields.price)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Preis")
+                        .regexp("^\\d{0,19}([\\.]\\d{0,2})?$")
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addButton(KokuFormButton.builder()
-                .buttonType(EnumButtonType.SUBMIT)
-                .text("Speichern")
-                .title("Jetzt speichern")
-                .styles(Arrays.asList(EnumButtonStyle.BLOCK))
-                .dockable(true)
-                .dockableSettings(ButtonDockableSettings.builder()
-                        .icon("SAVE")
-                        .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build())
-                .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build());
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Speichern")
+                        .title("Jetzt speichern")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK))
+                        .dockable(true)
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("SAVE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
+                                .build())
+                        .postProcessingAction(FormButtonReloadAction.builder().build())
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        return formFactory.create();
+        return formFactory.create(rootId);
     }
 
     @GetMapping("/activities/list")

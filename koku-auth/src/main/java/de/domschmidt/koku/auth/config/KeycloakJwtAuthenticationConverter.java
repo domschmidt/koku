@@ -25,15 +25,22 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
     }
 
     private Collection<? extends GrantedAuthority> extractResourceRoles(Jwt jwt) {
-        var resourceAccess = new HashMap<>(jwt.getClaim("resource_access"));
-        var kokuResourceAccess = (Map<String, List<String>>) resourceAccess.get("koku");
-        if (kokuResourceAccess != null) {
-            var roles = (ArrayList<String>) kokuResourceAccess.get("roles");
-            return roles.stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.replace("-", "_")))
-                    .collect(toSet());
-        } else {
+        if (!(jwt.getClaim("resource_access") instanceof Map<?, ?> resourceAccess)) {
             return Collections.emptyList();
         }
+
+        if (!(resourceAccess.get("koku") instanceof Map<?, ?> kokuResourceAccess)) {
+            return Collections.emptyList();
+        }
+
+        if (!(kokuResourceAccess.get("roles") instanceof Collection<?> roles)) {
+            return Collections.emptyList();
+        }
+
+        return roles.stream()
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.replace("-", "_")))
+                .collect(toSet());
     }
 }

@@ -12,6 +12,7 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { ToastService } from '../../toast/toast.service';
 import { KeyValuePipe } from '@angular/common';
+import { colorTextClass } from '../../utils/color.utils';
 
 let uniqueId = 0;
 
@@ -23,6 +24,7 @@ let uniqueId = 0;
   standalone: true,
 })
 export class SelectFieldComponent {
+  readonly colorTextClass = colorTextClass;
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
   value = input.required<string, string | number>({
     transform: (v: any) => {

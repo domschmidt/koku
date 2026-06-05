@@ -4,7 +4,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
-import de.domschmidt.formular.factory.DefaultViewContentIdGenerator;
+import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
@@ -128,180 +128,211 @@ public class UserAppointmentController {
 
     @GetMapping("/users/appointments/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory(
-                new DefaultViewContentIdGenerator(),
-                GridContainer.builder().cols(1).build());
+        final FormViewFactory formFactory = new FormViewFactory();
+        final String rootId =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
         final QUser qUser = QUser.user;
         final List<User> usersSnapshot =
                 new JPAQuery<>(this.entityManager).select(qUser).from(qUser).fetch();
-        formFactory.addField(SelectFormularField.builder()
-                .valuePath(KokuUserAppointmentDto.Fields.userId)
-                .label("Nutzer")
-                .id(KokuUserAppointmentDto.Fields.userId)
-                .possibleValues(usersSnapshot.stream()
-                        .map(user -> {
-                            return SelectFormularFieldPossibleValue.builder()
-                                    .id(user.getId())
-                                    .text((user.getFirstname() + " " + user.getLastname()).trim())
-                                    .disabled(user.isDeleted())
-                                    .build();
-                        })
-                        .toList())
-                .defaultValue(
-                        SecurityContextHolder.getContext().getAuthentication().getName())
-                .readonly(true)
-                .build());
-
-        formFactory.addField(TextareaFormularField.builder()
-                .label("Beschreibung")
-                .valuePath(KokuUserAppointmentDto.Fields.description)
-                .build());
-
-        formFactory.addContainer(GridContainer.builder().cols(1).md(2).build());
-        formFactory.addField(DateInputFormularField.builder()
-                .valuePath(KokuUserAppointmentDto.Fields.startDate)
-                .label("Datum von")
-                .required(true)
-                .build());
-        formFactory.addField(TimeInputFormularField.builder()
-                .valuePath(KokuUserAppointmentDto.Fields.startTime)
-                .label("Zeit von")
-                .required(true)
-                .build());
-        formFactory.addField(DateInputFormularField.builder()
-                .valuePath(KokuUserAppointmentDto.Fields.endDate)
-                .label("Datum bis")
-                .required(true)
-                .build());
-        formFactory.addField(TimeInputFormularField.builder()
-                .valuePath(KokuUserAppointmentDto.Fields.endTime)
-                .label("Zeit bis")
-                .required(true)
-                .build());
-        formFactory.endContainer();
-
-        formFactory.addButton(KokuFormButton.builder()
-                .buttonType(EnumButtonType.SUBMIT)
-                .text("Speichern")
-                .title("Jetzt speichern")
-                .styles(Arrays.asList(EnumButtonStyle.BLOCK))
-                .dockable(true)
-                .dockableSettings(ButtonDockableSettings.builder()
-                        .icon("SAVE")
-                        .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build())
-                .successEvents(Arrays.asList(
-                        FormNotificationEvent.builder()
-                                .text("Erfolgreich gespeichert")
-                                .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
-                                .build(),
-                        FormPropagateGlobalEventDto.builder()
-                                .eventName("user-appointment-updated")
-                                .build()))
-                .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                        .text("Fehler beim Speichern")
-                        .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+        formFactory
+                .place(formFactory.addContent(SelectFormularField.builder()
+                        .valuePath(KokuUserAppointmentDto.Fields.userId)
+                        .label("Nutzer")
+                        .id(KokuUserAppointmentDto.Fields.userId)
+                        .possibleValues(usersSnapshot.stream()
+                                .map(user -> {
+                                    return SelectFormularFieldPossibleValue.builder()
+                                            .id(user.getId())
+                                            .text((user.getFirstname() + " " + user.getLastname()).trim())
+                                            .disabled(user.isDeleted())
+                                            .build();
+                                })
+                                .toList())
+                        .defaultValue(SecurityContextHolder.getContext()
+                                .getAuthentication()
+                                .getName())
+                        .readonly(true)
                         .build()))
-                .build());
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addContainer(ConditionalContainer.builder()
+        formFactory
+                .place(formFactory.addContent(TextareaFormularField.builder()
+                        .label("Beschreibung")
+                        .valuePath(KokuUserAppointmentDto.Fields.description)
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
+
+        final String container1Id =
+                formFactory.addContent(GridContainer.builder().cols(1).md(2).build());
+        formFactory.place(container1Id).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(DateInputFormularField.builder()
+                        .valuePath(KokuUserAppointmentDto.Fields.startDate)
+                        .label("Datum von")
+                        .required(true)
+                        .build()))
+                .in(container1Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(TimeInputFormularField.builder()
+                        .valuePath(KokuUserAppointmentDto.Fields.startTime)
+                        .label("Zeit von")
+                        .required(true)
+                        .build()))
+                .in(container1Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(DateInputFormularField.builder()
+                        .valuePath(KokuUserAppointmentDto.Fields.endDate)
+                        .label("Datum bis")
+                        .required(true)
+                        .build()))
+                .in(container1Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(TimeInputFormularField.builder()
+                        .valuePath(KokuUserAppointmentDto.Fields.endTime)
+                        .label("Zeit bis")
+                        .required(true)
+                        .build()))
+                .in(container1Id)
+                .outlet(FormOutlet.CONTENT);
+
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Speichern")
+                        .title("Jetzt speichern")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK))
+                        .dockable(true)
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("SAVE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                FormNotificationEvent.builder()
+                                        .text("Erfolgreich gespeichert")
+                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                        .build(),
+                                FormPropagateGlobalEventDto.builder()
+                                        .eventName("user-appointment-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                                .text("Fehler beim Speichern")
+                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                                .build()))
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
+
+        final String container2Id = formFactory.addContent(ConditionalContainer.builder()
                 .compareValuePath(KokuUserAppointmentDto.Fields.deleted)
                 .expectedValue(Boolean.FALSE)
                 .build());
-        formFactory.addButton(KokuFormButton.builder()
-                .id("DeletePrivateAppointmentButton")
-                .buttonType(EnumButtonType.SUBMIT)
-                .text("Löschen")
-                .title("Jetzt löschen")
-                .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.ERROR, EnumButtonStyle.OUTLINE))
-                .dockableSettings(ButtonDockableSettings.builder()
-                        .icon("TRASH")
-                        .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.ERROR))
-                        .build())
-                .submitPayload(KokuUserAppointmentDto.builder().deleted(true).build())
-                .userConfirmation(FormUserConfirmationDto.builder()
-                        .headline("Termin löschen")
-                        .content("Termin vom :date als gelöscht markieren?")
-                        .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
-                                .param(":date")
-                                .sourcePath(KokuUserAppointmentDto.Fields.startDate)
-                                .build()))
-                        .build())
-                .successEvents(Arrays.asList(
-                        FormNotificationEvent.builder()
-                                .text("Termin vom :date erfolgreich als gelöscht markiert")
-                                .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+        formFactory.place(container2Id).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .id("DeletePrivateAppointmentButton")
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Löschen")
+                        .title("Jetzt löschen")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.ERROR, EnumButtonStyle.OUTLINE))
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("TRASH")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.ERROR))
+                                .build())
+                        .submitPayload(
+                                KokuUserAppointmentDto.builder().deleted(true).build())
+                        .userConfirmation(FormUserConfirmationDto.builder()
+                                .headline("Termin löschen")
+                                .content("Termin vom :date als gelöscht markieren?")
+                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                        .param(":date")
+                                        .sourcePath(KokuUserAppointmentDto.Fields.startDate)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                FormNotificationEvent.builder()
+                                        .text("Termin vom :date erfolgreich als gelöscht markiert")
+                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
+                                                .param(":date")
+                                                .sourcePath(KokuUserAppointmentDto.Fields.startDate)
+                                                .build()))
+                                        .build(),
+                                FormPropagateGlobalEventDto.builder()
+                                        .eventName("user-appointment-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                                .text("Termin vom :date konnte nicht als gelöscht markiert werden")
+                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
                                         .param(":date")
                                         .sourcePath(KokuUserAppointmentDto.Fields.startDate)
                                         .build()))
-                                .build(),
-                        FormPropagateGlobalEventDto.builder()
-                                .eventName("user-appointment-updated")
-                                .build()))
-                .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                        .text("Termin vom :date konnte nicht als gelöscht markiert werden")
-                        .serenity(FormNotificationEventSerenityEnumDto.ERROR)
-                        .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
-                                .param(":date")
-                                .sourcePath(KokuUserAppointmentDto.Fields.startDate)
                                 .build()))
                         .build()))
-                .build());
-        formFactory.endContainer();
+                .in(container2Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addContainer(ConditionalContainer.builder()
+        final String container3Id = formFactory.addContent(ConditionalContainer.builder()
                 .compareValuePath(KokuUserAppointmentDto.Fields.deleted)
                 .expectedValue(Boolean.TRUE)
                 .build());
-        formFactory.addButton(KokuFormButton.builder()
-                .id("RestorePrivateAppointmentButton")
-                .buttonType(EnumButtonType.SUBMIT)
-                .text("Wiederherstellen")
-                .title("Jetzt wiederherstellen")
-                .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.SUCCESS, EnumButtonStyle.OUTLINE))
-                .dockableSettings(ButtonDockableSettings.builder()
-                        .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                        .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.SUCCESS))
-                        .build())
-                .submitPayload(KokuUserAppointmentDto.builder().deleted(false).build())
-                .userConfirmation(FormUserConfirmationDto.builder()
-                        .headline("Termin wiederherstellen")
-                        .content("Termin vom :date wiederherstellen?")
-                        .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
-                                .param(":date")
-                                .sourcePath(KokuUserAppointmentDto.Fields.startDate)
-                                .build()))
-                        .build())
-                .successEvents(Arrays.asList(
-                        FormNotificationEvent.builder()
-                                .text("Termin vom :date wurde erfolgreich wiederhergestellt")
-                                .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+        formFactory.place(container3Id).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .id("RestorePrivateAppointmentButton")
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Wiederherstellen")
+                        .title("Jetzt wiederherstellen")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.SUCCESS, EnumButtonStyle.OUTLINE))
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("ARROW_LEFT_START_ON_RECTANGLE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.SUCCESS))
+                                .build())
+                        .submitPayload(
+                                KokuUserAppointmentDto.builder().deleted(false).build())
+                        .userConfirmation(FormUserConfirmationDto.builder()
+                                .headline("Termin wiederherstellen")
+                                .content("Termin vom :date wiederherstellen?")
+                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                        .param(":date")
+                                        .sourcePath(KokuUserAppointmentDto.Fields.startDate)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                FormNotificationEvent.builder()
+                                        .text("Termin vom :date wurde erfolgreich wiederhergestellt")
+                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
+                                                .param(":date")
+                                                .sourcePath(KokuUserAppointmentDto.Fields.startDate)
+                                                .build()))
+                                        .build(),
+                                FormPropagateGlobalEventDto.builder()
+                                        .eventName("user-appointment-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                                .text("Termin vom :date konnte nicht wiederhergestellt werden")
+                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
                                         .param(":date")
                                         .sourcePath(KokuUserAppointmentDto.Fields.startDate)
                                         .build()))
-                                .build(),
-                        FormPropagateGlobalEventDto.builder()
-                                .eventName("user-appointment-updated")
-                                .build()))
-                .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                        .text("Termin vom :date konnte nicht wiederhergestellt werden")
-                        .serenity(FormNotificationEventSerenityEnumDto.ERROR)
-                        .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
-                                .param(":date")
-                                .sourcePath(KokuUserAppointmentDto.Fields.startDate)
                                 .build()))
                         .build()))
-                .build());
-        formFactory.endContainer();
+                .in(container3Id)
+                .outlet(FormOutlet.CONTENT);
 
         formFactory.addGlobalEventListener(FormViewEventPayloadSourceUpdateGlobalEventListenerDto.builder()
                 .eventName("user-appointment-updated")
                 .idPath(KokuUserAppointmentDto.Fields.id)
                 .build());
 
-        return formFactory.create();
+        return formFactory.create(rootId);
     }
 
     @GetMapping("/users/appointments/list")

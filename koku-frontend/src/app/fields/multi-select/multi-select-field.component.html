@@ -30,14 +30,7 @@
               tabindex="0"
               (blur)="blurred.emit($event)"
               (focus)="focused.emit($event)"
-              [class.badge-neutral]="possibleValue.color === 'NEUTRAL'"
-              [class.badge-primary]="possibleValue.color === undefined || possibleValue.color === 'PRIMARY'"
-              [class.badge-secondary]="possibleValue.color === 'SECONDARY'"
-              [class.badge-accent]="possibleValue.color === 'ACCENT'"
-              [class.badge-info]="possibleValue.color === 'INFO'"
-              [class.badge-success]="possibleValue.color === 'SUCCESS'"
-              [class.badge-warning]="possibleValue.color === 'WARNING'"
-              [class.badge-error]="possibleValue.color === 'ERROR'"
+              [class]="colorBadgeClass(possibleValue.color)"
               #badgeEl
             >
               @if (badgeContentTemplate(); as badgeContentTemplate) {

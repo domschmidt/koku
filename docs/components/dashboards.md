@@ -30,7 +30,7 @@ return dashboardFactory.create();
 
 ## Frontend-Rendering
 
-Das Frontend nutzt `DASHBOARD_CONTENT_SETUP` aus `koku-frontend/src/app/dashboard-binding/registry.ts`. Dashboard-Panels können wiederum andere Content-Setups verwenden, etwa `CHART_CONTENT_SETUP` für Charts.
+Das Frontend nutzt `DASHBOARD_CONTENT_REGISTRY` aus `koku-frontend/src/app/dashboard-binding/registry.ts`. Dashboard-Panels können wiederum andere Registries verwenden, etwa `CHART_FILTER_REGISTRY` für Chart-Filter.
 
 ## Panel-Typen
 
@@ -55,7 +55,7 @@ flowchart TD
   Dashboard["Dashboard"] --> Text["Text Panel"]
   Dashboard --> Chart["Chart Panel"]
   Dashboard --> Calendar["Appointments Panel"]
-  Chart --> ChartSetup["CHART_CONTENT_SETUP"]
+  Chart --> ChartSetup["CHART_FILTER_REGISTRY"]
   Calendar --> CalendarSetup["CALENDAR_CONTENT_SETUP"]
 ```
 
@@ -66,7 +66,7 @@ Neue Dashboard-Panels folgen diesem Muster:
 1. Dashboard-Panel-DTO ergänzen.
 2. TypeScript-Typen generieren.
 3. Angular-Panel-Komponente bauen.
-4. In `DASHBOARD_CONTENT_SETUP` registrieren.
+4. In `DASHBOARD_CONTENT_REGISTRY` registrieren.
 5. Backend-Factory verwendet das neue Panel.
 
 ## Pflegehinweise

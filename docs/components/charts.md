@@ -38,7 +38,7 @@ Das Backend ist verantwortlich für:
 
 ## Frontend-Rendering
 
-Das Frontend nutzt `CHART_CONTENT_SETUP` aus `koku-frontend/src/app/chart-binding/registry.ts`. Die Chart-Komponenten interpretieren das DTO und rendern es konsistent.
+Das Frontend nutzt `CHART_FILTER_REGISTRY` aus `koku-frontend/src/app/chart-binding/registry.ts` für deklarative Chart-Filter. Die Chart-Komponenten interpretieren das DTO und rendern es konsistent.
 
 Das Frontend kennt dabei nicht die fachliche Berechnungslogik. Es rendert nur die deklarierte Struktur.
 
@@ -71,7 +71,7 @@ Neue Chart-Typen folgen diesem Muster:
 1. Chart-DTO und `@JsonTypeName` ergänzen.
 2. TypeScript-Typen generieren.
 3. Chart-Rendering-Komponente ergänzen.
-4. In `CHART_CONTENT_SETUP` registrieren.
+4. In `CHART_FILTER_REGISTRY` registrieren.
 5. Backend-Endpunkt liefert neues Chart-DTO.
 
 ## Pflegehinweise

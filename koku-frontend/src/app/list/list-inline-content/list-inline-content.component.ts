@@ -1,12 +1,12 @@
 import { booleanAttribute, Component, input, output } from '@angular/core';
 import { ListContentSetup } from '../list.component';
-import { SignalComponentIoModule } from 'ng-dynamic-component/signal-component-io';
-import { ComponentOutletInjectorModule, DynamicComponent, DynamicIoDirective } from 'ng-dynamic-component';
 import { OutletDirective } from '../../portal/outlet.directive';
+import { KokuDynamicHostDirective } from '../../dynamic-host/dynamic-host.directive';
+import { createStableRecipe, requireRecipeFactory } from '../../dynamic-host/recipe.utils';
 
 @Component({
   selector: '[list-inline-content],list-inline-content',
-  imports: [SignalComponentIoModule, DynamicIoDirective, ComponentOutletInjectorModule, DynamicComponent],
+  imports: [KokuDynamicHostDirective],
   templateUrl: './list-inline-content.component.html',
   styleUrl: './list-inline-content.component.css',
 })
@@ -21,6 +21,32 @@ export class ListInlineContentComponent {
 
   closeRequested = output<void>();
   openRoutedContentRequested = output<string[]>();
+
+  inlineContentRecipe = createStableRecipe({
+    identity: () => {
+      const content = this.content();
+      return {
+        content,
+        factory: requireRecipeFactory(
+          this.contentSetup().inlineContentRegistry,
+          content['@type'],
+          'list inline content',
+        ),
+      };
+    },
+    equal: (previous, current) => previous.content === current.content && previous.factory === current.factory,
+    create: ({ factory }) =>
+      factory({
+        content: this.content,
+        loading: this.loading,
+        urlSegments: this.urlSegments,
+        parentRoutePath: this.parentRoutePath,
+        buttonDockOutlet: this.buttonDockOutlet,
+        context: this.context,
+        close: () => this.closeInlineContent(),
+        openRoutedContent: (routes: string[]) => this.openRoutedContent(routes),
+      }),
+  });
 
   closeInlineContent() {
     this.closeRequested.emit();

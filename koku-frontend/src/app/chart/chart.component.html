@@ -4,7 +4,7 @@
       chart-filter-renderer
       [content]="filter"
       [loading]="loading()"
-      [contentSetup]="contentSetup()"
+      [filterRegistry]="filterRegistry()"
       (filterValueChanged)="onFilterValueChanged(filter, $event)"
     ></div>
   }

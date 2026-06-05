@@ -6,7 +6,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
-import de.domschmidt.formular.factory.DefaultViewContentIdGenerator;
+import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
@@ -99,31 +99,34 @@ public class CustomerController {
 
     @GetMapping("/customers/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory(
-                new DefaultViewContentIdGenerator(),
-                GridContainer.builder().cols(1).build());
+        final FormViewFactory formFactory = new FormViewFactory();
+        final String rootId =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
 
-        addMainSection(formFactory);
-        addLivingSection(formFactory);
-        addPhoneSection(formFactory);
-        addHealthSection(formFactory);
-        addAllergySection(formFactory);
-        addIllnessSection(formFactory);
+        addMainSection(formFactory, rootId);
+        addLivingSection(formFactory, rootId);
+        addPhoneSection(formFactory, rootId);
+        addHealthSection(formFactory, rootId);
+        addAllergySection(formFactory, rootId);
+        addIllnessSection(formFactory, rootId);
 
-        formFactory.addButton(KokuFormButton.builder()
-                .buttonType(EnumButtonType.SUBMIT)
-                .text("Speichern")
-                .title("Jetzt speichern")
-                .styles(Arrays.asList(EnumButtonStyle.BLOCK))
-                .dockable(true)
-                .dockableSettings(ButtonDockableSettings.builder()
-                        .icon("SAVE")
-                        .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build())
-                .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build());
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Speichern")
+                        .title("Jetzt speichern")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK))
+                        .dockable(true)
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("SAVE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
+                                .build())
+                        .postProcessingAction(FormButtonReloadAction.builder().build())
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        return formFactory.create();
+        return formFactory.create(rootId);
     }
 
     @GetMapping("/customers/list")
@@ -558,204 +561,304 @@ public class CustomerController {
         }
     }
 
-    private static void addIllnessSection(FormViewFactory formFactory) {
-        formFactory.addContainer(
+    private static void addIllnessSection(FormViewFactory formFactory, final String rootId) {
+        final String container1Id = formFactory.addContent(
                 FieldsetContainer.builder().title("Erkrankungen").build());
-        formFactory.addContainer(GridContainer.builder().cols(1).xl(3).build());
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.contacts)
-                .label("Kontaktlinsen")
-                .build());
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.glasses)
-                .label("Brillenträger")
-                .build());
+        formFactory.place(container1Id).in(rootId).outlet(FormOutlet.CONTENT);
+        final String container2Id =
+                formFactory.addContent(GridContainer.builder().cols(1).xl(3).build());
+        formFactory.place(container2Id).in(container1Id).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.contacts)
+                        .label("Kontaktlinsen")
+                        .build()))
+                .in(container2Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.glasses)
+                        .label("Brillenträger")
+                        .build()))
+                .in(container2Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.dryEyes)
-                .label("Trockene Augen")
-                .build());
-        formFactory.endContainer();
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.dryEyes)
+                        .label("Trockene Augen")
+                        .build()))
+                .in(container2Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addContainer(GridContainer.builder().cols(1).build());
+        final String container3Id =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
+        formFactory.place(container3Id).in(container1Id).outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(TextareaFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.eyeDisease)
-                .label("Andere Augenerkrankungen")
-                .build());
-        formFactory.endContainer();
+        formFactory
+                .place(formFactory.addContent(TextareaFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.eyeDisease)
+                        .label("Andere Augenerkrankungen")
+                        .build()))
+                .in(container3Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addContainer(GridContainer.builder().cols(1).xl(3).build());
+        final String container4Id =
+                formFactory.addContent(GridContainer.builder().cols(1).xl(3).build());
+        formFactory.place(container4Id).in(container1Id).outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.asthma)
-                .label("Asthma")
-                .build());
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.circulationProblems)
-                .label("Kreislaufprobleme")
-                .build());
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.asthma)
+                        .label("Asthma")
+                        .build()))
+                .in(container4Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.circulationProblems)
+                        .label("Kreislaufprobleme")
+                        .build()))
+                .in(container4Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.epilepsy)
-                .label("Epilepsie")
-                .build());
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.epilepsy)
+                        .label("Epilepsie")
+                        .build()))
+                .in(container4Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.diabetes)
-                .label("Diabetes")
-                .build());
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.diabetes)
+                        .label("Diabetes")
+                        .build()))
+                .in(container4Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.claustrophobia)
-                .label("Klaustrophobie")
-                .build());
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.claustrophobia)
+                        .label("Klaustrophobie")
+                        .build()))
+                .in(container4Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.neurodermatitis)
-                .label("Neurodermitis")
-                .build());
-        formFactory.endContainer();
-        formFactory.endContainer();
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.neurodermatitis)
+                        .label("Neurodermitis")
+                        .build()))
+                .in(container4Id)
+                .outlet(FormOutlet.CONTENT);
     }
 
-    private static void addAllergySection(FormViewFactory formFactory) {
-        formFactory.addContainer(FieldsetContainer.builder().title("Allergien").build());
-        formFactory.addContainer(GridContainer.builder().cols(1).xl(3).build());
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.hayFever)
-                .label("Heuschnupfen")
-                .build());
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.plasterAllergy)
-                .label("Allergie gegen Pflaster")
-                .build());
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.cyanoacrylateAllergy)
-                .label("Allergie gegen Cyanacrylat")
-                .build());
-        formFactory.endContainer();
+    private static void addAllergySection(FormViewFactory formFactory, final String rootId) {
+        final String container5Id = formFactory.addContent(
+                FieldsetContainer.builder().title("Allergien").build());
+        formFactory.place(container5Id).in(rootId).outlet(FormOutlet.CONTENT);
+        final String container6Id =
+                formFactory.addContent(GridContainer.builder().cols(1).xl(3).build());
+        formFactory.place(container6Id).in(container5Id).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.hayFever)
+                        .label("Heuschnupfen")
+                        .build()))
+                .in(container6Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.plasterAllergy)
+                        .label("Allergie gegen Pflaster")
+                        .build()))
+                .in(container6Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.cyanoacrylateAllergy)
+                        .label("Allergie gegen Cyanacrylat")
+                        .build()))
+                .in(container6Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addContainer(GridContainer.builder().cols(1).build());
-        formFactory.addField(TextareaFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.allergy)
-                .label("Andere Allergien")
-                .build());
-        formFactory.endContainer();
-        formFactory.endContainer();
+        final String container7Id =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
+        formFactory.place(container7Id).in(container5Id).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(TextareaFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.allergy)
+                        .label("Andere Allergien")
+                        .build()))
+                .in(container7Id)
+                .outlet(FormOutlet.CONTENT);
     }
 
-    private static void addHealthSection(FormViewFactory formFactory) {
-        formFactory.addContainer(FieldsetContainer.builder().title("Gesundheit").build());
-        formFactory.addContainer(GridContainer.builder().cols(1).xl(3).build());
+    private static void addHealthSection(FormViewFactory formFactory, final String rootId) {
+        final String container8Id = formFactory.addContent(
+                FieldsetContainer.builder().title("Gesundheit").build());
+        formFactory.place(container8Id).in(rootId).outlet(FormOutlet.CONTENT);
+        final String container9Id =
+                formFactory.addContent(GridContainer.builder().cols(1).xl(3).build());
+        formFactory.place(container9Id).in(container8Id).outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.covid19vaccinated)
-                .label("Covid 19 geimpft")
-                .build());
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.covid19vaccinated)
+                        .label("Covid 19 geimpft")
+                        .build()))
+                .in(container9Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.covid19boostered)
-                .label("Covid 19 geboostert")
-                .build());
-        formFactory.endContainer();
-        formFactory.addContainer(GridContainer.builder().cols(1).build());
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.covid19boostered)
+                        .label("Covid 19 geboostert")
+                        .build()))
+                .in(container9Id)
+                .outlet(FormOutlet.CONTENT);
+        final String container10Id =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
+        formFactory.place(container10Id).in(container8Id).outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(TextareaFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.medicalTolerance)
-                .label("Medizinische Informationen")
-                .build());
-
-        formFactory.endContainer();
-        formFactory.endContainer();
+        formFactory
+                .place(formFactory.addContent(TextareaFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.medicalTolerance)
+                        .label("Medizinische Informationen")
+                        .build()))
+                .in(container10Id)
+                .outlet(FormOutlet.CONTENT);
     }
 
-    private static void addPhoneSection(FormViewFactory formFactory) {
-        formFactory.addContainer(
+    private static void addPhoneSection(FormViewFactory formFactory, final String rootId) {
+        final String container11Id = formFactory.addContent(
                 FieldsetContainer.builder().title("Erreichbarkeit").build());
-        formFactory.addContainer(GridContainer.builder().cols(1).xl(3).build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.privateTelephoneNo)
-                .label("Private Telefonnummer")
-                .type(EnumInputFormularFieldType.TEL)
-                .build());
+        formFactory.place(container11Id).in(rootId).outlet(FormOutlet.CONTENT);
+        final String container12Id =
+                formFactory.addContent(GridContainer.builder().cols(1).xl(3).build());
+        formFactory.place(container12Id).in(container11Id).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.privateTelephoneNo)
+                        .label("Private Telefonnummer")
+                        .type(EnumInputFormularFieldType.TEL)
+                        .build()))
+                .in(container12Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.mobileTelephoneNo)
-                .label("Mobile Telefonnummer")
-                .type(EnumInputFormularFieldType.TEL)
-                .build());
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.mobileTelephoneNo)
+                        .label("Mobile Telefonnummer")
+                        .type(EnumInputFormularFieldType.TEL)
+                        .build()))
+                .in(container12Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.businessTelephoneNo)
-                .label("Geschäftliche Telefonnummer")
-                .type(EnumInputFormularFieldType.TEL)
-                .build());
-
-        formFactory.endContainer();
-        formFactory.endContainer();
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.businessTelephoneNo)
+                        .label("Geschäftliche Telefonnummer")
+                        .type(EnumInputFormularFieldType.TEL)
+                        .build()))
+                .in(container12Id)
+                .outlet(FormOutlet.CONTENT);
     }
 
-    private static void addLivingSection(FormViewFactory formFactory) {
-        formFactory.addContainer(
+    private static void addLivingSection(FormViewFactory formFactory, final String rootId) {
+        final String container13Id = formFactory.addContent(
                 FieldsetContainer.builder().title("Wohnsituation").build());
-        formFactory.addContainer(GridContainer.builder().cols(1).build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.address)
-                .label("Adresse")
-                .build());
+        formFactory.place(container13Id).in(rootId).outlet(FormOutlet.CONTENT);
+        final String container14Id =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
+        formFactory.place(container14Id).in(container13Id).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.address)
+                        .label("Adresse")
+                        .build()))
+                .in(container14Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.endContainer();
-        formFactory.addContainer(GridContainer.builder().cols(2).build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.postalCode)
-                .label("Postleitzahl")
-                .build());
+        final String container15Id =
+                formFactory.addContent(GridContainer.builder().cols(2).build());
+        formFactory.place(container15Id).in(container13Id).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.postalCode)
+                        .label("Postleitzahl")
+                        .build()))
+                .in(container15Id)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.city)
-                .label("Wohnort")
-                .build());
-
-        formFactory.endContainer();
-        formFactory.endContainer();
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.city)
+                        .label("Wohnort")
+                        .build()))
+                .in(container15Id)
+                .outlet(FormOutlet.CONTENT);
     }
 
-    private static void addMainSection(FormViewFactory formFactory) {
-        formFactory.addContainer(GridContainer.builder().cols(1).build());
-        formFactory.addField(CheckboxFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.onFirstnameBasis)
-                .label("Duzen")
-                .build());
-        formFactory.endContainer();
-        formFactory.addContainer(GridContainer.builder().cols(1).xl(2).build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.firstName)
-                .label("Vorname")
-                .required(true)
-                .build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.lastName)
-                .label("Nachname")
-                .required(true)
-                .build());
-        formFactory.endContainer();
-        formFactory.addContainer(GridContainer.builder().cols(1).build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.email)
-                .label("Email")
-                .type(EnumInputFormularFieldType.EMAIL)
-                .build());
-        formFactory.endContainer();
-        formFactory.addContainer(GridContainer.builder().cols(1).build());
-        formFactory.addField(DateInputFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.birthday)
-                .label("Geburtstag")
-                .build());
-        formFactory.addField(TextareaFormularField.builder()
-                .valuePath(KokuCustomerDto.Fields.additionalInfo)
-                .label("Zusätzliche Informationen")
-                .build());
-        formFactory.endContainer();
+    private static void addMainSection(FormViewFactory formFactory, final String rootId) {
+        final String container16Id =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
+        formFactory.place(container16Id).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(CheckboxFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.onFirstnameBasis)
+                        .label("Duzen")
+                        .build()))
+                .in(container16Id)
+                .outlet(FormOutlet.CONTENT);
+        final String container17Id =
+                formFactory.addContent(GridContainer.builder().cols(1).xl(2).build());
+        formFactory.place(container17Id).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.firstName)
+                        .label("Vorname")
+                        .required(true)
+                        .build()))
+                .in(container17Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.lastName)
+                        .label("Nachname")
+                        .required(true)
+                        .build()))
+                .in(container17Id)
+                .outlet(FormOutlet.CONTENT);
+        final String container18Id =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
+        formFactory.place(container18Id).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.email)
+                        .label("Email")
+                        .type(EnumInputFormularFieldType.EMAIL)
+                        .build()))
+                .in(container18Id)
+                .outlet(FormOutlet.CONTENT);
+        final String container19Id =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
+        formFactory.place(container19Id).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(DateInputFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.birthday)
+                        .label("Geburtstag")
+                        .build()))
+                .in(container19Id)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(TextareaFormularField.builder()
+                        .valuePath(KokuCustomerDto.Fields.additionalInfo)
+                        .label("Zusätzliche Informationen")
+                        .build()))
+                .in(container19Id)
+                .outlet(FormOutlet.CONTENT);
     }
 }

@@ -1,19 +1,5 @@
 @if (register(); as register) {
-  @for (action of register.actions || []; track $index) {
-    @if (contentSetup().actionRegistry[action['@type']]; as registeredAction) {
-      <ndc-dynamic
-        [ndcDynamicComponent]="registeredAction.componentType"
-        [ndcDynamicInputs]="{
-          value: action,
-          register: register,
-        }"
-        [ngComponentOutletNdcDynamicInputs]="
-          registeredAction.inputBindings ? registeredAction.inputBindings(this, action) : {}
-        "
-        [ngComponentOutletNdcDynamicOutputs]="
-          registeredAction.outputBindings ? registeredAction.outputBindings(this, action) : {}
-        "
-      ></ndc-dynamic>
-    }
+  @for (action of register.actions || []; track action) {
+    <list-action-renderer [action]="action" [parent]="this" />
   }
 }

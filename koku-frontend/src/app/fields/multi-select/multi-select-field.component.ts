@@ -17,6 +17,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { isMatch } from '../../utils/ismatch';
 import { get } from '../../utils/get';
 import { set } from '../../utils/set';
+import { colorBadgeClass } from '../../utils/color.utils';
 
 @Component({
   selector: 'multi-select-field',
@@ -26,6 +27,7 @@ import { set } from '../../utils/set';
   standalone: true,
 })
 export class MultiSelectFieldComponent {
+  readonly colorBadgeClass = colorBadgeClass;
   value = input.required<any[]>();
   defaultValue = input<string[]>([]);
   name = input.required<string>();

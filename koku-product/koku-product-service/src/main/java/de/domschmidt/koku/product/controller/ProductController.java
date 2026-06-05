@@ -11,7 +11,7 @@ import de.domschmidt.chart.dto.response.values.NumericSeriesDto;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
-import de.domschmidt.formular.factory.DefaultViewContentIdGenerator;
+import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
@@ -26,7 +26,6 @@ import de.domschmidt.koku.dto.formular.fields.input.EnumInputFormularFieldType;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularFieldPossibleValue;
-import de.domschmidt.koku.dto.formular.fields.slots.KokuFieldSlotButton;
 import de.domschmidt.koku.dto.formular.listeners.*;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldTypeEnumDto;
@@ -107,16 +106,16 @@ public class ProductController {
 
     @GetMapping("/products/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory(
-                new DefaultViewContentIdGenerator(),
-                GridContainer.builder().cols(1).build());
+        final FormViewFactory formFactory = new FormViewFactory();
+        final String rootId =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
 
         final QProductManufacturer qProductManufacturer = QProductManufacturer.productManufacturer;
         final List<ProductManufacturer> productManufacturersSnapshot = new JPAQuery<>(this.entityManager)
                 .select(qProductManufacturer)
                 .from(qProductManufacturer)
                 .fetch();
-        final String productManufacturerFieldRef = formFactory.addField(SelectFormularField.builder()
+        final String productManufacturerFieldRef = formFactory.addContent(SelectFormularField.builder()
                 .valuePath(KokuProductDto.Fields.manufacturerId)
                 .label("Hersteller")
                 .required(true)
@@ -129,18 +128,24 @@ public class ProductController {
                                     .build();
                         })
                         .toList())
-                .appendOuter(KokuFieldSlotButton.builder()
-                        .icon("PLUS")
-                        .buttonType(EnumButtonType.BUTTON)
-                        .title("Neuer Hersteller anlegen")
-                        .build())
                 .build());
+        formFactory.place(productManufacturerFieldRef).in(rootId).outlet(FormOutlet.CONTENT);
+        final String createProductManufacturerActionId = formFactory.addContent(KokuFormButton.builder()
+                .icon("PLUS")
+                .buttonType(EnumButtonType.BUTTON)
+                .title("Neuer Hersteller anlegen")
+                .build());
+        formFactory.place(createProductManufacturerActionId).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(createProductManufacturerActionId)
+                .in(productManufacturerFieldRef)
+                .outlet(FormOutlet.APPEND_OUTER);
         formFactory.addBusinessRule(KokuBusinessRuleDto.builder()
                 .id("CreateProductManufacturer")
                 .reference(KokuBusinessRuleFieldReferenceDto.builder()
-                        .reference(productManufacturerFieldRef)
+                        .reference(createProductManufacturerActionId)
                         .listener(KokuBusinessRuleFieldReferenceListenerDto.builder()
-                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK_APPEND_OUTER)
+                                .event(KokuBusinessRuleFieldReferenceListenerEventEnum.CLICK)
                                 .build())
                         .build())
                 .execution(KokuBusinessRuleOpenDialogContentDto.builder()
@@ -193,32 +198,41 @@ public class ProductController {
                                         .build())
                                 .build()))
                 .build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuProductDto.Fields.name)
-                .label("Name")
-                .required(true)
-                .build());
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuProductDto.Fields.price)
-                .type(EnumInputFormularFieldType.NUMBER)
-                .label("Preis")
-                .regexp("^\\d{0,19}([\\.]\\d{0,2})?$")
-                .build());
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuProductDto.Fields.name)
+                        .label("Name")
+                        .required(true)
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuProductDto.Fields.price)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Preis")
+                        .regexp("^\\d{0,19}([\\.]\\d{0,2})?$")
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addButton(KokuFormButton.builder()
-                .buttonType(EnumButtonType.SUBMIT)
-                .text("Speichern")
-                .title("Jetzt speichern")
-                .styles(Arrays.asList(EnumButtonStyle.BLOCK))
-                .dockable(true)
-                .dockableSettings(ButtonDockableSettings.builder()
-                        .icon("SAVE")
-                        .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build())
-                .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build());
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Speichern")
+                        .title("Jetzt speichern")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK))
+                        .dockable(true)
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("SAVE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
+                                .build())
+                        .postProcessingAction(FormButtonReloadAction.builder().build())
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        return formFactory.create();
+        return formFactory.create(rootId);
     }
 
     @GetMapping("/products/list")

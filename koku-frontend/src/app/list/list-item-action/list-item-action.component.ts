@@ -1,15 +1,14 @@
 import { Component, DestroyRef, inject, input, output } from '@angular/core';
 import { ListContentSetup, ListInlineItem, ListItemSetup } from '../list.component';
-import { SignalComponentIoModule } from 'ng-dynamic-component/signal-component-io';
-import { ComponentOutletInjectorModule, DynamicComponent, DynamicIoDirective } from 'ng-dynamic-component';
 import { HttpClient } from '@angular/common/http';
 import { ModalService } from '../../modal/modal.service';
 import { ToastService } from '../../toast/toast.service';
 import { UNIQUE_REF_GENERATOR } from '../../utils/uniqueRef';
+import { ListActionRendererComponent } from './list-action-renderer.component';
 
 @Component({
   selector: '[list-item-action],list-item-action',
-  imports: [SignalComponentIoModule, DynamicIoDirective, ComponentOutletInjectorModule, DynamicComponent],
+  imports: [ListActionRendererComponent],
   templateUrl: './list-item-action.component.html',
 })
 export class ListItemActionComponent {

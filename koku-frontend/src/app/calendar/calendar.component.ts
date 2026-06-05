@@ -1,4 +1,14 @@
-import { Component, DestroyRef, inject, InjectionToken, input, OnDestroy, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  inject,
+  InjectionToken,
+  input,
+  OnDestroy,
+  Signal,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 
@@ -11,15 +21,12 @@ import { IconComponent } from '../icon/icon.component';
 import { NavigationEnd, Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { ModalService } from '../modal/modal.service';
-import { ModalComponent } from '../modal/modal.component';
-import { CalendarInlineContentComponent } from '../calendar-binding/calendar-inline-content/calendar-inline-content.component';
-import { RenderedModalType } from '../modal/modal.type';
+import { ModalContentSetup, RenderedModalType } from '../modal/modal.type';
 import { deepEqual } from '../utils/deepEqual';
 import { CalendarOptions, EventInput, EventSourceInput } from '@fullcalendar/core/index.js';
 import { GLOBAL_EVENT_BUS } from '../events/global-events';
 import { UNIQUE_REF_GENERATOR } from '../utils/uniqueRef';
 import { KeyValuePipe, NgClass } from '@angular/common';
-import { AvatarComponent } from '../avatar/avatar.component';
 import { DateInputFieldComponent } from '../fields/input/date-input-field.component';
 import { MonthInputFieldComponent } from '../fields/input/month-input-field.component';
 import { WeekInputFieldComponent } from '../fields/input/week-input-field.component';
@@ -27,45 +34,43 @@ import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 import { parseIsoWeekValue } from '../fields/input/temporal-input.utils';
+import { DynamicRenderRecipe } from '../dynamic-host/dynamic-host.directive';
+import { OutletDirective } from '../portal/outlet.directive';
+import { CalendarActionRendererComponent } from './action-renderer/calendar-action-renderer.component';
+import { colorBorderClass, colorValue } from '../utils/color.utils';
 
 dayjs.extend(isoWeek);
 dayjs.extend(advancedFormat);
 
+export interface CalendarInlineContentRenderContext {
+  content: Signal<KokuDto.AbstractCalendarInlineContentDto>;
+  loading: Signal<boolean>;
+  contentSetup: Signal<CalendarContentSetup>;
+  urlSegments: Signal<Record<string, string> | null>;
+  buttonDockOutlet: Signal<OutletDirective | undefined>;
+  parentRoutePath: Signal<string>;
+  queryParams: Signal<Record<string, any>>;
+  close(): void;
+  openRoutedContent(routes: string[]): void;
+}
+
+export type CalendarInlineContentRecipeFactory = (context: CalendarInlineContentRenderContext) => DynamicRenderRecipe;
+
+export interface CalendarActionRenderContext {
+  action: Signal<KokuDto.AbstractCalendarActionDto>;
+  contentSetup: Signal<CalendarContentSetup>;
+  openRoutedContent(routes: string[]): void;
+  getPluginApi<T = any>(id: string): T | undefined;
+}
+
+export type CalendarActionRecipeFactory = (context: CalendarActionRenderContext) => DynamicRenderRecipe;
+
 export interface CalendarContentSetup {
   inlineContentRegistry: Partial<
-    Record<
-      KokuDto.AbstractCalendarInlineContentDto['@type'] | string,
-      {
-        componentType: any;
-        inputBindings?(
-          instance: CalendarInlineContentComponent,
-          content: KokuDto.AbstractCalendarInlineContentDto,
-        ): Record<string, any>;
-        outputBindings?(
-          instance: CalendarInlineContentComponent,
-          content: KokuDto.AbstractCalendarInlineContentDto,
-        ): Record<string, any>;
-      }
-    >
+    Record<KokuDto.AbstractCalendarInlineContentDto['@type'] | string, CalendarInlineContentRecipeFactory>
   >;
-  modalContentRegistry: Partial<
-    Record<
-      KokuDto.AbstractCalendarInlineContentDto['@type'] | string,
-      {
-        componentType: any;
-        inputBindings?(
-          instance: ModalComponent,
-          modal: RenderedModalType,
-          content: KokuDto.AbstractCalendarInlineContentDto,
-        ): Record<string, any>;
-        outputBindings?(
-          instance: ModalComponent,
-          modal: RenderedModalType,
-          content: KokuDto.AbstractCalendarInlineContentDto,
-        ): Record<string, any>;
-      }
-    >
-  >;
+  actionRegistry: Partial<Record<KokuDto.AbstractCalendarActionDto['@type'] | string, CalendarActionRecipeFactory>>;
+  modalContentRegistry: Partial<ModalContentSetup>;
 }
 
 export interface CalendarInlineItem {
@@ -120,8 +125,6 @@ export interface CalendarPlugin {
     currentCalendarAction: KokuDto.AbstractCalendarActionDto,
     updateCb: (updatedAction: KokuDto.AbstractCalendarActionDto) => void,
   ): void;
-
-  onCalendarActionClicked?(action: KokuDto.AbstractCalendarActionDto): void;
 }
 
 export type CalendarPluginFactory = (instance: CalendarComponent) => CalendarPlugin;
@@ -147,17 +150,18 @@ interface CalendarPersistedSettings {
     FullCalendarModule,
     IconComponent,
     KeyValuePipe,
-    AvatarComponent,
     NgClass,
     DateInputFieldComponent,
     MonthInputFieldComponent,
     WeekInputFieldComponent,
+    CalendarActionRendererComponent,
   ],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css',
   standalone: true,
 })
 export class CalendarComponent implements OnDestroy {
+  readonly colorBorderClass = colorBorderClass;
   destroyRef = inject(DestroyRef);
   router = inject(Router);
   modalService = inject(ModalService);
@@ -185,12 +189,20 @@ export class CalendarComponent implements OnDestroy {
   private routerUrlSubscription: Subscription | undefined;
 
   calendarActions = signal<Record<string, KokuDto.AbstractCalendarActionDto>>({});
+  readonly openRoutedContentFromAction = (routes: string[]) => this.openRoutedContent(routes);
+  readonly getPluginApiFromAction = <T = any>(id: string) => this.getPluginApi(id) as T | undefined;
   fullCalendarOptions = signal<CalendarOptions>({
     plugins: [dayGridPlugin, interactionPlugin, timeGridPlugin, rrulePlugin],
     height: 'auto',
     allDaySlot: true,
     locale: deLocale,
     headerToolbar: false,
+    eventDidMount: ({ el, event }) => {
+      const configuredColor = event.extendedProps['kokuColor'];
+      const color = typeof configuredColor === 'string' ? configuredColor : undefined;
+      el.style.setProperty('--koku-event-color', colorValue(color));
+      el.style.setProperty('--koku-event-background-color', colorValue(color, 300));
+    },
     eventResize: (args) => {
       const handler = args.event.extendedProps['onResizeHandler'];
       if (typeof handler === 'function') {
@@ -279,31 +291,6 @@ export class CalendarComponent implements OnDestroy {
   });
 
   registeredEventSourceFactories: Record<string, CalendarPluginEventSourceFactory> = {};
-  sourceItemBorderColors: Partial<Record<KokuDto.CalendarListSourceColorEnumDto, string>> = {
-    RED: 'border-red-400',
-    ORANGE: 'border-orange-400',
-    AMBER: 'border-amber-400',
-    YELLOW: 'border-yellow-400',
-    LIME: 'border-lime-400',
-    GREEN: 'border-green-400',
-    EMERALD: 'border-emerald-400',
-    TEAL: 'border-teal-400',
-    CYAN: 'border-cyan-400',
-    SKY: 'border-sky-400',
-    BLUE: 'border-blue-400',
-    INDIGO: 'border-indigo-400',
-    VIOLET: 'border-violet-400',
-    PURPLE: 'border-purple-400',
-    FUCHSIA: 'border-fuchsia-400',
-    PINK: 'border-pink-400',
-    ROSE: 'border-rose-400',
-    SLATE: 'border-slate-400',
-    GRAY: 'border-gray-400',
-    ZINC: 'border-zinc-400',
-    NEUTRAL: 'border-neutral-400',
-    STONE: 'border-stone-400',
-  };
-
   constructor() {
     toObservable(this.config).subscribe((config) => {
       let persistedCalendarSettings: CalendarPersistedSettings;
@@ -540,12 +527,6 @@ export class CalendarComponent implements OnDestroy {
       default: {
         return 'dayGridMonth';
       }
-    }
-  }
-
-  calendarActionClicked(action: KokuDto.AbstractCalendarActionDto) {
-    for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
-      currentPluginInstance.instance.onCalendarActionClicked?.(action);
     }
   }
 

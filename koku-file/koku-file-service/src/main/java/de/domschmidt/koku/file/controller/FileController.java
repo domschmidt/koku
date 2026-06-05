@@ -1,7 +1,7 @@
 package de.domschmidt.koku.file.controller;
 
 import de.domschmidt.formular.dto.FormViewDto;
-import de.domschmidt.formular.factory.DefaultViewContentIdGenerator;
+import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.dto.file.KokuFileDto;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
@@ -82,38 +82,44 @@ public class FileController {
 
     @GetMapping("/files/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory(
-                new DefaultViewContentIdGenerator(),
-                GridContainer.builder().cols(1).build());
+        final FormViewFactory formFactory = new FormViewFactory();
+        final String rootId =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
 
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuFileDto.Fields.filename)
-                .label("Dateiname")
-                .readonly(true)
-                .build());
-        formFactory.addField(SelectFormularField.builder()
-                .valuePath(KokuFileDto.Fields.customerId)
-                .label("Kunde")
-                .possibleValues(StreamSupport.stream(
-                                Spliterators.spliteratorUnknownSize(
-                                        this.customerKTableProcessor
-                                                .getCustomers()
-                                                .all(),
-                                        Spliterator.DISTINCT),
-                                false)
-                        .map(customer -> SelectFormularFieldPossibleValue.builder()
-                                .id(customer.key + "")
-                                .text(Stream.of(customer.value.getFirstname(), customer.value.getLastname())
-                                        .filter(s -> s != null && !s.isEmpty())
-                                        .collect(Collectors.joining(", ")))
-                                .disabled(customer.value.getDeleted())
-                                .build())
-                        .toList())
-                .label("Kunde")
-                .readonly(true)
-                .build());
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuFileDto.Fields.filename)
+                        .label("Dateiname")
+                        .readonly(true)
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(SelectFormularField.builder()
+                        .valuePath(KokuFileDto.Fields.customerId)
+                        .label("Kunde")
+                        .possibleValues(StreamSupport.stream(
+                                        Spliterators.spliteratorUnknownSize(
+                                                this.customerKTableProcessor
+                                                        .getCustomers()
+                                                        .all(),
+                                                Spliterator.DISTINCT),
+                                        false)
+                                .map(customer -> SelectFormularFieldPossibleValue.builder()
+                                        .id(customer.key + "")
+                                        .text(Stream.of(customer.value.getFirstname(), customer.value.getLastname())
+                                                .filter(s -> s != null && !s.isEmpty())
+                                                .collect(Collectors.joining(", ")))
+                                        .disabled(customer.value.getDeleted())
+                                        .build())
+                                .toList())
+                        .label("Kunde")
+                        .readonly(true)
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        return formFactory.create();
+        return formFactory.create(rootId);
     }
 
     @GetMapping("/files/list")

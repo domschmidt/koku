@@ -1,0 +1,109 @@
+@if (activeContent(); as content) {
+  @if (content.id) {
+    <template>
+      <div #prependOuter class="contents">
+        @for (slotContentId of runtime().childIds(content.id, outlets.PREPEND_OUTER)(); track slotContentId) {
+          @if (runtime().contentSignal(slotContentId)(); as slotContent) {
+            <div
+              formular-content-renderer
+              class="contents"
+              [runtime]="runtime()"
+              [content]="$any(slotContent)"
+              [contentRegistry]="contentRegistry()"
+              [loading]="loading()"
+              [submitting]="submitting()"
+              [placementOutlet]="outlets.PREPEND_OUTER"
+              [context]="context()"
+            ></div>
+          }
+        }
+      </div>
+    </template>
+    <template>
+      <div #prependInner class="contents">
+        @for (slotContentId of runtime().childIds(content.id, outlets.PREPEND_INNER)(); track slotContentId) {
+          @if (runtime().contentSignal(slotContentId)(); as slotContent) {
+            <div
+              formular-content-renderer
+              class="contents"
+              [runtime]="runtime()"
+              [content]="$any(slotContent)"
+              [contentRegistry]="contentRegistry()"
+              [loading]="loading()"
+              [submitting]="submitting()"
+              [placementOutlet]="outlets.PREPEND_INNER"
+              [context]="context()"
+            ></div>
+          }
+        }
+      </div>
+    </template>
+    <template>
+      <div #appendInner class="contents">
+        @for (slotContentId of runtime().childIds(content.id, outlets.APPEND_INNER)(); track slotContentId) {
+          @if (runtime().contentSignal(slotContentId)(); as slotContent) {
+            <div
+              formular-content-renderer
+              class="contents"
+              [runtime]="runtime()"
+              [content]="$any(slotContent)"
+              [contentRegistry]="contentRegistry()"
+              [loading]="loading()"
+              [submitting]="submitting()"
+              [placementOutlet]="outlets.APPEND_INNER"
+              [context]="context()"
+            ></div>
+          }
+        }
+      </div>
+    </template>
+    <template>
+      <div #appendOuter class="contents">
+        @for (slotContentId of runtime().childIds(content.id, outlets.APPEND_OUTER)(); track slotContentId) {
+          @if (runtime().contentSignal(slotContentId)(); as slotContent) {
+            <div
+              formular-content-renderer
+              class="contents"
+              [runtime]="runtime()"
+              [content]="$any(slotContent)"
+              [contentRegistry]="contentRegistry()"
+              [loading]="loading()"
+              [submitting]="submitting()"
+              [placementOutlet]="outlets.APPEND_OUTER"
+              [context]="context()"
+            ></div>
+          }
+        }
+      </div>
+    </template>
+    @if (dynamicRecipe(); as recipe) {
+      @if (enableDockedOutput()) {
+        <ng-template koku-portal [portalOutlet]="buttonDockOutlet()" [append]="true">
+          <ng-container
+            [kokuDynamicHost]="recipe"
+            [kokuDynamicProjectableNodes]="[
+              prependOuter.children.length ? [prependOuter] : [],
+              prependInner.children.length ? [prependInner] : [],
+              appendInner.children.length ? [appendInner] : [],
+              appendOuter.children.length ? [appendOuter] : [],
+            ]"
+            (kokuDynamicCreated)="captureInstance($event)"
+            (kokuDynamicLoadError)="runtime().failInitialization($event)"
+          />
+        </ng-template>
+      } @else {
+        <ng-container
+          [kokuDynamicHost]="recipe"
+          [kokuDynamicProjectableNodes]="[
+            prependOuter.children.length ? [prependOuter] : [],
+            prependInner.children.length ? [prependInner] : [],
+            appendInner.children.length ? [appendInner] : [],
+            appendOuter.children.length ? [appendOuter] : [],
+          ]"
+          (kokuDynamicCreated)="captureInstance($event)"
+          (kokuDynamicLoadError)="runtime().failInitialization($event)"
+        />
+      }
+    }
+  }
+}

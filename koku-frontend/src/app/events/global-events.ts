@@ -1,22 +1,46 @@
-class GlobalEvents {
-  registeredListeners: Record<string, Record<string, (payload: any) => void>> = {};
+type GlobalEventListener = (payload: any) => void;
 
-  public addGlobalEventListener(uniqueComponentRef: string, eventName: string, cb: (payload: any) => void) {
-    if (!this.registeredListeners[uniqueComponentRef]) {
-      this.registeredListeners[uniqueComponentRef] = {};
-    }
-    this.registeredListeners[uniqueComponentRef][eventName] = cb;
+export class GlobalEvents {
+  private readonly listeners = new Map<string, Map<string, Set<GlobalEventListener>>>();
+
+  public addGlobalEventListener(ownerId: string, eventName: string, listener: GlobalEventListener): () => void {
+    const ownerListeners = this.listeners.get(ownerId) ?? new Map<string, Set<GlobalEventListener>>();
+    const eventListeners = ownerListeners.get(eventName) ?? new Set<GlobalEventListener>();
+    eventListeners.add(listener);
+    ownerListeners.set(eventName, eventListeners);
+    this.listeners.set(ownerId, ownerListeners);
+    return () => this.removeListener(ownerId, eventName, listener);
   }
 
-  public removeGlobalEventListener(uniqueComponentRef: string) {
-    delete this.registeredListeners[uniqueComponentRef];
+  public removeGlobalEventListener(ownerId: string) {
+    this.listeners.delete(ownerId);
   }
 
   public propagateGlobalEvent(eventName: string, payload: any) {
-    for (const entryValue of Object.values(this.registeredListeners)) {
-      if (entryValue[eventName]) {
-        entryValue[eventName](payload);
+    const errors: unknown[] = [];
+    for (const ownerListeners of this.listeners.values()) {
+      for (const listener of [...(ownerListeners.get(eventName) ?? [])]) {
+        try {
+          listener(payload);
+        } catch (error) {
+          errors.push(error);
+        }
       }
+    }
+    if (errors.length > 0) {
+      throw new AggregateError(errors, `Global event listener failed: ${eventName}`);
+    }
+  }
+
+  private removeListener(ownerId: string, eventName: string, listener: GlobalEventListener) {
+    const ownerListeners = this.listeners.get(ownerId);
+    const eventListeners = ownerListeners?.get(eventName);
+    eventListeners?.delete(listener);
+    if (eventListeners?.size === 0) {
+      ownerListeners?.delete(eventName);
+    }
+    if (ownerListeners?.size === 0) {
+      this.listeners.delete(ownerId);
     }
   }
 }

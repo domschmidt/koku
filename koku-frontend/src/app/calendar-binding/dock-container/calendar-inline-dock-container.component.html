@@ -2,10 +2,10 @@
   <koku-dock [content]="dockConfig()" (activationRequested)="onDockContentActivationRequested($event)">
     <div class="flex-1"></div>
     @if (activeContent(); as activeContent) {
-      @if (activeContent.content; as activeContentContent) {
+      @if (activeContent.content; as activeContentPayload) {
         <div
           calendar-inline-content
-          [content]="activeContentContent"
+          [content]="activeContentPayload"
           [contentSetup]="contentSetup()"
           [urlSegments]="urlSegments()"
           [buttonDockOutlet]="buttonDockOutlet()"

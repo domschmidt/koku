@@ -9,6 +9,6 @@ import lombok.experimental.SuperBuilder;
 @Data
 public abstract class CalendarFormularFieldOverrideDto {
 
-    String fieldId;
+    String alias;
     Boolean disable;
 }

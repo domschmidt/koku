@@ -1,12 +1,12 @@
 import { Routes } from '@angular/router';
-import { FORMULAR_CONTENT_SETUP } from './formular-binding/registry';
+import { FORMULAR_CONTENT_REGISTRY } from './formular-binding/registry';
 import { ListComponent } from './list/list.component';
 import { LIST_CONTENT_SETUP } from './list-binding/registry';
 import { UnsavedChangesPreventionGuard } from './navi/UnsavedChangesPreventionGuard';
 import { CalendarComponent } from './calendar/calendar.component';
 import { CALENDAR_CONTENT_SETUP } from './calendar-binding/registry';
-import { CHART_CONTENT_SETUP } from './chart-binding/registry';
-import { DASHBOARD_CONTENT_SETUP } from './dashboard-binding/registry';
+import { CHART_FILTER_REGISTRY } from './chart-binding/registry';
+import { DASHBOARD_CONTENT_REGISTRY } from './dashboard-binding/registry';
 
 export const routes: Routes = [
   {
@@ -651,7 +651,7 @@ export const routes: Routes = [
                 title: 'Übersicht',
                 data: {
                   dashboardUrl: '/services/customers/customers/dashboard',
-                  contentSetup: DASHBOARD_CONTENT_SETUP,
+                  contentRegistry: DASHBOARD_CONTENT_REGISTRY,
                 },
               },
               {
@@ -660,7 +660,7 @@ export const routes: Routes = [
                 title: 'Umsätze',
                 data: {
                   chartUrl: '/services/customers/appointments/statistics',
-                  contentSetup: CHART_CONTENT_SETUP,
+                  filterRegistry: CHART_FILTER_REGISTRY,
                 },
               },
               {
@@ -669,7 +669,7 @@ export const routes: Routes = [
                 title: 'Produkte',
                 data: {
                   chartUrl: '/services/customers/products/statistics',
-                  contentSetup: CHART_CONTENT_SETUP,
+                  filterRegistry: CHART_FILTER_REGISTRY,
                 },
               },
               {
@@ -678,7 +678,7 @@ export const routes: Routes = [
                 title: 'Tätigkeiten',
                 data: {
                   chartUrl: '/services/customers/activities/statistics',
-                  contentSetup: CHART_CONTENT_SETUP,
+                  filterRegistry: CHART_FILTER_REGISTRY,
                 },
               },
               {
@@ -687,7 +687,7 @@ export const routes: Routes = [
                 title: 'Kunden',
                 data: {
                   chartUrl: '/services/customers/customers/statistics',
-                  contentSetup: CHART_CONTENT_SETUP,
+                  filterRegistry: CHART_FILTER_REGISTRY,
                 },
               },
               {
@@ -705,7 +705,7 @@ export const routes: Routes = [
         title: 'Willkommen',
         data: {
           dashboardUrl: '/services/users/users/welcome',
-          contentSetup: DASHBOARD_CONTENT_SETUP,
+          contentRegistry: DASHBOARD_CONTENT_REGISTRY,
           hideInNav: true,
         },
       },
@@ -718,7 +718,7 @@ export const routes: Routes = [
           formularUrl: '/services/users/users/form',
           sourceUrl: '/services/users/users/@self',
           submitMethod: 'PUT',
-          contentSetup: FORMULAR_CONTENT_SETUP,
+          contentRegistry: FORMULAR_CONTENT_REGISTRY,
           maxWidth: '900px',
           naviDivider: 'after',
           naviIcon: 'USER',

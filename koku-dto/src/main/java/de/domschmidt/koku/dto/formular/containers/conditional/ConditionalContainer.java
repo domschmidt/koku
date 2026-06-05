@@ -1,30 +1,25 @@
 package de.domschmidt.koku.dto.formular.containers.conditional;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import de.domschmidt.formular.dto.content.IFormularContent;
-import de.domschmidt.formular.dto.content.containers.AbstractFormContainer;
-import java.util.ArrayList;
+import de.domschmidt.formular.dto.content.AbstractFormularContent;
 import java.util.List;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("condition")
-@Getter
-public class ConditionalContainer extends AbstractFormContainer {
+@NoArgsConstructor
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class ConditionalContainer extends AbstractFormularContent {
 
     String compareValuePath;
 
     @Singular
     List<Object> expectedValues;
-
-    @Builder.Default
-    List<IFormularContent> content = new ArrayList<>();
-
-    @Override
-    public void addContent(final IFormularContent content) {
-        this.content.add(content);
-    }
 }

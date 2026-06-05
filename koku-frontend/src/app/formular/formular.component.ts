@@ -1,7 +1,5 @@
 import {
   Component,
-  ComponentRef,
-  ElementRef,
   inject,
   InjectionToken,
   input,
@@ -11,19 +9,26 @@ import {
   signal,
   SimpleChanges,
   TemplateRef,
+  Signal,
   WritableSignal,
+  effect,
+  untracked,
 } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '../toast/toast.service';
-import { ContainerRendererComponent } from './container-renderer/container-renderer.component';
-import { Observable, Subject, Subscriber, Subscription } from 'rxjs';
+import { Observable, Subscriber, Subscription } from 'rxjs';
 import { OutletDirective } from '../portal/outlet.directive';
-import { set } from '../utils/set';
-import { get } from '../utils/get';
+import { DynamicRenderRecipe } from '../dynamic-host/dynamic-host.directive';
+import { FormularContentRendererComponent } from './content-renderer/formular-content-renderer.component';
+import { FormDefinitionStore } from './form-definition.store';
+import { FormSourceStore } from './form-source.store';
+import { FormContentStore } from './form-content.store';
+import { assertFormularRecipeCoverage } from './formular-recipe-registry';
+import type { FormOutlet } from './form-outlet';
 
 export interface FormularFieldOverride {
   value: any;
-  fieldId: string;
+  alias: string;
   disable?: boolean;
 }
 
@@ -32,129 +37,61 @@ export interface FormularSourceOverride {
   path: string;
 }
 
-export type ContainerRegistrationType = Record<
-  string,
-  {
-    config: KokuDto.AbstractFormContainer;
-  }
->;
+export type ContentEvent = 'CHANGE' | 'INPUT' | 'CLICK' | 'BLUR' | 'FOCUS' | 'INIT' | 'REINIT';
 
-export type LayoutRegistrationType = Record<
-  string,
-  {
-    config: KokuDto.AbstractFormLayout;
-  }
->;
-
-export type FormularFieldRegistrationType = Record<
-  string,
-  {
-    value: WritableSignal<any>;
-    disabledCauses: WritableSignal<Set<string>>;
-    requiredCauses: WritableSignal<Set<string>>;
-    readonlyCauses: WritableSignal<Set<string>>;
-    loadingCauses: WritableSignal<Set<string>>;
-    config: KokuDto.AbstractFormField<any>;
-    instance?: ComponentRef<any>;
-    fieldEventBus: Subject<{ eventName: FieldEvent; payload?: any }>;
-  }
->;
-export type FieldEvent =
-  | 'onChange'
-  | 'onInput'
-  | 'onFocus'
-  | 'onBlur'
-  | 'onClick'
-  | 'onFocusPrependOuter'
-  | 'onBlurPrependOuter'
-  | 'onClickPrependOuter'
-  | 'onFocusPrependInner'
-  | 'onBlurPrependInner'
-  | 'onClickPrependInner'
-  | 'onFocusAppendInner'
-  | 'onBlurAppendInner'
-  | 'onClickAppendInner'
-  | 'onFocusAppendOuter'
-  | 'onBlurAppendOuter'
-  | 'onClickAppendOuter'
-  | 'onInit';
-export type ButtonRegistrationType = Record<
-  string,
-  {
-    config: KokuDto.AbstractFormButton;
-    loadingCauses: Set<string>;
-    disabledCauses: Set<string>;
-    buttonEventBus: Subject<{
-      eventName: ButtonEvent;
-      payload?: any;
-    }>;
-  }
->;
-export type ButtonEvent = 'onClick';
-
-export interface FormularContentStates {
-  fields: FormularFieldRegistrationType;
-  containers: ContainerRegistrationType;
-  buttons: ButtonRegistrationType;
-  layouts: LayoutRegistrationType;
+export interface FormularContentEvent {
+  eventName: ContentEvent;
+  payload?: any;
 }
 
-export interface FormularContentSetup {
-  buttonRegistry: Partial<
-    Record<
-      KokuDto.AbstractFormButton['@type'] | string,
-      {
-        componentType: any;
-        stateInitializer: (formularContent: KokuDto.AbstractFormButton) => FormularContentStates;
-        inputBindings?(instance: any, formularContent: KokuDto.AbstractFormButton): Record<string, any>;
-        outputBindings?(instance: any, formularContent: KokuDto.AbstractFormButton): Record<string, any>;
-      }
-    >
-  >;
-  layoutRegistry: Partial<
-    Record<
-      KokuDto.AbstractFormLayout['@type'] | string,
-      {
-        componentType: any;
-        stateInitializer: (formularContent: KokuDto.AbstractFormLayout) => FormularContentStates;
-        inputBindings?(instance: any, formularContent: KokuDto.AbstractFormLayout): Record<string, any>;
-        outputBindings?(instance: any, formularContent: KokuDto.AbstractFormLayout): Record<string, any>;
-      }
-    >
-  >;
-  fieldRegistry: Partial<
-    Record<
-      KokuDto.AbstractFormField<any>['@type'] | string,
-      {
-        componentType: any;
-        stateInitializer: (formularContent: KokuDto.AbstractFormField<any>) => FormularContentStates;
-        inputBindings?(instance: any, formularContent: KokuDto.AbstractFormField<any>): Record<string, any>;
-        outputBindings?(instance: any, formularContent: KokuDto.AbstractFormField<any>): Record<string, any>;
-      }
-    >
-  >;
-  fieldSlotRegistry: Partial<
-    Record<
-      KokuDto.IFormFieldSlot['@type'] | string,
-      {
-        componentType: any;
-        inputBindings?(instance: any, formularContent: KokuDto.IFormFieldSlot): Record<string, any>;
-        outputBindings?(instance: any, formularContent: KokuDto.IFormFieldSlot): Record<string, any>;
-      }
-    >
-  >;
-  containerRegistry: Partial<
-    Record<
-      KokuDto.AbstractFormContainer['@type'] | string,
-      {
-        componentType: any;
-        stateInitializer: (formularContent: KokuDto.AbstractFormContainer) => FormularContentStates;
-        inputBindings?(instance: any, formularContent: KokuDto.AbstractFormContainer): Record<string, any>;
-        outputBindings?(instance: any, formularContent: KokuDto.AbstractFormContainer): Record<string, any>;
-      }
-    >
-  >;
+export interface FormularContentHandle {
+  events: Observable<FormularContentEvent>;
+  value?: Signal<any>;
+  disabledCauses: Signal<ReadonlySet<string>>;
+  requiredCauses: Signal<ReadonlySet<string>>;
+  readonlyCauses: Signal<ReadonlySet<string>>;
+  loadingCauses: Signal<ReadonlySet<string>>;
 }
+
+export interface FormularContentInstance {
+  validate?: () => boolean;
+  focus?: () => void;
+}
+
+export interface FormularSourceWriter {
+  set(path: string, value: any): void;
+}
+
+export interface FormularContentControlRecipe {
+  createValue?: () => WritableSignal<any>;
+  writeSource?: (source: FormularSourceWriter, value: any) => void;
+}
+
+export type FormularContent = KokuDto.AbstractFormularContent;
+
+export interface FormularContentRenderContext<TContent extends FormularContent = FormularContent> {
+  id: string;
+  content: Signal<TContent>;
+  runtime: FormularRuntime;
+  loading: Signal<boolean>;
+  submitting: Signal<boolean>;
+  contentRegistry: Signal<FormularContentRegistry>;
+  buttonDockOutlet: Signal<OutletDirective | undefined>;
+  enableDockedOutput: Signal<boolean>;
+  placementOutlet: Signal<FormOutlet>;
+  context: Signal<Record<string, any> | undefined>;
+}
+
+export interface FormularContentRecipe {
+  control?: FormularContentControlRecipe;
+  render(handle: FormularContentHandle): DynamicRenderRecipe;
+}
+
+export type FormularContentRecipeFactory<TContent extends FormularContent = any> = (
+  context: FormularContentRenderContext<TContent>,
+) => FormularContentRecipe;
+
+export type FormularContentRegistry = Readonly<Record<string, FormularContentRecipeFactory | undefined>>;
 
 export type FormularPluginFactory = (instance: FormularComponent) => FormularPlugin;
 
@@ -176,9 +113,130 @@ export interface FormularPlugin {
   destroy?(): void;
 }
 
+export class FormularRuntime {
+  private readonly definitions = new FormDefinitionStore();
+  private readonly handles = new FormContentStore();
+  private readonly sourceState = signal<any>({});
+  private readonly contentOverridesByAliasState = signal<ReadonlyMap<string, FormularFieldOverride>>(new Map());
+  private readonly sources = new FormSourceStore(this.sourceState);
+  readonly source = this.sourceState.asReadonly();
+  readonly contentOverridesByAlias = this.contentOverridesByAliasState.asReadonly();
+
+  constructor(private readonly markDirty: () => void) {}
+
+  reset() {
+    this.handles.reset();
+    this.definitions.reset();
+    this.contentOverridesByAliasState.set(new Map());
+    this.sources.resetSelectors();
+  }
+
+  setFormView(formView: KokuDto.FormViewDto) {
+    this.sources.resetSelectors();
+    this.definitions.setFormView(formView);
+    this.handles.reconcile(this.definitions.contentIds());
+  }
+
+  content(id: string | undefined): FormularContent | undefined {
+    return this.definitions.content(id);
+  }
+
+  contentSignal(id: string): Signal<FormularContent | undefined> {
+    return this.definitions.contentSignal(id);
+  }
+
+  childIds(parentId: string | undefined, outlet: string): Signal<readonly string[]> {
+    return this.definitions.childIds(parentId, outlet);
+  }
+
+  failInitialization(error: unknown) {
+    this.handles.failInitialization(error);
+  }
+
+  whenInitialized(): Promise<void> {
+    return this.handles.whenInitialized();
+  }
+
+  resolveContent(id: string, control?: FormularContentControlRecipe): FormularContentHandle {
+    return this.handles.register(id, control?.createValue, control?.writeSource);
+  }
+
+  contentHandle(id: string): FormularContentHandle | undefined {
+    return this.handles.contentHandle(id);
+  }
+
+  updateContentValue(id: string, value: any) {
+    this.handles.setValue(id, value);
+    this.sources.update((source) => this.handles.writeValue(id, source, value));
+    this.markDirty();
+  }
+
+  sourceValue(path: string | undefined, defaultValue?: any): any {
+    return this.sources.value(path, defaultValue);
+  }
+
+  replaceSource(source: any) {
+    this.sources.replace(source);
+  }
+
+  initializeSource(source: any, sourceOverrides: FormularSourceOverride[]): any {
+    this.sources.replaceAndUpdate(source, (sourceWriter) => {
+      for (const sourceOverride of sourceOverrides) {
+        if (sourceOverride.path && sourceOverride.value !== undefined) {
+          sourceWriter.set(sourceOverride.path, sourceOverride.value);
+        }
+      }
+    });
+    this.sources.update((sourceWriter) => this.handles.writeAll(sourceWriter));
+    return this.source();
+  }
+
+  updateContentLoading(id: string, cause: string, loading: boolean) {
+    this.handles.updateLoading(id, cause, loading);
+  }
+
+  contentIds(): Iterable<string> {
+    return this.handles.ids();
+  }
+
+  setContentOverrides(overrides: readonly FormularFieldOverride[] | null | undefined) {
+    const overridesByAlias = new Map<string, FormularFieldOverride>();
+    for (const override of overrides ?? []) {
+      if (override.alias && !overridesByAlias.has(override.alias)) {
+        overridesByAlias.set(override.alias, override);
+      }
+    }
+    this.contentOverridesByAliasState.set(overridesByAlias);
+  }
+
+  syncContentValuesToSource() {
+    this.sources.update((sourceWriter) => this.handles.writeAll(sourceWriter));
+  }
+
+  updateContentConfig(id: string, updater: (config: FormularContent) => FormularContent) {
+    this.definitions.updateContent(id, updater);
+  }
+
+  contentConfig(content: FormularContent): FormularContent {
+    return content.id ? (this.definitions.content(content.id) ?? content) : content;
+  }
+
+  emit(contentId: string, eventName: ContentEvent, payload?: any) {
+    this.handles.emit(contentId, eventName, payload);
+  }
+
+  attachInstance(id: string, instance: FormularContentInstance) {
+    this.handles.attachInstance(id, instance);
+  }
+
+  firstInvalidInstance(): FormularContentInstance | undefined {
+    return this.handles.firstInvalidInstance();
+  }
+}
+
 @Component({
   selector: 'formular',
-  imports: [ContainerRendererComponent],
+  imports: [FormularContentRendererComponent],
   templateUrl: './formular.component.html',
   styleUrl: './formular.component.css',
 })
@@ -190,7 +248,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
   });
 
   formularUrl = input.required<string>();
-  contentSetup = input.required<FormularContentSetup>();
+  contentRegistry = input.required<FormularContentRegistry>();
 
   sourceUrl = input<string>();
   submitUrl = input<string>();
@@ -207,14 +265,11 @@ export class FormularComponent implements OnDestroy, OnChanges {
   dirty = signal(false);
   formularData = signal<KokuDto.FormViewDto | null>(null);
 
-  fieldRegister = signal<FormularFieldRegistrationType>({});
-  buttonRegister = signal<ButtonRegistrationType>({});
-  containerRegister = signal<ContainerRegistrationType>({});
-  layoutRegister = signal<LayoutRegistrationType>({});
-
   saved = output<any>();
 
-  source = signal<any>({});
+  runtime = new FormularRuntime(() => this.setDirty());
+  readonly source = this.runtime.source;
+
   private lastSourceSubscription: Subscription | undefined;
   private lastFormularSubscription: Subscription | undefined;
   private pluginInstances: FormularPlugin[] = [];
@@ -231,12 +286,25 @@ export class FormularComponent implements OnDestroy, OnChanges {
       }
     }
     this.pluginInstances = pluginInstances;
+
+    effect(() => {
+      const overrides = this.fieldOverrides();
+      untracked(() => {
+        this.runtime.setContentOverrides(overrides);
+        this.applyConfiguredContentOverrides();
+      });
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['formularUrl']) {
-      this.loadFormular().subscribe(() => {
-        this.loadSource();
+      this.formularData.set(null);
+      if (this.lastFormularSubscription && !this.lastFormularSubscription.closed) {
+        this.lastFormularSubscription.unsubscribe();
+      }
+      this.lastFormularSubscription = this.loadFormular().subscribe({
+        next: () => this.loadSource(),
+        error: () => undefined,
       });
     } else if (changes['sourceUrl']) {
       this.loadSource();
@@ -247,68 +315,51 @@ export class FormularComponent implements OnDestroy, OnChanges {
     for (const currentPluginInstance of this.pluginInstances || []) {
       currentPluginInstance.destroy?.();
     }
+    this.lastFormularSubscription?.unsubscribe();
+    this.lastSourceSubscription?.unsubscribe();
+    this.runtime.reset();
   }
 
   private loadFormular() {
     return new Observable((subscriber) => {
       const formularUrlSnapshot = this.formularUrl();
       if (formularUrlSnapshot) {
-        if (this.lastFormularSubscription && !this.lastFormularSubscription.closed) {
-          this.lastFormularSubscription.unsubscribe();
-        }
-        this.lastFormularSubscription = this.httpClient.get<KokuDto.FormViewDto>(formularUrlSnapshot).subscribe({
+        const requestSubscription = this.httpClient.get<KokuDto.FormViewDto>(formularUrlSnapshot).subscribe({
           next: (formularData) => {
-            this.formularData.set(formularData);
-            if (formularData.contentRoot) {
-              const root =
-                this.contentSetup().containerRegistry[
-                  formularData.contentRoot['@type'] as KokuDto.AbstractFormContainer['@type']
-                ];
-              if (root) {
-                const formularStates = root.stateInitializer(formularData.contentRoot as any);
-                this.fieldRegister.set(formularStates.fields);
-                for (const fieldState of Object.values(formularStates.fields)) {
-                  fieldState.fieldEventBus.subscribe((eventBody) => {
-                    if (!fieldState.config.id) {
-                      throw new Error(`missing field id for config ${fieldState.config}`);
-                    }
-                    const eventName = eventBody.eventName;
-                    const eventPayload = eventBody.payload;
-                    console.log(fieldState.config.id, eventName, eventPayload);
-
-                    switch (eventName) {
-                      case 'onInit': {
-                        fieldState.instance = eventPayload;
-                        break;
-                      }
-                      case 'onChange': {
-                        this.setDirty();
-                        fieldState.value.set(eventPayload);
-                        const valuePath = fieldState.config.valuePath;
-                        if (valuePath) {
-                          const sourceSnapshot = this.source();
-                          set(sourceSnapshot, valuePath, eventPayload);
-                          this.source.set({ ...sourceSnapshot });
-                        }
-                      }
-                    }
-                  });
+            try {
+              assertFormularRecipeCoverage(formularData, this.contentRegistry());
+              this.runtime.setFormView(formularData);
+              this.formularData.set(formularData);
+            } catch (error) {
+              this.toastService.add('Fehlerhafte Formularkonfiguration', 'error');
+              subscriber.error(error);
+              return;
+            }
+            void this.runtime
+              .whenInitialized()
+              .then(() => {
+                if (subscriber.closed) {
+                  return;
                 }
-                this.buttonRegister.set(formularStates.buttons);
-                this.containerRegister.set(formularStates.containers);
-              }
-            }
-            for (const currentPluginInstance of this.pluginInstances || []) {
-              currentPluginInstance.onFormularLoaded?.(formularData);
-            }
-            subscriber.next(formularData);
-            subscriber.complete();
+                for (const currentPluginInstance of this.pluginInstances || []) {
+                  currentPluginInstance.onFormularLoaded?.(formularData);
+                }
+                subscriber.next(formularData);
+                subscriber.complete();
+              })
+              .catch((error) => {
+                if (!subscriber.closed) {
+                  this.toastService.add('Fehler bei der Formularinitialisierung', 'error');
+                  subscriber.error(error);
+                }
+              });
           },
           error: (err) => {
             this.toastService.add('Fehler beim Laden der Daten! Versuchs später erneut!', 'error');
             subscriber.error(err);
           },
         });
+        subscriber.add(requestSubscription);
       } else {
         subscriber.error('missing formularurl');
       }
@@ -316,54 +367,23 @@ export class FormularComponent implements OnDestroy, OnChanges {
   }
 
   private afterSourceLoaded(source: any) {
-    const modifiedSource = source;
+    const initializedSource = this.runtime.initializeSource(source, this.sourceOverrides() || []);
 
-    for (const sourceOverride of this.sourceOverrides() || []) {
-      const valuePath = sourceOverride.path;
-      const value = sourceOverride.value;
-      if (valuePath && value !== undefined) {
-        set(modifiedSource, valuePath, value);
+    try {
+      for (const currentPluginInstance of this.pluginInstances || []) {
+        currentPluginInstance.onSourceLoaded?.(initializedSource);
       }
+    } catch (error) {
+      this.toastService.add('Fehler bei der Formularinitialisierung', 'error');
+      throw error;
     }
+  }
 
-    const fieldInstancesSnapshot = this.fieldRegister();
-    for (const value of Object.values(fieldInstancesSnapshot)) {
-      const valuePathSnapshot = value.config.valuePath;
-      const defaultValue = value.config.defaultValue;
-      if (valuePathSnapshot) {
-        const sourceOrDefaultValue = get(source, valuePathSnapshot.split('.'), defaultValue);
-        value.value.set(sourceOrDefaultValue);
-        set(modifiedSource, valuePathSnapshot, sourceOrDefaultValue);
-      }
+  private applyConfiguredContentOverrides() {
+    if (!this.formularData()) {
+      return;
     }
-
-    for (const fieldOverride of this.fieldOverrides() || []) {
-      const lookupField = fieldInstancesSnapshot[fieldOverride.fieldId];
-      if (lookupField !== undefined) {
-        if (fieldOverride.disable === true) {
-          const disabledCausesSnapshot = lookupField.disabledCauses();
-          disabledCausesSnapshot.add('fieldOverride');
-          lookupField.disabledCauses.set(disabledCausesSnapshot);
-        }
-        const newValue = fieldOverride.value;
-        if (newValue !== undefined) {
-          lookupField.value.set(newValue);
-          const valuePath = lookupField.config.valuePath;
-          if (valuePath) {
-            set(modifiedSource, valuePath, newValue);
-          }
-        }
-      } else {
-        throw new Error('could not find field id ' + fieldOverride.fieldId);
-      }
-    }
-    this.source.set(modifiedSource);
-
-    this.fieldRegister.set({ ...fieldInstancesSnapshot });
-
-    for (const currentPluginInstance of this.pluginInstances || []) {
-      currentPluginInstance.onSourceLoaded?.(modifiedSource);
-    }
+    this.runtime.syncContentValuesToSource();
   }
 
   loadSource() {
@@ -375,7 +395,11 @@ export class FormularComponent implements OnDestroy, OnChanges {
       }
       this.lastSourceSubscription = this.httpClient.get(sourceUrlSnapshot).subscribe({
         next: (source) => {
-          this.afterSourceLoaded(source);
+          try {
+            this.afterSourceLoaded(source);
+          } catch {
+            this.sourceLoading.set(false);
+          }
         },
         error: () => {
           this.sourceLoading.set(false);
@@ -394,8 +418,8 @@ export class FormularComponent implements OnDestroy, OnChanges {
       throw new Error('submit is in progress');
     } else {
       return new Observable((observer) => {
-        this.verifyNoFieldError().subscribe((noError) => {
-          if (noError) {
+        try {
+          if (this.verifyNoFieldError()) {
             const submitUrl = this.submitUrl() || this.sourceUrl();
             if (!submitUrl) {
               throw new Error('target url is unresolvable');
@@ -407,7 +431,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
               ...(submitPayload ? submitPayload : {}),
             }).subscribe({
               next: (response: any) => {
-                this.source.set(response);
+                this.runtime.replaceSource(response);
                 this.saved.emit(response);
                 observer.next(response);
                 observer.complete();
@@ -425,54 +449,21 @@ export class FormularComponent implements OnDestroy, OnChanges {
           } else {
             observer.complete();
           }
-        });
+        } catch (error) {
+          observer.error(error);
+        }
       });
     }
   }
 
-  private verifyNoFieldError() {
-    return new Observable<boolean>((subscriber) => {
-      setTimeout(() => {
-        let noError = true;
-        for (const currentField of Object.values(this.fieldRegister())) {
-          if (
-            currentField.instance &&
-            currentField.instance.instance &&
-            typeof currentField.instance.instance.validate === 'function'
-          ) {
-            try {
-              if (!currentField.instance.instance.validate()) {
-                this.toastService.add('Überprüfe die Eingaben', 'warning');
-                noError = false;
-                this.tryFocus(currentField.instance.location);
-                break;
-              }
-            } catch (error) {
-              subscriber.error(error);
-            }
-          }
-        }
-        subscriber.next(noError);
-        subscriber.complete();
-      });
-    });
-  }
-
-  private tryFocus(location: ElementRef) {
-    if (location) {
-      const nativeEl = location.nativeElement;
-      if (nativeEl) {
-        const focusableNodes = nativeEl.querySelectorAll(
-          'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])',
-        );
-        if (focusableNodes) {
-          const firstFocusable = focusableNodes[0];
-          if (firstFocusable) {
-            firstFocusable.focus();
-          }
-        }
-      }
+  private verifyNoFieldError(): boolean {
+    const invalidInstance = this.runtime.firstInvalidInstance();
+    if (invalidInstance) {
+      this.toastService.add('Überprüfe die Eingaben', 'warning');
+      invalidInstance.focus?.();
+      return false;
     }
+    return true;
   }
 
   private setDirty() {

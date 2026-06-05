@@ -85,19 +85,12 @@
   @if (calendarActions(); as calendarActions) {
     <div class="join p-4 absolute bottom-0 right-0 z-1">
       @for (actionEntry of calendarActions | keyvalue; track actionEntry.key) {
-        <button
-          class="join-item btn btn-xl btn-circle btn-accent"
-          [title]="actionEntry.value.title"
-          [class.skeleton]="actionEntry.value.loading"
-          (click)="calendarActionClicked(actionEntry.value)"
-        >
-          @if (actionEntry.value.icon) {
-            <koku-icon [name]="actionEntry.value.icon"></koku-icon>
-          }
-          @if (actionEntry.value.imgBase64) {
-            <koku-avatar [value]="actionEntry.value.imgBase64"></koku-avatar>
-          }
-        </button>
+        <calendar-action-renderer
+          [action]="actionEntry.value"
+          [contentSetup]="contentSetup()"
+          [openRoutedContent]="openRoutedContentFromAction"
+          [getPluginApi]="getPluginApiFromAction"
+        />
       }
     </div>
   }
@@ -119,7 +112,7 @@
                   class="border-solid border-b-4"
                   [ngClass]="
                     !hiddenSources().has(listSourceId) && listSource.sourceItemColor
-                      ? sourceItemBorderColors[listSource.sourceItemColor]
+                      ? colorBorderClass(listSource.sourceItemColor, 400)
                       : 'border-transparent'
                   "
                 >

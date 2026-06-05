@@ -1,0 +1,13 @@
+<button
+  class="join-item btn btn-xl btn-circle btn-accent"
+  [title]="title() || ''"
+  [class.skeleton]="loading()"
+  (click)="clicked.emit($event)"
+>
+  @if (icon(); as icon) {
+    <koku-icon [name]="icon"></koku-icon>
+  }
+  @if (imgBase64(); as imgBase64) {
+    <koku-avatar [value]="imgBase64"></koku-avatar>
+  }
+</button>

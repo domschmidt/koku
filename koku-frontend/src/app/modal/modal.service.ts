@@ -6,42 +6,28 @@ import { ModalType, RenderedModalType } from './modal.type';
 })
 export class ModalService {
   private modalUid = 0;
-  renderedModals = signal<Record<number, RenderedModalType>>({});
+  readonly renderedModals = signal<readonly RenderedModalType[]>([]);
 
   add(modal: ModalType) {
     const renderedModal: RenderedModalType = {
       ...modal,
       uid: this.modalUid++,
-      close: () => {
-        const oldModalInst = this.renderedModals()[renderedModal.uid];
-        if (!oldModalInst) return;
-
-        this.close(oldModalInst);
-      },
-      buttons: modal.buttons,
-      update: (updatedModal) => {
-        const oldModalInst = this.renderedModals()[renderedModal.uid];
-        if (!oldModalInst) return;
-
-        this.update(oldModalInst, updatedModal);
-      },
+      close: () => this.close(renderedModal),
+      update: (updatedModal) => this.update(renderedModal, updatedModal),
     };
-    this.renderedModals.set({ ...this.renderedModals(), [renderedModal.uid]: renderedModal });
+    this.renderedModals.update((modals) => [...modals, renderedModal]);
     return renderedModal;
   }
 
   close(modal: RenderedModalType) {
-    const modalsSnapshot = { ...this.renderedModals() };
-    delete modalsSnapshot[modal.uid];
-    this.renderedModals.set({ ...modalsSnapshot });
+    this.renderedModals.update((modals) => modals.filter((currentModal) => currentModal.uid !== modal.uid));
   }
 
   update(oldModal: RenderedModalType, newModal: ModalType) {
-    const modalsSnapshot = { ...this.renderedModals() };
-    modalsSnapshot[oldModal.uid] = {
-      ...oldModal,
-      ...newModal,
-    };
-    this.renderedModals.set(modalsSnapshot);
+    this.renderedModals.update((modals) =>
+      modals.map((currentModal) =>
+        currentModal.uid === oldModal.uid ? { ...currentModal, ...newModal } : currentModal,
+      ),
+    );
   }
 }

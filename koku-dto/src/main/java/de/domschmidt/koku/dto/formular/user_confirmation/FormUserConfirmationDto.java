@@ -11,5 +11,7 @@ public class FormUserConfirmationDto {
 
     String headline;
     String content;
+
+    @Builder.Default
     List<AbstractFormUserConfirmationParamDto> params = new ArrayList<>();
 }
