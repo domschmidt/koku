@@ -1,3 +1,10 @@
+## [2.5.2](https://github.com/domschmidt/koku/compare/v2.5.1...v2.5.2) (2026-06-05)
+
+
+### Bug Fixes
+
+* null guard and inputmode ([aa43741](https://github.com/domschmidt/koku/commit/aa43741902a69557c3ef3571bd83ffadb6e91245))
+
 ## [2.5.1](https://github.com/domschmidt/koku/compare/v2.5.0...v2.5.1) (2026-06-04)
 
 
