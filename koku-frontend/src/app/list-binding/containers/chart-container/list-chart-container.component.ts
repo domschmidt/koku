@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { ChartComponent, ChartContentSetup } from '../../../chart/chart.component';
+import { ChartComponent, ChartFilterRegistry } from '../../../chart/chart.component';
 
 @Component({
   selector: '[list-inline-chart-container],list-inline-chart-container',
@@ -10,5 +10,5 @@ import { ChartComponent, ChartContentSetup } from '../../../chart/chart.componen
 export class ListChartContainerComponent {
   chartUrl = input.required<string>();
   urlSegments = input<Record<string, string> | null>(null);
-  chartContentSetup = input.required<ChartContentSetup>();
+  filterRegistry = input.required<ChartFilterRegistry>();
 }

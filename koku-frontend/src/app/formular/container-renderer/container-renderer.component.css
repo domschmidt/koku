@@ -1,3 +1,0 @@
-:host:has(> * > .hidden) {
-  display: none;
-}

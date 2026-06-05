@@ -1,99 +1,79 @@
-import { InputFieldComponent } from '../fields/input/input-field.component';
-import { DateInputFieldComponent } from '../fields/input/date-input-field.component';
-import { TimeInputFieldComponent } from '../fields/input/time-input-field.component';
-import { MonthInputFieldComponent } from '../fields/input/month-input-field.component';
-import { WeekInputFieldComponent } from '../fields/input/week-input-field.component';
-import { ChartContentSetup } from '../chart/chart.component';
-import { ChartFilterRendererComponent } from '../chart/filter-renderer/chart-filter-renderer.component';
-
-const FILTER_REGISTRY: Partial<
-  Record<
-    KokuDto.AbstractChartFilterDto['@type'] | string,
-    {
-      componentType: any;
-      inputBindings?(instance: any, filterConfig: KokuDto.AbstractChartFilterDto): Record<string, any>;
-      outputBindings?(instance: any, filterConfig: KokuDto.AbstractChartFilterDto): Record<string, any>;
-    }
-  >
-> = {
-  input: {
-    componentType: InputFieldComponent,
-    inputBindings: (instance: ChartFilterRendererComponent, filterDef: KokuDto.InputChartFilterDto) => {
-      return {
-        value: filterDef.value,
-        label: filterDef.label,
-        placeholder: filterDef.placeholder,
-        type: filterDef.type,
-      };
-    },
-    outputBindings: (instance: ChartFilterRendererComponent) => {
-      return {
-        changed: (data: any) => instance.filterValueChanged.emit(data),
-      };
-    },
+import { computed } from '@angular/core';
+import { ChartFilterRegistry, ChartFilterRenderContext } from '../chart/chart.component';
+type FilterRegistryItem = NonNullable<ChartFilterRegistry[string]>;
+const changedOutput = (context: ChartFilterRenderContext) => ({
+  changed: (data: string | number | boolean) => context.emit(data),
+});
+const FILTER_REGISTRY: Partial<Record<KokuDto.AbstractChartFilterDto['@type'] | string, FilterRegistryItem>> = {
+  input: (context: ChartFilterRenderContext) => {
+    const filter = computed(() => context.content() as KokuDto.InputChartFilterDto);
+    return {
+      loadComponent: () => import('../fields/input/input-field.component').then((module) => module.InputFieldComponent),
+      inputs: computed(() => ({
+        loading: context.loading(),
+        value: filter().value || '',
+        label: filter().label,
+        placeholder: filter().placeholder,
+        type: filter().type,
+      })),
+      outputs: changedOutput(context),
+    };
   },
-  'date-input': {
-    componentType: DateInputFieldComponent,
-    inputBindings: (instance: ChartFilterRendererComponent, filterDef: KokuDto.DateInputChartFilterDto) => {
-      return {
-        value: filterDef.value || '',
-        label: filterDef.label,
-        placeholder: filterDef.placeholder,
-      };
-    },
-    outputBindings: (instance: ChartFilterRendererComponent) => {
-      return {
-        changed: (data: any) => instance.filterValueChanged.emit(data),
-      };
-    },
+  'date-input': (context: ChartFilterRenderContext) => {
+    const filter = computed(() => context.content() as KokuDto.DateInputChartFilterDto);
+    return {
+      loadComponent: () =>
+        import('../fields/input/date-input-field.component').then((module) => module.DateInputFieldComponent),
+      inputs: computed(() => ({
+        loading: context.loading(),
+        value: filter().value || '',
+        label: filter().label,
+        placeholder: filter().placeholder,
+      })),
+      outputs: changedOutput(context),
+    };
   },
-  'time-input': {
-    componentType: TimeInputFieldComponent,
-    inputBindings: (instance: ChartFilterRendererComponent, filterDef: KokuDto.TimeInputChartFilterDto) => {
-      return {
-        value: filterDef.value || '',
-        label: filterDef.label,
-        placeholder: filterDef.placeholder,
-      };
-    },
-    outputBindings: (instance: ChartFilterRendererComponent) => {
-      return {
-        changed: (data: any) => instance.filterValueChanged.emit(data),
-      };
-    },
+  'time-input': (context: ChartFilterRenderContext) => {
+    const filter = computed(() => context.content() as KokuDto.TimeInputChartFilterDto);
+    return {
+      loadComponent: () =>
+        import('../fields/input/time-input-field.component').then((module) => module.TimeInputFieldComponent),
+      inputs: computed(() => ({
+        loading: context.loading(),
+        value: filter().value || '',
+        label: filter().label,
+        placeholder: filter().placeholder,
+      })),
+      outputs: changedOutput(context),
+    };
   },
-  'month-input': {
-    componentType: MonthInputFieldComponent,
-    inputBindings: (instance: ChartFilterRendererComponent, filterDef: KokuDto.MonthInputChartFilterDto) => {
-      return {
-        value: filterDef.value || '',
-        label: filterDef.label,
-        placeholder: filterDef.placeholder,
-      };
-    },
-    outputBindings: (instance: ChartFilterRendererComponent) => {
-      return {
-        changed: (data: any) => instance.filterValueChanged.emit(data),
-      };
-    },
+  'month-input': (context: ChartFilterRenderContext) => {
+    const filter = computed(() => context.content() as KokuDto.MonthInputChartFilterDto);
+    return {
+      loadComponent: () =>
+        import('../fields/input/month-input-field.component').then((module) => module.MonthInputFieldComponent),
+      inputs: computed(() => ({
+        loading: context.loading(),
+        value: filter().value || '',
+        label: filter().label,
+        placeholder: filter().placeholder,
+      })),
+      outputs: changedOutput(context),
+    };
   },
-  'week-input': {
-    componentType: WeekInputFieldComponent,
-    inputBindings: (instance: ChartFilterRendererComponent, filterDef: KokuDto.WeekInputChartFilterDto) => {
-      return {
-        value: filterDef.value || '',
-        label: filterDef.label,
-        placeholder: filterDef.placeholder,
-      };
-    },
-    outputBindings: (instance: ChartFilterRendererComponent) => {
-      return {
-        changed: (data: any) => instance.filterValueChanged.emit(data),
-      };
-    },
+  'week-input': (context: ChartFilterRenderContext) => {
+    const filter = computed(() => context.content() as KokuDto.WeekInputChartFilterDto);
+    return {
+      loadComponent: () =>
+        import('../fields/input/week-input-field.component').then((module) => module.WeekInputFieldComponent),
+      inputs: computed(() => ({
+        loading: context.loading(),
+        value: filter().value || '',
+        label: filter().label,
+        placeholder: filter().placeholder,
+      })),
+      outputs: changedOutput(context),
+    };
   },
 };
-
-export const CHART_CONTENT_SETUP: ChartContentSetup = {
-  filterRegistry: FILTER_REGISTRY,
-};
+export const CHART_FILTER_REGISTRY: ChartFilterRegistry = FILTER_REGISTRY;

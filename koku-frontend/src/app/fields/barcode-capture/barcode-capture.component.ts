@@ -40,7 +40,15 @@ export class BarcodeCaptureComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.html5QrcodeInstance?.pause(true);
-    this.html5QrcodeInstance?.clear();
+    const scanner = this.html5QrcodeInstance;
+    this.html5QrcodeInstance = undefined;
+    if (!scanner) {
+      return;
+    }
+    try {
+      void scanner.clear().catch(() => undefined);
+    } catch {
+      // The scanner may already have been stopped while its camera was initializing.
+    }
   }
 }

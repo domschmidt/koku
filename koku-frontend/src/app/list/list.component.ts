@@ -6,6 +6,7 @@ import {
   input,
   OnChanges,
   OnDestroy,
+  Signal,
   signal,
   SimpleChanges,
   WritableSignal,
@@ -13,7 +14,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, Observable, of, Subject, Subscription } from 'rxjs';
-import { ListItemComponent } from './list-item/list-item.component';
+import { ListFieldEvent, ListItemComponent } from './list-item/list-item.component';
 import { InputFieldComponent } from '../fields/input/input-field.component';
 import { tap } from 'rxjs/operators';
 import { IconComponent } from '../icon/icon.component';
@@ -29,6 +30,8 @@ import { UNIQUE_REF_GENERATOR } from '../utils/uniqueRef';
 import { ModalService } from '../modal/modal.service';
 import { ModalContentSetup, RenderedModalType } from '../modal/modal.type';
 import { ListFilterComponent } from './list-filter/list-filter.component';
+import { DynamicRenderRecipe } from '../dynamic-host/dynamic-host.directive';
+import { OutletDirective } from '../portal/outlet.directive';
 
 export interface ListFieldRegistrationType {
   value: WritableSignal<any>;
@@ -50,6 +53,57 @@ export interface ListTempItem {
   text: string;
 }
 
+export interface ListFieldRenderContext {
+  id: string;
+  register: Signal<ListItemSetup>;
+  fieldState: ListFieldRegistrationType;
+  config: Signal<KokuDto.AbstractListViewFieldDto<any>>;
+  submitting: Signal<boolean>;
+  emit(eventName: ListFieldEvent, payload?: any): void;
+}
+
+export interface ListPreviewRenderContext {
+  register: Signal<ListItemSetup>;
+  preview: Signal<KokuDto.AbstractListViewItemPreviewDto>;
+  value: Signal<any>;
+}
+
+export interface ListInlineContentRenderContext {
+  content: Signal<KokuDto.AbstractListViewContentDto>;
+  loading: Signal<boolean>;
+  urlSegments: Signal<Record<string, string> | null>;
+  parentRoutePath: Signal<string>;
+  buttonDockOutlet: Signal<OutletDirective | undefined>;
+  context: Signal<Record<string, any> | undefined>;
+  close(): void;
+  openRoutedContent(routes: string[]): void;
+}
+
+export interface ListItemActionRenderContext {
+  action: Signal<KokuDto.AbstractListViewItemActionDto>;
+  register: Signal<ListItemSetup>;
+  listRegister: Signal<ListItemSetup[]>;
+  contentSetup: Signal<ListContentSetup>;
+  urlSegments: Signal<Record<string, string> | null>;
+  parent: ListItemActionComponent;
+}
+
+export interface ListFilterRenderContext {
+  filter: Signal<KokuDto.ListViewFilterContentDto>;
+  filterDefinition: Signal<KokuDto.AbstractListViewFilterDto>;
+  emit(predicates: KokuDto.QueryPredicate[]): void;
+}
+
+export type ListFieldRecipeFactory = (context: ListFieldRenderContext) => DynamicRenderRecipe;
+export type ListPreviewRecipeFactory = (context: ListPreviewRenderContext) => DynamicRenderRecipe;
+export type ListInlineContentRecipeFactory = (context: ListInlineContentRenderContext) => DynamicRenderRecipe;
+export type ListItemActionRecipeFactory = (context: ListItemActionRenderContext) => DynamicRenderRecipe;
+export type ListFilterRecipeFactory = (context: ListFilterRenderContext) => DynamicRenderRecipe;
+export interface ListFilterDefinition {
+  createRecipe: ListFilterRecipeFactory;
+  initialPredicates(filter: KokuDto.AbstractListViewFilterDto): KokuDto.QueryPredicate[];
+}
+
 export type ItemStylingSetup = Partial<
   Record<
     KokuDto.AbstractListViewGlobalItemStylingDto['@type'] | string,
@@ -62,86 +116,15 @@ export type ItemStylingSetup = Partial<
   >
 >;
 
-export type ListFilterSetup = Partial<
-  Record<
-    KokuDto.AbstractListViewFilterDto['@type'] | string,
-    {
-      componentType: any;
-      stateInitializer?: (filter: KokuDto.AbstractListViewFilterDto) => KokuDto.QueryPredicate[];
-      inputBindings?(instance: ListFilterComponent, filter: KokuDto.AbstractListViewFilterDto): Record<string, any>;
-      outputBindings?(instance: ListFilterComponent, filter: KokuDto.AbstractListViewFilterDto): Record<string, any>;
-    }
-  >
->;
+export type ListFilterSetup = Readonly<Record<string, ListFilterDefinition | undefined>>;
 
 export interface ListContentSetup {
-  fieldRegistry: Partial<
-    Record<
-      KokuDto.AbstractListViewFieldDto<any>['@type'] | string,
-      {
-        componentType: any;
-        stateInitializer: (listContent: KokuDto.AbstractListViewFieldDto<any>, value: any) => ListFieldRegistrationType;
-        inputBindings?(
-          instance: ListItemComponent,
-          key: string,
-          listContent: KokuDto.AbstractListViewFieldDto<any>,
-        ): Record<string, any>;
-        outputBindings?(
-          instance: ListItemComponent,
-          key: string,
-          listContent: KokuDto.AbstractListViewFieldDto<any>,
-        ): Record<string, any>;
-      }
-    >
-  >;
-  previewRegistry: Partial<
-    Record<
-      KokuDto.AbstractListViewItemPreviewDto['@type'] | string,
-      {
-        componentType: any;
-        inputBindings?(
-          instance: ListItemPreviewComponent,
-          listPreviewContent: KokuDto.AbstractListViewItemPreviewDto,
-        ): Record<string, any>;
-        outputBindings?(
-          instance: ListItemPreviewComponent,
-          listPreviewContent: KokuDto.AbstractListViewItemPreviewDto,
-        ): Record<string, any>;
-      }
-    >
-  >;
+  fieldRegistry: Partial<Record<KokuDto.AbstractListViewFieldDto<any>['@type'] | string, ListFieldRecipeFactory>>;
+  previewRegistry: Partial<Record<KokuDto.AbstractListViewItemPreviewDto['@type'] | string, ListPreviewRecipeFactory>>;
   inlineContentRegistry: Partial<
-    Record<
-      KokuDto.AbstractListViewContentDto['@type'] | string,
-      {
-        componentType: any;
-        inputBindings?(
-          instance: ListInlineContentComponent,
-          inlineContent: KokuDto.AbstractListViewContentDto,
-        ): Record<string, any>;
-        outputBindings?(
-          instance: ListInlineContentComponent,
-          inlineContent: KokuDto.AbstractListViewContentDto,
-        ): Record<string, any>;
-      }
-    >
+    Record<KokuDto.AbstractListViewContentDto['@type'] | string, ListInlineContentRecipeFactory>
   >;
-  actionRegistry: Partial<
-    Record<
-      KokuDto.AbstractListViewItemActionDto['@type'] | string,
-      {
-        componentType: any;
-        inputBindings?(
-          instance: ListItemActionComponent,
-          inlineContent: KokuDto.AbstractListViewItemActionDto,
-        ): Record<string, any>;
-        outputBindings?(
-          instance: ListItemActionComponent,
-          inlineContent: KokuDto.AbstractListViewItemActionDto,
-        ): Record<string, any>;
-      }
-    >
-  >;
+  actionRegistry: Partial<Record<KokuDto.AbstractListViewItemActionDto['@type'] | string, ListItemActionRecipeFactory>>;
   filterRegistry: ListFilterSetup;
   modalRegistry: ModalContentSetup;
   itemStylingRegistry: ItemStylingSetup;
@@ -429,9 +412,9 @@ export class ListComponent implements OnDestroy, OnChanges {
             this.filters = {};
             for (const currentFilter of listData.filters || []) {
               if (currentFilter.filterDefinition) {
-                const resolvedFilter = this.contentSetup().filterRegistry[currentFilter.filterDefinition['@type']];
-                if (resolvedFilter && resolvedFilter.stateInitializer) {
-                  const filterQueryPredicates = resolvedFilter.stateInitializer(currentFilter.filterDefinition);
+                const filterDefinition = this.contentSetup().filterRegistry[currentFilter.filterDefinition['@type']];
+                if (filterDefinition) {
+                  const filterQueryPredicates = filterDefinition.initialPredicates(currentFilter.filterDefinition);
                   if (filterQueryPredicates && currentFilter.id && currentFilter.valuePath) {
                     this.filters[currentFilter.id] = {
                       valuePath: currentFilter.valuePath,
@@ -905,7 +888,7 @@ export class ListComponent implements OnDestroy, OnChanges {
     const listDataSnapshot = this.listData();
     const itemIdPath = (listDataSnapshot || {}).itemIdPath;
     const currentResultListContentStates: ListItemSetup = {
-      fieldSelection: listData.fieldSelection || [],
+      fieldSelection: [],
       fields: {},
       actions: ((listDataSnapshot || {}).itemActions || []).map((value) => {
         return {
@@ -926,7 +909,7 @@ export class ListComponent implements OnDestroy, OnChanges {
         const currentFieldTypeSetup =
           contentSetupSnapshot.fieldRegistry[currentFieldSelection.fieldDefinition['@type']];
         if (currentFieldTypeSetup && currentFieldSelection.id) {
-          const defaultValue = currentFieldSelection.fieldDefinition?.defaultValue || null;
+          const defaultValue = currentFieldSelection.fieldDefinition?.defaultValue ?? null;
           let currentFieldValue = defaultValue;
           if (currentFieldSelection.valuePath) {
             currentFieldValue = get(
@@ -937,14 +920,22 @@ export class ListComponent implements OnDestroy, OnChanges {
               defaultValue,
             );
           }
-          currentResultListContentStates.fields[currentFieldSelection.id] = currentFieldTypeSetup.stateInitializer(
+          currentResultListContentStates.fields[currentFieldSelection.id] = this.createFieldState(
             currentFieldSelection.fieldDefinition,
             currentFieldValue,
           );
+          currentResultListContentStates.fieldSelection.push(currentFieldSelection.id);
         }
       }
     }
     return currentResultListContentStates;
+  }
+
+  private createFieldState(listContent: KokuDto.AbstractListViewFieldDto<any>, value: any): ListFieldRegistrationType {
+    return {
+      value: signal(value !== undefined ? value : listContent.defaultValue),
+      config: listContent,
+    };
   }
 
   private closeModalContent(newRoute: string[]) {

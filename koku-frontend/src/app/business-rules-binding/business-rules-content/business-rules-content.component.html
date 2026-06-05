@@ -1,14 +1,3 @@
-@if (content(); as content) {
-  @if (contentSetup().contentRegistry[content['@type']]; as contentRegistration) {
-    <ndc-dynamic
-      [ndcDynamicComponent]="contentRegistration.componentType"
-      [ndcDynamicInputs]="{}"
-      [ngComponentOutletNdcDynamicInputs]="
-        contentRegistration.inputBindings ? contentRegistration.inputBindings(this, content) : {}
-      "
-      [ngComponentOutletNdcDynamicOutputs]="
-        contentRegistration.outputBindings ? contentRegistration.outputBindings(this, content) : {}
-      "
-    ></ndc-dynamic>
-  }
+@if (contentRecipe(); as recipe) {
+  <ng-container [kokuDynamicHost]="recipe" />
 }

@@ -151,11 +151,11 @@
   </div>
 
   @if (inlineContent(); as activeContent) {
-    @if (activeContent.content; as activeContentContent) {
+    @if (activeContent.content; as activeContentPayload) {
       <div class="flex flex-col w-full overflow-auto bg-base-100">
         <div
           list-inline-content
-          [content]="activeContentContent"
+          [content]="activeContentPayload"
           [urlSegments]="activeContent.urlSegments"
           [contentSetup]="contentSetup()"
           [loading]="sourceLoading()"

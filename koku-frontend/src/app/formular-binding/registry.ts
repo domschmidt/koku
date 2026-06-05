@@ -1,621 +1,802 @@
-import { ButtonEvent, FieldEvent, FormularContentSetup, FormularContentStates } from '../formular/formular.component';
-import { ButtonRendererComponent } from '../formular/button-renderer/button-renderer.component';
-import { FieldRendererComponent } from '../formular/field-renderer/field-renderer.component';
-import { DividerComponent } from './layouts/divider/divider.component';
-import { GridContainerComponent } from './containers/grid-container/grid-container.component';
-import { LayoutRendererComponent } from '../formular/layout-renderer/layout-renderer.component';
-import { PictureUploadComponent } from '../fields/picture-upload/picture-upload.component';
-import { DateInputFieldComponent } from '../fields/input/date-input-field.component';
-import { TimeInputFieldComponent } from '../fields/input/time-input-field.component';
-import { MonthInputFieldComponent } from '../fields/input/month-input-field.component';
-import { WeekInputFieldComponent } from '../fields/input/week-input-field.component';
-import { InputFieldComponent } from '../fields/input/input-field.component';
-import { TextareaFieldComponent } from '../fields/textarea/textarea-field.component';
-import { CheckboxFieldComponent } from '../fields/checkbox/checkbox-field.component';
-import { FieldsetContainerComponent } from './containers/fieldset-container/fieldset-container.component';
-import { ButtonComponent } from '../button/button.component';
-import { SelectFieldComponent } from '../fields/select/select-field.component';
-import { MultiSelectWithPricesFieldComponent } from '../fields/multi-select-with-prices/multi-select-with-prices-field.component';
-import { StatFieldComponent } from '../fields/stat/stat-field.component';
-import { Subject } from 'rxjs';
-import { signal } from '@angular/core';
-import { MultiSelectFieldComponent } from '../fields/multi-select/multi-select-field.component';
-import { FieldSlotRendererComponent } from '../formular/field-renderer/field-slot-renderer/field-slot-renderer.component';
-import { DocumentDesignerFieldComponent } from '../fields/document/document-designer/document-designer-field.component';
-import { ConditionalContainerComponent } from './containers/conditional-container/conditional-container.component';
-
-const FIELD_INITIALIZER = (formularContent: KokuDto.AbstractFormField<any>) => {
-  const result: FormularContentStates = {
-    fields: {},
-    containers: {},
-    buttons: {},
-    layouts: {},
-  };
-  result.fields[formularContent.id as string] = {
-    value: signal(formularContent.defaultValue),
-    disabledCauses: signal(new Set<string>(formularContent.disabled ? ['default'] : [])),
-    requiredCauses: signal(new Set<string>(formularContent.required ? ['default'] : [])),
-    readonlyCauses: signal(new Set<string>(formularContent.readonly ? ['default'] : [])),
-    loadingCauses: signal(new Set<string>([])),
-    config: formularContent,
-    fieldEventBus: new Subject<{
-      eventName: FieldEvent;
-      payload?: any;
-    }>(),
-  };
-  return result;
-};
-
-const CONTAINER_REGISTRY: Partial<
-  Record<
-    KokuDto.AbstractFormContainer['@type'],
-    {
-      componentType: any;
-      stateInitializer: (formularContent: KokuDto.AbstractFormContainer) => FormularContentStates;
-      inputBindings?(instance: any, formularContent: KokuDto.AbstractFormContainer): Record<string, any>;
-      outputBindings?(instance: any, formularContent: KokuDto.AbstractFormContainer): Record<string, any>;
-    }
-  >
-> = {
-  grid: {
-    componentType: GridContainerComponent,
-    stateInitializer: (formularContent: KokuDto.AbstractFormContainer) => {
-      const castedFormularContent = formularContent as KokuDto.GridContainer;
-
-      const result: FormularContentStates = {
-        fields: {},
-        containers: {},
-        buttons: {},
-        layouts: {},
-      };
-      result.containers[formularContent.id as string] = {
-        config: formularContent,
-      };
-      for (const currentContent of castedFormularContent.content || []) {
-        if (currentContent['@type']) {
-          const mappedFieldConfig = FIELD_REGISTRY[currentContent['@type'] as KokuDto.AbstractFormField<any>['@type']];
-          if (mappedFieldConfig) {
-            const fieldContentStates = mappedFieldConfig.stateInitializer(
-              currentContent as KokuDto.AbstractFormField<any>,
-            );
-            result.buttons = Object.assign(result.buttons, fieldContentStates.buttons);
-            result.fields = Object.assign(result.fields, fieldContentStates.fields);
-            result.containers = Object.assign(result.containers, fieldContentStates.containers);
-          }
-          const mappedContainerConfig =
-            CONTAINER_REGISTRY[currentContent['@type'] as KokuDto.AbstractFormContainer['@type']];
-          if (mappedContainerConfig) {
-            const containerContentStates = mappedContainerConfig.stateInitializer(
-              currentContent as KokuDto.AbstractFormContainer,
-            );
-            result.buttons = Object.assign(result.buttons, containerContentStates.buttons);
-            result.fields = Object.assign(result.fields, containerContentStates.fields);
-            result.containers = Object.assign(result.containers, containerContentStates.containers);
-          }
-          const mappedButtonConfig = BUTTON_REGISTRY[currentContent['@type'] as KokuDto.KokuFormButton['@type']];
-          if (mappedButtonConfig) {
-            const buttonContentStates = mappedButtonConfig.stateInitializer(currentContent as KokuDto.KokuFormButton);
-            result.buttons = Object.assign(result.buttons, buttonContentStates.buttons);
-            result.fields = Object.assign(result.fields, buttonContentStates.fields);
-            result.containers = Object.assign(result.containers, buttonContentStates.containers);
-          }
-        }
-      }
-      return result;
-    },
+import { FormularContentRenderContext, FormularContentRegistry } from '../formular/formular.component';
+import { linkedSignal, computed } from '@angular/core';
+import { FORM_OUTLET } from '../formular/form-outlet';
+export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
+  grid: (context: FormularContentRenderContext<KokuDto.GridContainer>) => {
+    return {
+      render: () => ({
+        loadComponent: () =>
+          import('./containers/grid-container/grid-container.component').then(
+            (module) => module.GridContainerComponent,
+          ),
+        inputs: computed(() => ({
+          runtime: context.runtime,
+          loading: context.loading(),
+          submitting: context.submitting(),
+          content: context.content(),
+          contentRegistry: context.contentRegistry(),
+          buttonDockOutlet: context.buttonDockOutlet(),
+          context: context.context(),
+        })),
+      }),
+    };
   },
-  fieldset: {
-    componentType: FieldsetContainerComponent,
-    stateInitializer: (formularContent: KokuDto.AbstractFormContainer) => {
-      const castedFormularContent = formularContent as KokuDto.FieldsetContainer;
-      const result: FormularContentStates = {
-        fields: {},
-        containers: {},
-        buttons: {},
-        layouts: {},
-      };
-      result.containers[formularContent.id as string] = {
-        config: formularContent,
-      };
-      for (const currentContent of castedFormularContent.content || []) {
-        if (currentContent['@type']) {
-          const mappedFieldConfig = FIELD_REGISTRY[currentContent['@type'] as KokuDto.AbstractFormField<any>['@type']];
-          if (mappedFieldConfig) {
-            const fieldContentStates = mappedFieldConfig.stateInitializer(
-              currentContent as KokuDto.AbstractFormField<any>,
-            );
-            result.buttons = Object.assign(result.buttons, fieldContentStates.buttons);
-            result.fields = Object.assign(result.fields, fieldContentStates.fields);
-            result.containers = Object.assign(result.containers, fieldContentStates.containers);
-          }
-          const mappedContainerConfig =
-            CONTAINER_REGISTRY[currentContent['@type'] as KokuDto.AbstractFormContainer['@type']];
-          if (mappedContainerConfig) {
-            const containerContentStates = mappedContainerConfig.stateInitializer(
-              currentContent as KokuDto.AbstractFormContainer,
-            );
-            result.buttons = Object.assign(result.buttons, containerContentStates.buttons);
-            result.fields = Object.assign(result.fields, containerContentStates.fields);
-            result.containers = Object.assign(result.containers, containerContentStates.containers);
-          }
-          const mappedButtonConfig = BUTTON_REGISTRY[currentContent['@type'] as KokuDto.KokuFormButton['@type']];
-          if (mappedButtonConfig) {
-            const buttonContentStates = mappedButtonConfig.stateInitializer(currentContent as KokuDto.KokuFormButton);
-            result.buttons = Object.assign(result.buttons, buttonContentStates.buttons);
-            result.fields = Object.assign(result.fields, buttonContentStates.fields);
-            result.containers = Object.assign(result.containers, buttonContentStates.containers);
-          }
-        }
-      }
-      return result;
-    },
+  fieldset: (context: FormularContentRenderContext<KokuDto.FieldsetContainer>) => {
+    return {
+      render: () => ({
+        loadComponent: () =>
+          import('./containers/fieldset-container/fieldset-container.component').then(
+            (module) => module.FieldsetContainerComponent,
+          ),
+        inputs: computed(() => ({
+          runtime: context.runtime,
+          loading: context.loading(),
+          submitting: context.submitting(),
+          content: context.content(),
+          contentRegistry: context.contentRegistry(),
+          buttonDockOutlet: context.buttonDockOutlet(),
+          context: context.context(),
+        })),
+      }),
+    };
   },
-  condition: {
-    componentType: ConditionalContainerComponent,
-    stateInitializer: (formularContent: KokuDto.AbstractFormContainer) => {
-      const castedFormularContent = formularContent as KokuDto.ConditionalContainer;
-      const result: FormularContentStates = {
-        fields: {},
-        containers: {},
-        buttons: {},
-        layouts: {},
-      };
-      result.containers[formularContent.id as string] = {
-        config: formularContent,
-      };
-      for (const currentContent of castedFormularContent.content || []) {
-        if (currentContent['@type']) {
-          const mappedFieldConfig = FIELD_REGISTRY[currentContent['@type'] as KokuDto.AbstractFormField<any>['@type']];
-          if (mappedFieldConfig) {
-            const fieldContentStates = mappedFieldConfig.stateInitializer(
-              currentContent as KokuDto.AbstractFormField<any>,
-            );
-            result.buttons = Object.assign(result.buttons, fieldContentStates.buttons);
-            result.fields = Object.assign(result.fields, fieldContentStates.fields);
-            result.containers = Object.assign(result.containers, fieldContentStates.containers);
-          }
-          const mappedContainerConfig =
-            CONTAINER_REGISTRY[currentContent['@type'] as KokuDto.AbstractFormContainer['@type']];
-          if (mappedContainerConfig) {
-            const containerContentStates = mappedContainerConfig.stateInitializer(
-              currentContent as KokuDto.AbstractFormContainer,
-            );
-            result.buttons = Object.assign(result.buttons, containerContentStates.buttons);
-            result.fields = Object.assign(result.fields, containerContentStates.fields);
-            result.containers = Object.assign(result.containers, containerContentStates.containers);
-          }
-          const mappedButtonConfig = BUTTON_REGISTRY[currentContent['@type'] as KokuDto.KokuFormButton['@type']];
-          if (mappedButtonConfig) {
-            const buttonContentStates = mappedButtonConfig.stateInitializer(currentContent as KokuDto.KokuFormButton);
-            result.buttons = Object.assign(result.buttons, buttonContentStates.buttons);
-            result.fields = Object.assign(result.fields, buttonContentStates.fields);
-            result.containers = Object.assign(result.containers, buttonContentStates.containers);
-          }
-        }
-      }
-      return result;
-    },
+  condition: (context: FormularContentRenderContext<KokuDto.ConditionalContainer>) => {
+    return {
+      render: () => ({
+        loadComponent: () =>
+          import('./containers/conditional-container/conditional-container.component').then(
+            (module) => module.ConditionalContainerComponent,
+          ),
+        inputs: computed(() => ({
+          runtime: context.runtime,
+          loading: context.loading(),
+          submitting: context.submitting(),
+          content: context.content(),
+          contentRegistry: context.contentRegistry(),
+          buttonDockOutlet: context.buttonDockOutlet(),
+          context: context.context(),
+        })),
+      }),
+    };
   },
-};
-const FIELD_REGISTRY: Partial<
-  Record<
-    KokuDto.AbstractFormField<any>['@type'],
-    {
-      componentType: any;
-      stateInitializer: (formularContent: KokuDto.AbstractFormField<any>) => FormularContentStates;
-      inputBindings?(
-        instance: FieldRendererComponent,
-        formularContent: KokuDto.AbstractFormField<any>,
-      ): Record<string, any>;
-      outputBindings?(
-        instance: FieldRendererComponent,
-        formularContent: KokuDto.AbstractFormField<any>,
-      ): Record<string, any>;
-    }
-  >
-> = {
-  'picture-upload': {
-    componentType: PictureUploadComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings(
-      instance: FieldRendererComponent,
-      formularContent: KokuDto.PictureUploadFormularField,
-    ): Record<string, any> {
-      return {
-        ...(formularContent.label && { label: formularContent.label }),
-        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-      };
-    },
-  },
-  input: {
-    componentType: InputFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.InputFormularField) => {
-      return {
-        ...(formularContent.label && { label: formularContent.label }),
-        ...(formularContent.type && { type: formularContent.type }),
-        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
-        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-  'date-input': {
-    componentType: DateInputFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.DateInputFormularField) => {
-      return {
-        ...(formularContent.label && { label: formularContent.label }),
-        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
-        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-  'time-input': {
-    componentType: TimeInputFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.TimeInputFormularField) => {
-      return {
-        ...(formularContent.label && { label: formularContent.label }),
-        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
-        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-  'month-input': {
-    componentType: MonthInputFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.MonthInputFormularField) => {
-      return {
-        ...(formularContent.label && { label: formularContent.label }),
-        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
-        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-  'week-input': {
-    componentType: WeekInputFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.WeekInputFormularField) => {
-      return {
-        ...(formularContent.label && { label: formularContent.label }),
-        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
-        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-  select: {
-    componentType: SelectFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.SelectFormularField) => {
-      return {
-        ...(formularContent.label && { label: formularContent.label }),
-        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
-        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
-        ...(formularContent.possibleValues !== undefined && { possibleValues: formularContent.possibleValues }),
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-  stat: {
-    componentType: StatFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.StatFormularField) => {
-      return {
-        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
-        ...(formularContent.title !== undefined && { title: formularContent.title }),
-        ...(formularContent.description !== undefined && { description: formularContent.description }),
-        ...(formularContent.icon !== undefined && { icon: formularContent.icon }),
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-  textarea: {
-    componentType: TextareaFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.InputFormularField) => {
-      return {
-        ...(formularContent.label && { label: formularContent.label }),
-        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
-        ...(formularContent.defaultValue !== undefined && { defaultValue: formularContent.defaultValue }),
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-  checkbox: {
-    componentType: CheckboxFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.InputFormularField) => {
-      return {
-        ...(formularContent.label && { label: formularContent.label }),
-        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
-        ...(formularContent.defaultValue && { defaultValue: formularContent.defaultValue }),
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        typed: (data: any) => instance.emitToFieldEventBus('onInput', data),
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-  'multi-select-with-pricing-adjustment': {
-    componentType: MultiSelectWithPricesFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (
-      instance: FieldRendererComponent,
-      formularContent: KokuDto.MultiSelectWithPricingAdjustmentFormularField,
-    ) => {
-      return {
-        ...(formularContent.label && { label: formularContent.label }),
-        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
-        ...(formularContent.defaultValue && { defaultValue: formularContent.defaultValue }),
-        ...(formularContent.possibleValues !== undefined && { possibleValues: formularContent.possibleValues }),
-        idPathMapping: formularContent.idPathMapping,
-        pricePathMapping: formularContent.pricePathMapping,
-        uniqueValues: formularContent.uniqueValues,
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-  'multi-select': {
-    componentType: MultiSelectFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.MultiSelectFormularField) => {
-      return {
-        ...(formularContent.label && { label: formularContent.label }),
-        ...(formularContent.placeholder && { placeholder: formularContent.placeholder }),
-        ...(formularContent.defaultValue && { defaultValue: formularContent.defaultValue }),
-        ...(formularContent.possibleValues !== undefined && { possibleValues: formularContent.possibleValues }),
-        idPathMapping: formularContent.idPathMapping,
-        uniqueValues: formularContent.uniqueValues,
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-  'document-designer': {
-    componentType: DocumentDesignerFieldComponent,
-    stateInitializer: FIELD_INITIALIZER,
-    inputBindings: (instance: FieldRendererComponent, formularContent: KokuDto.DocumentDesignerFormularField) => {
-      return {
-        ...(formularContent.defaultValue && { defaultValue: formularContent.defaultValue }),
-      };
-    },
-    outputBindings: (instance: FieldRendererComponent) => {
-      return {
-        changed: (data: any) => instance.emitToFieldEventBus('onChange', data),
-        blurred: (data: any) => instance.emitToFieldEventBus('onBlur', data),
-        focused: (data: any) => instance.emitToFieldEventBus('onFocus', data),
-      };
-    },
-  },
-};
-const BUTTON_INITIALIZER = (formularContent: KokuDto.AbstractFormButton) => {
-  const result: FormularContentStates = {
-    fields: {},
-    containers: {},
-    buttons: {},
-    layouts: {},
-  };
-  result.buttons[formularContent.id as string] = {
-    config: formularContent,
-    loadingCauses: new Set<string>(),
-    disabledCauses: new Set<string>(),
-    buttonEventBus: new Subject<{
-      eventName: ButtonEvent;
-      payload?: any;
-    }>(),
-  };
-  return result;
-};
-const BUTTON_REGISTRY: Partial<
-  Record<
-    KokuDto.AbstractFormButton['@type'],
-    {
-      componentType: any;
-      stateInitializer: (formularContent: KokuDto.AbstractFormButton) => FormularContentStates;
-      inputBindings?(instance: any, formularContent: KokuDto.AbstractFormButton): Record<string, any>;
-      outputBindings?(instance: any, formularContent: KokuDto.AbstractFormButton): Record<string, any>;
-    }
-  >
-> = {
-  button: {
-    componentType: ButtonComponent,
-    stateInitializer: BUTTON_INITIALIZER,
-    inputBindings: (instance: ButtonRendererComponent, formularContent: KokuDto.KokuFormButton) => {
-      let res = {
-        ...(formularContent.href && { href: formularContent.href }),
-        ...(formularContent.hrefTarget && { hrefTarget: formularContent.hrefTarget }),
-        ...(formularContent.buttonType && { buttonType: formularContent.buttonType }),
-        ...(formularContent.title && { title: formularContent.title }),
-        ...(formularContent.text && { text: formularContent.text }),
-        ...(formularContent.styles && { styles: formularContent.styles }),
-        ...(formularContent.icon && { icon: formularContent.icon }),
-      };
-
-      if (instance.enableDockedOutput()) {
-        res = {
-          ...res,
-          ...((formularContent.dockableSettings || {}).text && { text: (formularContent.dockableSettings || {}).text }),
-          ...((formularContent.dockableSettings || {}).title && {
-            title: (formularContent.dockableSettings || {}).title,
+  'picture-upload': (context: FormularContentRenderContext<KokuDto.PictureUploadFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
           }),
-          ...((formularContent.dockableSettings || {}).styles && {
-            styles: (formularContent.dockableSettings || {}).styles,
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/picture-upload/picture-upload.component').then((module) => module.PictureUploadComponent),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          config: context.content(),
+          label: context.content().label,
+          defaultValue: context.content().defaultValue ?? '',
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+        },
+      }),
+    };
+  },
+  input: (context: FormularContentRenderContext<KokuDto.InputFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
           }),
-          ...((formularContent.dockableSettings || {}).icon && { icon: (formularContent.dockableSettings || {}).icon }),
-        };
-      }
-
-      return res;
-    },
-    outputBindings: (instance: ButtonRendererComponent) => {
-      return {
-        clicked: (data: any) => instance.emitToButtonEventBus('onClick', data),
-      };
-    },
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/input/input-field.component').then((module) => module.InputFieldComponent),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          label: context.content().label,
+          placeholder: context.content().placeholder,
+          defaultValue: context.content().defaultValue ?? '',
+          type: context.content().type || 'TEXT',
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+          typed: (data: any) => context.runtime.emit(context.id, 'INPUT', data),
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
   },
-};
-const FIELD_SLOT_REGISTRY: Partial<
-  Record<
-    KokuDto.IFormFieldSlot['@type'],
-    {
-      componentType: any;
-      inputBindings?(
-        instance: FieldSlotRendererComponent,
-        formularContent: KokuDto.IFormFieldSlot,
-      ): Record<string, any>;
-      outputBindings?(
-        instance: FieldSlotRendererComponent,
-        formularContent: KokuDto.IFormFieldSlot,
-      ): Record<string, any>;
-    }
-  >
-> = {
-  button: {
-    componentType: ButtonComponent,
-    inputBindings: (instance: FieldSlotRendererComponent, formularContent: KokuDto.KokuFieldSlotButton) => {
-      return {
-        ...(formularContent.href && { href: formularContent.href }),
-        ...(formularContent.hrefTarget && { hrefTarget: formularContent.hrefTarget }),
-        ...(formularContent.buttonType && { buttonType: formularContent.buttonType }),
-        ...(formularContent.text && { text: formularContent.text }),
-        ...(formularContent.title && { title: formularContent.title }),
-        ...(formularContent.styles && { styles: formularContent.styles }),
-        ...(formularContent.icon && { icon: formularContent.icon }),
-        join: true,
-      };
-    },
-    outputBindings: (instance: FieldSlotRendererComponent) => {
-      return {
-        clicked: (data: any) => instance.emitToFieldEventBus(instance.clickEventName(), data),
-        focused: (data: any) => instance.emitToFieldEventBus(instance.focusEventName(), data),
-        blurred: (data: any) => instance.emitToFieldEventBus(instance.blurEventName(), data),
-      };
-    },
+  'date-input': (context: FormularContentRenderContext<KokuDto.DateInputFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
+          }),
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/input/date-input-field.component').then((module) => module.DateInputFieldComponent),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          label: context.content().label,
+          placeholder: context.content().placeholder,
+          defaultValue: context.content().defaultValue ?? '',
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+          typed: (data: any) => context.runtime.emit(context.id, 'INPUT', data),
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
   },
-};
-
-const LAYOUT_INITIALIZER = (formularContent: KokuDto.AbstractFormLayout) => {
-  const result: FormularContentStates = {
-    fields: {},
-    containers: {},
-    buttons: {},
-    layouts: {},
-  };
-  result.layouts[formularContent.id as string] = {
-    config: formularContent,
-  };
-  return result;
-};
-const LAYOUT_REGISTRY: Partial<
-  Record<
-    KokuDto.AbstractFormLayout['@type'],
-    {
-      componentType: any;
-      stateInitializer: (formularContent: KokuDto.AbstractFormLayout) => FormularContentStates;
-      inputBindings?(
-        instance: LayoutRendererComponent,
-        formularContent: KokuDto.AbstractFormLayout,
-      ): Record<string, any>;
-      outputBindings?(
-        instance: LayoutRendererComponent,
-        formularContent: KokuDto.AbstractFormLayout,
-      ): Record<string, any>;
-    }
-  >
-> = {
-  divider: {
-    componentType: DividerComponent,
-    stateInitializer: LAYOUT_INITIALIZER,
-    inputBindings: (instance: LayoutRendererComponent, formularContent: KokuDto.DividerLayout) => {
-      return {
-        ...(formularContent.text && { text: formularContent.text }),
-      };
-    },
+  'time-input': (context: FormularContentRenderContext<KokuDto.TimeInputFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
+          }),
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/input/time-input-field.component').then((module) => module.TimeInputFieldComponent),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          label: context.content().label,
+          placeholder: context.content().placeholder,
+          defaultValue: context.content().defaultValue ?? '',
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+          typed: (data: any) => context.runtime.emit(context.id, 'INPUT', data),
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
   },
-};
-
-export const FORMULAR_CONTENT_SETUP: FormularContentSetup = {
-  fieldRegistry: FIELD_REGISTRY,
-  fieldSlotRegistry: FIELD_SLOT_REGISTRY,
-  buttonRegistry: BUTTON_REGISTRY,
-  layoutRegistry: LAYOUT_REGISTRY,
-  containerRegistry: CONTAINER_REGISTRY,
+  'month-input': (context: FormularContentRenderContext<KokuDto.MonthInputFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
+          }),
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/input/month-input-field.component').then((module) => module.MonthInputFieldComponent),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          label: context.content().label,
+          placeholder: context.content().placeholder,
+          defaultValue: context.content().defaultValue ?? '',
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+          typed: (data: any) => context.runtime.emit(context.id, 'INPUT', data),
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
+  },
+  'week-input': (context: FormularContentRenderContext<KokuDto.WeekInputFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
+          }),
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/input/week-input-field.component').then((module) => module.WeekInputFieldComponent),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          label: context.content().label,
+          placeholder: context.content().placeholder,
+          defaultValue: context.content().defaultValue ?? '',
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+          typed: (data: any) => context.runtime.emit(context.id, 'INPUT', data),
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
+  },
+  select: (context: FormularContentRenderContext<KokuDto.SelectFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
+          }),
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/select/select-field.component').then((module) => module.SelectFieldComponent),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          label: context.content().label,
+          placeholder: context.content().placeholder,
+          defaultValue: context.content().defaultValue ?? '',
+          possibleValues: context.content().possibleValues ?? [],
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
+  },
+  stat: (context: FormularContentRenderContext<KokuDto.StatFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
+          }),
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () => import('../fields/stat/stat-field.component').then((module) => module.StatFieldComponent),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          defaultValue: context.content().defaultValue,
+          title: context.content().title,
+          description: context.content().description,
+          icon: context.content().icon,
+        })),
+        outputs: {
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
+  },
+  textarea: (context: FormularContentRenderContext<KokuDto.TextareaFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
+          }),
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/textarea/textarea-field.component').then((module) => module.TextareaFieldComponent),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          label: context.content().label,
+          placeholder: context.content().placeholder,
+          defaultValue: context.content().defaultValue ?? '',
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+          typed: (data: any) => context.runtime.emit(context.id, 'INPUT', data),
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
+  },
+  checkbox: (context: FormularContentRenderContext<KokuDto.CheckboxFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
+          }),
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/checkbox/checkbox-field.component').then((module) => module.CheckboxFieldComponent),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          label: context.content().label,
+          placeholder: context.content().placeholder,
+          defaultValue: context.content().defaultValue,
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+          typed: (data: any) => context.runtime.emit(context.id, 'INPUT', data),
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
+  },
+  'multi-select-with-pricing-adjustment': (
+    context: FormularContentRenderContext<KokuDto.MultiSelectWithPricingAdjustmentFormularField>,
+  ) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
+          }),
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/multi-select-with-prices/multi-select-with-prices-field.component').then(
+            (module) => module.MultiSelectWithPricesFieldComponent,
+          ),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          label: context.content().label,
+          placeholder: context.content().placeholder,
+          defaultValue: context.content().defaultValue ?? [],
+          possibleValues: context.content().possibleValues ?? [],
+          idPathMapping: context.content().idPathMapping,
+          pricePathMapping: context.content().pricePathMapping,
+          uniqueValues: context.content().uniqueValues,
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
+  },
+  'multi-select': (context: FormularContentRenderContext<KokuDto.MultiSelectFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
+          }),
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/multi-select/multi-select-field.component').then(
+            (module) => module.MultiSelectFieldComponent,
+          ),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          label: context.content().label,
+          placeholder: context.content().placeholder,
+          defaultValue: context.content().defaultValue ?? [],
+          possibleValues: context.content().possibleValues ?? [],
+          idPathMapping: context.content().idPathMapping,
+          uniqueValues: context.content().uniqueValues,
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
+  },
+  'document-designer': (context: FormularContentRenderContext<KokuDto.DocumentDesignerFormularField>) => {
+    const override = computed(() => {
+      const alias = context.content().alias;
+      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
+    });
+    return {
+      control: {
+        createValue: () =>
+          linkedSignal(() => {
+            const content = context.content();
+            const contentOverride = override();
+            if (contentOverride?.value !== undefined) {
+              return contentOverride.value;
+            }
+            return context.runtime.sourceValue(content.valuePath, content.defaultValue);
+          }),
+        writeSource: (source, value) => {
+          const valuePath = context.content().valuePath;
+          if (valuePath) {
+            source.set(valuePath, value);
+          }
+        },
+      },
+      render: (handle) => ({
+        loadComponent: () =>
+          import('../fields/document/document-designer/document-designer-field.component').then(
+            (module) => module.DocumentDesignerFieldComponent,
+          ),
+        inputs: computed(() => ({
+          name: context.id,
+          value: handle.value!(),
+          disabled:
+            context.submitting() ||
+            Boolean(context.content().disabled) ||
+            Boolean(override()?.disable) ||
+            handle.disabledCauses().size > 0,
+          required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
+          readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
+          loading: context.loading() || handle.loadingCauses().size > 0,
+          defaultValue: context.content().defaultValue,
+        })),
+        outputs: {
+          changed: (data: any) => {
+            context.runtime.updateContentValue(context.id, data);
+            context.runtime.emit(context.id, 'CHANGE', data);
+          },
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
+  },
+  button: (context: FormularContentRenderContext<KokuDto.KokuFormButton>) => {
+    return {
+      render: (handle) => ({
+        loadComponent: () => import('../button/button.component').then((module) => module.ButtonComponent),
+        inputs: computed(() => ({
+          loading:
+            (context.submitting() && context.content().buttonType === 'SUBMIT') ||
+            Boolean(context.content().loading) ||
+            handle.loadingCauses().size > 0 ||
+            context.loading(),
+          disabled: context.submitting() || Boolean(context.content().disabled) || handle.disabledCauses().size > 0,
+          href: context.content().href,
+          hrefTarget: context.content().hrefTarget,
+          buttonType: context.content().buttonType,
+          title: context.enableDockedOutput()
+            ? context.content().dockableSettings?.title || context.content().title
+            : context.content().title,
+          text: context.enableDockedOutput()
+            ? context.content().dockableSettings?.text || context.content().text
+            : context.content().text,
+          styles: context.enableDockedOutput()
+            ? context.content().dockableSettings?.styles || context.content().styles
+            : context.content().styles,
+          icon: context.enableDockedOutput()
+            ? context.content().dockableSettings?.icon || context.content().icon
+            : context.content().icon,
+          join: context.placementOutlet() !== FORM_OUTLET.CONTENT,
+        })),
+        outputs: {
+          clicked: (data: any) => context.runtime.emit(context.id, 'CLICK', data),
+          blurred: (data: any) => context.runtime.emit(context.id, 'BLUR', data),
+          focused: (data: any) => context.runtime.emit(context.id, 'FOCUS', data),
+        },
+      }),
+    };
+  },
+  divider: (context: FormularContentRenderContext<KokuDto.DividerLayout>) => {
+    return {
+      render: () => ({
+        loadComponent: () => import('./layouts/divider/divider.component').then((module) => module.DividerComponent),
+        inputs: computed(() => ({
+          loading: context.loading(),
+          disabled: context.submitting(),
+          text: context.content().text,
+        })),
+      }),
+    };
+  },
 };

@@ -16,8 +16,12 @@ import lombok.experimental.FieldNameConstants;
 @AllArgsConstructor
 @FieldNameConstants
 public class KokuActivitySoldProductSummaryRequestDto {
+    @Builder.Default
     List<KokuCustomerAppointmentSoldProductDto> soldProducts = new ArrayList<>();
+
+    @Builder.Default
     List<KokuCustomerAppointmentPromotionDto> promotions = new ArrayList<>();
+
     LocalDate date;
     LocalTime time;
 }

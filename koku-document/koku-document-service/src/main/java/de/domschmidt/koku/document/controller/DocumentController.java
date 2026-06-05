@@ -3,7 +3,7 @@ package de.domschmidt.koku.document.controller;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
-import de.domschmidt.formular.factory.DefaultViewContentIdGenerator;
+import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
@@ -85,33 +85,42 @@ public class DocumentController {
 
     @GetMapping("/documents/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory(
-                new DefaultViewContentIdGenerator(),
-                GridContainer.builder().cols(1).build());
+        final FormViewFactory formFactory = new FormViewFactory();
+        final String rootId =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
 
-        formFactory.addField(InputFormularField.builder()
-                .label("Name")
-                .valuePath(KokuDocumentDto.Fields.name)
-                .required(true)
-                .build());
-        formFactory.addField(DocumentDesignerFormularField.builder()
-                .valuePath(KokuDocumentDto.Fields.template)
-                .build());
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .label("Name")
+                        .valuePath(KokuDocumentDto.Fields.name)
+                        .required(true)
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(DocumentDesignerFormularField.builder()
+                        .valuePath(KokuDocumentDto.Fields.template)
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addButton(KokuFormButton.builder()
-                .buttonType(EnumButtonType.SUBMIT)
-                .text("Speichern")
-                .title("Jetzt speichern")
-                .styles(Arrays.asList(EnumButtonStyle.BLOCK))
-                .dockable(true)
-                .dockableSettings(ButtonDockableSettings.builder()
-                        .icon("SAVE")
-                        .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build())
-                .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build());
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Speichern")
+                        .title("Jetzt speichern")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK))
+                        .dockable(true)
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("SAVE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
+                                .build())
+                        .postProcessingAction(FormButtonReloadAction.builder().build())
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        return formFactory.create();
+        return formFactory.create(rootId);
     }
 
     @GetMapping("/documents/list")
@@ -159,6 +168,19 @@ public class DocumentController {
                                 .submitUrl("services/documents/documents")
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
                                 .maxWidthInPx(9999)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("document-created")
+                                                .build(),
+                                        ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
+                                                .route(":documentId")
+                                                .params(Arrays.asList(
+                                                        ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
+                                                                .builder()
+                                                                .param(":documentId")
+                                                                .valuePath(KokuDocumentDto.Fields.id)
+                                                                .build()))
+                                                .build()))
                                 .build())
                         .build())
                 .build());

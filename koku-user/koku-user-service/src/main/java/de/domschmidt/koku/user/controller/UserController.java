@@ -5,7 +5,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
-import de.domschmidt.formular.factory.DefaultViewContentIdGenerator;
+import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
@@ -92,56 +92,68 @@ public class UserController {
 
     @GetMapping("/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory(
-                new DefaultViewContentIdGenerator(),
-                GridContainer.builder().cols(1).build());
+        final FormViewFactory formFactory = new FormViewFactory();
+        final String rootId =
+                formFactory.addContent(GridContainer.builder().cols(1).build());
 
-        formFactory.addField(PictureUploadFormularField.builder()
-                .valuePath(KokuUserDto.Fields.avatarBase64)
-                .label("Profilbild")
-                .build());
+        formFactory
+                .place(formFactory.addContent(PictureUploadFormularField.builder()
+                        .valuePath(KokuUserDto.Fields.avatarBase64)
+                        .label("Profilbild")
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(InputFormularField.builder()
-                .valuePath(KokuUserDto.Fields.fullname)
-                .label("Vollständiger Name")
-                .disabled(true)
-                .build());
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuUserDto.Fields.fullname)
+                        .label("Vollständiger Name")
+                        .disabled(true)
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addField(SelectFormularField.builder()
-                .valuePath(KokuUserDto.Fields.regionId)
-                .label("Region")
-                .possibleValues(new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
-                        .select(QUserRegion.userRegion).from(QUserRegion.userRegion).fetch().stream()
-                                .map(userRegion -> {
-                                    return SelectFormularFieldPossibleValue.builder()
-                                            .id(userRegion.getId() + "")
-                                            .text(
-                                                    userRegion.getStateIso() != null
-                                                            ? userRegion.getStateName()
-                                                            : userRegion.getCountryName())
-                                            .category(
-                                                    userRegion.getStateIso() != null
-                                                            ? userRegion.getCountryName()
-                                                            : null)
-                                            .build();
-                                })
-                                .toList())
-                .build());
+        formFactory
+                .place(formFactory.addContent(SelectFormularField.builder()
+                        .valuePath(KokuUserDto.Fields.regionId)
+                        .label("Region")
+                        .possibleValues(new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
+                                .select(QUserRegion.userRegion).from(QUserRegion.userRegion).fetch().stream()
+                                        .map(userRegion -> {
+                                            return SelectFormularFieldPossibleValue.builder()
+                                                    .id(userRegion.getId() + "")
+                                                    .text(
+                                                            userRegion.getStateIso() != null
+                                                                    ? userRegion.getStateName()
+                                                                    : userRegion.getCountryName())
+                                                    .category(
+                                                            userRegion.getStateIso() != null
+                                                                    ? userRegion.getCountryName()
+                                                                    : null)
+                                                    .build();
+                                        })
+                                        .toList())
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        formFactory.addButton(KokuFormButton.builder()
-                .buttonType(EnumButtonType.SUBMIT)
-                .text("Speichern")
-                .title("Jetzt speichern")
-                .styles(Arrays.asList(EnumButtonStyle.BLOCK))
-                .dockable(true)
-                .dockableSettings(ButtonDockableSettings.builder()
-                        .icon("SAVE")
-                        .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
-                        .build())
-                .postProcessingAction(FormButtonReloadAction.builder().build())
-                .build());
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Speichern")
+                        .title("Jetzt speichern")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK))
+                        .dockable(true)
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("SAVE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
+                                .build())
+                        .postProcessingAction(FormButtonReloadAction.builder().build())
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
 
-        return formFactory.create();
+        return formFactory.create(rootId);
     }
 
     @GetMapping("/list")

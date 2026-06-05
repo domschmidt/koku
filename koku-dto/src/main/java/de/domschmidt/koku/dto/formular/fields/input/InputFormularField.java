@@ -1,15 +1,24 @@
 package de.domschmidt.koku.dto.formular.fields.input;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import de.domschmidt.formular.dto.content.fields.AbstractFormField;
+import de.domschmidt.formular.dto.content.AbstractFormularContent;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("input")
-@Getter
-public class InputFormularField extends AbstractFormField<String> {
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class InputFormularField extends AbstractFormularContent {
+
+    String valuePath;
+    Boolean required;
+    Boolean readonly;
+    Boolean disabled;
 
     @Builder.Default
     EnumInputFormularFieldType type = EnumInputFormularFieldType.TEXT;

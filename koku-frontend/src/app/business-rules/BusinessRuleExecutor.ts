@@ -1,5 +1,5 @@
-import { WritableSignal } from '@angular/core';
-import { BehaviorSubject, filter, Subscription } from 'rxjs';
+import { Signal } from '@angular/core';
+import { finalize, Observable, Subscription } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { get } from '../utils/get';
 import { set } from '../utils/set';
@@ -9,97 +9,86 @@ import { ModalContentSetup } from '../modal/modal.type';
 import { GLOBAL_EVENT_BUS } from '../events/global-events';
 import { UNIQUE_REF_GENERATOR } from '../utils/uniqueRef';
 
-export interface BusinessRuleExecutorFieldInstance {
-  value: WritableSignal<any>;
-  fieldEventBus: BehaviorSubject<{
-    eventName: KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum;
-    payload?: any;
-  } | null>;
-  disabledCauses: WritableSignal<Set<string>>;
-  requiredCauses: WritableSignal<Set<string>>;
-  readonlyCauses: WritableSignal<Set<string>>;
-  loadingCauses: WritableSignal<Set<string>>;
+interface BusinessRuleExecutorContentEvent {
+  eventName: KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum;
+  payload?: any;
 }
 
-export type BusinessRuleExecutorFieldInstanceIndex = Record<string, BusinessRuleExecutorFieldInstance>;
+export interface BusinessRuleExecutorContentHandle {
+  value?: Signal<any>;
+  events: Observable<BusinessRuleExecutorContentEvent>;
+}
+
+export interface BusinessRuleExecutorContentRuntime {
+  contentHandle(referenceId: string): BusinessRuleExecutorContentHandle | undefined;
+  updateContentValue(referenceId: string, value: any): void;
+  updateContentLoading(referenceId: string, cause: string, loading: boolean): void;
+}
+
+export interface BusinessRuleExecutorHooks {
+  onExecutionError?(error: unknown): void;
+}
 
 class BusinessRuleExecutor {
-  private readonly fastListenerRegistry: Partial<
-    Record<KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum, () => void>
-  > = {};
-
-  private loadingAnimationFields = new Set<BusinessRuleExecutorFieldInstance>([]);
+  private loadingAnimationContentIds = new Set<string>();
   private asyncLoadingSubscription: Subscription | undefined;
+  private contentEventSubscriptions: Subscription[] = [];
 
   private uniqueInstanceRef = UNIQUE_REF_GENERATOR.generate();
 
   constructor(
     private httpClient: HttpClient,
     private modalService: ModalService,
-    private modalSetup: ModalContentSetup,
+    private modalSetup: Partial<ModalContentSetup>,
     private config: KokuDto.KokuBusinessRuleDto,
-    private fieldInstanceIndex: BusinessRuleExecutorFieldInstanceIndex,
+    private contentRuntime: BusinessRuleExecutorContentRuntime,
+    private hooks: BusinessRuleExecutorHooks = {},
   ) {
-    console.log('Created BusinessRuleExecutor');
-
     for (const currentReference of config.references || []) {
       if (!currentReference.reference) {
         throw new Error('Reference not specified');
       }
-      const referencedField = this.fieldInstanceIndex[currentReference.reference];
-      if (!referencedField) {
+      const referencedContent = this.contentRuntime.contentHandle(currentReference.reference);
+      if (!referencedContent) {
         throw new Error(`Reference not found: ${currentReference.reference}`);
       }
-      console.log(`BusinessRuleExecutor Registered Field ${currentReference.reference}`);
+      const listenerEvents = new Set<KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum>();
       for (const currentListener of currentReference.listeners || []) {
         if (!currentListener.event) {
           throw new Error('Listener not specified');
         }
-        this.fastListenerRegistry[currentListener.event] = () => {
-          this.triggerFieldEvent();
-        };
+        listenerEvents.add(currentListener.event);
       }
 
       if (currentReference.loadingAnimation) {
-        this.loadingAnimationFields.add(referencedField);
+        this.loadingAnimationContentIds.add(currentReference.reference);
       }
 
-      referencedField.fieldEventBus
-        .pipe(
-          filter((value) => {
-            return value !== null;
+      if (listenerEvents.size > 0) {
+        this.contentEventSubscriptions.push(
+          referencedContent.events.subscribe((eventDetails) => {
+            if (!eventDetails.eventName) {
+              throw new Error('Event name is required');
+            }
+            if (listenerEvents.has(eventDetails.eventName)) {
+              this.triggerContentEvent();
+            }
           }),
-        )
-        .subscribe((eventDetails) => {
-          if (!eventDetails.eventName) {
-            throw new Error('Event name is required');
-          }
-          console.log(
-            `BusinessRuleExecutor Received Event '${eventDetails.eventName}' for Field ${currentReference.reference}`,
-            eventDetails.payload,
-          );
-          const listenerFnLookup = this.fastListenerRegistry[eventDetails.eventName];
-          if (listenerFnLookup) {
-            listenerFnLookup();
-          }
-        });
+        );
+      }
     }
   }
 
-  init() {
-    console.log('Initializing BusinessRuleExecutor');
-  }
-
-  reinit() {
-    console.log('Re-Initializing BusinessRuleExecutor');
-  }
-
   destroy() {
-    console.log('Destroying BusinessRuleExecutor');
+    this.asyncLoadingSubscription?.unsubscribe();
+    for (const subscription of this.contentEventSubscriptions) {
+      subscription.unsubscribe();
+    }
+    this.contentEventSubscriptions = [];
     GLOBAL_EVENT_BUS.removeGlobalEventListener(this.uniqueInstanceRef);
   }
 
-  private triggerFieldEvent(): void {
+  private triggerContentEvent(): void {
     if (!this.config.execution) {
       throw new Error('Execution is not defined');
     }
@@ -110,15 +99,10 @@ class BusinessRuleExecutor {
       throw new Error('References not defined');
     }
 
-    for (const currentLoadingField of this.loadingAnimationFields) {
-      const loadingCauses = currentLoadingField.loadingCauses();
-      loadingCauses.add(this.config.id);
-      currentLoadingField.loadingCauses.set(new Set(loadingCauses));
-    }
-
     if (this.asyncLoadingSubscription) {
       this.asyncLoadingSubscription.unsubscribe();
     }
+    this.setLoadingAnimation(true);
 
     switch (this.config.execution['@type']) {
       case 'open-dialog-content': {
@@ -166,6 +150,7 @@ class BusinessRuleExecutor {
             }
           }
         }
+        this.setLoadingAnimation(false);
         break;
       }
       case 'call-http-endpoint': {
@@ -184,11 +169,14 @@ class BusinessRuleExecutor {
             throw new Error('Reference not specified');
           }
           if (currentReference.requestParam !== undefined) {
-            const referencedField = this.fieldInstanceIndex[currentReference.reference];
-            if (!referencedField) {
+            const referencedContent = this.contentRuntime.contentHandle(currentReference.reference);
+            if (!referencedContent) {
               throw new Error(`Reference not found: ${currentReference.reference}`);
             }
-            set(requestBody, currentReference.requestParam, referencedField.value());
+            if (!referencedContent.value) {
+              throw new Error(`Reference has no value: ${currentReference.reference}`);
+            }
+            set(requestBody, currentReference.requestParam, referencedContent.value());
           }
         }
 
@@ -207,9 +195,14 @@ class BusinessRuleExecutor {
               body: castedExecution.method === 'GET' ? undefined : requestBody,
             },
           )
-          .subscribe((result) => {
-            console.log('Execution finished', result);
-            this.afterExecutionFinished(result);
+          .pipe(finalize(() => this.setLoadingAnimation(false)))
+          .subscribe({
+            next: (result) => {
+              this.afterExecutionFinished(result);
+            },
+            error: (error) => {
+              this.hooks.onExecutionError?.(error);
+            },
           });
 
         break;
@@ -229,8 +222,8 @@ class BusinessRuleExecutor {
       if (!currentReference.reference) {
         throw new Error('Reference not specified');
       }
-      const referencedField = this.fieldInstanceIndex[currentReference.reference];
-      if (!referencedField) {
+      const referencedContent = this.contentRuntime.contentHandle(currentReference.reference);
+      if (!referencedContent) {
         throw new Error(`Reference not found: ${currentReference.reference}`);
       }
 
@@ -239,7 +232,11 @@ class BusinessRuleExecutor {
           if (!currentReference.resultValuePath) {
             throw new Error('Reference resultValuePath not specified');
           }
-          referencedField.value.set(get(result, currentReference.resultValuePath));
+          if (!referencedContent.value) {
+            throw new Error(`Reference has no value: ${currentReference.reference}`);
+          }
+          const resultValue = get(result, currentReference.resultValuePath);
+          this.contentRuntime.updateContentValue(currentReference.reference, resultValue);
           break;
         }
         default:
@@ -247,10 +244,16 @@ class BusinessRuleExecutor {
       }
     }
 
-    for (const currentLoadingField of this.loadingAnimationFields) {
-      const loadingCauses = currentLoadingField.loadingCauses();
-      loadingCauses.delete(this.config.id);
-      currentLoadingField.loadingCauses.set(new Set(loadingCauses));
+    this.setLoadingAnimation(false);
+  }
+
+  private setLoadingAnimation(loading: boolean) {
+    if (!this.config.id) {
+      throw new Error('Rule id is not defined');
+    }
+
+    for (const contentId of this.loadingAnimationContentIds) {
+      this.contentRuntime.updateContentLoading(contentId, this.config.id, loading);
     }
   }
 }

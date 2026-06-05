@@ -1,17 +1,34 @@
-import { Component, input } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 import { ListContentSetup, ListItemSetup } from '../list.component';
-import { SignalComponentIoModule } from 'ng-dynamic-component/signal-component-io';
-import { ComponentOutletInjectorModule, DynamicComponent, DynamicIoDirective } from 'ng-dynamic-component';
 import { get } from '../../utils/get';
-
+import { KokuDynamicHostDirective } from '../../dynamic-host/dynamic-host.directive';
+import { createStableRecipe, requireRecipeFactory } from '../../dynamic-host/recipe.utils';
 @Component({
   selector: '[list-item-preview],list-item-preview',
-  imports: [SignalComponentIoModule, DynamicIoDirective, ComponentOutletInjectorModule, DynamicComponent],
+  imports: [KokuDynamicHostDirective],
   templateUrl: './list-item-preview.component.html',
 })
 export class ListItemPreviewComponent {
   register = input.required<ListItemSetup>();
   contentSetup = input.required<ListContentSetup>();
-
-  get = get;
+  previewRecipe = createStableRecipe({
+    identity: () => {
+      const preview = this.register().preview;
+      return {
+        preview,
+        factory: preview
+          ? requireRecipeFactory(this.contentSetup().previewRegistry, preview['@type'], 'list preview')
+          : undefined,
+      };
+    },
+    equal: (previous, current) => previous.preview === current.preview && previous.factory === current.factory,
+    create: ({ preview, factory }) =>
+      preview && factory
+        ? factory({
+            register: this.register,
+            preview: computed(() => this.register().preview || preview),
+            value: computed(() => get(this.register().source(), preview.valuePath || '', '')),
+          })
+        : null,
+  });
 }

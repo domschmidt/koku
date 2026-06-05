@@ -8,6 +8,11 @@
 @source inline("{@sm:,@md:,@lg:,@xl:,@2xl:,@3xl:,@4xl:,@5xl:,@6xl:@7xl:,sm:,md:,lg:,xl:,2xl:,}grid-cols-{1..50}");
 @source inline("opacity-{0..100}");
 @source inline("whitespace-pre");
+@source inline("{bg,text,border}-{primary,secondary,accent,info,success,warning,error,neutral}");
+@source inline("{badge,bg,text}-{primary,secondary,accent,info,success,warning,error,neutral}");
+@source inline("text-{primary,secondary,accent,info,success,warning,error,neutral}-content");
+@source inline("{bg,text,border}-{red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose,slate,gray,zinc,stone}-{300,400,600}");
+@source inline("text-white");
 
 @plugin "daisyui/theme" {
   name: "koku-light";
@@ -109,6 +114,26 @@ html, body {
   margin: 0;
 }
 
+.koku-color-surface {
+  background-color: color-mix(in oklab, var(--koku-color) 14%, var(--color-base-100));
+}
+
+.koku-color-strong {
+  color: var(--koku-color);
+}
+
+.koku-color-muted {
+  color: color-mix(in oklab, var(--koku-color) 74%, var(--color-base-content));
+}
+
+.koku-color-track {
+  background-color: color-mix(in oklab, var(--koku-color) 28%, transparent);
+}
+
+.koku-color-fill {
+  background-color: var(--koku-color);
+}
+
 .fc {
   --fc-page-bg-color: var(--color-neutral);
   --fc-border-color: oklch(from var(--color-accent) l c h / calc(alpha - 0.6));
@@ -164,234 +189,12 @@ html, body {
   }
 
   .calendar-item {
-    &.calendar-item--color-RED {
-      .fc-event-main:after {
-        @apply bg-red-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-red-300;
-      }
+    .fc-event-main:after {
+      background-color: var(--koku-event-color, transparent);
     }
 
-    &.calendar-item--color-ORANGE {
-      .fc-event-main:after {
-        @apply bg-orange-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-orange-300;
-      }
-    }
-
-    &.calendar-item--color-AMBER {
-      .fc-event-main:after {
-        @apply bg-amber-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-amber-300;
-      }
-    }
-
-    &.calendar-item--color-YELLOW {
-      .fc-event-main:after {
-        @apply bg-yellow-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-yellow-300;
-      }
-    }
-
-    &.calendar-item--color-YELLOW {
-      .fc-event-main:after {
-        @apply bg-yellow-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-yellow-300;
-      }
-    }
-
-    &.calendar-item--color-LIME {
-      .fc-event-main:after {
-        @apply bg-lime-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-lime-300;
-      }
-    }
-
-    &.calendar-item--color-GREEN {
-      .fc-event-main:after {
-        @apply bg-green-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-green-300;
-      }
-    }
-
-    &.calendar-item--color-EMERALD {
-      .fc-event-main:after {
-        @apply bg-emerald-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-emerald-300;
-      }
-    }
-
-    &.calendar-item--color-TEAL {
-      .fc-event-main:after {
-        @apply bg-teal-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-teal-300;
-      }
-    }
-
-    &.calendar-item--color-CYAN {
-      .fc-event-main:after {
-        @apply bg-cyan-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-cyan-300;
-      }
-    }
-
-    &.calendar-item--color-SKY {
-      .fc-event-main:after {
-        @apply bg-sky-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-sky-300;
-      }
-    }
-
-    &.calendar-item--color-BLUE {
-      .fc-event-main:after {
-        @apply bg-blue-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-blue-300;
-      }
-    }
-
-    &.calendar-item--color-INDIGO {
-      .fc-event-main:after {
-        @apply bg-indigo-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-indigo-300;
-      }
-    }
-
-    &.calendar-item--color-VIOLET {
-      .fc-event-main:after {
-        @apply bg-violet-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-violet-300;
-      }
-    }
-
-    &.calendar-item--color-PURPLE {
-      .fc-event-main:after {
-        @apply bg-purple-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-purple-300;
-      }
-    }
-
-    &.calendar-item--color-FUCHSIA {
-      .fc-event-main:after {
-        @apply bg-fuchsia-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-fuchsia-300;
-      }
-    }
-
-    &.calendar-item--color-PINK {
-      .fc-event-main:after {
-        @apply bg-pink-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-pink-300;
-      }
-    }
-
-    &.calendar-item--color-ROSE {
-      .fc-event-main:after {
-        @apply bg-rose-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-rose-300;
-      }
-    }
-
-    &.calendar-item--color-SLATE {
-      .fc-event-main:after {
-        @apply bg-slate-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-slate-300;
-      }
-    }
-
-    &.calendar-item--color-GRAY {
-      .fc-event-main:after {
-        @apply bg-gray-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-gray-300;
-      }
-    }
-
-    &.calendar-item--color-ZINC {
-      .fc-event-main:after {
-        @apply bg-zinc-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-zinc-300;
-      }
-    }
-
-    &.calendar-item--color-NEUTRAL {
-      .fc-event-main:after {
-        @apply bg-neutral-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-neutral-300;
-      }
-    }
-
-    &.calendar-item--color-STONE {
-      .fc-event-main:after {
-        @apply bg-stone-600;
-      }
-
-      &.fc-bg-event {
-        @apply bg-stone-300;
-      }
+    &.fc-bg-event {
+      background-color: var(--koku-event-background-color, transparent);
     }
 
     &.calendar-item--loading {
@@ -459,11 +262,20 @@ html, body {
 }
 
 .apexcharts-tooltip {
-  @apply !bg-base-100 text-base-content !border-neutral;
+  @apply !bg-base-100 !text-base-content !border-neutral;
+}
+
+.apexcharts-tooltip:not(.apexcharts-tooltip-fill-series) * {
+  color: var(--color-base-content) !important;
 }
 
 .apexcharts-tooltip-title {
-  @apply !bg-base-100 text-base-content !border-neutral-content/10;
+  @apply !bg-base-100 !text-base-content !border-neutral-content/10;
+}
+
+.apexcharts-xaxistooltip,
+.apexcharts-yaxistooltip {
+  @apply !bg-base-100 !text-base-content !border-neutral;
 }
 
 .air-datepicker {

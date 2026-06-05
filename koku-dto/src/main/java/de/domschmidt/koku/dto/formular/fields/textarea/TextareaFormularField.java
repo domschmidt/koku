@@ -1,15 +1,24 @@
 package de.domschmidt.koku.dto.formular.fields.textarea;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import de.domschmidt.formular.dto.content.fields.AbstractFormField;
+import de.domschmidt.formular.dto.content.AbstractFormularContent;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("textarea")
-@Getter
-public class TextareaFormularField extends AbstractFormField<String> {
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class TextareaFormularField extends AbstractFormularContent {
+
+    String valuePath;
+    Boolean required;
+    Boolean readonly;
+    Boolean disabled;
 
     String label;
     String placeholder;

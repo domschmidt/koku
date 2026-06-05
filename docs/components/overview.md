@@ -18,11 +18,11 @@ Diese Dokumentation beschreibt die wiederkehrenden Bausteine der Anwendung. Im F
 
 | Registry | Aufgabe | Detaildokument |
 | --- | --- | --- |
-| `FORMULAR_CONTENT_SETUP` | Formularfelder, Container, Layouts und Buttons | [Formulare](forms.md) |
+| `FORMULAR_CONTENT_REGISTRY` | Formularfelder, Container, Layouts und Buttons | [Formulare](forms.md) |
 | `LIST_CONTENT_SETUP` | Listenfelder, Actions, Container und Inline-Content | [Listen](lists.md) |
 | `CALENDAR_CONTENT_SETUP` | Kalendercontainer, Header, Listen- und Formularintegration | [Kalender](calendars.md) |
-| `CHART_CONTENT_SETUP` | Chart-Rendering | [Charts](charts.md) |
-| `DASHBOARD_CONTENT_SETUP` | Dashboard-Panels und Layouts | [Dashboards](dashboards.md) |
+| `CHART_FILTER_REGISTRY` | Chart-Filter-Rendering | [Charts](charts.md) |
+| `DASHBOARD_CONTENT_REGISTRY` | Dashboard-Panels und Layouts | [Dashboards](dashboards.md) |
 | `BUSINESS_RULES_CONTENT_SETUP` | Business-Rule-Editor und Regelbausteine | [Business Rules](business-rules.md) |
 
 ## Erweiterungsprinzip
@@ -32,7 +32,7 @@ Neue Komponenten folgen immer demselben Muster:
 1. Java-DTO mit eindeutigem `@JsonTypeName`.
 2. TypeScript-Typgenerierung für das Frontend.
 3. Angular-Komponente für Rendering oder Verhalten.
-4. Registrierung im passenden `*_CONTENT_SETUP`.
+4. Registrierung in der passenden Registry.
 5. Nutzung durch Backend-Factory, Controller oder Route.
 6. Dokumentation in der passenden Datei unter `docs/components/`.
 

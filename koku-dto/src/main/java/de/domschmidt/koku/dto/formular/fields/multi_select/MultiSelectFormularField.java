@@ -1,17 +1,26 @@
 package de.domschmidt.koku.dto.formular.fields.multi_select;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import de.domschmidt.formular.dto.content.fields.AbstractFormField;
+import de.domschmidt.formular.dto.content.AbstractFormularContent;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("multi-select")
-@Getter
-public class MultiSelectFormularField extends AbstractFormField<List<MultiSelectFormularFieldPossibleValue>> {
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class MultiSelectFormularField extends AbstractFormularContent {
+
+    String valuePath;
+    Boolean required;
+    Boolean readonly;
+    Boolean disabled;
 
     String label;
     String placeholder;

@@ -7,6 +7,7 @@ import { finalize, tap } from 'rxjs/operators';
 import { MyUserDetailsService } from '../../../user/my-user-details.service';
 import { ToastService } from '../../../toast/toast.service';
 import dayjs from 'dayjs';
+import { colorBorderClass } from '../../../utils/color.utils';
 
 interface AppointmentItem {
   id: string;
@@ -33,38 +34,6 @@ export class DashboardAppointmentsPanelComponent {
   toastService = inject(ToastService);
   httpClient = inject(HttpClient);
   myUserDetailsService = inject(MyUserDetailsService);
-
-  private colorClass: Record<Partial<KokuDto.KokuColorEnum>, string> = {
-    PRIMARY: 'border-primary-600',
-    SECONDARY: 'border-secondary-600',
-    ACCENT: 'border-accent-600',
-    INFO: 'border-info-600',
-    SUCCESS: 'border-success-600',
-    WARNING: 'border-warning-600',
-    ERROR: 'border-error-600',
-    RED: 'border-red-600',
-    ORANGE: 'border-orange-600',
-    AMBER: 'border-amber-600',
-    YELLOW: 'border-yellow-600',
-    LIME: 'border-lime-600',
-    GREEN: 'border-green-600',
-    EMERALD: 'border-emerald-600',
-    TEAL: 'border-teal-600',
-    CYAN: 'border-cyan-600',
-    SKY: 'border-sky-600',
-    BLUE: 'border-blue-600',
-    INDIGO: 'border-indigo-600',
-    VIOLET: 'border-violet-600',
-    PURPLE: 'border-purple-600',
-    FUCHSIA: 'border-fuchsia-600',
-    PINK: 'border-pink-600',
-    ROSE: 'border-rose-600',
-    SLATE: 'border-slate-600',
-    GRAY: 'border-gray-600',
-    ZINC: 'border-zinc-600',
-    NEUTRAL: 'border-neutral-600',
-    STONE: 'border-stone-600',
-  };
 
   constructor() {
     toObservable(this.content).subscribe((content) => {
@@ -223,9 +192,7 @@ export class DashboardAppointmentsPanelComponent {
                     listSource.notesTextFieldSelectionPath !== undefined
                       ? get(currentListPageItem.values, listSource.notesTextFieldSelectionPath, '')
                       : undefined,
-                  borderColorClass: listSource.sourceItemColor
-                    ? this.colorClass[listSource.sourceItemColor]
-                    : undefined,
+                  borderColorClass: colorBorderClass(listSource.sourceItemColor),
                   allDay: listSource.allDay,
                 });
               }

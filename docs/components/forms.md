@@ -6,7 +6,7 @@ Formulare sind in Koku deklarative UI-Beschreibungen, die im Backend erzeugt und
 
 Formulare werden verwendet, wenn fachliche Objekte erstellt, bearbeitet oder als Inline-Inhalt in anderen UI-Typen angezeigt werden. Beispiele sind Nutzer, Produkte, Aktivitäten, Dokumente sowie private und kundenbezogene Termine.
 
-Das Backend liefert eine `FormViewDto`-Struktur. Das Frontend rendert diese Struktur über `FORMULAR_CONTENT_SETUP` und die Formular-Renderer.
+Das Backend liefert eine `FormViewDto`-Struktur. Das Frontend rendert diese Struktur über `FORMULAR_CONTENT_REGISTRY` und die Formular-Renderer.
 
 ## Backend-Aufbau
 
@@ -39,7 +39,7 @@ return formFactory.create();
 
 ## Frontend-Rendering
 
-Das Frontend nutzt `FORMULAR_CONTENT_SETUP` aus `koku-frontend/src/app/formular-binding/registry.ts`. Dort werden Formular-DTOs nach `@type` auf Angular-Komponenten gemappt.
+Das Frontend nutzt `FORMULAR_CONTENT_REGISTRY` aus `koku-frontend/src/app/formular-binding/registry.ts`. Dort werden Formular-DTOs nach `@type` auf Angular-Komponenten gemappt.
 
 Wichtige Renderer und Zustände:
 
@@ -104,7 +104,7 @@ Neue Formularbestandteile folgen diesem Muster:
 1. Java-DTO mit `@JsonTypeName` ergänzen.
 2. TypeScript-Typen generieren.
 3. Angular-Komponente bauen.
-4. In `FORMULAR_CONTENT_SETUP` registrieren.
+4. In `FORMULAR_CONTENT_REGISTRY` registrieren.
 5. In Controller oder Factory verwenden.
 
 ## Pflegehinweise
