@@ -26,8 +26,8 @@ const MONTH_VALUE_FORMAT = 'YYYY-MM';
   standalone: true,
 })
 export class MonthInputFieldComponent {
-  value = input.required<string>();
-  defaultValue = input<string>('');
+  value = input.required<string | null | undefined>();
+  defaultValue = input<string | null | undefined>('');
   name = input<string>();
   label = input<string>();
   min = input<number>();
@@ -59,7 +59,7 @@ export class MonthInputFieldComponent {
   }
 
   defaultDisplayValue(): string {
-    return this.formatValue(this.defaultValue());
+    return this.formatValue(this.defaultValue() ?? '');
   }
 
   placeholderValue(): string {
@@ -116,7 +116,7 @@ export class MonthInputFieldComponent {
   }
 
   validate(): boolean {
-    const valueSnapshot = this.value();
+    const valueSnapshot = this.value() ?? '';
     if ((!valueSnapshot || !valueSnapshot.length) && this.required()) {
       return false;
     }
@@ -124,7 +124,7 @@ export class MonthInputFieldComponent {
   }
 
   private rawValue(): string {
-    return !this.loading() ? this.value() : this.defaultValue();
+    return (!this.loading() ? this.value() : this.defaultValue()) ?? '';
   }
 
   private formatValue(value: string): string {
