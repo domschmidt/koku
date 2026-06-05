@@ -16,6 +16,7 @@
         [attr.disabled]="disabled() ? '' : null"
         [attr.placeholder]="placeholder() || null"
         [attr.readonly]="readonly() || null"
+        [attr.inputmode]="inputMode() || null"
         [value]="!loading() ? value() : defaultValue()"
         [attr.required]="required() ? true : null"
         (change)="changeRaw($event)"

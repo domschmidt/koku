@@ -16,8 +16,8 @@ const TIME_VALUE_FORMAT = 'HH:mm';
   standalone: true,
 })
 export class TimeInputFieldComponent {
-  value = input.required<string>();
-  defaultValue = input<string>('');
+  value = input.required<string | null | undefined>();
+  defaultValue = input<string | null | undefined>('');
   name = input<string>();
   label = input<string>();
   min = input<number>();
@@ -47,7 +47,7 @@ export class TimeInputFieldComponent {
   }
 
   defaultDisplayValue(): string {
-    return this.formatValue(this.defaultValue());
+    return this.formatValue(this.defaultValue() ?? '');
   }
 
   placeholderValue(): string {
@@ -104,7 +104,7 @@ export class TimeInputFieldComponent {
   }
 
   validate(): boolean {
-    const valueSnapshot = this.value();
+    const valueSnapshot = this.value() ?? '';
     if ((!valueSnapshot || !valueSnapshot.length) && this.required()) {
       return false;
     }
@@ -112,7 +112,7 @@ export class TimeInputFieldComponent {
   }
 
   private rawValue(): string {
-    return !this.loading() ? this.value() : this.defaultValue();
+    return (!this.loading() ? this.value() : this.defaultValue()) ?? '';
   }
 
   private formatValue(value: string): string {

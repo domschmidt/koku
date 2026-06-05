@@ -18,6 +18,7 @@ export class InputFieldComponent {
   type = input<'TEXT' | 'PASSWORD' | 'EMAIL' | 'NUMBER' | 'DATETIME' | 'TEL' | 'URL' | 'SEARCH'>('TEXT');
   min = input<number>();
   max = input<number>();
+  inputMode = input<'decimal' | 'email' | 'none' | 'numeric' | 'search' | 'tel' | 'text' | 'url'>();
   placeholder = input<string>();
   loading = input(false, { transform: booleanAttribute });
   readonly = input(false, { transform: booleanAttribute });

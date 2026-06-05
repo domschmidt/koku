@@ -38,8 +38,8 @@ interface DateInputParts {
   standalone: true,
 })
 export class DateInputFieldComponent {
-  value = input.required<string>();
-  defaultValue = input<string>('');
+  value = input.required<string | null | undefined>();
+  defaultValue = input<string | null | undefined>('');
   name = input<string>();
   label = input<string>();
   min = input<number>();
@@ -71,7 +71,7 @@ export class DateInputFieldComponent {
   }
 
   defaultDisplayValue(): string {
-    return this.formatDateInputValue(this.defaultValue());
+    return this.formatDateInputValue(this.defaultValue() ?? '');
   }
 
   placeholderValue(): string {
@@ -128,7 +128,7 @@ export class DateInputFieldComponent {
   }
 
   validate(): boolean {
-    const valueSnapshot = this.value();
+    const valueSnapshot = this.value() ?? '';
     if ((!valueSnapshot || !valueSnapshot.length) && this.required()) {
       return false;
     }
@@ -136,7 +136,7 @@ export class DateInputFieldComponent {
   }
 
   private rawValue(): string {
-    return !this.loading() ? this.value() : this.defaultValue();
+    return (!this.loading() ? this.value() : this.defaultValue()) ?? '';
   }
 
   private maskDateInput(value: string): string {
@@ -206,9 +206,7 @@ export class DateInputFieldComponent {
   }
 
   private normalizeDateInputValue(value: string): string {
-    const parts = value.includes(this.formatDefinition.separator)
-      ? this.readSeparatedDateParts(value)
-      : this.readNumericDateParts(value);
+    const parts = /\D/.test(value) ? this.readSeparatedDateParts(value) : this.readNumericDateParts(value);
     if (!parts) {
       return value;
     }
@@ -229,7 +227,7 @@ export class DateInputFieldComponent {
   }
 
   private readSeparatedDateParts(value: string): DateInputParts | null {
-    const rawParts = value.split(this.formatDefinition.separator);
+    const rawParts = value.split(/\D+/).filter(Boolean);
     if (rawParts.length !== 3 || rawParts.some((part) => !/^\d{1,4}$/.test(part))) {
       return null;
     }
