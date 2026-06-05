@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { FormularComponent, FormularFieldOverride, FormularSourceOverride } from '../../formular/formular.component';
+import { FormularComponent, FormularContentOverride, FormularSourceOverride } from '../../formular/formular.component';
 import { OutletDirective } from '../../portal/outlet.directive';
 import { FORMULAR_CONTENT_REGISTRY } from '../../formular-binding/registry';
 import { executeInlineFormularSaveEvents } from '../../formular/inline-formular-save-events';
@@ -17,7 +17,7 @@ export class CalendarInlineFormularContainerComponent {
   maxWidth = input<string | number>();
   submitMethod = input<string>();
   onSaveEvents = input<KokuDto.AbstractCalendarItemInlineFormularContentSaveEventDto[]>([]);
-  fieldOverrides = input<FormularFieldOverride[]>([]);
+  contentOverrides = input<FormularContentOverride[]>([]);
   sourceOverrides = input<FormularSourceOverride[]>([]);
   buttonDockOutlet = input<OutletDirective>();
 

@@ -11,6 +11,6 @@ import lombok.experimental.SuperBuilder;
 public class CalendarOpenContentClickActionDto extends AbstractCalendarClickActionDto {
 
     AbstractCalendarInlineContentDto content;
-    List<CalendarFormularFieldOverrideDto> fieldOverrides;
+    List<CalendarFormularContentOverrideDto> contentOverrides;
     List<CalendarFormularSourceOverrideDto> sourceOverrides;
 }

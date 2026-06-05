@@ -1,25 +1,25 @@
-import { resolveRouteBasedFieldOverrides } from './route.utils';
+import { resolveRouteBasedContentOverrides } from './route.utils';
 
-describe('resolveRouteBasedFieldOverrides', () => {
-  it('resolves route values while preserving the field alias', () => {
+describe('resolveRouteBasedContentOverrides', () => {
+  it('resolves route values while preserving the content alias', () => {
     expect(
-      resolveRouteBasedFieldOverrides(
+      resolveRouteBasedContentOverrides(
         [
           {
             '@type': 'route-based-override',
             alias: 'customerId',
-            disable: true,
+            disabled: true,
             routeParam: ':customerId',
           },
         ],
         { ':customerId': '41', ':appointmentId': '1449' },
       ),
-    ).toEqual([{ alias: 'customerId', disable: true, value: '41' }]);
+    ).toEqual([{ alias: 'customerId', disabled: true, value: '41' }]);
   });
 
   it('ignores unresolved or incomplete overrides', () => {
     expect(
-      resolveRouteBasedFieldOverrides(
+      resolveRouteBasedContentOverrides(
         [
           { '@type': 'route-based-override', alias: 'customerId', routeParam: ':customerId' },
           { '@type': 'route-based-override', routeParam: ':appointmentId' },

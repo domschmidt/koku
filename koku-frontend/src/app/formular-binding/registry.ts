@@ -60,16 +60,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   'picture-upload': (context: FormularContentRenderContext<KokuDto.PictureUploadFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -90,8 +86,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -110,16 +105,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   input: (context: FormularContentRenderContext<KokuDto.InputFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -140,8 +131,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -164,16 +154,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   'date-input': (context: FormularContentRenderContext<KokuDto.DateInputFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -194,8 +180,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -217,16 +202,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   'time-input': (context: FormularContentRenderContext<KokuDto.TimeInputFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -247,8 +228,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -270,16 +250,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   'month-input': (context: FormularContentRenderContext<KokuDto.MonthInputFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -300,8 +276,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -323,16 +298,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   'week-input': (context: FormularContentRenderContext<KokuDto.WeekInputFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -353,8 +324,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -376,16 +346,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   select: (context: FormularContentRenderContext<KokuDto.SelectFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -406,8 +372,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -429,16 +394,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   stat: (context: FormularContentRenderContext<KokuDto.StatFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -458,8 +419,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -477,16 +437,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   textarea: (context: FormularContentRenderContext<KokuDto.TextareaFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -507,8 +463,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -530,16 +485,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   checkbox: (context: FormularContentRenderContext<KokuDto.CheckboxFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -560,8 +511,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -585,16 +535,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
   'multi-select-with-pricing-adjustment': (
     context: FormularContentRenderContext<KokuDto.MultiSelectWithPricingAdjustmentFormularField>,
   ) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -617,8 +563,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -643,16 +588,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   'multi-select': (context: FormularContentRenderContext<KokuDto.MultiSelectFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -675,8 +616,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -700,16 +640,12 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
     };
   },
   'document-designer': (context: FormularContentRenderContext<KokuDto.DocumentDesignerFormularField>) => {
-    const override = computed(() => {
-      const alias = context.content().alias;
-      return alias ? context.runtime.contentOverridesByAlias().get(alias) : undefined;
-    });
     return {
       control: {
         createValue: () =>
           linkedSignal(() => {
             const content = context.content();
-            const contentOverride = override();
+            const contentOverride = context.override();
             if (contentOverride?.value !== undefined) {
               return contentOverride.value;
             }
@@ -732,8 +668,7 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
           value: handle.value!(),
           disabled:
             context.submitting() ||
-            Boolean(context.content().disabled) ||
-            Boolean(override()?.disable) ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
             handle.disabledCauses().size > 0,
           required: Boolean(context.content().required) || handle.requiredCauses().size > 0,
           readonly: Boolean(context.content().readonly) || handle.readonlyCauses().size > 0,
@@ -761,7 +696,10 @@ export const FORMULAR_CONTENT_REGISTRY: FormularContentRegistry = {
             Boolean(context.content().loading) ||
             handle.loadingCauses().size > 0 ||
             context.loading(),
-          disabled: context.submitting() || Boolean(context.content().disabled) || handle.disabledCauses().size > 0,
+          disabled:
+            context.submitting() ||
+            Boolean(context.override()?.disabled ?? context.content().disabled) ||
+            handle.disabledCauses().size > 0,
           href: context.content().href,
           hrefTarget: context.content().hrefTarget,
           buttonType: context.content().buttonType,

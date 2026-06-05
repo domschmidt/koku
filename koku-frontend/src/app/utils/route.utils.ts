@@ -1,13 +1,13 @@
-export interface RouteBasedFieldOverride {
+export interface RouteBasedContentOverride {
   '@type': string;
   alias?: string;
-  disable?: boolean;
+  disabled?: boolean;
   routeParam?: string;
 }
 
-export interface ResolvedFieldOverride {
+export interface ResolvedContentOverride {
   alias: string;
-  disable: boolean;
+  disabled: boolean;
   value: string;
 }
 
@@ -35,11 +35,11 @@ export const resolveRoutePath = (
     .join('/');
 };
 
-export const resolveRouteBasedFieldOverrides = <TOverride extends RouteBasedFieldOverride>(
+export const resolveRouteBasedContentOverrides = <TOverride extends RouteBasedContentOverride>(
   overrides: readonly TOverride[] | undefined,
   routeSegments: Record<string, string> | null | undefined,
-): ResolvedFieldOverride[] => {
-  const result: ResolvedFieldOverride[] = [];
+): ResolvedContentOverride[] => {
+  const result: ResolvedContentOverride[] = [];
   for (const override of overrides || []) {
     if (override['@type'] !== 'route-based-override' || !override.alias) {
       continue;
@@ -48,7 +48,7 @@ export const resolveRouteBasedFieldOverrides = <TOverride extends RouteBasedFiel
     if (value !== undefined) {
       result.push({
         alias: override.alias,
-        disable: override.disable === true,
+        disabled: override.disabled === true,
         value,
       });
     }

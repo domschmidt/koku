@@ -26,10 +26,10 @@ import { FormContentStore } from './form-content.store';
 import { assertFormularRecipeCoverage } from './formular-recipe-registry';
 import type { FormOutlet } from './form-outlet';
 
-export interface FormularFieldOverride {
-  value: any;
+export interface FormularContentOverride {
   alias: string;
-  disable?: boolean;
+  value?: any;
+  disabled?: boolean;
 }
 
 export interface FormularSourceOverride {
@@ -72,6 +72,7 @@ export type FormularContent = KokuDto.AbstractFormularContent;
 export interface FormularContentRenderContext<TContent extends FormularContent = FormularContent> {
   id: string;
   content: Signal<TContent>;
+  override: Signal<FormularContentOverride | undefined>;
   runtime: FormularRuntime;
   loading: Signal<boolean>;
   submitting: Signal<boolean>;
@@ -117,7 +118,7 @@ export class FormularRuntime {
   private readonly definitions = new FormDefinitionStore();
   private readonly handles = new FormContentStore();
   private readonly sourceState = signal<any>({});
-  private readonly contentOverridesByAliasState = signal<ReadonlyMap<string, FormularFieldOverride>>(new Map());
+  private readonly contentOverridesByAliasState = signal<ReadonlyMap<string, FormularContentOverride>>(new Map());
   private readonly sources = new FormSourceStore(this.sourceState);
   readonly source = this.sourceState.asReadonly();
   readonly contentOverridesByAlias = this.contentOverridesByAliasState.asReadonly();
@@ -199,8 +200,8 @@ export class FormularRuntime {
     return this.handles.ids();
   }
 
-  setContentOverrides(overrides: readonly FormularFieldOverride[] | null | undefined) {
-    const overridesByAlias = new Map<string, FormularFieldOverride>();
+  setContentOverrides(overrides: readonly FormularContentOverride[] | null | undefined) {
+    const overridesByAlias = new Map<string, FormularContentOverride>();
     for (const override of overrides ?? []) {
       if (override.alias && !overridesByAlias.has(override.alias)) {
         overridesByAlias.set(override.alias, override);
@@ -256,7 +257,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
   maxWidth = input<string | number>();
   buttonDockOutlet = input<OutletDirective>();
   headerTemplate = input<TemplateRef<any>>();
-  fieldOverrides = input<FormularFieldOverride[]>([]);
+  contentOverrides = input<FormularContentOverride[]>([]);
   sourceOverrides = input<FormularSourceOverride[]>([]);
   context = input<Record<string, any>>();
 
@@ -288,7 +289,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
     this.pluginInstances = pluginInstances;
 
     effect(() => {
-      const overrides = this.fieldOverrides();
+      const overrides = this.contentOverrides();
       untracked(() => {
         this.runtime.setContentOverrides(overrides);
         this.applyConfiguredContentOverrides();

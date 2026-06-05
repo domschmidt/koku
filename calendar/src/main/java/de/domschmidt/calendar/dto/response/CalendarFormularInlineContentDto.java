@@ -16,6 +16,6 @@ public class CalendarFormularInlineContentDto extends AbstractCalendarInlineCont
     CalendarFormularActionSubmitMethodEnumDto submitMethod;
     Integer maxWidthInPx;
     List<AbstractCalendarItemInlineFormularContentSaveEventDto> onSaveEvents;
-    List<CalendarFormularFieldOverrideDto> fieldOverrides;
+    List<CalendarFormularContentOverrideDto> contentOverrides;
     List<CalendarFormularSourceOverrideDto> sourceOverrides;
 }

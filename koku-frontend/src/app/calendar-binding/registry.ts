@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import {
   replaceRouteSegments as replaceSegments,
-  resolveRouteBasedFieldOverrides as routeBasedFieldOverrides,
+  resolveRouteBasedContentOverrides as routeBasedContentOverrides,
   resolveRoutePath as mapSourceUrl,
 } from '../utils/route.utils';
 dayjs.extend(customParseFormat);
@@ -134,7 +134,7 @@ const MODAL_CONTENT_REGISTRY: Partial<
         maxWidth: content().maxWidthInPx !== undefined ? content().maxWidthInPx + 'px' : undefined,
         submitMethod: content().submitMethod,
         onSaveEvents: content().onSaveEvents,
-        fieldOverrides: routeBasedFieldOverrides(content().fieldOverrides, context.modal.urlSegments),
+        contentOverrides: routeBasedContentOverrides(content().contentOverrides, context.modal.urlSegments),
       })),
       outputs: modalCloseOutputs(context),
     };
@@ -211,7 +211,7 @@ const INLINE_CONTENT_REGISTRY: Partial<
         maxWidth: content().maxWidthInPx !== undefined ? content().maxWidthInPx + 'px' : undefined,
         submitMethod: content().submitMethod,
         onSaveEvents: content().onSaveEvents,
-        fieldOverrides: routeBasedFieldOverrides(content().fieldOverrides, context.urlSegments()),
+        contentOverrides: routeBasedContentOverrides(content().contentOverrides, context.urlSegments()),
         sourceOverrides: sourceOverridesFromQueryParams(content().sourceOverrides, context.queryParams()),
         buttonDockOutlet: context.buttonDockOutlet(),
       })),

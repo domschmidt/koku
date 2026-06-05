@@ -18,5 +18,5 @@ public class KokuBusinessRuleFormularContentDto extends AbstractKokuBusinessRule
     KokuBusinessRuleFormularActionSubmitMethodEnumDto submitMethod;
     Integer maxWidthInPx;
     List<AbstractKokuBusinessRuleFormularContentSaveEventDto> onSaveEvents;
-    List<KokuBusinessRuleFormularFieldOverrideDto> fieldOverrides;
+    List<KokuBusinessRuleFormularContentOverrideDto> contentOverrides;
 }
