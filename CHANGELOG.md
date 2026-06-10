@@ -1,3 +1,10 @@
+## [2.5.3](https://github.com/domschmidt/koku/compare/v2.5.2...v2.5.3) (2026-06-10)
+
+
+### Bug Fixes
+
+* carddav dynamic address ([398fc15](https://github.com/domschmidt/koku/commit/398fc157daef805eedeb8f4ebf9b5775e60cc423))
+
 ## [2.5.2](https://github.com/domschmidt/koku/compare/v2.5.1...v2.5.2) (2026-06-05)
 
 
