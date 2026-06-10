@@ -2,6 +2,7 @@ package de.domschmidt.koku.carddav.controller;
 
 import de.domschmidt.koku.carddav.APIConstants;
 import de.domschmidt.koku.carddav.DAVConstants;
+import de.domschmidt.koku.carddav.config.ApiConfig;
 import de.domschmidt.koku.carddav.helper.DavUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -26,9 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/principals")
+@RequestMapping(APIConstants.PRINCIPALS_PATH)
 @Slf4j
 public class PrincipalController {
+
+    private final ApiConfig apiConfig;
 
     @Data
     @Builder
@@ -37,14 +40,20 @@ public class PrincipalController {
         Element responseTag;
     }
 
-    private static final Map<String, Map<String, Consumer<PrincipalRequest>>> PRINCIPAL_PROPS_RESOLVER = Map.of(
-            DAVConstants.CARDDAV_NAMESPACE, Map.of(DAVConstants.CARD_PRPOP_ADDRESSBOOK_HOME_SET, (principalRequest) -> {
-                final Element outputNode = principalRequest
-                        .getResponseTag()
-                        .addElement("d:" + DAVConstants.CARD_PRPOP_ADDRESSBOOK_HOME_SET);
-                final Element hrefNode = outputNode.addElement("d:href");
-                hrefNode.setText(APIConstants.API_BASEPATH + APIConstants.ADDRESSBOOK_PATH + "/koku/");
-            }));
+    private final Map<String, Map<String, Consumer<PrincipalRequest>>> PRINCIPAL_PROPS_RESOLVER;
+
+    public PrincipalController(final ApiConfig apiConfig) {
+        this.apiConfig = apiConfig;
+        PRINCIPAL_PROPS_RESOLVER = Map.of(
+                DAVConstants.CARDDAV_NAMESPACE,
+                Map.of(DAVConstants.CARD_PRPOP_ADDRESSBOOK_HOME_SET, (principalRequest) -> {
+                    final Element outputNode = principalRequest
+                            .getResponseTag()
+                            .addElement("d:" + DAVConstants.CARD_PRPOP_ADDRESSBOOK_HOME_SET);
+                    final Element hrefNode = outputNode.addElement("d:href");
+                    hrefNode.setText(apiConfig.getBasePath() + APIConstants.ADDRESSBOOK_PATH + "/koku/");
+                }));
+    }
 
     @RequestMapping(
             consumes = {
@@ -82,7 +91,7 @@ public class PrincipalController {
                 }
                 appendResponse(
                         multiStatusResponse,
-                        APIConstants.API_BASEPATH + APIConstants.PRINCIPALS_PATH + "/" + username + "/",
+                        apiConfig.getBasePath() + APIConstants.PRINCIPALS_PATH + "/" + username + "/",
                         resolvedPropGenerators,
                         notFoundProps);
             }
