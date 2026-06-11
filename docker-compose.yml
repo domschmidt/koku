@@ -227,9 +227,9 @@ services:
       - KOKU_MAINTENANCE=${KOKU_MAINTENANCE}
     <<: *jib_service_keycloak_cacert_import_template
 
-  koku-carddav:
-    container_name: koku-carddav
-    image: docker.io/domschmidt/koku-carddav:latest
+  koku-dav:
+    container_name: koku-dav
+    image: docker.io/domschmidt/koku-dav:latest
     restart: unless-stopped
     healthcheck:
       test: "curl --fail localhost:8220/actuator/health | grep UP || exit 1"
@@ -240,8 +240,11 @@ services:
       - "8220"
     environment:
       - KAFKA_BOOTSTRAP_SERVER=${KAFKA_SERVER}
-      - CARDDAV_USERNAME=${CARDDAV_USER}
-      - CARDDAV_PASSWORD=${CARDDAV_PASSWORD}
+      - DAV_KEYCLOAK_TOKEN_URI=${DAV_KEYCLOAK_TOKEN_URI}
+      - DAV_KEYCLOAK_CLIENT_ID=${DAV_KEYCLOAK_CLIENT_ID}
+      - DAV_KEYCLOAK_CLIENT_SECRET=${DAV_KEYCLOAK_CLIENT_SECRET}
+      - DAV_LOGGING_BODIES=${DAV_KEYCLOAK_CLIENT_SECRET}
+    <<: *jib_service_keycloak_cacert_import_template
 
   kafka:
     image: docker.io/bitnamilegacy/kafka:4.0.0
@@ -283,6 +286,7 @@ services:
       ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic products --config cleanup.policy=compact
       ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic productmanufacturers --config cleanup.policy=compact
       ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic customerappointments --config cleanup.policy=compact
+      ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic userappointments --config cleanup.policy=compact
       ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic users --config cleanup.policy=compact
       ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic activities --config cleanup.policy=compact
       ./opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server ${KAFKA_SERVER} --create --if-not-exists --topic activitysteps --config cleanup.policy=compact

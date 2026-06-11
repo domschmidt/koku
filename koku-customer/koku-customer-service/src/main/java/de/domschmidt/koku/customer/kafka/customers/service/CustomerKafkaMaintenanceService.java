@@ -1,6 +1,7 @@
 package de.domschmidt.koku.customer.kafka.customers.service;
 
 import de.domschmidt.koku.customer.persistence.CustomerRepository;
+import de.domschmidt.koku.customer.service.PhoneNumberNormalizer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class CustomerKafkaMaintenanceService implements ApplicationListener<Appl
 
     final CustomerRepository customerRepository;
     final CustomerKafkaService customerKafkaService;
+    final PhoneNumberNormalizer phoneNumberNormalizer;
 
     @Override
     @Transactional
@@ -26,6 +28,9 @@ public class CustomerKafkaMaintenanceService implements ApplicationListener<Appl
         log.warn("###### MAINTENANCE MODE ###### SEND CUSTOMERS ######");
         this.customerRepository.findAll().forEach(customer -> {
             try {
+                customer.setPrivateTelephoneNo(phoneNumberNormalizer.normalize(customer.getPrivateTelephoneNo()));
+                customer.setBusinessTelephoneNo(phoneNumberNormalizer.normalize(customer.getBusinessTelephoneNo()));
+                customer.setMobileTelephoneNo(phoneNumberNormalizer.normalize(customer.getMobileTelephoneNo()));
                 this.customerKafkaService.sendCustomer(customer);
             } catch (ExecutionException | InterruptedException | TimeoutException e) {
                 log.error("Error sending customer ", e);

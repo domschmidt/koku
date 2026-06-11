@@ -35,6 +35,7 @@ import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStyli
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.koku.dto.user.KokuUserAppointmentDto;
 import de.domschmidt.koku.dto.user.KokuUserAppointmentSummaryDto;
+import de.domschmidt.koku.user.kafka.users.service.UserAppointmentKafkaService;
 import de.domschmidt.koku.user.persistence.QUser;
 import de.domschmidt.koku.user.persistence.QUserAppointment;
 import de.domschmidt.koku.user.persistence.User;
@@ -83,6 +84,8 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -109,15 +112,18 @@ public class UserAppointmentController {
     private final EntityManager entityManager;
     private final UserAppointmentRepository userAppointmentRepository;
     private final UserAppointmentToUserAppointmentDtoTransformer transformer;
+    private final UserAppointmentKafkaService userAppointmentKafkaService;
 
     @Autowired
     public UserAppointmentController(
             final EntityManager entityManager,
             final UserAppointmentRepository userAppointmentRepository,
-            final UserAppointmentToUserAppointmentDtoTransformer transformer) {
+            final UserAppointmentToUserAppointmentDtoTransformer transformer,
+            final UserAppointmentKafkaService userAppointmentKafkaService) {
         this.entityManager = entityManager;
         this.userAppointmentRepository = userAppointmentRepository;
         this.transformer = transformer;
+        this.userAppointmentKafkaService = userAppointmentKafkaService;
     }
 
     @GetMapping("/users/appointments/form")
@@ -597,6 +603,7 @@ public class UserAppointmentController {
         }
         this.transformer.transformToEntity(userAppointment, updatedDto);
         this.entityManager.flush();
+        sendUserAppointmentUpdate(userAppointment);
         return this.transformer.transformToDto(userAppointment);
     }
 
@@ -610,6 +617,7 @@ public class UserAppointmentController {
         }
         userAppointment.setDeleted(true);
         this.entityManager.flush();
+        sendUserAppointmentUpdate(userAppointment);
         return this.transformer.transformToDto(userAppointment);
     }
 
@@ -623,6 +631,7 @@ public class UserAppointmentController {
         }
         userAppointment.setDeleted(false);
         this.entityManager.flush();
+        sendUserAppointmentUpdate(userAppointment);
         return this.transformer.transformToDto(userAppointment);
     }
 
@@ -634,6 +643,15 @@ public class UserAppointmentController {
                 this.transformer.transformToEntity(new UserAppointment(), newDto);
         final UserAppointment savedKokuUserAppointment =
                 this.userAppointmentRepository.saveAndFlush(newKokuUserAppointment);
+        sendUserAppointmentUpdate(savedKokuUserAppointment);
         return this.transformer.transformToDto(savedKokuUserAppointment);
+    }
+
+    public void sendUserAppointmentUpdate(final UserAppointment userAppointment) {
+        try {
+            userAppointmentKafkaService.sendUserAppointment(userAppointment);
+        } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            log.error("Error sending user appointment update", e);
+        }
     }
 }

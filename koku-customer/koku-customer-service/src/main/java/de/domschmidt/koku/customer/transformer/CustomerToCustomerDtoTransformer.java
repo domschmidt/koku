@@ -1,14 +1,19 @@
 package de.domschmidt.koku.customer.transformer;
 
 import de.domschmidt.koku.customer.persistence.Customer;
+import de.domschmidt.koku.customer.service.PhoneNumberNormalizer;
 import de.domschmidt.koku.dto.customer.KokuCustomerDto;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
+@RequiredArgsConstructor
 public class CustomerToCustomerDtoTransformer {
+
+    private final PhoneNumberNormalizer phoneNumberNormalizer;
 
     public KokuCustomerDto transformToDto(final Customer model) {
         return KokuCustomerDto.builder()
@@ -85,13 +90,13 @@ public class CustomerToCustomerDtoTransformer {
             model.setCity(updatedDto.getCity());
         }
         if (updatedDto.getPrivateTelephoneNo() != null) {
-            model.setPrivateTelephoneNo(updatedDto.getPrivateTelephoneNo());
+            model.setPrivateTelephoneNo(phoneNumberNormalizer.normalize(updatedDto.getPrivateTelephoneNo()));
         }
         if (updatedDto.getBusinessTelephoneNo() != null) {
-            model.setBusinessTelephoneNo(updatedDto.getBusinessTelephoneNo());
+            model.setBusinessTelephoneNo(phoneNumberNormalizer.normalize(updatedDto.getBusinessTelephoneNo()));
         }
         if (updatedDto.getMobileTelephoneNo() != null) {
-            model.setMobileTelephoneNo(updatedDto.getMobileTelephoneNo());
+            model.setMobileTelephoneNo(phoneNumberNormalizer.normalize(updatedDto.getMobileTelephoneNo()));
         }
         if (updatedDto.getMedicalTolerance() != null) {
             model.setMedicalTolerance(updatedDto.getMedicalTolerance());
