@@ -48,7 +48,7 @@
 
   <modules>
     <module>koku-frontend</module>
-    <module>koku-carddav</module>
+    <module>koku-dav</module>
     <module>koku-customer</module>
     <module>koku-product</module>
     <module>koku-activity</module>

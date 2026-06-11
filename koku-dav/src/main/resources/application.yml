@@ -1,0 +1,34 @@
+kafka:
+  bootstrap-servers: kafka:9094
+dav:
+  keycloak:
+    token-uri: "${DAV_KEYCLOAK_TOKEN_URI:${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/token}"
+    client-id: "${DAV_KEYCLOAK_CLIENT_ID:koku-dav}"
+    client-secret: "${DAV_KEYCLOAK_CLIENT_SECRET:}"
+    scope: "${DAV_KEYCLOAK_SCOPE:openid}"
+  logging:
+    bodies: false
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "https://192.168.178.36:8443/realms/master"
+  kafka:
+    bootstrap-servers: ${kafka.bootstrap-servers}
+    consumer:
+      auto-offset-reset: earliest
+  application:
+    name: @project.artifactId@
+  servlet:
+    multipart:
+      maxFileSize: 268435456  # Limit for a single file (256 MiB)
+      maxRequestSize: 536870912  # Limit for all files in a single request (512 MiB)
+  mvc:
+    async:
+      request-timeout: 3600000 #1 hour request timeout
+  jackson:
+    default-property-inclusion: non_null
+    date-format: 'yyyy-MM-dd'
+server:
+  port: 8220

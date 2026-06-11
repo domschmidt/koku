@@ -462,7 +462,7 @@ public class CustomerController {
         final Customer customer = this.customerRepository
                 .findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
-        return new CustomerToCustomerDtoTransformer().transformToDto(customer);
+        return transformer.transformToDto(customer);
     }
 
     @GetMapping(value = "/customers/{id}/summary")

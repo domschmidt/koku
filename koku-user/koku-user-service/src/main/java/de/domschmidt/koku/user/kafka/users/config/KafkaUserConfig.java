@@ -1,10 +1,12 @@
 package de.domschmidt.koku.user.kafka.users.config;
 
 import de.domschmidt.koku.user.kafka.config.KafkaConfiguration;
+import de.domschmidt.koku.user.kafka.dto.UserAppointmentKafkaDto;
 import de.domschmidt.koku.user.kafka.dto.UserKafkaDto;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -38,5 +40,19 @@ public class KafkaUserConfig {
     @Bean
     public KafkaTemplate<String, UserKafkaDto> userKafkaTemplate() {
         return new KafkaTemplate<>(userProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<Long, UserAppointmentKafkaDto> userAppointmentProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfiguration.getBootstrapAddress());
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JacksonJsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<Long, UserAppointmentKafkaDto> userAppointmentKafkaTemplate() {
+        return new KafkaTemplate<>(userAppointmentProducerFactory());
     }
 }
