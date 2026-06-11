@@ -3,6 +3,9 @@ kafka:
 carddav:
   username: ""
   password: ""
+dav:
+  logging:
+    bodies: false
 spring:
   security:
     oauth2:

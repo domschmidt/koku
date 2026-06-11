@@ -1,8 +1,6 @@
 package de.domschmidt.koku.carddav.config;
 
-import de.domschmidt.koku.auth.config.KeycloakJwtAuthenticationConverter;
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.Arrays;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -42,8 +40,7 @@ public class SecurityConfig {
     @Bean
     public StrictHttpFirewall httpFirewall() {
         StrictHttpFirewall firewall = new StrictHttpFirewall();
-        firewall.setAllowedHttpMethods(
-                Arrays.asList("HEAD", "DELETE", "POST", "GET", "OPTIONS", "PATCH", "PUT", "PROPFIND", "REPORT"));
+        firewall.setAllowedHttpMethods(List.of("GET", "HEAD", "OPTIONS", "PROPFIND", "REPORT"));
         return firewall;
     }
 
@@ -61,16 +58,11 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement((sessionMgmt) -> sessionMgmt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(
-                        (req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/error", "/actuator/health")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                .oauth2ResourceServer(httpSecurityOAuth2ResourceServerConfigurer ->
-                        httpSecurityOAuth2ResourceServerConfigurer.jwt(jwtConfigurer ->
-                                jwtConfigurer.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter())))
                 .httpBasic(Customizer.withDefaults());
         return http.build();
     }

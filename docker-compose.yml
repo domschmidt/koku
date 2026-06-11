@@ -242,7 +242,6 @@ services:
       - KAFKA_BOOTSTRAP_SERVER=${KAFKA_SERVER}
       - CARDDAV_USERNAME=${CARDDAV_USER}
       - CARDDAV_PASSWORD=${CARDDAV_PASSWORD}
-      - CARDDAV_BASEPATH=${CARDDAV_BASEPATH}
 
   kafka:
     image: docker.io/bitnamilegacy/kafka:4.0.0
