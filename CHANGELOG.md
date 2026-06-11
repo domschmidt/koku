@@ -1,3 +1,10 @@
+# [2.6.0](https://github.com/domschmidt/koku/compare/v2.5.3...v2.6.0) (2026-06-11)
+
+
+### Features
+
+* refactor carddav, prepare caldav ([9335059](https://github.com/domschmidt/koku/commit/93350595aa9290d2302e7241c661f40ed3d00bfd))
+
 ## [2.5.3](https://github.com/domschmidt/koku/compare/v2.5.2...v2.5.3) (2026-06-10)
 
 
