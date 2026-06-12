@@ -1,3 +1,10 @@
+## [2.6.2](https://github.com/domschmidt/koku/compare/v2.6.1...v2.6.2) (2026-06-12)
+
+
+### Bug Fixes
+
+* caldav finalization ([729200b](https://github.com/domschmidt/koku/commit/729200b49aa8f8c41b4bb5172e7d873223b89ccf))
+
 ## [2.6.1](https://github.com/domschmidt/koku/compare/v2.6.0...v2.6.1) (2026-06-11)
 
 
