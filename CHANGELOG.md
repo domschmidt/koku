@@ -1,3 +1,10 @@
+## [2.6.3](https://github.com/domschmidt/koku/compare/v2.6.2...v2.6.3) (2026-06-12)
+
+
+### Bug Fixes
+
+* tel fields ([5b5fdce](https://github.com/domschmidt/koku/commit/5b5fdce272c408c703511b3d9ef0a400310615d8))
+
 ## [2.6.2](https://github.com/domschmidt/koku/compare/v2.6.1...v2.6.2) (2026-06-12)
 
 
