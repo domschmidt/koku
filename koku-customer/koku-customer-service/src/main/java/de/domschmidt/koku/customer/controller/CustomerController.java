@@ -677,16 +677,19 @@ public class CustomerController {
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.privateTelephoneNo)
                 .label("Private Telefonnummer")
+                .type(EnumInputFormularFieldType.TEL)
                 .build());
 
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.mobileTelephoneNo)
                 .label("Mobile Telefonnummer")
+                .type(EnumInputFormularFieldType.TEL)
                 .build());
 
         formFactory.addField(InputFormularField.builder()
                 .valuePath(KokuCustomerDto.Fields.businessTelephoneNo)
                 .label("Geschäftliche Telefonnummer")
+                .type(EnumInputFormularFieldType.TEL)
                 .build());
 
         formFactory.endContainer();
