@@ -147,7 +147,7 @@ export const routes: Routes = [
                   } as KokuDto.CalendarRoutedContentDto,
                   {
                     '@type': 'routed-inline-content',
-                    route: 'users/:userId',
+                    route: 'users/:userId/appointments',
                     itemId: ':userId',
                     inlineContent: {
                       '@type': 'header',
