@@ -48,10 +48,13 @@ import de.domschmidt.list.dto.response.actions.ListViewUserConfirmationValuePara
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadItemUpdateGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.fields.ListViewFieldReference;
 import de.domschmidt.list.dto.response.inline_content.ListViewRoutedContentDto;
+import de.domschmidt.list.dto.response.inline_content.dock.ListViewDockContentDto;
+import de.domschmidt.list.dto.response.inline_content.dock.ListViewItemInlineDockContentItemDto;
 import de.domschmidt.list.dto.response.inline_content.formular.ListViewFormularContentDto;
 import de.domschmidt.list.dto.response.inline_content.formular.ListViewInlineFormularContentAfterSavePropagateGlobalEventDto;
 import de.domschmidt.list.dto.response.inline_content.header.ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto;
 import de.domschmidt.list.dto.response.inline_content.header.ListViewHeaderContentDto;
+import de.domschmidt.list.dto.response.inline_content.list.ListViewListContentDto;
 import de.domschmidt.list.dto.response.items.actions.ListViewConditionalItemValueActionDto;
 import de.domschmidt.list.dto.response.items.actions.ListViewFormularActionSubmitMethodEnumDto;
 import de.domschmidt.list.dto.response.items.actions.call_http.ListViewCallHttpListItemActionDto;
@@ -293,7 +296,7 @@ public class UserController {
 
         if (!selectMode) {
             listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
-                    .route(":userId")
+                    .route(":userId/information")
                     .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
                             .param(":userId")
                             .valueReference(idSourcePathRef)
@@ -319,14 +322,35 @@ public class UserController {
                                             .idPath(KokuUserDto.Fields.id)
                                             .titleValuePath(KokuUserDto.Fields.fullname)
                                             .build()))
-                            .content(ListViewFormularContentDto.builder()
-                                    .formularUrl("services/users/users/form")
-                                    .sourceUrl("services/users/users/:userId")
-                                    .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
-                                    .maxWidthInPx(600)
-                                    .onSaveEvents(Arrays.asList(
-                                            ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                    .eventName("user-updated")
+                            .content(ListViewDockContentDto.builder()
+                                    .content(Arrays.asList(
+                                            ListViewItemInlineDockContentItemDto.builder()
+                                                    .id("information")
+                                                    .route("information")
+                                                    .icon("INFORMATION_CIRCLE")
+                                                    .title("Bearbeiten")
+                                                    .content(ListViewFormularContentDto.builder()
+                                                            .formularUrl("services/users/users/form")
+                                                            .sourceUrl("services/users/users/:userId")
+                                                            .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
+                                                            .maxWidthInPx(600)
+                                                            .onSaveEvents(Arrays.asList(
+                                                                    ListViewInlineFormularContentAfterSavePropagateGlobalEventDto
+                                                                            .builder()
+                                                                            .eventName("user-updated")
+                                                                            .build()))
+                                                            .build())
+                                                    .build(),
+                                            ListViewItemInlineDockContentItemDto.builder()
+                                                    .id("appointments")
+                                                    .route("appointments")
+                                                    .icon("CALENDAR")
+                                                    .title("Private Termine")
+                                                    .content(ListViewListContentDto.builder()
+                                                            .listUrl("services/users/users/appointments/list")
+                                                            .sourceUrl(
+                                                                    "services/users/users/:userId/appointments/query")
+                                                            .build())
                                                     .build()))
                                     .build())
                             .build())

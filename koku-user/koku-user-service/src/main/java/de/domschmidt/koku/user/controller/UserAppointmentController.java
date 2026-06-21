@@ -57,6 +57,7 @@ import de.domschmidt.list.dto.response.inline_content.formular.ListViewEventPayl
 import de.domschmidt.list.dto.response.inline_content.formular.ListViewFormularContentDto;
 import de.domschmidt.list.dto.response.inline_content.formular.ListViewInlineFormularContentAfterSavePropagateGlobalEventDto;
 import de.domschmidt.list.dto.response.inline_content.formular.ListViewOpenRoutedInlineFormularContentSaveEventDto;
+import de.domschmidt.list.dto.response.inline_content.formular.ListViewRouteBasedFormularContentOverrideDto;
 import de.domschmidt.list.dto.response.inline_content.header.ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto;
 import de.domschmidt.list.dto.response.inline_content.header.ListViewHeaderContentDto;
 import de.domschmidt.list.dto.response.items.ListViewRoutedDummyItemDto;
@@ -140,7 +141,7 @@ public class UserAppointmentController {
                 .place(formFactory.addContent(SelectFormularField.builder()
                         .valuePath(KokuUserAppointmentDto.Fields.userId)
                         .label("Nutzer")
-                        .id(KokuUserAppointmentDto.Fields.userId)
+                        .alias(KokuUserAppointmentDto.Fields.userId)
                         .possibleValues(usersSnapshot.stream()
                                 .map(user -> {
                                     return SelectFormularFieldPossibleValue.builder()
@@ -374,11 +375,11 @@ public class UserAppointmentController {
                         .build());
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
-                .route("appointments/new")
+                .route("new")
                 .icon("PLUS")
                 .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
-                .route("appointments/new")
+                .route("new")
                 .text("Neuer Privater Termin")
                 .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
@@ -390,12 +391,17 @@ public class UserAppointmentController {
                         KokuUserAppointmentDto.Fields.description, descriptionFieldRef))
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
-                .route("appointments/new")
+                .route("new")
                 .inlineContent(ListViewHeaderContentDto.builder()
                         .title("Neuer Privater Termin")
                         .content(ListViewFormularContentDto.builder()
                                 .formularUrl("services/users/users/appointments/form")
                                 .submitUrl("services/users/users/appointments")
+                                .contentOverrides(Arrays.asList(ListViewRouteBasedFormularContentOverrideDto.builder()
+                                        .routeParam(":userId")
+                                        .alias(KokuUserAppointmentDto.Fields.userId)
+                                        .disabled(true)
+                                        .build()))
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
                                 .maxWidthInPx(800)
                                 .onSaveEvents(Arrays.asList(
@@ -403,7 +409,7 @@ public class UserAppointmentController {
                                                 .eventName("user-appointment-created")
                                                 .build(),
                                         ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                .route("appointments/:appointmentId")
+                                                .route(":appointmentId")
                                                 .params(Arrays.asList(
                                                         ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
                                                                 .builder()
@@ -416,7 +422,7 @@ public class UserAppointmentController {
                 .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
-                .route("appointments/:appointmentId")
+                .route(":appointmentId")
                 .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
                         .param(":appointmentId")
                         .valueReference(idSourcePathFieldRef)
@@ -432,7 +438,7 @@ public class UserAppointmentController {
                         KokuUserAppointmentDto.Fields.deleted, deletedSourceRef))
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
-                .route("appointments/:appointmentId")
+                .route(":appointmentId")
                 .itemId(":appointmentId")
                 .inlineContent(ListViewHeaderContentDto.builder()
                         .sourceUrl("services/users/users/appointments/:appointmentId/summary")
@@ -446,8 +452,17 @@ public class UserAppointmentController {
                         .content(ListViewFormularContentDto.builder()
                                 .formularUrl("services/users/users/appointments/form")
                                 .sourceUrl("services/users/users/appointments/:appointmentId")
+                                .contentOverrides(Arrays.asList(ListViewRouteBasedFormularContentOverrideDto.builder()
+                                        .routeParam(":userId")
+                                        .alias(KokuUserAppointmentDto.Fields.userId)
+                                        .disabled(true)
+                                        .build()))
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
                                 .maxWidthInPx(800)
+                                .onSaveEvents(Arrays.asList(
+                                        ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
+                                                .eventName("user-appointment-updated")
+                                                .build()))
                                 .build())
                         .build())
                 .build());
