@@ -86,6 +86,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -143,7 +145,9 @@ public class UserAppointmentController {
                                 .map(user -> {
                                     return SelectFormularFieldPossibleValue.builder()
                                             .id(user.getId())
-                                            .text((user.getFirstname() + " " + user.getLastname()).trim())
+                                            .text(Stream.of(user.getFirstname(), user.getLastname())
+                                                    .filter(s -> s != null && !s.isEmpty())
+                                                    .collect(Collectors.joining(" ")))
                                             .disabled(user.isDeleted())
                                             .build();
                                 })

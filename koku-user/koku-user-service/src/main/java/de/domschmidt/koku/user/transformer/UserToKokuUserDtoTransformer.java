@@ -29,10 +29,6 @@ public class UserToKokuUserDtoTransformer {
                         Stream.of(model.getFirstname(), model.getLastname())
                                 .filter(s -> s != null && !s.isEmpty())
                                 .toList()))
-                .fullname(((model.getFirstname() != null ? model.getFirstname() : "")
-                                + " "
-                                + (model.getLastname() != null ? model.getLastname() : ""))
-                        .trim())
                 .avatarBase64(model.getAvatarBase64())
                 .regionId(model.getRegion() != null ? model.getRegion().getId() : null)
                 .updated(model.getUpdated())
@@ -54,6 +50,9 @@ public class UserToKokuUserDtoTransformer {
             model.setRegion(this.entityManager.getReference(UserRegion.class, updatedDto.getRegionId()));
         } else {
             model.setRegion(null);
+        }
+        if (updatedDto.getDeleted() != null) {
+            model.setDeleted(updatedDto.getDeleted());
         }
         return model;
     }

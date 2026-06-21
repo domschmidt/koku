@@ -46,6 +46,9 @@ public class ActivityToActivityDtoTransformer {
                                 .equals(model.getPriceHistory().getLast().getPrice()))) {
             model.getPriceHistory().add(new ActivityPriceHistoryEntry(model, updatedDto.getPrice()));
         }
+        if (updatedDto.getDeleted() != null) {
+            model.setDeleted(updatedDto.getDeleted());
+        }
 
         return model;
     }

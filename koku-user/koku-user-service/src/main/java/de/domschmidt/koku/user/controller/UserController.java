@@ -4,7 +4,6 @@ import com.querydsl.jpa.JPQLTemplates;
 import com.querydsl.jpa.impl.JPAQuery;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
-import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
@@ -13,12 +12,20 @@ import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfir
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
+import de.domschmidt.koku.dto.formular.buttons.FormButtonUserConfirmationSourcePathParamDto;
 import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
+import de.domschmidt.koku.dto.formular.containers.conditional.ConditionalContainer;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEvent;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEventSerenityEnumDto;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEventValueParamDto;
+import de.domschmidt.koku.dto.formular.events.FormPropagateGlobalEventDto;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.formular.fields.picture_upload.PictureUploadFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularFieldPossibleValue;
+import de.domschmidt.koku.dto.formular.listeners.FormViewEventPayloadSourceUpdateGlobalEventListenerDto;
+import de.domschmidt.koku.dto.formular.user_confirmation.FormUserConfirmationDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDto;
@@ -148,10 +155,110 @@ public class UserController {
                                 .icon("SAVE")
                                 .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
                                 .build())
-                        .postProcessingAction(FormButtonReloadAction.builder().build())
                         .build()))
                 .in(rootId)
                 .outlet(FormOutlet.CONTENT);
+
+        final String deleteContainerId = formFactory.addContent(ConditionalContainer.builder()
+                .compareValuePath(KokuUserDto.Fields.deleted)
+                .expectedValue(Boolean.FALSE)
+                .build());
+        formFactory.place(deleteContainerId).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Löschen")
+                        .title("Jetzt löschen")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.ERROR, EnumButtonStyle.OUTLINE))
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("TRASH")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.ERROR))
+                                .build())
+                        .submitPayload(KokuUserDto.builder().deleted(true).build())
+                        .userConfirmation(FormUserConfirmationDto.builder()
+                                .headline("Nutzer löschen")
+                                .content("Nutzer :name als gelöscht markieren?")
+                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuUserDto.Fields.fullname)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                FormNotificationEvent.builder()
+                                        .text("Nutzer :name erfolgreich als gelöscht markiert")
+                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .sourcePath(KokuUserDto.Fields.fullname)
+                                                .build()))
+                                        .build(),
+                                FormPropagateGlobalEventDto.builder()
+                                        .eventName("user-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                                .text("Nutzer :name konnte nicht als gelöscht markiert werden")
+                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuUserDto.Fields.fullname)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .in(deleteContainerId)
+                .outlet(FormOutlet.CONTENT);
+
+        final String restoreContainerId = formFactory.addContent(ConditionalContainer.builder()
+                .compareValuePath(KokuUserDto.Fields.deleted)
+                .expectedValue(Boolean.TRUE)
+                .build());
+        formFactory.place(restoreContainerId).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Wiederherstellen")
+                        .title("Jetzt wiederherstellen")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.SUCCESS, EnumButtonStyle.OUTLINE))
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("ARROW_LEFT_START_ON_RECTANGLE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.SUCCESS))
+                                .build())
+                        .submitPayload(KokuUserDto.builder().deleted(false).build())
+                        .userConfirmation(FormUserConfirmationDto.builder()
+                                .headline("Nutzer wiederherstellen")
+                                .content("Nutzer :name wiederherstellen?")
+                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuUserDto.Fields.fullname)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                FormNotificationEvent.builder()
+                                        .text("Nutzer :name wurde erfolgreich wiederhergestellt")
+                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .sourcePath(KokuUserDto.Fields.fullname)
+                                                .build()))
+                                        .build(),
+                                FormPropagateGlobalEventDto.builder()
+                                        .eventName("user-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                                .text("Nutzer :name konnte nicht wiederhergestellt werden")
+                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuUserDto.Fields.fullname)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .in(restoreContainerId)
+                .outlet(FormOutlet.CONTENT);
+
+        formFactory.addGlobalEventListener(FormViewEventPayloadSourceUpdateGlobalEventListenerDto.builder()
+                .eventName("user-updated")
+                .idPath(KokuUserDto.Fields.id)
+                .build());
 
         return formFactory.create(rootId);
     }
@@ -196,6 +303,7 @@ public class UserController {
                     .eventName("user-updated")
                     .idPath(KokuUserDto.Fields.id)
                     .valueMapping(Map.of(
+                            KokuUserDto.Fields.fullname, fullnameFieldRef,
                             KokuUserDto.Fields.avatarBase64, avatarSourcePathRef,
                             KokuUserDto.Fields.deleted, deletedSourcePathRef))
                     .build());

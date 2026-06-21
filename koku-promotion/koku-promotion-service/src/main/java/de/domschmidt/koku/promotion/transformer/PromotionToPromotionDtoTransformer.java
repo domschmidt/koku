@@ -58,6 +58,9 @@ public class PromotionToPromotionDtoTransformer {
         if (updatedDto.getProductRelativeSavings() != null) {
             model.setProductRelativeSavings(updatedDto.getProductRelativeSavings());
         }
+        if (updatedDto.getDeleted() != null) {
+            model.setDeleted(updatedDto.getDeleted());
+        }
 
         return model;
     }

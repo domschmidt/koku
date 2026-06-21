@@ -56,7 +56,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
 
   private form: Form | undefined;
   private document: KokuDto.KokuDocumentDto | undefined;
-  private documentMeta: { document: { id: string } } | undefined;
+  private documentMeta: { document: { id: string; ref: string } } | undefined;
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['documentUrl']) {
@@ -64,13 +64,11 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
         .get<KokuDto.KokuDocumentDto>(this.documentUrl())
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((document) => {
+          const documentId = crypto.randomUUID();
           this.documentMeta = {
             document: {
-              id: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-                const r = (Math.random() * 16) | 0;
-                const v = c == 'x' ? r : (r & 0x3) | 0x8;
-                return v.toString(16);
-              }),
+              id: documentId,
+              ref: documentId,
             },
           };
           this.document = document;

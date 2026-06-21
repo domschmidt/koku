@@ -10,7 +10,6 @@ import de.domschmidt.chart.dto.response.types.LineChartDto;
 import de.domschmidt.chart.dto.response.values.NumericSeriesDto;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
-import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
@@ -20,13 +19,20 @@ import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusin
 import de.domschmidt.koku.business_logic.dto.*;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
+import de.domschmidt.koku.dto.formular.buttons.FormButtonUserConfirmationSourcePathParamDto;
 import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
+import de.domschmidt.koku.dto.formular.containers.conditional.ConditionalContainer;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEvent;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEventSerenityEnumDto;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEventValueParamDto;
+import de.domschmidt.koku.dto.formular.events.FormPropagateGlobalEventDto;
 import de.domschmidt.koku.dto.formular.fields.input.EnumInputFormularFieldType;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularFieldPossibleValue;
 import de.domschmidt.koku.dto.formular.listeners.*;
+import de.domschmidt.koku.dto.formular.user_confirmation.FormUserConfirmationDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldTypeEnumDto;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
@@ -227,10 +233,110 @@ public class ProductController {
                                 .icon("SAVE")
                                 .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
                                 .build())
-                        .postProcessingAction(FormButtonReloadAction.builder().build())
                         .build()))
                 .in(rootId)
                 .outlet(FormOutlet.CONTENT);
+
+        final String deleteContainerId = formFactory.addContent(ConditionalContainer.builder()
+                .compareValuePath(KokuProductDto.Fields.deleted)
+                .expectedValue(Boolean.FALSE)
+                .build());
+        formFactory.place(deleteContainerId).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Löschen")
+                        .title("Jetzt löschen")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.ERROR, EnumButtonStyle.OUTLINE))
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("TRASH")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.ERROR))
+                                .build())
+                        .submitPayload(KokuProductDto.builder().deleted(true).build())
+                        .userConfirmation(FormUserConfirmationDto.builder()
+                                .headline("Produkt löschen")
+                                .content("Produkt :name als gelöscht markieren?")
+                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuProductDto.Fields.name)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                FormNotificationEvent.builder()
+                                        .text("Produkt :name erfolgreich als gelöscht markiert")
+                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .sourcePath(KokuProductDto.Fields.name)
+                                                .build()))
+                                        .build(),
+                                FormPropagateGlobalEventDto.builder()
+                                        .eventName("product-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                                .text("Produkt :name konnte nicht als gelöscht markiert werden")
+                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuProductDto.Fields.name)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .in(deleteContainerId)
+                .outlet(FormOutlet.CONTENT);
+
+        final String restoreContainerId = formFactory.addContent(ConditionalContainer.builder()
+                .compareValuePath(KokuProductDto.Fields.deleted)
+                .expectedValue(Boolean.TRUE)
+                .build());
+        formFactory.place(restoreContainerId).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Wiederherstellen")
+                        .title("Jetzt wiederherstellen")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.SUCCESS, EnumButtonStyle.OUTLINE))
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("ARROW_LEFT_START_ON_RECTANGLE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.SUCCESS))
+                                .build())
+                        .submitPayload(KokuProductDto.builder().deleted(false).build())
+                        .userConfirmation(FormUserConfirmationDto.builder()
+                                .headline("Produkt wiederherstellen")
+                                .content("Produkt :name wiederherstellen?")
+                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuProductDto.Fields.name)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                FormNotificationEvent.builder()
+                                        .text("Produkt :name wurde erfolgreich wiederhergestellt")
+                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .sourcePath(KokuProductDto.Fields.name)
+                                                .build()))
+                                        .build(),
+                                FormPropagateGlobalEventDto.builder()
+                                        .eventName("product-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                                .text("Produkt :name konnte nicht wiederhergestellt werden")
+                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuProductDto.Fields.name)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .in(restoreContainerId)
+                .outlet(FormOutlet.CONTENT);
+
+        formFactory.addGlobalEventListener(FormViewEventPayloadSourceUpdateGlobalEventListenerDto.builder()
+                .eventName("product-updated")
+                .idPath(KokuProductDto.Fields.id)
+                .build());
 
         return formFactory.create(rootId);
     }

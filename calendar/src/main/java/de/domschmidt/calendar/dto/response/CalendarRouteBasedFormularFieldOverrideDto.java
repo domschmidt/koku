@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class CalendarRouteBasedFormularFieldOverrideDto extends CalendarFormularFieldOverrideDto {
+public class CalendarRouteBasedFormularFieldOverrideDto extends CalendarFormularContentOverrideDto {
 
     String routeParam;
 }

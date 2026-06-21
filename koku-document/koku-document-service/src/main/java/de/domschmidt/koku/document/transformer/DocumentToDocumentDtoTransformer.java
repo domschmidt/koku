@@ -26,6 +26,9 @@ public class DocumentToDocumentDtoTransformer {
         if (updatedDto.getTemplate() != null) {
             model.setTemplate(updatedDto.getTemplate());
         }
+        if (updatedDto.getDeleted() != null) {
+            model.setDeleted(updatedDto.getDeleted());
+        }
 
         return model;
     }

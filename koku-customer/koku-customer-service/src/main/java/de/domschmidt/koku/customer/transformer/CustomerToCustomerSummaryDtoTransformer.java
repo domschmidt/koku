@@ -13,9 +13,8 @@ public class CustomerToCustomerSummaryDtoTransformer {
         return KokuCustomerSummaryDto.builder()
                 .id(model.getId())
                 .fullName(Stream.of(model.getFirstname(), model.getLastname())
-                                .filter(s -> s != null && !s.isEmpty())
-                                .collect(Collectors.joining(", "))
-                        + (model.isOnFirstnameBasis() ? " *" : ""))
+                        .filter(s -> s != null && !s.isEmpty())
+                        .collect(Collectors.joining(" ")))
                 .build();
     }
 }

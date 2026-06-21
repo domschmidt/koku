@@ -65,6 +65,13 @@ export const routes: Routes = [
                     deletedPath: 'deleted',
                     deletedExpression: true,
                   } as KokuDto.CalendarReplaceItemViaPayloadGlobalEventListenerDto,
+                  {
+                    '@type': 'replace-via-payload',
+                    eventName: 'customer-updated',
+                    sourceId: 'customer-birthday',
+                    deletedPath: 'deleted',
+                    deletedExpression: true,
+                  } as KokuDto.CalendarReplaceItemViaPayloadGlobalEventListenerDto,
                 ] as KokuDto.AbstractCalendarGlobalEventListenerDto[],
                 calendarClickAction: {
                   '@type': 'open-routed-content',
@@ -144,8 +151,7 @@ export const routes: Routes = [
                     itemId: ':userId',
                     inlineContent: {
                       '@type': 'header',
-                      sourceUrl: 'services/users/users/:userId/summary',
-                      titlePath: 'summary',
+                      title: 'Private Termine',
                       content: {
                         '@type': 'list',
                         listUrl: 'services/users/users/appointments/list',

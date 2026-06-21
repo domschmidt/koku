@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class KokuBusinessRuleRouteBasedFormularFieldOverrideDto extends KokuBusinessRuleFormularFieldOverrideDto {
+public class KokuBusinessRuleRouteBasedFormularFieldOverrideDto extends KokuBusinessRuleFormularContentOverrideDto {
 
     String routeParam;
 }
