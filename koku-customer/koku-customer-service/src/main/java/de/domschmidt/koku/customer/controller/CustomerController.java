@@ -5,7 +5,6 @@ import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
-import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
@@ -22,14 +21,22 @@ import de.domschmidt.koku.dto.customer.KokuCustomerDto;
 import de.domschmidt.koku.dto.customer.KokuCustomerSummaryDto;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
+import de.domschmidt.koku.dto.formular.buttons.FormButtonUserConfirmationSourcePathParamDto;
 import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
+import de.domschmidt.koku.dto.formular.containers.conditional.ConditionalContainer;
 import de.domschmidt.koku.dto.formular.containers.fieldset.FieldsetContainer;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEvent;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEventSerenityEnumDto;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEventValueParamDto;
+import de.domschmidt.koku.dto.formular.events.FormPropagateGlobalEventDto;
 import de.domschmidt.koku.dto.formular.fields.checkbox.CheckboxFormularField;
 import de.domschmidt.koku.dto.formular.fields.input.DateInputFormularField;
 import de.domschmidt.koku.dto.formular.fields.input.EnumInputFormularFieldType;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.formular.fields.textarea.TextareaFormularField;
+import de.domschmidt.koku.dto.formular.listeners.FormViewEventPayloadSourceUpdateGlobalEventListenerDto;
+import de.domschmidt.koku.dto.formular.user_confirmation.FormUserConfirmationDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDto;
@@ -121,10 +128,110 @@ public class CustomerController {
                                 .icon("SAVE")
                                 .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
                                 .build())
-                        .postProcessingAction(FormButtonReloadAction.builder().build())
                         .build()))
                 .in(rootId)
                 .outlet(FormOutlet.CONTENT);
+
+        final String deleteContainerId = formFactory.addContent(ConditionalContainer.builder()
+                .compareValuePath(KokuCustomerDto.Fields.deleted)
+                .expectedValue(Boolean.FALSE)
+                .build());
+        formFactory.place(deleteContainerId).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Löschen")
+                        .title("Jetzt löschen")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.ERROR, EnumButtonStyle.OUTLINE))
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("TRASH")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.ERROR))
+                                .build())
+                        .submitPayload(KokuCustomerDto.builder().deleted(true).build())
+                        .userConfirmation(FormUserConfirmationDto.builder()
+                                .headline("Kunde löschen")
+                                .content("Kunde :name als gelöscht markieren?")
+                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuCustomerDto.Fields.fullName)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                FormNotificationEvent.builder()
+                                        .text("Kunde :name erfolgreich als gelöscht markiert")
+                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .sourcePath(KokuCustomerDto.Fields.fullName)
+                                                .build()))
+                                        .build(),
+                                FormPropagateGlobalEventDto.builder()
+                                        .eventName("customer-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                                .text("Kunde :name konnte nicht als gelöscht markiert werden")
+                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuCustomerDto.Fields.fullName)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .in(deleteContainerId)
+                .outlet(FormOutlet.CONTENT);
+
+        final String restoreContainerId = formFactory.addContent(ConditionalContainer.builder()
+                .compareValuePath(KokuCustomerDto.Fields.deleted)
+                .expectedValue(Boolean.TRUE)
+                .build());
+        formFactory.place(restoreContainerId).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Wiederherstellen")
+                        .title("Jetzt wiederherstellen")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.SUCCESS, EnumButtonStyle.OUTLINE))
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("ARROW_LEFT_START_ON_RECTANGLE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.SUCCESS))
+                                .build())
+                        .submitPayload(KokuCustomerDto.builder().deleted(false).build())
+                        .userConfirmation(FormUserConfirmationDto.builder()
+                                .headline("Kunde wiederherstellen")
+                                .content("Kunde :name wiederherstellen?")
+                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuCustomerDto.Fields.fullName)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                FormNotificationEvent.builder()
+                                        .text("Kunde :name wurde erfolgreich wiederhergestellt")
+                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .sourcePath(KokuCustomerDto.Fields.fullName)
+                                                .build()))
+                                        .build(),
+                                FormPropagateGlobalEventDto.builder()
+                                        .eventName("customer-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                                .text("Kunde :name konnte nicht wiederhergestellt werden")
+                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuCustomerDto.Fields.fullName)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .in(restoreContainerId)
+                .outlet(FormOutlet.CONTENT);
+
+        formFactory.addGlobalEventListener(FormViewEventPayloadSourceUpdateGlobalEventListenerDto.builder()
+                .eventName("customer-updated")
+                .idPath(KokuCustomerDto.Fields.id)
+                .build());
 
         return formFactory.create(rootId);
     }
@@ -179,7 +286,8 @@ public class CustomerController {
                 .valueMapping(Map.of(
                         KokuCustomerDto.Fields.fullNameWithOnFirstNameBasis, fullNameWithOnFirstNameBasisFieldRef,
                         KokuCustomerDto.Fields.address, addressFieldRef,
-                        KokuCustomerDto.Fields.addressLine2, addressLine2FieldRef))
+                        KokuCustomerDto.Fields.addressLine2, addressLine2FieldRef,
+                        KokuCustomerDto.Fields.deleted, deletedSourceRef))
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
                 .route("new")
@@ -220,7 +328,8 @@ public class CustomerController {
                 .valueMapping(Map.of(
                         KokuCustomerDto.Fields.fullNameWithOnFirstNameBasis, fullNameWithOnFirstNameBasisFieldRef,
                         KokuCustomerDto.Fields.address, addressFieldRef,
-                        KokuCustomerDto.Fields.addressLine2, addressLine2FieldRef))
+                        KokuCustomerDto.Fields.addressLine2, addressLine2FieldRef,
+                        KokuCustomerDto.Fields.deleted, deletedSourceRef))
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
                 .route(":customerId")

@@ -326,6 +326,9 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 model.getActivities().stream()
                         .map(KokuCustomerAppointmentActivityDomain::fromEntity)
                         .toList()));
+        if (updatedDto.getDeleted() != null) {
+            model.setDeleted(updatedDto.getDeleted());
+        }
 
         return model;
     }

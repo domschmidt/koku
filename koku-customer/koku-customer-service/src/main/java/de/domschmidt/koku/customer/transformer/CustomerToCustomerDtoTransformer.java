@@ -161,6 +161,9 @@ public class CustomerToCustomerDtoTransformer {
         if (updatedDto.getCovid19boostered() != null) {
             model.setCovid19boostered(Boolean.TRUE.equals(updatedDto.getCovid19boostered()));
         }
+        if (updatedDto.getDeleted() != null) {
+            model.setDeleted(updatedDto.getDeleted());
+        }
 
         return model;
     }

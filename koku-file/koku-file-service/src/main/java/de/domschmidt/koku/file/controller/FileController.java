@@ -109,7 +109,7 @@ public class FileController {
                                         .id(customer.key + "")
                                         .text(Stream.of(customer.value.getFirstname(), customer.value.getLastname())
                                                 .filter(s -> s != null && !s.isEmpty())
-                                                .collect(Collectors.joining(", ")))
+                                                .collect(Collectors.joining(" ")))
                                         .disabled(customer.value.getDeleted())
                                         .build())
                                 .toList())

@@ -273,6 +273,10 @@ export class CalendarGlobalEventPlugin implements CalendarPlugin {
 
                 if (!lookedUpEvent) {
                   lookedUpEvent = this.calendarInstance.calendarComponent()?.getApi().addEvent(newEvent, eventSource);
+                } else if (newEvent.rrule !== undefined) {
+                  // FullCalendar does not rebuild recurrence instances when rrule is changed via setProp.
+                  lookedUpEvent.remove();
+                  lookedUpEvent = this.calendarInstance.calendarComponent()?.getApi().addEvent(newEvent, eventSource);
                 } else {
                   if (newEvent.allDay !== undefined && newEvent.allDay !== !!lookedUpEvent.allDay) {
                     lookedUpEvent.setAllDay(newEvent.allDay);
@@ -289,7 +293,6 @@ export class CalendarGlobalEventPlugin implements CalendarPlugin {
                   }
                   lookedUpEvent.setProp('title', newEvent.title);
                   lookedUpEvent.setProp('display', newEvent.display);
-                  lookedUpEvent.setProp('rrule', newEvent.rrule);
                   lookedUpEvent.setProp('className', newEvent.className);
                   lookedUpEvent.setExtendedProp('item', eventPayload);
                 }

@@ -23,6 +23,9 @@ public class ActivityStepToActivityStepDtoTransformer {
         if (updatedDto.getName() != null) {
             model.setName(updatedDto.getName());
         }
+        if (updatedDto.getDeleted() != null) {
+            model.setDeleted(updatedDto.getDeleted());
+        }
 
         return model;
     }

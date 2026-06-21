@@ -63,6 +63,9 @@ public class ProductToProductDtoTransformer {
                                 .equals(model.getPriceHistory().getLast().getPrice()))) {
             model.getPriceHistory().add(new ProductPriceHistoryEntry(model, updatedDto.getPrice()));
         }
+        if (updatedDto.getDeleted() != null) {
+            model.setDeleted(updatedDto.getDeleted());
+        }
 
         return model;
     }

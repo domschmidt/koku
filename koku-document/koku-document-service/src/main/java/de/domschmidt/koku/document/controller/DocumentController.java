@@ -2,7 +2,6 @@ package de.domschmidt.koku.document.controller;
 
 import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
-import de.domschmidt.formular.dto.content.buttons.FormButtonReloadAction;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
@@ -16,10 +15,18 @@ import de.domschmidt.koku.document.transformer.DocumentToDocumentDtoTransformer;
 import de.domschmidt.koku.dto.document.KokuDocumentDto;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
+import de.domschmidt.koku.dto.formular.buttons.FormButtonUserConfirmationSourcePathParamDto;
 import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
+import de.domschmidt.koku.dto.formular.containers.conditional.ConditionalContainer;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEvent;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEventSerenityEnumDto;
+import de.domschmidt.koku.dto.formular.events.FormNotificationEventValueParamDto;
+import de.domschmidt.koku.dto.formular.events.FormPropagateGlobalEventDto;
 import de.domschmidt.koku.dto.formular.fields.documents.DocumentDesignerFormularField;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
+import de.domschmidt.koku.dto.formular.listeners.FormViewEventPayloadSourceUpdateGlobalEventListenerDto;
+import de.domschmidt.koku.dto.formular.user_confirmation.FormUserConfirmationDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDto;
@@ -115,10 +122,110 @@ public class DocumentController {
                                 .icon("SAVE")
                                 .styles(Arrays.asList(EnumButtonStyle.CIRCLE))
                                 .build())
-                        .postProcessingAction(FormButtonReloadAction.builder().build())
                         .build()))
                 .in(rootId)
                 .outlet(FormOutlet.CONTENT);
+
+        final String deleteContainerId = formFactory.addContent(ConditionalContainer.builder()
+                .compareValuePath(KokuDocumentDto.Fields.deleted)
+                .expectedValue(Boolean.FALSE)
+                .build());
+        formFactory.place(deleteContainerId).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Löschen")
+                        .title("Jetzt löschen")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.ERROR, EnumButtonStyle.OUTLINE))
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("TRASH")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.ERROR))
+                                .build())
+                        .submitPayload(KokuDocumentDto.builder().deleted(true).build())
+                        .userConfirmation(FormUserConfirmationDto.builder()
+                                .headline("Dokumentvorlage löschen")
+                                .content("Dokumentvorlage :name als gelöscht markieren?")
+                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuDocumentDto.Fields.name)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                FormNotificationEvent.builder()
+                                        .text("Dokumentvorlage :name erfolgreich als gelöscht markiert")
+                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .sourcePath(KokuDocumentDto.Fields.name)
+                                                .build()))
+                                        .build(),
+                                FormPropagateGlobalEventDto.builder()
+                                        .eventName("document-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                                .text("Dokumentvorlage :name konnte nicht als gelöscht markiert werden")
+                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuDocumentDto.Fields.name)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .in(deleteContainerId)
+                .outlet(FormOutlet.CONTENT);
+
+        final String restoreContainerId = formFactory.addContent(ConditionalContainer.builder()
+                .compareValuePath(KokuDocumentDto.Fields.deleted)
+                .expectedValue(Boolean.TRUE)
+                .build());
+        formFactory.place(restoreContainerId).in(rootId).outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(KokuFormButton.builder()
+                        .buttonType(EnumButtonType.SUBMIT)
+                        .text("Wiederherstellen")
+                        .title("Jetzt wiederherstellen")
+                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.SUCCESS, EnumButtonStyle.OUTLINE))
+                        .dockableSettings(ButtonDockableSettings.builder()
+                                .icon("ARROW_LEFT_START_ON_RECTANGLE")
+                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.SUCCESS))
+                                .build())
+                        .submitPayload(KokuDocumentDto.builder().deleted(false).build())
+                        .userConfirmation(FormUserConfirmationDto.builder()
+                                .headline("Dokumentvorlage wiederherstellen")
+                                .content("Dokumentvorlage :name wiederherstellen?")
+                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuDocumentDto.Fields.name)
+                                        .build()))
+                                .build())
+                        .successEvents(Arrays.asList(
+                                FormNotificationEvent.builder()
+                                        .text("Dokumentvorlage :name wurde erfolgreich wiederhergestellt")
+                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
+                                        .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                                .param(":name")
+                                                .sourcePath(KokuDocumentDto.Fields.name)
+                                                .build()))
+                                        .build(),
+                                FormPropagateGlobalEventDto.builder()
+                                        .eventName("document-updated")
+                                        .build()))
+                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
+                                .text("Dokumentvorlage :name konnte nicht wiederhergestellt werden")
+                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
+                                .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
+                                        .param(":name")
+                                        .sourcePath(KokuDocumentDto.Fields.name)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .in(restoreContainerId)
+                .outlet(FormOutlet.CONTENT);
+
+        formFactory.addGlobalEventListener(FormViewEventPayloadSourceUpdateGlobalEventListenerDto.builder()
+                .eventName("document-updated")
+                .idPath(KokuDocumentDto.Fields.id)
+                .build());
 
         return formFactory.create(rootId);
     }
@@ -348,12 +455,16 @@ public class DocumentController {
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
                 .eventName("document-created")
                 .idPath(KokuDocumentDto.Fields.id)
-                .valueMapping(Map.of(KokuDocumentDto.Fields.name, nameFieldRef))
+                .valueMapping(Map.of(
+                        KokuDocumentDto.Fields.name, nameFieldRef,
+                        KokuDocumentDto.Fields.deleted, deletedSourceRef))
                 .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadItemUpdateGlobalEventListenerDto.builder()
                 .eventName("document-updated")
                 .idPath(KokuDocumentDto.Fields.id)
-                .valueMapping(Map.of(KokuDocumentDto.Fields.name, nameFieldRef))
+                .valueMapping(Map.of(
+                        KokuDocumentDto.Fields.name, nameFieldRef,
+                        KokuDocumentDto.Fields.deleted, deletedSourceRef))
                 .build());
 
         return listViewFactory.create();
