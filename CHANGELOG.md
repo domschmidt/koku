@@ -1,3 +1,15 @@
+# [2.8.0](https://github.com/domschmidt/koku/compare/v2.7.0...v2.8.0) (2026-06-21)
+
+
+### Bug Fixes
+
+* harmonize functions (delete), reduce api ping pong, fix qr code gen ([57c50c2](https://github.com/domschmidt/koku/commit/57c50c2667fe207abeade7c7021f4f80cc08b7fa))
+
+
+### Features
+
+* replace ng-dynamic-component ([9fe66cb](https://github.com/domschmidt/koku/commit/9fe66cb584dc2801aee2e26b1e5e52e8f92e01c1))
+
 # [2.7.0](https://github.com/domschmidt/koku/compare/v2.6.3...v2.7.0) (2026-06-21)
 
 
