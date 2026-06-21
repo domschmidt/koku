@@ -27,11 +27,11 @@ describe('SelectFieldComponent', () => {
 
   it('disables projected actions together with the select', () => {
     const button = fixture.nativeElement.querySelector('#create-customer') as HTMLButtonElement;
-    expect(button.matches(':disabled')).toBeFalse();
+    expect(button.matches(':disabled')).toBe(false);
 
     fixture.componentInstance.disabled.set(true);
     fixture.detectChanges();
 
-    expect(button.matches(':disabled')).toBeTrue();
+    expect(button.matches(':disabled')).toBe(true);
   });
 });

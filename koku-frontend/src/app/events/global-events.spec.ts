@@ -35,6 +35,6 @@ describe('GlobalEvents', () => {
     });
 
     expect(() => events.propagateGlobalEvent('changed', undefined)).toThrowError(AggregateError);
-    expect(successfulListenerCalled).toBeTrue();
+    expect(successfulListenerCalled).toBe(true);
   });
 });

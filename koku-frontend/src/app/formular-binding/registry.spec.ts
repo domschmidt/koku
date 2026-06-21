@@ -66,9 +66,9 @@ describe('formular content recipes', () => {
 
     expect(first.handle.value?.()).toBe('41');
     expect(second.handle.value?.()).toBe('41');
-    expect(first.inputs()['disabled']).toBeTrue();
-    expect(second.inputs()['disabled']).toBeTrue();
-    expect(buttonInputs()['disabled']).toBeTrue();
+    expect(first.inputs()['disabled']).toBe(true);
+    expect(second.inputs()['disabled']).toBe(true);
+    expect(buttonInputs()['disabled']).toBe(true);
     expect(runtime.source()).toEqual({ firstCustomerId: '41', secondCustomerId: '41' });
 
     runtime.setContentOverrides([{ alias: 'customer', value: '42', disabled: false }]);
@@ -76,9 +76,9 @@ describe('formular content recipes', () => {
 
     expect(first.handle.value?.()).toBe('42');
     expect(second.handle.value?.()).toBe('42');
-    expect(first.inputs()['disabled']).toBeFalse();
-    expect(second.inputs()['disabled']).toBeFalse();
-    expect(buttonInputs()['disabled']).toBeFalse();
+    expect(first.inputs()['disabled']).toBe(false);
+    expect(second.inputs()['disabled']).toBe(false);
+    expect(buttonInputs()['disabled']).toBe(false);
     expect(runtime.source()).toEqual({ firstCustomerId: '42', secondCustomerId: '42' });
   });
 });

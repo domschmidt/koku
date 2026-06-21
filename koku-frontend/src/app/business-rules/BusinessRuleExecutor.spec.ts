@@ -8,7 +8,7 @@ describe('BusinessRuleExecutor', () => {
   it('keeps loading active when a running request is replaced and handles errors', () => {
     const firstRequest = new Subject<unknown>();
     const secondRequest = new Subject<unknown>();
-    const request = jasmine.createSpy().and.returnValues(firstRequest, secondRequest);
+    const request = vi.fn().mockReturnValueOnce(firstRequest).mockReturnValueOnce(secondRequest);
     const events = new Subject<any>();
     const loadingCauses = signal(new Set<string>());
     const handles: Record<string, BusinessRuleExecutorContentHandle> = {
@@ -17,7 +17,7 @@ describe('BusinessRuleExecutor', () => {
         events,
       },
     };
-    const onExecutionError = jasmine.createSpy();
+    const onExecutionError = vi.fn();
     const executor = new BusinessRuleExecutor(
       { request } as unknown as HttpClient,
       {} as ModalService,
@@ -50,13 +50,13 @@ describe('BusinessRuleExecutor', () => {
     );
 
     events.next({ eventName: 'CHANGE' });
-    expect(loadingCauses().has('rule')).toBeTrue();
+    expect(loadingCauses().has('rule')).toBe(true);
 
     events.next({ eventName: 'CHANGE' });
-    expect(loadingCauses().has('rule')).toBeTrue();
+    expect(loadingCauses().has('rule')).toBe(true);
 
     secondRequest.error(new Error('failed'));
-    expect(loadingCauses().has('rule')).toBeFalse();
+    expect(loadingCauses().has('rule')).toBe(false);
     expect(onExecutionError).toHaveBeenCalled();
     executor.destroy();
   });
@@ -75,7 +75,7 @@ describe('BusinessRuleExecutor', () => {
         events: new Subject<any>(),
       },
     };
-    const updateContentValue = jasmine.createSpy().and.callFake((referenceId: string, value: any) => {
+    const updateContentValue = vi.fn().mockImplementation((referenceId: string, value: any) => {
       if (referenceId === 'result') {
         resultValue.set(value);
       }
@@ -103,7 +103,8 @@ describe('BusinessRuleExecutor', () => {
     requestResult.next({ summary: 42 });
 
     expect(resultValue()).toBe(42);
-    expect(updateContentValue).toHaveBeenCalledOnceWith('result', 42);
+    expect(updateContentValue).toHaveBeenCalledTimes(1);
+    expect(updateContentValue).toHaveBeenCalledWith('result', 42);
     executor.destroy();
   });
 });

@@ -38,7 +38,7 @@ describe('FormularRuntime', () => {
   });
 
   it('synchronizes handle values and result updates into the source', () => {
-    const markDirty = jasmine.createSpy();
+    const markDirty = vi.fn();
     const runtime = new FormularRuntime(markDirty);
     runtime.resolveContent('field', {
       createValue: () => signal('default value'),
@@ -51,7 +51,8 @@ describe('FormularRuntime', () => {
     runtime.updateContentValue('field', 'rule result');
     expect(runtime.contentHandle('field')?.value?.()).toBe('rule result');
     expect(runtime.source()['nested']['value']).toBe('rule result');
-    expect(markDirty).toHaveBeenCalledOnceWith();
+    expect(markDirty).toHaveBeenCalledTimes(1);
+    expect(markDirty).toHaveBeenCalledWith();
   });
 
   it('indexes content overrides by alias while preserving first-match semantics', () => {
@@ -166,7 +167,7 @@ describe('FormularRuntime', () => {
     runtime.reset();
 
     expect(events).toEqual(['INIT', 'REINIT']);
-    expect(completed).toBeTrue();
+    expect(completed).toBe(true);
   });
 
   it('reconciles stable content ids without replacing their handles', () => {
@@ -188,7 +189,7 @@ describe('FormularRuntime', () => {
 
     expect(runtime.contentHandle('field')).toBe(handle);
     expect((runtime.content('field') as KokuDto.InputFormularField).label).toBe('After');
-    expect(completed).toBeFalse();
+    expect(completed).toBe(false);
     expect(() =>
       runtime.setFormView({
         rootId: 'field',
@@ -213,11 +214,11 @@ describe('FormularRuntime', () => {
     runtime.resolveContent('root');
     runtime.attachInstance('root', {});
     await Promise.resolve();
-    expect(initialized).toBeFalse();
+    expect(initialized).toBe(false);
     runtime.resolveContent('field');
     runtime.attachInstance('field', {});
     await initialization;
-    expect(initialized).toBeTrue();
+    expect(initialized).toBe(true);
   });
 
   it('surfaces content initialization failures', async () => {
@@ -232,7 +233,7 @@ describe('FormularRuntime', () => {
 
     runtime.failInitialization(error);
 
-    await expectAsync(initialization).toBeRejectedWith(error);
+    await expect(initialization).rejects.toEqual(error);
   });
 
   it('rejects incomplete and ambiguous placement trees', () => {
