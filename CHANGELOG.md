@@ -1,3 +1,10 @@
+## [2.8.1](https://github.com/domschmidt/koku/compare/v2.8.0...v2.8.1) (2026-06-21)
+
+
+### Bug Fixes
+
+* migrate to vitest ([9979dca](https://github.com/domschmidt/koku/commit/9979dcacd54cdf633d4f3977cdf570b6a2501628))
+
 # [2.8.0](https://github.com/domschmidt/koku/compare/v2.7.0...v2.8.0) (2026-06-21)
 
 
