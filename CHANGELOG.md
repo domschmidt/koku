@@ -1,3 +1,10 @@
+# [2.7.0](https://github.com/domschmidt/koku/compare/v2.6.3...v2.7.0) (2026-06-21)
+
+
+### Features
+
+* replace ng-dynamic-component ([8a982a6](https://github.com/domschmidt/koku/commit/8a982a6717ad804da2de40d26df2281115396e54))
+
 ## [2.6.3](https://github.com/domschmidt/koku/compare/v2.6.2...v2.6.3) (2026-06-12)
 
 
