@@ -1,3 +1,10 @@
+## [2.8.2](https://github.com/domschmidt/koku/compare/v2.8.1...v2.8.2) (2026-06-22)
+
+
+### Bug Fixes
+
+* add user appointment list ([45c9181](https://github.com/domschmidt/koku/commit/45c9181d907790f7f5430bb20adfbd002ede1a84))
+
 ## [2.8.1](https://github.com/domschmidt/koku/compare/v2.8.0...v2.8.1) (2026-06-21)
 
 
