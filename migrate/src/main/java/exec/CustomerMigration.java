@@ -14,12 +14,12 @@ public class CustomerMigration extends BaseMigration {
 
         read("""
                 SELECT  id, recorded, updated,
-                    	additional_info, address, business_telephone_no, city, email, first_name, last_name,
-                    	medical_tolerance, mobile_telephone_no, postal_code, private_telephone_no, birthday,
-                    	on_first_name_basis, deleted, hay_fever, glasses, epilepsy, dry_eyes, diabetes,
-                    	cyanoacrylate_allergy, contacts, claustrophobia, circulation_problems, asthma,
-                    	plaster_allergy, neurodermatitis, eye_disease, allergy, covid19vaccinated,
-                    	covid19boostered
+                    additional_info, address, business_telephone_no, city, email, first_name, last_name,
+                    medical_tolerance, mobile_telephone_no, postal_code, private_telephone_no, birthday,
+                    on_first_name_basis, deleted, hay_fever, glasses, epilepsy, dry_eyes, diabetes,
+                    cyanoacrylate_allergy, contacts, claustrophobia, circulation_problems, asthma,
+                    plaster_allergy, neurodermatitis, eye_disease, allergy, covid19vaccinated,
+                    covid19boostered
                 FROM koku.customer
             """, rs -> {
             try {

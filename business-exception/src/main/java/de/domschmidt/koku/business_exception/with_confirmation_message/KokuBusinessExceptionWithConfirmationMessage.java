@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 public class KokuBusinessExceptionWithConfirmationMessage extends RuntimeException {
 
-    private final KokuBusinessExceptionWithConfirmationMessageDto confirmationMessage;
+    private final transient KokuBusinessExceptionWithConfirmationMessageDto confirmationMessage;
 
     public KokuBusinessExceptionWithConfirmationMessage(
             final KokuBusinessExceptionWithConfirmationMessageDto confirmationMessage) {

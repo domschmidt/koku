@@ -152,12 +152,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 .additionalInfo(model.getAdditionalInfo())
                 .userId(model.getUserId())
                 .customerId(model.getCustomer().getId())
-                .customerName(Stream.of(
-                                        model.getCustomer().getFirstname(),
-                                        model.getCustomer().getLastname())
-                                .filter(s -> s != null && !s.isEmpty())
-                                .collect(Collectors.joining(" "))
-                        + (model.getCustomer().isOnFirstnameBasis() ? " *" : ""))
+                .customerName(CustomerNameFormatter.displayNameWithFirstnameBasisMarker(model.getCustomer()))
                 .shortSummaryText(SHORT_SUMMARY_DATETIME_FORMATTER.format(model.getStart()))
                 .longSummaryText(LONG_SUMMARY_DATETIME_FORMATTER.format(model.getStart()))
                 .activities(activities)

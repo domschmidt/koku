@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserWelcomeController {
 
+    private static final String EMPTY_MESSAGE = "Keine Termine";
+
     @GetMapping()
     public DashboardViewDto getDashboardView(@AuthenticationPrincipal Jwt jwt) {
         final DashboardViewFactory dashboardFactory = new DashboardViewFactory(
@@ -83,21 +85,21 @@ public class UserWelcomeController {
         final LocalDate now = LocalDate.now();
         dashboardFactory.addPanel(DashboardAppointmentsPanelDto.builder()
                 .headline("Heutige Termine")
-                .emptyMessage("Keine Termine")
+                .emptyMessage(EMPTY_MESSAGE)
                 .start(now.atTime(LocalTime.MIN))
                 .end(now.atTime(LocalTime.MAX))
                 .listSources(appointmentListSources)
                 .build());
         dashboardFactory.addPanel(DashboardAppointmentsPanelDto.builder()
                 .headline("Anstehende Termine für Morgen")
-                .emptyMessage("Keine Termine")
+                .emptyMessage(EMPTY_MESSAGE)
                 .start(now.plusDays(1).atTime(LocalTime.MIN))
                 .end(now.plusDays(1).atTime(LocalTime.MAX))
                 .listSources(appointmentListSources)
                 .build());
         dashboardFactory.addPanel(DashboardAppointmentsPanelDto.builder()
                 .headline("Anstehende Termine für Übermorgen")
-                .emptyMessage("Keine Termine")
+                .emptyMessage(EMPTY_MESSAGE)
                 .start(now.plusDays(2).atTime(LocalTime.MIN))
                 .end(now.plusDays(2).atTime(LocalTime.MAX))
                 .listSources(appointmentListSources)

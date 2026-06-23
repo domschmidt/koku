@@ -84,63 +84,11 @@ public class ListQueryFactory<Entity> {
             final Expression<?> currentPath = pathQueryEntry.getValue();
             querySelection.add(currentPath);
 
-            final ListFieldQuery predicateValue;
-            if (this.predicate != null
-                    && this.predicate.getFieldPredicates() != null
-                    && this.predicate.getFieldPredicates().get(pathQueryEntry.getKey()) != null) {
-                predicateValue = this.predicate.getFieldPredicates().get(pathQueryEntry.getKey());
-                fieldPredicates.put(pathQueryEntry.getKey(), predicateValue);
-            } else {
-                predicateValue = null;
-            }
+            final ListFieldQuery predicateValue = getPredicateValue(pathQueryEntry.getKey(), fieldPredicates);
 
             final IListFilter iListFilter = FilterResolver.resolveFilter(currentPath.getType());
-            if (iListFilter != null && predicateValue != null && predicateValue.getPredicates() != null) {
-
-                BooleanExpression fieldFilters = null;
-
-                final Map<String, List<QueryPredicate>> orGroups = new HashMap<>();
-                final List<QueryPredicate> andGroup = new ArrayList<>();
-
-                for (final QueryPredicate currentPredicate : predicateValue.getPredicates()) {
-                    if (currentPredicate.getOrGroupIdentifier() != null) {
-                        orGroups.computeIfAbsent(currentPredicate.getOrGroupIdentifier(), k -> new ArrayList<>())
-                                .add(currentPredicate);
-                    } else {
-                        andGroup.add(currentPredicate);
-                    }
-                }
-
-                for (final List<QueryPredicate> group : orGroups.values()) {
-                    BooleanExpression orExpression = null;
-                    for (final QueryPredicate currentPredicate : group) {
-                        final BooleanExpression filter =
-                                iListFilter.buildSearchExpression(pathQueryEntry.getValue(), currentPredicate);
-                        if (filter != null) {
-                            orExpression = orExpression == null ? filter : orExpression.or(filter);
-                        }
-                    }
-                    if (orExpression != null) {
-                        fieldFilters = fieldFilters == null ? orExpression : fieldFilters.and(orExpression);
-                    }
-                }
-
-                for (final QueryPredicate currentPredicate : andGroup) {
-                    final BooleanExpression filter =
-                            iListFilter.buildSearchExpression(pathQueryEntry.getValue(), currentPredicate);
-                    if (filter != null) {
-                        fieldFilters = fieldFilters == null ? filter : fieldFilters.and(filter);
-                    }
-                }
-
-                if (fieldFilters != null) {
-                    if (filters != null) {
-                        filters = filters.and(fieldFilters);
-                    } else {
-                        filters = fieldFilters;
-                    }
-                }
-            }
+            filters =
+                    combineFilters(filters, buildFieldFilters(iListFilter, pathQueryEntry.getValue(), predicateValue));
             if (predicateValue != null) {
                 Integer sortRanking = predicateValue.getSortRanking();
                 if (sortRanking != null) {
@@ -153,41 +101,7 @@ public class ListQueryFactory<Entity> {
             }
         }
 
-        if (predicate != null
-                && predicate.getGlobalSearchTerm() != null
-                && !predicate.getGlobalSearchTerm().isEmpty()) {
-            for (final String currentSearchTerm :
-                    predicate.getGlobalSearchTerm().split(" ")) {
-                BooleanExpression currentSearchTermGlobalFilter = null;
-
-                for (final String currentSelection : requestedSelection) {
-
-                    final Expression<?> pathQuery = this.expressionQuery.get(currentSelection);
-                    if (pathQuery != null) {
-                        final IListFilter iListFilter = FilterResolver.resolveFilter(pathQuery.getType());
-                        if (iListFilter != null) {
-                            final BooleanExpression globalFilter =
-                                    iListFilter.buildGlobalSearchExpression(pathQuery, currentSearchTerm);
-                            if (globalFilter != null) {
-                                if (currentSearchTermGlobalFilter != null) {
-                                    currentSearchTermGlobalFilter = currentSearchTermGlobalFilter.or(globalFilter);
-                                } else {
-                                    currentSearchTermGlobalFilter = globalFilter;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (currentSearchTermGlobalFilter != null) {
-                    if (globalFilters != null) {
-                        globalFilters = globalFilters.and(currentSearchTermGlobalFilter);
-                    } else {
-                        globalFilters = currentSearchTermGlobalFilter;
-                    }
-                }
-            }
-        }
+        globalFilters = buildGlobalFilters(requestedSelection);
 
         int queryPageSize = this.predicate != null
                         && this.predicate.getLimit() != null
@@ -262,6 +176,96 @@ public class ListQueryFactory<Entity> {
                 fetchBag.size() > queryPageSize,
                 page,
                 queryPageSize);
+    }
+
+    private ListFieldQuery getPredicateValue(final String alias, final Map<String, ListFieldQuery> fieldPredicates) {
+        if (this.predicate != null
+                && this.predicate.getFieldPredicates() != null
+                && this.predicate.getFieldPredicates().get(alias) != null) {
+            final ListFieldQuery predicateValue =
+                    this.predicate.getFieldPredicates().get(alias);
+            fieldPredicates.put(alias, predicateValue);
+            return predicateValue;
+        }
+        return null;
+    }
+
+    private BooleanExpression buildFieldFilters(
+            final IListFilter iListFilter, final Expression<?> path, final ListFieldQuery predicateValue) {
+        if (iListFilter == null || predicateValue == null || predicateValue.getPredicates() == null) {
+            return null;
+        }
+
+        BooleanExpression fieldFilters = null;
+        final Map<String, List<QueryPredicate>> orGroups = new HashMap<>();
+        final List<QueryPredicate> andGroup = new ArrayList<>();
+
+        for (final QueryPredicate currentPredicate : predicateValue.getPredicates()) {
+            if (currentPredicate.getOrGroupIdentifier() != null) {
+                orGroups.computeIfAbsent(currentPredicate.getOrGroupIdentifier(), k -> new ArrayList<>())
+                        .add(currentPredicate);
+            } else {
+                andGroup.add(currentPredicate);
+            }
+        }
+
+        for (final List<QueryPredicate> group : orGroups.values()) {
+            fieldFilters = combineFilters(fieldFilters, buildOrGroupFilter(iListFilter, path, group));
+        }
+
+        for (final QueryPredicate currentPredicate : andGroup) {
+            fieldFilters = combineFilters(fieldFilters, iListFilter.buildSearchExpression(path, currentPredicate));
+        }
+
+        return fieldFilters;
+    }
+
+    private BooleanExpression buildOrGroupFilter(
+            final IListFilter iListFilter, final Expression<?> path, final List<QueryPredicate> group) {
+        BooleanExpression orExpression = null;
+        for (final QueryPredicate currentPredicate : group) {
+            final BooleanExpression filter = iListFilter.buildSearchExpression(path, currentPredicate);
+            if (filter != null) {
+                orExpression = orExpression == null ? filter : orExpression.or(filter);
+            }
+        }
+        return orExpression;
+    }
+
+    private BooleanExpression buildGlobalFilters(final List<String> requestedSelection) {
+        if (this.predicate == null
+                || this.predicate.getGlobalSearchTerm() == null
+                || this.predicate.getGlobalSearchTerm().isEmpty()) {
+            return null;
+        }
+
+        BooleanExpression globalFilters = null;
+        for (final String currentSearchTerm :
+                this.predicate.getGlobalSearchTerm().split(" ")) {
+            BooleanExpression currentSearchTermGlobalFilter = null;
+            for (final String currentSelection : requestedSelection) {
+                final Expression<?> pathQuery = this.expressionQuery.get(currentSelection);
+                if (pathQuery != null) {
+                    final IListFilter iListFilter = FilterResolver.resolveFilter(pathQuery.getType());
+                    if (iListFilter != null) {
+                        final BooleanExpression globalFilter =
+                                iListFilter.buildGlobalSearchExpression(pathQuery, currentSearchTerm);
+                        if (globalFilter != null) {
+                            currentSearchTermGlobalFilter = combineFilters(currentSearchTermGlobalFilter, globalFilter);
+                        }
+                    }
+                }
+            }
+            globalFilters = combineFilters(globalFilters, currentSearchTermGlobalFilter);
+        }
+        return globalFilters;
+    }
+
+    private BooleanExpression combineFilters(final BooleanExpression existing, final BooleanExpression next) {
+        if (next == null) {
+            return existing;
+        }
+        return existing == null ? next : existing.and(next);
     }
 
     public void addDefaultFilter(final BooleanExpression filter) {

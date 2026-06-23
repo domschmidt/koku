@@ -64,7 +64,7 @@ public class Customer implements Serializable {
 
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     @OrderBy("start DESC")
-    List<CustomerAppointment> customerAppointments = new ArrayList<>();
+    private List<CustomerAppointment> customerAppointments = new ArrayList<>();
 
     @CreationTimestamp
     LocalDateTime recorded;

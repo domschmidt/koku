@@ -40,7 +40,7 @@ public class Product implements Serializable {
             cascade = {CascadeType.ALL},
             orphanRemoval = true)
     @OrderBy("recorded asc")
-    List<ProductPriceHistoryEntry> priceHistory = new ArrayList<>();
+    private List<ProductPriceHistoryEntry> priceHistory = new ArrayList<>();
 
     @CreationTimestamp
     LocalDateTime recorded;
