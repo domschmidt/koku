@@ -22,8 +22,8 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class CalDavService {
 
-    private static final String CUSTOMER_APPOINTMENT_SYNC_TOKEN_PREFIX = "urn:koku:caldav:sync:";
-    private static final String PRIVATE_APPOINTMENT_SYNC_TOKEN_PREFIX = "urn:koku:caldav:private:sync:";
+    private static final String CUSTOMER_APPOINTMENT_SYNC_STATE_PREFIX = "urn:koku:caldav:sync:";
+    private static final String PRIVATE_APPOINTMENT_SYNC_STATE_PREFIX = "urn:koku:caldav:private:sync:";
     private static final Pattern ICS_ID_PATTERN = Pattern.compile(".*/(\\d+)\\.ics$");
 
     private final CustomerAppointmentRepository customerAppointmentRepository;
@@ -420,7 +420,7 @@ public class CalDavService {
                         customer(appointment).map(CustomerKafkaDto::getDeleted).orElse(null)))
                 .sorted()
                 .reduce(1, (left, right) -> 31 * left + right);
-        return CUSTOMER_APPOINTMENT_SYNC_TOKEN_PREFIX + Integer.toUnsignedString(token);
+        return CUSTOMER_APPOINTMENT_SYNC_STATE_PREFIX + Integer.toUnsignedString(token);
     }
 
     private String userAppointmentSyncToken(final List<UserAppointmentKafkaDto> appointments) {
@@ -429,7 +429,7 @@ public class CalDavService {
                         Objects.hash(appointment.getId(), appointment.getUpdated(), appointment.getDeleted()))
                 .sorted()
                 .reduce(1, (left, right) -> 31 * left + right);
-        return PRIVATE_APPOINTMENT_SYNC_TOKEN_PREFIX + Integer.toUnsignedString(token);
+        return PRIVATE_APPOINTMENT_SYNC_STATE_PREFIX + Integer.toUnsignedString(token);
     }
 
     private String customerAppointmentEtag(

@@ -35,7 +35,7 @@ public class Activity implements Serializable {
 
     @OneToMany(mappedBy = "activity", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @OrderBy("recorded asc")
-    List<ActivityPriceHistoryEntry> priceHistory = new ArrayList<>();
+    private List<ActivityPriceHistoryEntry> priceHistory = new ArrayList<>();
 
     @CreationTimestamp
     LocalDateTime recorded;

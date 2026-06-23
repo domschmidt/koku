@@ -43,19 +43,19 @@ public class CustomerAppointment implements Serializable {
 
     @OneToMany(orphanRemoval = true, mappedBy = "appointment", cascade = CascadeType.ALL)
     @OrderBy("position asc")
-    List<CustomerAppointmentActivity> activities = new ArrayList<>();
+    private List<CustomerAppointmentActivity> activities = new ArrayList<>();
 
     @OneToMany(orphanRemoval = true, mappedBy = "appointment", cascade = CascadeType.ALL)
     @OrderBy("position asc")
-    List<CustomerAppointmentPromotion> promotions = new ArrayList<>();
+    private List<CustomerAppointmentPromotion> promotions = new ArrayList<>();
 
     @OneToMany(orphanRemoval = true, mappedBy = "appointment", cascade = CascadeType.ALL)
     @OrderBy("position asc")
-    List<CustomerAppointmentSoldProduct> soldProducts = new ArrayList<>();
+    private List<CustomerAppointmentSoldProduct> soldProducts = new ArrayList<>();
 
     @OneToMany(orphanRemoval = true, mappedBy = "appointment", cascade = CascadeType.ALL)
     @OrderBy("position asc")
-    List<CustomerAppointmentTreatmentSequenceItem> treatmentSequence = new ArrayList<>();
+    private List<CustomerAppointmentTreatmentSequenceItem> treatmentSequence = new ArrayList<>();
 
     BigDecimal activitiesRevenueSnapshot;
     String activitiesSummarySnapshot;

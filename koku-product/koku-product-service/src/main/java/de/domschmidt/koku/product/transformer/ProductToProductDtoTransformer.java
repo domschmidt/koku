@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ProductToProductDtoTransformer {
+    private static final NumberFormat GERMAN_CURRENCY_FORMATTER = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
     private final EntityManager entityManager;
 
@@ -27,17 +28,15 @@ public class ProductToProductDtoTransformer {
                 .version(model.getVersion())
                 .name(model.getName())
                 .manufacturerId(manufacturer != null ? manufacturer.getId() : null)
-                .manufacturerName(model.getManufacturer().getName())
+                .manufacturerName(manufacturer != null ? manufacturer.getName() : null)
                 .price(
                         !model.getPriceHistory().isEmpty()
                                 ? model.getPriceHistory().getLast().getPrice()
                                 : null)
                 .formattedPrice(
                         !model.getPriceHistory().isEmpty()
-                                ? NumberFormat.getCurrencyInstance(Locale.GERMANY)
-                                        .format(model.getPriceHistory()
-                                                .getLast()
-                                                .getPrice())
+                                ? GERMAN_CURRENCY_FORMATTER.format(
+                                        model.getPriceHistory().getLast().getPrice())
                                 : null)
                 .updated(model.getUpdated())
                 .recorded(model.getRecorded())
@@ -47,15 +46,14 @@ public class ProductToProductDtoTransformer {
     public Product transformToEntity(final Product model, final KokuProductDto updatedDto)
             throws ManufacturerIdNotFoundException {
 
+        if (updatedDto.getManufacturerId() == null) {
+            throw new ManufacturerIdNotFoundException(updatedDto.getManufacturerId());
+        }
         if (updatedDto.getName() != null) {
             model.setName(updatedDto.getName());
         }
-        if (updatedDto.getManufacturerId() != null) {
-            model.setManufacturer(
-                    this.entityManager.getReference(ProductManufacturer.class, updatedDto.getManufacturerId()));
-        } else {
-            throw new ManufacturerIdNotFoundException(updatedDto.getManufacturerId());
-        }
+        model.setManufacturer(
+                this.entityManager.getReference(ProductManufacturer.class, updatedDto.getManufacturerId()));
         if (updatedDto.getPrice() != null
                 && (model.getPriceHistory().isEmpty()
                         || !updatedDto

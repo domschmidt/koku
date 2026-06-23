@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ActivityToActivityDtoTransformer {
-
     public KokuActivityDto transformToDto(final Activity model) {
         return KokuActivityDto.builder()
                 .id(model.getId())

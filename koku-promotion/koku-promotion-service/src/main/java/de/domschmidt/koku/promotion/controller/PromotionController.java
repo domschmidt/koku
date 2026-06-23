@@ -75,6 +75,11 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 @RequiredArgsConstructor
 public class PromotionController {
+    private static final String PROMOTION_CREATED_EVENT = "promotion-created";
+    private static final String PROMOTION_UPDATED_EVENT = "promotion-updated";
+    private static final String PROMOTION_ID_PARAM = ":promotionId";
+    private static final String NAME_PARAM = ":name";
+
     private final EntityManager entityManager;
     private final PromotionRepository promotionRepository;
     private final PromotionKafkaService promotionKafkaService;
@@ -205,29 +210,29 @@ public class PromotionController {
                         .submitPayload(KokuPromotionDto.builder().deleted(true).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
                                 .headline("Aktion löschen")
-                                .content("Aktion :name als gelöscht markieren?")
+                                .content("Aktion " + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .sourcePath(KokuPromotionDto.Fields.name)
                                         .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Aktion :name erfolgreich als gelöscht markiert")
+                                        .text("Aktion " + NAME_PARAM + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .sourcePath(KokuPromotionDto.Fields.name)
                                                 .build()))
                                         .build(),
                                 FormPropagateGlobalEventDto.builder()
-                                        .eventName("promotion-updated")
+                                        .eventName(PROMOTION_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Aktion :name konnte nicht als gelöscht markiert werden")
+                                .text("Aktion " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .sourcePath(KokuPromotionDto.Fields.name)
                                         .build()))
                                 .build()))
@@ -253,29 +258,29 @@ public class PromotionController {
                         .submitPayload(KokuPromotionDto.builder().deleted(false).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
                                 .headline("Aktion wiederherstellen")
-                                .content("Aktion :name wiederherstellen?")
+                                .content("Aktion " + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .sourcePath(KokuPromotionDto.Fields.name)
                                         .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Aktion :name wurde erfolgreich wiederhergestellt")
+                                        .text("Aktion " + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .sourcePath(KokuPromotionDto.Fields.name)
                                                 .build()))
                                         .build(),
                                 FormPropagateGlobalEventDto.builder()
-                                        .eventName("promotion-updated")
+                                        .eventName(PROMOTION_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Aktion :name konnte nicht wiederhergestellt werden")
+                                .text("Aktion " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .sourcePath(KokuPromotionDto.Fields.name)
                                         .build()))
                                 .build()))
@@ -284,7 +289,7 @@ public class PromotionController {
                 .outlet(FormOutlet.CONTENT);
 
         formFactory.addGlobalEventListener(FormViewEventPayloadSourceUpdateGlobalEventListenerDto.builder()
-                .eventName("promotion-updated")
+                .eventName(PROMOTION_UPDATED_EVENT)
                 .idPath(KokuPromotionDto.Fields.id)
                 .build());
 
@@ -330,7 +335,7 @@ public class PromotionController {
                 .text("Neue Aktion")
                 .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
-                .eventName("promotion-created")
+                .eventName(PROMOTION_CREATED_EVENT)
                 .idPath(KokuPromotionDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuPromotionDto.Fields.name, nameFieldRef,
@@ -348,14 +353,14 @@ public class PromotionController {
                                 .maxWidthInPx(800)
                                 .onSaveEvents(Arrays.asList(
                                         ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                .eventName("promotion-created")
+                                                .eventName(PROMOTION_CREATED_EVENT)
                                                 .build(),
                                         ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                .route(":promotionId")
+                                                .route(PROMOTION_ID_PARAM)
                                                 .params(Arrays.asList(
                                                         ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
                                                                 .builder()
-                                                                .param(":promotionId")
+                                                                .param(PROMOTION_ID_PARAM)
                                                                 .valuePath(KokuPromotionDto.Fields.id)
                                                                 .build()))
                                                 .build()))
@@ -364,14 +369,14 @@ public class PromotionController {
                 .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
-                .route(":promotionId")
+                .route(PROMOTION_ID_PARAM)
                 .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
-                        .param(":promotionId")
+                        .param(PROMOTION_ID_PARAM)
                         .valueReference(idSourcePathRef)
                         .build()))
                 .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadItemUpdateGlobalEventListenerDto.builder()
-                .eventName("promotion-updated")
+                .eventName(PROMOTION_UPDATED_EVENT)
                 .idPath(KokuPromotionDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuPromotionDto.Fields.name, nameFieldRef,
@@ -379,25 +384,25 @@ public class PromotionController {
                         KokuPromotionDto.Fields.deleted, deletedSourcePathRef))
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
-                .route(":promotionId")
-                .itemId(":promotionId")
+                .route(PROMOTION_ID_PARAM)
+                .itemId(PROMOTION_ID_PARAM)
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .sourceUrl("services/promotions/promotions/:promotionId/summary")
+                        .sourceUrl("services/promotions/promotions/" + PROMOTION_ID_PARAM + "/summary")
                         .titlePath(KokuPromotionSummaryDto.Fields.summary)
                         .globalEventListeners(
                                 Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
-                                        .eventName("promotion-updated")
+                                        .eventName(PROMOTION_UPDATED_EVENT)
                                         .idPath(KokuPromotionDto.Fields.id)
                                         .titleValuePath(KokuPromotionDto.Fields.longSummary)
                                         .build()))
                         .content(ListViewFormularContentDto.builder()
                                 .formularUrl("services/promotions/promotions/form")
-                                .sourceUrl("services/promotions/promotions/:promotionId")
+                                .sourceUrl("services/promotions/promotions/" + PROMOTION_ID_PARAM)
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
                                 .maxWidthInPx(800)
                                 .onSaveEvents(Arrays.asList(
                                         ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                .eventName("promotion-updated")
+                                                .eventName(PROMOTION_UPDATED_EVENT)
                                                 .build()))
                                 .build())
                         .build())

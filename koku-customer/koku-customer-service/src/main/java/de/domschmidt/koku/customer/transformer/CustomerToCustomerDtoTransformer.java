@@ -3,15 +3,16 @@ package de.domschmidt.koku.customer.transformer;
 import de.domschmidt.koku.customer.persistence.Customer;
 import de.domschmidt.koku.customer.service.PhoneNumberNormalizer;
 import de.domschmidt.koku.dto.customer.KokuCustomerDto;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 @Component
 @RequiredArgsConstructor
 public class CustomerToCustomerDtoTransformer {
+    private static final String ADDRESS_PART_SEPARATOR = " ";
 
     private final PhoneNumberNormalizer phoneNumberNormalizer;
 
@@ -22,22 +23,14 @@ public class CustomerToCustomerDtoTransformer {
                 .version(model.getVersion())
                 .firstName(model.getFirstname())
                 .lastName(model.getLastname())
-                .fullName(Stream.of(model.getFirstname(), model.getLastname())
-                        .filter(s -> s != null && !s.isEmpty())
-                        .collect(Collectors.joining(" ")))
-                .fullNameWithOnFirstNameBasis(Stream.of(model.getFirstname(), model.getLastname())
-                                .filter(s -> s != null && !s.isEmpty())
-                                .collect(Collectors.joining(" "))
-                        + (model.isOnFirstnameBasis() ? " *" : ""))
-                .initials((model.getFirstname() != null ? StringUtils.truncate(model.getFirstname(), 1) : "")
-                        + (model.getLastname() != null ? StringUtils.truncate(model.getLastname(), 1) : ""))
+                .fullName(CustomerNameFormatter.displayName(model))
+                .fullNameWithOnFirstNameBasis(CustomerNameFormatter.displayNameWithFirstnameBasisMarker(model))
+                .initials(CustomerNameFormatter.initials(model))
                 .email(model.getEmail())
                 .address(model.getAddress())
                 .postalCode(model.getPostalCode())
                 .city(model.getCity())
-                .addressLine2(Stream.of(model.getPostalCode(), model.getCity())
-                        .filter(s -> s != null && !s.isEmpty())
-                        .collect(Collectors.joining(" ")))
+                .addressLine2(formatAddressLine(model))
                 .privateTelephoneNo(model.getPrivateTelephoneNo())
                 .businessTelephoneNo(model.getBusinessTelephoneNo())
                 .mobileTelephoneNo(model.getMobileTelephoneNo())
@@ -73,9 +66,6 @@ public class CustomerToCustomerDtoTransformer {
         }
         if (updatedDto.getLastName() != null) {
             model.setLastname(updatedDto.getLastName());
-        }
-        if (updatedDto.getEmail() != null) {
-            model.setEmail(updatedDto.getEmail());
         }
         if (updatedDto.getEmail() != null) {
             model.setEmail(updatedDto.getEmail());
@@ -152,9 +142,6 @@ public class CustomerToCustomerDtoTransformer {
         if (updatedDto.getAllergy() != null) {
             model.setAllergy(updatedDto.getAllergy());
         }
-        if (updatedDto.getAllergy() != null) {
-            model.setAllergy(updatedDto.getAllergy());
-        }
         if (updatedDto.getCovid19vaccinated() != null) {
             model.setCovid19vaccinated(Boolean.TRUE.equals(updatedDto.getCovid19vaccinated()));
         }
@@ -166,5 +153,12 @@ public class CustomerToCustomerDtoTransformer {
         }
 
         return model;
+    }
+
+    private static String formatAddressLine(final Customer model) {
+        return Arrays.stream(new String[] {model.getPostalCode(), model.getCity()})
+                .filter(Objects::nonNull)
+                .filter(part -> !part.isEmpty())
+                .collect(Collectors.joining(ADDRESS_PART_SEPARATOR));
     }
 }

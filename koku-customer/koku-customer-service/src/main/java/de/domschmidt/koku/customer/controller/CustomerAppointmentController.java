@@ -131,6 +131,9 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 public class CustomerAppointmentController {
     public static final DateTimeFormatter YEAR_MONTH_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
+    private static final String VISITS_LABEL = "Besuche";
+    private static final String REVENUE_LABEL = "Umsatz (€)";
+    private static final String START_FILTER_PARAM = "start";
     private final EntityManager entityManager;
     private final CustomerAppointmentRepository customerAppointmentRepository;
     private final CustomerAppointmentKafkaService customerAppointmentKafkaService;
@@ -1750,7 +1753,7 @@ public class CustomerAppointmentController {
                 .transform(GroupBy.groupBy(yearExpr).as(countExpr));
 
         return BarChartDto.builder()
-                .title("Besuche")
+                .title(VISITS_LABEL)
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
                                 .categories(visitsPerYear.keySet().stream()
@@ -1759,7 +1762,7 @@ public class CustomerAppointmentController {
                                 .build())
                         .build())
                 .series(List.of(NumericSeriesDto.builder()
-                        .name("Besuche")
+                        .name(VISITS_LABEL)
                         .data(visitsPerYear.values().stream()
                                 .map(BigDecimal::new)
                                 .toList())
@@ -1813,7 +1816,7 @@ public class CustomerAppointmentController {
                 .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(startFilter))
                         .label("Von")
-                        .queryParamName("start")
+                        .queryParamName(START_FILTER_PARAM)
                         .build())
                 .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
