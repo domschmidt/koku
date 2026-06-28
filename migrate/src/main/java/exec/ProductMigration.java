@@ -9,8 +9,8 @@ public class ProductMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating Product...");
+    public void migrate() {
+        logInfo("Migrating Product...");
 
         read("SELECT id, recorded, updated, deleted, description, manufacturer_id FROM koku.product", rs -> {
             try {
@@ -39,6 +39,6 @@ public class ProductMigration extends BaseMigration {
             }
         });
 
-        System.out.println("✔ Product done.");
+        logInfo("Product done.");
     }
 }

@@ -10,8 +10,8 @@ import lombok.experimental.SuperBuilder;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @SuperBuilder
-@JsonTypeName("business-exception-with-confirmation-message")
-public class KokuBusinessExceptionWithConfirmationMessageDto extends KokuBusinessException {
+@JsonTypeName("business-error-with-confirmation-message")
+public class KokuBusinessErrorWithConfirmationMessageDto extends KokuBusinessError {
 
     String headline;
     String confirmationMessage;

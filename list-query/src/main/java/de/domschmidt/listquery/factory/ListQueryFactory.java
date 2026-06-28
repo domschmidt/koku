@@ -17,10 +17,10 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ListQueryFactory<Entity> {
+public class ListQueryFactory<T> {
 
     private final EntityManager entityManager;
-    private final EntityPathBase<Entity> qClazz;
+    private final EntityPathBase<T> qClazz;
     private final Expression<?> itemIdExpression;
     private final ListQuery predicate;
 
@@ -36,7 +36,7 @@ public class ListQueryFactory<Entity> {
 
     public ListQueryFactory(
             final EntityManager entityManager,
-            final EntityPathBase<Entity> qClazz,
+            final EntityPathBase<T> qClazz,
             final Expression<?> itemIdExpression,
             final ListQuery predicate) {
         this.entityManager = entityManager;
@@ -64,119 +64,157 @@ public class ListQueryFactory<Entity> {
     }
 
     public ListPage create() {
+        final List<String> requestedSelection = getRequestedSelection();
+        final QueryParts queryParts = buildQueryParts();
+        final PageSettings pageSettings = getPageSettings();
+        final BooleanExpression queryFilterUnion =
+                buildQueryFilter(queryParts.filters(), buildGlobalFilters(requestedSelection));
+        final List<Tuple> fetchBag = fetchResults(
+                queryParts.querySelection(), queryParts.queryOrderSpecifiers(), queryFilterUnion, pageSettings);
+        final List<ListItem> results = buildResults(fetchBag, requestedSelection, pageSettings.queryPageSize());
+        return new ListPage(
+                getResponseSelection(),
+                queryParts.fieldPredicates(),
+                getGlobalSearchTerm(),
+                results,
+                fetchBag.size() > pageSettings.queryPageSize(),
+                pageSettings.page(),
+                pageSettings.queryPageSize());
+    }
+
+    private List<String> getRequestedSelection() {
+        return this.predicate != null
+                        && this.predicate.getFieldSelection() != null
+                        && !this.predicate.getFieldSelection().isEmpty()
+                ? this.predicate.getFieldSelection()
+                : this.defaultListSelection;
+    }
+
+    private List<String> getResponseSelection() {
+        return this.predicate != null && this.predicate.getFieldSelection() != null
+                ? this.predicate.getFieldSelection()
+                : this.defaultListSelection;
+    }
+
+    private String getGlobalSearchTerm() {
+        return this.predicate != null && this.predicate.getGlobalSearchTerm() != null
+                ? this.predicate.getGlobalSearchTerm()
+                : "";
+    }
+
+    private QueryParts buildQueryParts() {
         final Map<Integer, OrderSpecifier<?>> queryOrderSpecifiers = new HashMap<>();
-        BooleanExpression filters = null;
-        BooleanExpression globalFilters = null;
-
-        final List<String> requestedSelection;
-        if (this.predicate != null
-                && this.predicate.getFieldSelection() != null
-                && !this.predicate.getFieldSelection().isEmpty()) {
-            requestedSelection = this.predicate.getFieldSelection();
-        } else {
-            requestedSelection = this.defaultListSelection;
-        }
-
         final List<Expression<?>> querySelection = new ArrayList<>();
-
         final Map<String, ListFieldQuery> fieldPredicates = new HashMap<>();
+        BooleanExpression filters = null;
+
         for (final Map.Entry<String, Expression<?>> pathQueryEntry : this.expressionQuery.entrySet()) {
             final Expression<?> currentPath = pathQueryEntry.getValue();
-            querySelection.add(currentPath);
-
             final ListFieldQuery predicateValue = getPredicateValue(pathQueryEntry.getKey(), fieldPredicates);
 
-            final IListFilter iListFilter = FilterResolver.resolveFilter(currentPath.getType());
-            filters =
-                    combineFilters(filters, buildFieldFilters(iListFilter, pathQueryEntry.getValue(), predicateValue));
-            if (predicateValue != null) {
-                Integer sortRanking = predicateValue.getSortRanking();
-                if (sortRanking != null) {
-                    queryOrderSpecifiers.put(
-                            sortRanking,
-                            new OrderSpecifier(
-                                    predicateValue.getSort() == EnumQuerySort.DESC ? Order.DESC : Order.ASC,
-                                    pathQueryEntry.getValue()));
-                }
-            }
+            querySelection.add(currentPath);
+            filters = combineFilters(filters, buildFieldFilter(currentPath, predicateValue));
+            addSortOrder(queryOrderSpecifiers, currentPath, predicateValue);
         }
 
-        globalFilters = buildGlobalFilters(requestedSelection);
+        return new QueryParts(querySelection, fieldPredicates, queryOrderSpecifiers, filters);
+    }
 
-        int queryPageSize = this.predicate != null
+    private BooleanExpression buildFieldFilter(final Expression<?> path, final ListFieldQuery predicateValue) {
+        final IListFilter iListFilter = FilterResolver.resolveFilter(path.getType());
+        return buildFieldFilters(iListFilter, path, predicateValue);
+    }
+
+    private void addSortOrder(
+            final Map<Integer, OrderSpecifier<?>> queryOrderSpecifiers,
+            final Expression<?> path,
+            final ListFieldQuery predicateValue) {
+        if (predicateValue == null || predicateValue.getSortRanking() == null) {
+            return;
+        }
+
+        queryOrderSpecifiers.put(
+                predicateValue.getSortRanking(),
+                new OrderSpecifier(predicateValue.getSort() == EnumQuerySort.DESC ? Order.DESC : Order.ASC, path));
+    }
+
+    private PageSettings getPageSettings() {
+        final int queryPageSize = this.predicate != null
                         && this.predicate.getLimit() != null
                         && this.predicate.getLimit() > 0
                         && this.predicate.getLimit() <= 1000
                 ? this.predicate.getLimit()
                 : 200;
-        int page = this.predicate != null && this.predicate.getPage() != null && this.predicate.getPage() > 0
+        final int page = this.predicate != null && this.predicate.getPage() != null && this.predicate.getPage() > 0
                 ? this.predicate.getPage()
                 : 0;
-        int queryOffset = page * queryPageSize;
+        return new PageSettings(page, queryPageSize, (long) page * queryPageSize);
+    }
 
-        BooleanExpression queryFilterUnion = filters;
-        if (queryFilterUnion == null) {
-            queryFilterUnion = globalFilters;
-        } else {
-            queryFilterUnion = queryFilterUnion.and(globalFilters);
-        }
+    private BooleanExpression buildQueryFilter(final BooleanExpression filters, final BooleanExpression globalFilters) {
+        return combineFilters(combineFilters(filters, globalFilters), this.defaultFilter);
+    }
 
-        if (queryFilterUnion == null) {
-            queryFilterUnion = this.defaultFilter;
-        } else {
-            queryFilterUnion = queryFilterUnion.and(this.defaultFilter);
-        }
-
-        OrderSpecifier<?>[] orderSpecifier = queryOrderSpecifiers.keySet().stream()
-                .sorted()
-                .map(queryOrderSpecifiers::get)
-                .toArray(OrderSpecifier[]::new);
-        if (orderSpecifier.length == 0 && this.defaultOrder != null) {
-            orderSpecifier = new OrderSpecifier<?>[] {this.defaultOrder};
-        }
-
+    private List<Tuple> fetchResults(
+            final List<Expression<?>> querySelection,
+            final Map<Integer, OrderSpecifier<?>> queryOrderSpecifiers,
+            final BooleanExpression queryFilterUnion,
+            final PageSettings pageSettings) {
         JPAQuery<?> queryBase = new JPAQuery<>(this.entityManager)
-                .select(querySelection.toArray(new Expression<?>[] {}))
+                .select(querySelection.toArray(new Expression<?>[0]))
                 .from(this.qClazz)
-                .orderBy(orderSpecifier)
+                .orderBy(buildOrderSpecifiers(queryOrderSpecifiers))
                 .where(queryFilterUnion)
-                .limit(queryPageSize + 1)
-                .offset(queryOffset);
+                .limit(pageSettings.queryPageSize() + 1)
+                .offset(pageSettings.queryOffset());
 
-        for (final Object join : this.joins) {
+        for (final Path<?> join : this.joins) {
             queryBase = queryBase.leftJoin((EntityPath<?>) join);
         }
 
-        final List<Tuple> fetchBag = (List<Tuple>) queryBase.fetch();
+        return (List<Tuple>) queryBase.fetch();
+    }
+
+    private OrderSpecifier<?>[] buildOrderSpecifiers(final Map<Integer, OrderSpecifier<?>> queryOrderSpecifiers) {
+        final OrderSpecifier<?>[] orderSpecifiers = queryOrderSpecifiers.keySet().stream()
+                .sorted()
+                .map(queryOrderSpecifiers::get)
+                .toArray(OrderSpecifier[]::new);
+        if (orderSpecifiers.length == 0 && this.defaultOrder != null) {
+            return new OrderSpecifier<?>[] {this.defaultOrder};
+        }
+        return orderSpecifiers;
+    }
+
+    private List<ListItem> buildResults(
+            final List<Tuple> fetchBag, final List<String> requestedSelection, final int queryPageSize) {
         final List<ListItem> results = new ArrayList<>();
         for (int resultCount = 0; resultCount < Math.min(fetchBag.size(), queryPageSize); resultCount++) {
-            final Map<String, Object> values = new HashMap<>();
-            final Tuple currentResult = fetchBag.get(resultCount);
+            results.add(buildResultItem(fetchBag.get(resultCount), requestedSelection));
+        }
+        return results;
+    }
 
-            for (final String currentSelection : requestedSelection) {
-                final Expression<?> expressionQuery = this.expressionQuery.get(currentSelection);
-                if (expressionQuery != null) {
-                    values.put(currentSelection, currentResult.get(expressionQuery));
-                }
+    private ListItem buildResultItem(final Tuple currentResult, final List<String> requestedSelection) {
+        final Map<String, Object> values = new HashMap<>();
+        for (final String currentSelection : requestedSelection) {
+            final Expression<?> selectedExpression = this.expressionQuery.get(currentSelection);
+            if (selectedExpression != null) {
+                values.put(currentSelection, currentResult.get(selectedExpression));
             }
-
-            Object itemId = currentResult.get(this.itemIdExpression);
-            results.add(new ListItem(itemId != null ? itemId.toString() : null, values));
         }
 
-        return new ListPage(
-                this.predicate != null && this.predicate.getFieldSelection() != null
-                        ? this.predicate.getFieldSelection()
-                        : this.defaultListSelection,
-                fieldPredicates,
-                this.predicate != null && this.predicate.getGlobalSearchTerm() != null
-                        ? this.predicate.getGlobalSearchTerm()
-                        : "",
-                results,
-                fetchBag.size() > queryPageSize,
-                page,
-                queryPageSize);
+        final Object itemId = currentResult.get(this.itemIdExpression);
+        return new ListItem(itemId != null ? itemId.toString() : null, values);
     }
+
+    private record QueryParts(
+            List<Expression<?>> querySelection,
+            Map<String, ListFieldQuery> fieldPredicates,
+            Map<Integer, OrderSpecifier<?>> queryOrderSpecifiers,
+            BooleanExpression filters) {}
+
+    private record PageSettings(int page, int queryPageSize, long queryOffset) {}
 
     private ListFieldQuery getPredicateValue(final String alias, final Map<String, ListFieldQuery> fieldPredicates) {
         if (this.predicate != null
@@ -242,23 +280,30 @@ public class ListQueryFactory<Entity> {
         BooleanExpression globalFilters = null;
         for (final String currentSearchTerm :
                 this.predicate.getGlobalSearchTerm().split(" ")) {
-            BooleanExpression currentSearchTermGlobalFilter = null;
-            for (final String currentSelection : requestedSelection) {
-                final Expression<?> pathQuery = this.expressionQuery.get(currentSelection);
-                if (pathQuery != null) {
-                    final IListFilter iListFilter = FilterResolver.resolveFilter(pathQuery.getType());
-                    if (iListFilter != null) {
-                        final BooleanExpression globalFilter =
-                                iListFilter.buildGlobalSearchExpression(pathQuery, currentSearchTerm);
-                        if (globalFilter != null) {
-                            currentSearchTermGlobalFilter = combineFilters(currentSearchTermGlobalFilter, globalFilter);
-                        }
-                    }
-                }
-            }
-            globalFilters = combineFilters(globalFilters, currentSearchTermGlobalFilter);
+            globalFilters = combineFilters(
+                    globalFilters, buildGlobalFilterForSearchTerm(currentSearchTerm, requestedSelection));
         }
         return globalFilters;
+    }
+
+    private BooleanExpression buildGlobalFilterForSearchTerm(
+            final String currentSearchTerm, final List<String> requestedSelection) {
+        BooleanExpression currentSearchTermGlobalFilter = null;
+        for (final String currentSelection : requestedSelection) {
+            currentSearchTermGlobalFilter = combineFilters(
+                    currentSearchTermGlobalFilter, buildGlobalFilter(currentSearchTerm, currentSelection));
+        }
+        return currentSearchTermGlobalFilter;
+    }
+
+    private BooleanExpression buildGlobalFilter(final String currentSearchTerm, final String currentSelection) {
+        final Expression<?> pathQuery = this.expressionQuery.get(currentSelection);
+        if (pathQuery == null) {
+            return null;
+        }
+
+        final IListFilter iListFilter = FilterResolver.resolveFilter(pathQuery.getType());
+        return iListFilter != null ? iListFilter.buildGlobalSearchExpression(pathQuery, currentSearchTerm) : null;
     }
 
     private BooleanExpression combineFilters(final BooleanExpression existing, final BooleanExpression next) {

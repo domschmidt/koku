@@ -6,12 +6,14 @@ import de.domschmidt.dashboard.dto.content.containers.AbstractDashboardContainer
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("grid")
 @Getter
+@EqualsAndHashCode(callSuper = true)
 public class DashboardGridContainerDto extends AbstractDashboardContainer {
 
     Integer sm;

@@ -4,9 +4,9 @@ import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
+import de.domschmidt.koku.business_exception.dto.KokuBusinessErrorWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
-import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.document.persistence.Document;
 import de.domschmidt.koku.document.persistence.DocumentRepository;
@@ -85,6 +85,14 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 @RequiredArgsConstructor
 public class DocumentController {
+    private static final String NAME_PARAM = ":name";
+    private static final String DOCUMENT_ID_PARAM = ":documentId";
+    private static final String DOCUMENT_CREATED_EVENT = "document-created";
+    private static final String DOCUMENT_UPDATED_EVENT = "document-updated";
+    private static final String NEW_DOCUMENT_LABEL = "Neues Dokument";
+    private static final String DOCUMENT_FORM_URL = "services/documents/documents/form";
+    private static final String DUPLICATE_DOCUMENT_ROUTE = "duplicate/" + DOCUMENT_ID_PARAM;
+    private static final String DOCUMENT_ID_URL = "services/documents/documents/" + DOCUMENT_ID_PARAM;
 
     private final DocumentRepository documentRepository;
     private final DocumentToDocumentDtoTransformer transformer;
@@ -144,29 +152,29 @@ public class DocumentController {
                         .submitPayload(KokuDocumentDto.builder().deleted(true).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
                                 .headline("Dokumentvorlage löschen")
-                                .content("Dokumentvorlage :name als gelöscht markieren?")
+                                .content("Dokumentvorlage " + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .sourcePath(KokuDocumentDto.Fields.name)
                                         .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Dokumentvorlage :name erfolgreich als gelöscht markiert")
+                                        .text("Dokumentvorlage " + NAME_PARAM + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .sourcePath(KokuDocumentDto.Fields.name)
                                                 .build()))
                                         .build(),
                                 FormPropagateGlobalEventDto.builder()
-                                        .eventName("document-updated")
+                                        .eventName(DOCUMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Dokumentvorlage :name konnte nicht als gelöscht markiert werden")
+                                .text("Dokumentvorlage " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .sourcePath(KokuDocumentDto.Fields.name)
                                         .build()))
                                 .build()))
@@ -192,29 +200,29 @@ public class DocumentController {
                         .submitPayload(KokuDocumentDto.builder().deleted(false).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
                                 .headline("Dokumentvorlage wiederherstellen")
-                                .content("Dokumentvorlage :name wiederherstellen?")
+                                .content("Dokumentvorlage " + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .sourcePath(KokuDocumentDto.Fields.name)
                                         .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Dokumentvorlage :name wurde erfolgreich wiederhergestellt")
+                                        .text("Dokumentvorlage " + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .sourcePath(KokuDocumentDto.Fields.name)
                                                 .build()))
                                         .build(),
                                 FormPropagateGlobalEventDto.builder()
-                                        .eventName("document-updated")
+                                        .eventName(DOCUMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Dokumentvorlage :name konnte nicht wiederhergestellt werden")
+                                .text("Dokumentvorlage " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .sourcePath(KokuDocumentDto.Fields.name)
                                         .build()))
                                 .build()))
@@ -223,7 +231,7 @@ public class DocumentController {
                 .outlet(FormOutlet.CONTENT);
 
         formFactory.addGlobalEventListener(FormViewEventPayloadSourceUpdateGlobalEventListenerDto.builder()
-                .eventName("document-updated")
+                .eventName(DOCUMENT_UPDATED_EVENT)
                 .idPath(KokuDocumentDto.Fields.id)
                 .build());
 
@@ -264,27 +272,27 @@ public class DocumentController {
                 .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
                 .route("new")
-                .text("Neues Dokument")
+                .text(NEW_DOCUMENT_LABEL)
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
                 .route("new")
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .title("Neues Dokument")
+                        .title(NEW_DOCUMENT_LABEL)
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/documents/documents/form")
+                                .formularUrl(DOCUMENT_FORM_URL)
                                 .submitUrl("services/documents/documents")
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
                                 .maxWidthInPx(9999)
                                 .onSaveEvents(Arrays.asList(
                                         ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                .eventName("document-created")
+                                                .eventName(DOCUMENT_CREATED_EVENT)
                                                 .build(),
                                         ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                .route(":documentId")
+                                                .route(DOCUMENT_ID_PARAM)
                                                 .params(Arrays.asList(
                                                         ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
                                                                 .builder()
-                                                                .param(":documentId")
+                                                                .param(DOCUMENT_ID_PARAM)
                                                                 .valuePath(KokuDocumentDto.Fields.id)
                                                                 .build()))
                                                 .build()))
@@ -293,37 +301,37 @@ public class DocumentController {
                 .build());
 
         listViewFactory.addItemAction(ListViewItemActionOpenRoutedContentActionDto.builder()
-                .route("duplicate/:documentId")
+                .route(DUPLICATE_DOCUMENT_ROUTE)
                 .params(Arrays.asList(ListViewItemActionOpenRoutedContentActionItemValueParamDto.builder()
-                        .param(":documentId")
+                        .param(DOCUMENT_ID_PARAM)
                         .valueReference(idSourcePathFieldRef)
                         .build()))
                 .icon("DUPLICATE")
                 .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
-                .route("duplicate/:documentId")
-                .text("Neues Dokument")
+                .route(DUPLICATE_DOCUMENT_ROUTE)
+                .text(NEW_DOCUMENT_LABEL)
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
-                .route("duplicate/:documentId")
+                .route(DUPLICATE_DOCUMENT_ROUTE)
                 .inlineContent(ListViewHeaderContentDto.builder()
                         .title("Dupliziere Dokument")
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/documents/documents/form")
-                                .sourceUrl("services/documents/documents/:documentId")
+                                .formularUrl(DOCUMENT_FORM_URL)
+                                .sourceUrl(DOCUMENT_ID_URL)
                                 .submitUrl("services/documents/documents")
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
                                 .maxWidthInPx(9999)
                                 .onSaveEvents(Arrays.asList(
                                         ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                .eventName("document-created")
+                                                .eventName(DOCUMENT_CREATED_EVENT)
                                                 .build(),
                                         ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                .route(":documentId")
+                                                .route(DOCUMENT_ID_PARAM)
                                                 .params(Arrays.asList(
                                                         ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
                                                                 .builder()
-                                                                .param(":documentId")
+                                                                .param(DOCUMENT_ID_PARAM)
                                                                 .valuePath(KokuDocumentDto.Fields.id)
                                                                 .build()))
                                                 .build()))
@@ -332,33 +340,33 @@ public class DocumentController {
                 .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
-                .route(":documentId")
+                .route(DOCUMENT_ID_PARAM)
                 .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
-                        .param(":documentId")
+                        .param(DOCUMENT_ID_PARAM)
                         .valueReference(idSourcePathFieldRef)
                         .build()))
                 .build());
 
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
-                .route(":documentId")
-                .itemId(":documentId")
+                .route(DOCUMENT_ID_PARAM)
+                .itemId(DOCUMENT_ID_PARAM)
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .sourceUrl("services/documents/documents/:documentId")
+                        .sourceUrl(DOCUMENT_ID_URL)
                         .titlePath(KokuDocumentDto.Fields.name)
                         .globalEventListeners(
                                 Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
-                                        .eventName("document-updated")
+                                        .eventName(DOCUMENT_UPDATED_EVENT)
                                         .idPath(KokuDocumentDto.Fields.id)
                                         .titleValuePath(KokuDocumentDto.Fields.name)
                                         .build()))
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/documents/documents/form")
-                                .sourceUrl("services/documents/documents/:documentId")
+                                .formularUrl(DOCUMENT_FORM_URL)
+                                .sourceUrl(DOCUMENT_ID_URL)
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
                                 .maxWidthInPx(9999)
                                 .onSaveEvents(Arrays.asList(
                                         ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                .eventName("document-updated")
+                                                .eventName(DOCUMENT_UPDATED_EVENT)
                                                 .build()))
                                 .build())
                         .build())
@@ -376,26 +384,26 @@ public class DocumentController {
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                        .url("services/documents/documents/:documentId/restore")
+                        .url(DOCUMENT_ID_URL + "/restore")
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
-                                .param(":documentId")
+                                .param(DOCUMENT_ID_PARAM)
                                 .valueReference(idSourcePathFieldRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Kunde wiederherstellen")
-                                .content(":name wiederherstellen?")
+                                .content(NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .valueReference(nameFieldRef)
                                         .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text(":name wurde erfolgreich wiederhergestellt")
+                                        .text(NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .valueReference(nameFieldRef)
                                                 .build()))
                                         .build(),
@@ -404,36 +412,36 @@ public class DocumentController {
                                         .valueMapping(Map.of(KokuDocumentDto.Fields.deleted, deletedSourceRef))
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text(":name konnte nicht wiederhergestellt werden")
+                                .text(NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .valueReference(nameFieldRef)
                                         .build()))
                                 .build()))
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
-                        .url("services/documents/documents/:documentId")
+                        .url(DOCUMENT_ID_URL)
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
-                                .param(":documentId")
+                                .param(DOCUMENT_ID_PARAM)
                                 .valueReference(idSourcePathFieldRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Dokument löschen")
-                                .content(":name als gelöscht markieren?")
+                                .content(NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .valueReference(nameFieldRef)
                                         .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text(":name erfolgreich als gelöscht markiert")
+                                        .text(NAME_PARAM + " erfolgreich als gelöscht markiert")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .valueReference(nameFieldRef)
                                                 .build()))
                                         .build(),
@@ -442,10 +450,10 @@ public class DocumentController {
                                         .valueMapping(Map.of(KokuDocumentDto.Fields.deleted, deletedSourceRef))
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text(":name konnte nicht als gelöscht markiert werden")
+                                .text(NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .valueReference(nameFieldRef)
                                         .build()))
                                 .build()))
@@ -453,14 +461,14 @@ public class DocumentController {
                 .build());
 
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
-                .eventName("document-created")
+                .eventName(DOCUMENT_CREATED_EVENT)
                 .idPath(KokuDocumentDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuDocumentDto.Fields.name, nameFieldRef,
                         KokuDocumentDto.Fields.deleted, deletedSourceRef))
                 .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadItemUpdateGlobalEventListenerDto.builder()
-                .eventName("document-updated")
+                .eventName(DOCUMENT_UPDATED_EVENT)
                 .idPath(KokuDocumentDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuDocumentDto.Fields.name, nameFieldRef,
@@ -477,7 +485,7 @@ public class DocumentController {
         final ListViewFactory listViewFactory =
                 new ListViewFactory(new DefaultListViewContentIdGenerator(), KokuDocumentDto.Fields.id);
 
-        final ListViewFieldReference nameFieldRef = listViewFactory.addField(
+        listViewFactory.addField(
                 KokuDocumentDto.Fields.name,
                 ListViewInputFieldDto.builder().label("Name").build());
         final ListViewSourcePathReference idSourcePathFieldRef =
@@ -499,20 +507,20 @@ public class DocumentController {
                         .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
-                .route(":documentId")
+                .route(DOCUMENT_ID_PARAM)
                 .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
-                        .param(":documentId")
+                        .param(DOCUMENT_ID_PARAM)
                         .valueReference(idSourcePathFieldRef)
                         .build()))
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
-                .route(":documentId")
-                .itemId(":documentId")
+                .route(DOCUMENT_ID_PARAM)
+                .itemId(DOCUMENT_ID_PARAM)
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .sourceUrl("services/documents/documents/:documentId")
+                        .sourceUrl(DOCUMENT_ID_URL)
                         .titlePath(KokuDocumentDto.Fields.name)
                         .content(ListViewDocumentFormContentDto.builder()
-                                .documentUrl("services/documents/documents/:documentId")
+                                .documentUrl(DOCUMENT_ID_URL)
                                 .submitUrl(submitUrl)
                                 .onSubmitEvents(Arrays.asList(
                                         ListViewDocumentFormContentAfterSavePropagateGlobalEventDto.builder()
@@ -558,28 +566,27 @@ public class DocumentController {
             @RequestBody KokuDocumentDto updatedDto) {
         final Document document = this.entityManager.getReference(Document.class, id);
         if (!Boolean.TRUE.equals(forceUpdate) && !document.getVersion().equals(updatedDto.getVersion())) {
-            throw new KokuBusinessExceptionWithConfirmationMessage(
-                    KokuBusinessExceptionWithConfirmationMessageDto.builder()
-                            .headline("Konflikt")
-                            .confirmationMessage("Das Dokument wurde zwischenzeitlich bearbeitet.\n"
-                                    + "Willst Du die Speicherung dennoch vornehmen?")
-                            .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .icon("CLOSE")
-                                    .build())
-                            .closeOnClickOutside(true)
-                            .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
-                                    .text("Trotzdem speichern")
-                                    .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format(
-                                            "services/documents/documents/%s?forceUpdate=%s", id, Boolean.TRUE))
-                                    .build())
-                            .button(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .build())
-                            .build());
+            throw new KokuBusinessExceptionWithConfirmationMessage(KokuBusinessErrorWithConfirmationMessageDto.builder()
+                    .headline("Konflikt")
+                    .confirmationMessage("Das Dokument wurde zwischenzeitlich bearbeitet.\n"
+                            + "Willst Du die Speicherung dennoch vornehmen?")
+                    .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .icon("CLOSE")
+                            .build())
+                    .closeOnClickOutside(true)
+                    .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
+                            .text("Trotzdem speichern")
+                            .title("Zwischenzeitliche Änderungen überschreiben")
+                            .endpointUrl(
+                                    String.format("services/documents/documents/%s?forceUpdate=%s", id, Boolean.TRUE))
+                            .build())
+                    .button(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .build())
+                    .build());
         }
         this.transformer.transformToEntity(document, updatedDto);
         this.entityManager.flush();

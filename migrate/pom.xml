@@ -42,7 +42,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>MigrateRunner</mainClass>
+                            <mainClass>exec.MigrateRunner</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

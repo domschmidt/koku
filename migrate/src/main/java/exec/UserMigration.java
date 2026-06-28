@@ -14,8 +14,8 @@ public class UserMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating User...");
+    public void migrate() {
+        logInfo("Migrating User...");
 
         read("""
                      SELECT usr.id, usr.recorded, usr.updated, usr.deleted, usr.username, details.avatar_base64, details.firstname, details.lastname
@@ -60,13 +60,13 @@ public class UserMigration extends BaseMigration {
                                     .trim(),
                             avatarResult);
                 } else {
-                    System.err.printf("%s is not available in user mapping", originUserId);
+                    logWarning(originUserId + " is not available in user mapping");
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
 
-        System.out.println("✔ User done.");
+        logInfo("User done.");
     }
 }

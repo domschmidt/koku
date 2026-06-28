@@ -5,8 +5,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,31 +34,42 @@ public class DavBodyLoggingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        final ContentCachingRequestWrapper wrappedRequest =
-                new ContentCachingRequestWrapper(request, MAX_LOGGED_BODY_LENGTH);
+        final OverflowAwareContentCachingRequestWrapper wrappedRequest =
+                new OverflowAwareContentCachingRequestWrapper(request);
         try {
             filterChain.doFilter(wrappedRequest, response);
         } finally {
-            final String requestBody = readBody(wrappedRequest);
+            final BodySummary requestBody = readBodySummary(wrappedRequest);
             LOG.info(
-                    "DAV request method={} uri={} status={} body={}",
-                    request.getMethod(),
-                    request.getRequestURI(),
+                    "DAV request completed status={} bodyLength={} bodyTruncated={}",
                     response.getStatus(),
-                    requestBody);
+                    requestBody.length(),
+                    requestBody.truncated());
         }
     }
 
-    private String readBody(ContentCachingRequestWrapper request) {
+    private BodySummary readBodySummary(OverflowAwareContentCachingRequestWrapper request) {
         final byte[] content = request.getContentAsByteArray();
-        if (content.length == 0) {
-            return "";
+        return new BodySummary(content.length, request.isOverflow());
+    }
+
+    private record BodySummary(int length, boolean truncated) {}
+
+    private static final class OverflowAwareContentCachingRequestWrapper extends ContentCachingRequestWrapper {
+
+        private boolean overflow;
+
+        private OverflowAwareContentCachingRequestWrapper(final HttpServletRequest request) {
+            super(request, MAX_LOGGED_BODY_LENGTH);
         }
-        final Charset charset = request.getCharacterEncoding() == null
-                ? StandardCharsets.UTF_8
-                : Charset.forName(request.getCharacterEncoding());
-        final int length = Math.min(content.length, MAX_LOGGED_BODY_LENGTH);
-        final String body = new String(content, 0, length, charset);
-        return content.length > MAX_LOGGED_BODY_LENGTH ? body + "...[truncated]" : body;
+
+        @Override
+        protected void handleContentOverflow(final int contentCacheLimit) {
+            this.overflow = true;
+        }
+
+        private boolean isOverflow() {
+            return this.overflow;
+        }
     }
 }

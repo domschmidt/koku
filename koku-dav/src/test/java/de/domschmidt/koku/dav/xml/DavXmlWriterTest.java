@@ -31,12 +31,14 @@ class DavXmlWriterTest {
 
         final String xml = writer.write(multistatus);
 
-        assertThat(xml).contains("<d:multistatus");
-        assertThat(xml).contains("<d:href>/services/carddav/addressbook/koku/</d:href>");
-        assertThat(xml).contains("<d:displayname>KoKu Address Book</d:displayname>");
-        assertThat(xml).contains("<d:status>HTTP/1.1 200 OK</d:status>");
-        assertThat(xml).contains("<d:unsupported/>");
-        assertThat(xml).contains("<d:status>HTTP/1.1 404 Not Found</d:status>");
+        assertThat(xml)
+                .contains(
+                        "<d:multistatus",
+                        "<d:href>/services/carddav/addressbook/koku/</d:href>",
+                        "<d:displayname>KoKu Address Book</d:displayname>",
+                        "<d:status>HTTP/1.1 200 OK</d:status>",
+                        "<d:unsupported/>",
+                        "<d:status>HTTP/1.1 404 Not Found</d:status>");
     }
 
     @Test

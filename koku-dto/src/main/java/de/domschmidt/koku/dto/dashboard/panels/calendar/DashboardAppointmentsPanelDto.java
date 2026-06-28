@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.dashboard.dto.content.panels.AbstractDashboardPanel;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("appointments")
 @Getter
+@EqualsAndHashCode(callSuper = true)
 public class DashboardAppointmentsPanelDto extends AbstractDashboardPanel {
 
     String headline;

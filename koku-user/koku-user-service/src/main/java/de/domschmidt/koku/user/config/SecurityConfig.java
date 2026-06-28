@@ -14,12 +14,12 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf((csrf) -> csrf.disable())
-                .sessionManagement((sessionMgmt) -> sessionMgmt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(
+    public SecurityFilterChain filterChain(HttpSecurity http) {
+        http.csrf(csrf -> csrf.disable())
+                .sessionManagement(sessionMgmt -> sessionMgmt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(
                         (req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
-                .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
+                .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers("/error", "/actuator/health")
                         .permitAll()
                         .anyRequest()
@@ -27,6 +27,14 @@ public class SecurityConfig {
                 .oauth2ResourceServer(httpSecurityOAuth2ResourceServerConfigurer ->
                         httpSecurityOAuth2ResourceServerConfigurer.jwt(jwtConfigurer ->
                                 jwtConfigurer.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter())));
-        return http.build();
+        return buildSecurityFilterChain(http);
+    }
+
+    private static SecurityFilterChain buildSecurityFilterChain(final HttpSecurity http) {
+        try {
+            return http.build();
+        } catch (final Exception exception) {
+            throw new IllegalStateException("Unable to build security filter chain", exception);
+        }
     }
 }

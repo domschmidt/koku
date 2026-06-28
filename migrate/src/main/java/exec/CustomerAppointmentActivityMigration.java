@@ -15,8 +15,8 @@ public class CustomerAppointmentActivityMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating CustomerAppointmentActivity...");
+    public void migrate() {
+        logInfo("Migrating CustomerAppointmentActivity...");
 
         Map<String, Long> activityExternalRefMapping = new HashMap<>();
         read(
@@ -37,7 +37,7 @@ public class CustomerAppointmentActivityMigration extends BaseMigration {
                     try {
                         String activityIdRaw = rs.getString("activity_id");
                         if (!activityExternalRefMapping.containsKey(activityIdRaw)) {
-                            System.out.printf("Missing activity_id %s%n", activityIdRaw);
+                            logWarning("Missing activity_id " + activityIdRaw);
                         }
                         exec(
                                 """
@@ -66,6 +66,6 @@ public class CustomerAppointmentActivityMigration extends BaseMigration {
                     }
                 });
 
-        System.out.println("✔ CustomerAppointmentActivity done.");
+        logInfo("CustomerAppointmentActivity done.");
     }
 }

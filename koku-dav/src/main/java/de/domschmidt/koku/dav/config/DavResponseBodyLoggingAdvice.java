@@ -33,7 +33,7 @@ public class DavResponseBodyLoggingAdvice implements ResponseBodyAdvice<Object> 
             Class<? extends HttpMessageConverter<?>> selectedConverterType,
             ServerHttpRequest request,
             ServerHttpResponse response) {
-        if (request instanceof ServletServerHttpRequest servletRequest) {
+        if (LOG.isInfoEnabled() && request instanceof ServletServerHttpRequest servletRequest) {
             final HttpServletRequest httpRequest = servletRequest.getServletRequest();
             LOG.info(
                     "DAV response method={} uri={} body={}",

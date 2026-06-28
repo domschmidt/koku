@@ -49,24 +49,6 @@ public class FormViewFactory {
         return new PlacementParentStep(childId);
     }
 
-    private void setPlacement(final String parentId, final String outlet, final String childId) {
-        if (!this.contentById.containsKey(parentId)) {
-            throw new IllegalArgumentException("Placement parent not found: " + parentId);
-        }
-        if (!this.contentById.containsKey(childId)) {
-            throw new IllegalArgumentException("Placement child not found: " + childId);
-        }
-        if (parentId.equals(childId)) {
-            throw new IllegalArgumentException("Content cannot be placed into itself: " + childId);
-        }
-        this.placements.removeIf(placement -> childId.equals(placement.getChildId()));
-        this.placements.add(FormPlacementDto.builder()
-                .parentId(parentId)
-                .outlet(outlet)
-                .childId(childId)
-                .build());
-    }
-
     public class PlacementParentStep {
         private final String childId;
 
@@ -93,7 +75,25 @@ public class FormViewFactory {
         }
 
         public void outlet(final String outlet) {
-            setPlacement(this.parentId, outlet, this.childId);
+            setPlacement(outlet);
+        }
+
+        private void setPlacement(final String outlet) {
+            if (!contentById.containsKey(this.parentId)) {
+                throw new IllegalArgumentException("Placement parent not found: " + this.parentId);
+            }
+            if (!contentById.containsKey(this.childId)) {
+                throw new IllegalArgumentException("Placement child not found: " + this.childId);
+            }
+            if (this.parentId.equals(this.childId)) {
+                throw new IllegalArgumentException("Content cannot be placed into itself: " + this.childId);
+            }
+            placements.removeIf(placement -> this.childId.equals(placement.getChildId()));
+            placements.add(FormPlacementDto.builder()
+                    .parentId(this.parentId)
+                    .outlet(outlet)
+                    .childId(this.childId)
+                    .build());
         }
     }
 
@@ -151,39 +151,69 @@ public class FormViewFactory {
         final Map<String, String> parentByChildId = new HashMap<>();
 
         for (final FormPlacementDto placement : this.placements) {
-            final String parentId = placement.getParentId();
-            final String childId = placement.getChildId();
-            final String outlet = placement.getOutlet();
-            if (parentId == null || parentId.isEmpty()) {
-                throw new IllegalStateException("Placement parentId must be specified");
-            }
-            if (outlet == null || outlet.isEmpty()) {
-                throw new IllegalStateException("Placement outlet must be specified for parent: " + parentId);
-            }
-            if (childId == null || childId.isEmpty()) {
-                throw new IllegalStateException("Placement childId must be specified for parent: " + parentId);
-            }
-            if (!this.contentById.containsKey(parentId)) {
-                throw new IllegalStateException("Placement parent not found: " + parentId);
-            }
-            if (!this.contentById.containsKey(childId)) {
-                throw new IllegalStateException("Placement child not found: " + childId);
-            }
-            if (parentId.equals(childId)) {
-                throw new IllegalStateException("Content cannot be placed into itself: " + childId);
-            }
-            final String previousParent = parentByChildId.putIfAbsent(childId, parentId);
-            if (previousParent != null) {
-                throw new IllegalStateException("Content is placed multiple times: " + childId);
-            }
+            registerPlacement(parentByChildId, validatePlacement(placement));
         }
 
+        validateAllContentPlaced(rootId, parentByChildId);
+        assertAcyclic(rootId, parentByChildId);
+    }
+
+    private PlacementIds validatePlacement(final FormPlacementDto placement) {
+        final String parentId = requirePlacementParentId(placement);
+        requirePlacementOutlet(placement, parentId);
+        final String childId = requirePlacementChildId(placement, parentId);
+        validatePlacementContent(parentId, childId);
+        return new PlacementIds(parentId, childId);
+    }
+
+    private String requirePlacementParentId(final FormPlacementDto placement) {
+        final String parentId = placement.getParentId();
+        if (parentId == null || parentId.isEmpty()) {
+            throw new IllegalStateException("Placement parentId must be specified");
+        }
+        return parentId;
+    }
+
+    private void requirePlacementOutlet(final FormPlacementDto placement, final String parentId) {
+        final String outlet = placement.getOutlet();
+        if (outlet == null || outlet.isEmpty()) {
+            throw new IllegalStateException("Placement outlet must be specified for parent: " + parentId);
+        }
+    }
+
+    private String requirePlacementChildId(final FormPlacementDto placement, final String parentId) {
+        final String childId = placement.getChildId();
+        if (childId == null || childId.isEmpty()) {
+            throw new IllegalStateException("Placement childId must be specified for parent: " + parentId);
+        }
+        return childId;
+    }
+
+    private void validatePlacementContent(final String parentId, final String childId) {
+        if (!this.contentById.containsKey(parentId)) {
+            throw new IllegalStateException("Placement parent not found: " + parentId);
+        }
+        if (!this.contentById.containsKey(childId)) {
+            throw new IllegalStateException("Placement child not found: " + childId);
+        }
+        if (parentId.equals(childId)) {
+            throw new IllegalStateException("Content cannot be placed into itself: " + childId);
+        }
+    }
+
+    private void registerPlacement(final Map<String, String> parentByChildId, final PlacementIds placement) {
+        final String previousParent = parentByChildId.putIfAbsent(placement.childId(), placement.parentId());
+        if (previousParent != null) {
+            throw new IllegalStateException("Content is placed multiple times: " + placement.childId());
+        }
+    }
+
+    private void validateAllContentPlaced(final String rootId, final Map<String, String> parentByChildId) {
         for (final String contentId : this.contentById.keySet()) {
             if (!contentId.equals(rootId) && !parentByChildId.containsKey(contentId)) {
                 throw new IllegalStateException("Content is registered but not placed: " + contentId);
             }
         }
-        assertAcyclic(rootId, parentByChildId);
     }
 
     private void assertAcyclic(final String rootId, final Map<String, String> parentByChildId) {
@@ -201,4 +231,6 @@ public class FormViewFactory {
             }
         }
     }
+
+    private record PlacementIds(String parentId, String childId) {}
 }

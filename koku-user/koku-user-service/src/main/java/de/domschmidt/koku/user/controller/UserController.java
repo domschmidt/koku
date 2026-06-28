@@ -6,9 +6,9 @@ import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
+import de.domschmidt.koku.business_exception.dto.KokuBusinessErrorWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
-import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
@@ -98,6 +98,8 @@ public class UserController {
     private static final String USER_UPDATED_EVENT = "user-updated";
     private static final String USER_ID_PARAM = ":userId";
     private static final String NAME_PARAM = ":name";
+    private static final String USER_LABEL = "Nutzer ";
+    private static final String USER_SERVICE_URL = "services/users/users/";
     private final EntityManager entityManager;
     private final UserRepository userRepository;
     private final UserToKokuUserDtoTransformer transformer;
@@ -132,19 +134,17 @@ public class UserController {
                         .label("Region")
                         .possibleValues(new JPAQuery<>(this.entityManager, JPQLTemplates.DEFAULT)
                                 .select(QUserRegion.userRegion).from(QUserRegion.userRegion).fetch().stream()
-                                        .map(userRegion -> {
-                                            return SelectFormularFieldPossibleValue.builder()
-                                                    .id(userRegion.getId() + "")
-                                                    .text(
-                                                            userRegion.getStateIso() != null
-                                                                    ? userRegion.getStateName()
-                                                                    : userRegion.getCountryName())
-                                                    .category(
-                                                            userRegion.getStateIso() != null
-                                                                    ? userRegion.getCountryName()
-                                                                    : null)
-                                                    .build();
-                                        })
+                                        .map(userRegion -> SelectFormularFieldPossibleValue.builder()
+                                                .id(userRegion.getId() + "")
+                                                .text(
+                                                        userRegion.getStateIso() != null
+                                                                ? userRegion.getStateName()
+                                                                : userRegion.getCountryName())
+                                                .category(
+                                                        userRegion.getStateIso() != null
+                                                                ? userRegion.getCountryName()
+                                                                : null)
+                                                .build())
                                         .toList())
                         .build()))
                 .in(rootId)
@@ -182,8 +182,8 @@ public class UserController {
                                 .build())
                         .submitPayload(KokuUserDto.builder().deleted(true).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Nutzer löschen")
-                                .content("Nutzer " + NAME_PARAM + " als gelöscht markieren?")
+                                .headline(USER_LABEL + "löschen")
+                                .content(USER_LABEL + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuUserDto.Fields.fullname)
@@ -191,7 +191,7 @@ public class UserController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Nutzer " + NAME_PARAM + " erfolgreich als gelöscht markiert")
+                                        .text(USER_LABEL + NAME_PARAM + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -202,7 +202,7 @@ public class UserController {
                                         .eventName(USER_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Nutzer " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(USER_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -230,8 +230,8 @@ public class UserController {
                                 .build())
                         .submitPayload(KokuUserDto.builder().deleted(false).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Nutzer wiederherstellen")
-                                .content("Nutzer " + NAME_PARAM + " wiederherstellen?")
+                                .headline(USER_LABEL + "wiederherstellen")
+                                .content(USER_LABEL + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuUserDto.Fields.fullname)
@@ -239,7 +239,7 @@ public class UserController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Nutzer " + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
+                                        .text(USER_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -250,7 +250,7 @@ public class UserController {
                                         .eventName(USER_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Nutzer " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(USER_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -317,7 +317,7 @@ public class UserController {
                     .route(USER_ID_PARAM)
                     .itemId(USER_ID_PARAM)
                     .inlineContent(ListViewHeaderContentDto.builder()
-                            .sourceUrl("services/users/users/" + USER_ID_PARAM + "/summary")
+                            .sourceUrl(USER_SERVICE_URL + USER_ID_PARAM + "/summary")
                             .titlePath(KokuUserSummaryDto.Fields.summary)
                             .globalEventListeners(Arrays.asList(
                                     ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
@@ -333,8 +333,8 @@ public class UserController {
                                                     .icon("INFORMATION_CIRCLE")
                                                     .title("Bearbeiten")
                                                     .content(ListViewFormularContentDto.builder()
-                                                            .formularUrl("services/users/users/form")
-                                                            .sourceUrl("services/users/users/" + USER_ID_PARAM)
+                                                            .formularUrl(USER_SERVICE_URL + "form")
+                                                            .sourceUrl(USER_SERVICE_URL + USER_ID_PARAM)
                                                             .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
                                                             .maxWidthInPx(600)
                                                             .onSaveEvents(Arrays.asList(
@@ -350,8 +350,8 @@ public class UserController {
                                                     .icon("CALENDAR")
                                                     .title("Private Termine")
                                                     .content(ListViewListContentDto.builder()
-                                                            .listUrl("services/users/users/appointments/list")
-                                                            .sourceUrl("services/users/users/" + USER_ID_PARAM
+                                                            .listUrl(USER_SERVICE_URL + "appointments/list")
+                                                            .sourceUrl(USER_SERVICE_URL + USER_ID_PARAM
                                                                     + "/appointments/query")
                                                             .build())
                                                     .build()))
@@ -371,15 +371,15 @@ public class UserController {
                     .expectedValue(Boolean.TRUE)
                     .positiveAction(ListViewCallHttpListItemActionDto.builder()
                             .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                            .url("services/users/users/" + USER_ID_PARAM + "/restore")
+                            .url(USER_SERVICE_URL + USER_ID_PARAM + "/restore")
                             .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                     .param(USER_ID_PARAM)
                                     .valueReference(idSourcePathRef)
                                     .build()))
                             .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                             .userConfirmation(ListViewUserConfirmationDto.builder()
-                                    .headline("Nutzer wiederherstellen")
-                                    .content("Nutzer " + NAME_PARAM + " wiederherstellen?")
+                                    .headline(USER_LABEL + "wiederherstellen")
+                                    .content(USER_LABEL + NAME_PARAM + " wiederherstellen?")
                                     .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                             .param(NAME_PARAM)
                                             .valueReference(fullnameFieldRef)
@@ -387,7 +387,7 @@ public class UserController {
                                     .build())
                             .successEvents(Arrays.asList(
                                     ListViewNotificationEvent.builder()
-                                            .text("Nutzer " + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
+                                            .text(USER_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                             .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                             .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                     .param(NAME_PARAM)
@@ -399,7 +399,7 @@ public class UserController {
                                             .valueMapping(Map.of(KokuUserDto.Fields.deleted, deletedSourcePathRef))
                                             .build()))
                             .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                    .text("Nutzer " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
+                                    .text(USER_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                     .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                     .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                             .param(NAME_PARAM)
@@ -409,15 +409,15 @@ public class UserController {
                             .build())
                     .negativeAction(ListViewCallHttpListItemActionDto.builder()
                             .icon("TRASH")
-                            .url("services/users/users/" + USER_ID_PARAM)
+                            .url(USER_SERVICE_URL + USER_ID_PARAM)
                             .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                     .param(USER_ID_PARAM)
                                     .valueReference(idSourcePathRef)
                                     .build()))
                             .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                             .userConfirmation(ListViewUserConfirmationDto.builder()
-                                    .headline("Nutzer löschen")
-                                    .content("Nutzer " + NAME_PARAM + " als gelöscht markieren?")
+                                    .headline(USER_LABEL + "löschen")
+                                    .content(USER_LABEL + NAME_PARAM + " als gelöscht markieren?")
                                     .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                             .param(NAME_PARAM)
                                             .valueReference(fullnameFieldRef)
@@ -425,7 +425,7 @@ public class UserController {
                                     .build())
                             .successEvents(Arrays.asList(
                                     ListViewNotificationEvent.builder()
-                                            .text("Nutzer " + NAME_PARAM + " wurde erfolgreich als gelöscht markiert")
+                                            .text(USER_LABEL + NAME_PARAM + " wurde erfolgreich als gelöscht markiert")
                                             .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                             .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                     .param(NAME_PARAM)
@@ -437,7 +437,7 @@ public class UserController {
                                             .valueMapping(Map.of(KokuUserDto.Fields.deleted, deletedSourcePathRef))
                                             .build()))
                             .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                    .text("Nutzer " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                    .text(USER_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                     .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                     .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                             .param(NAME_PARAM)
@@ -551,29 +551,27 @@ public class UserController {
     private User updateOrCreateUser(final String id, final Boolean forceUpdate, final KokuUserDto updatedDto) {
         final User user = this.userRepository.findById(id).orElseGet(() -> this.userRepository.save(new User(id)));
         if (!Boolean.TRUE.equals(forceUpdate) && !user.getVersion().equals(updatedDto.getVersion())) {
-            throw new KokuBusinessExceptionWithConfirmationMessage(
-                    KokuBusinessExceptionWithConfirmationMessageDto.builder()
-                            .headline("Konflikt")
-                            .confirmationMessage("Der Nutzer wurde zwischenzeitlich bearbeitet.\n"
-                                    + "Willst Du die Speicherung dennoch vornehmen?")
-                            .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .icon("CLOSE")
-                                    .build())
-                            .closeOnClickOutside(true)
-                            .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
-                                    .text("Trotzdem speichern")
-                                    .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format(
-                                            "services/customers/customers/appointments/%s?forceUpdate=%s",
-                                            id, Boolean.TRUE))
-                                    .build())
-                            .button(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .build())
-                            .build());
+            throw new KokuBusinessExceptionWithConfirmationMessage(KokuBusinessErrorWithConfirmationMessageDto.builder()
+                    .headline("Konflikt")
+                    .confirmationMessage("Der Nutzer wurde zwischenzeitlich bearbeitet.\n"
+                            + "Willst Du die Speicherung dennoch vornehmen?")
+                    .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .icon("CLOSE")
+                            .build())
+                    .closeOnClickOutside(true)
+                    .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
+                            .text("Trotzdem speichern")
+                            .title("Zwischenzeitliche Änderungen überschreiben")
+                            .endpointUrl(String.format(
+                                    "services/customers/customers/appointments/%s?forceUpdate=%s", id, Boolean.TRUE))
+                            .build())
+                    .button(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .build())
+                    .build());
         }
         this.transformer.transformToEntity(user, updatedDto);
         this.entityManager.flush();

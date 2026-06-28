@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class CardDavService {
 
     private static final String SYNC_STATE_PREFIX = "urn:koku:carddav:sync:";
-    private static final Pattern VCF_ID_PATTERN = Pattern.compile(".*/(\\d+)\\.vcf$");
+    private static final Pattern VCF_ID_PATTERN = Pattern.compile("/(\\d+)\\.vcf$");
 
     private final CustomerContactRepository customerContactRepository;
     private final VCardFactory vCardFactory;

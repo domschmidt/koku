@@ -13,8 +13,8 @@ public class CustomerAppointmentMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating CustomerAppointment...");
+    public void migrate() {
+        logInfo("Migrating CustomerAppointment...");
 
         read(
                 "SELECT id, recorded, updated, additional_info, description, start, customer_id, user_id"
@@ -51,13 +51,13 @@ public class CustomerAppointmentMigration extends BaseMigration {
                                     rs.getString("customer_id"),
                                     mappedUserId);
                         } else {
-                            System.err.printf("%s is not available in user mapping", originUserId);
+                            logWarning(originUserId + " is not available in user mapping");
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
 
-        System.out.println("✔ CustomerAppointment done.");
+        logInfo("CustomerAppointment done.");
     }
 }

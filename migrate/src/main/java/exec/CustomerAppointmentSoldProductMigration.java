@@ -14,8 +14,8 @@ public class CustomerAppointmentSoldProductMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating CustomerAppointmentSoldProduct...");
+    public void migrate() {
+        logInfo("Migrating CustomerAppointmentSoldProduct...");
         Map<String, Long> productTargetExternalRefMapping = new HashMap<>();
         read(
                 "SELECT id, external_ref FROM koku.product",
@@ -61,6 +61,6 @@ public class CustomerAppointmentSoldProductMigration extends BaseMigration {
                     }
                 });
 
-        System.out.println("✔ CustomerAppointmentSoldProduct done.");
+        logInfo("CustomerAppointmentSoldProduct done.");
     }
 }

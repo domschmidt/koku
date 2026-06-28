@@ -14,6 +14,7 @@ import de.domschmidt.koku.dto.user.KokuUserAppointmentDto;
 import de.domschmidt.listquery.dto.request.EnumSearchOperatorHint;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserWelcomeController {
 
     private static final String EMPTY_MESSAGE = "Keine Termine";
+    private static final ZoneId DEFAULT_ZONE = ZoneId.systemDefault();
 
     @GetMapping()
     public DashboardViewDto getDashboardView(@AuthenticationPrincipal Jwt jwt) {
@@ -82,7 +84,7 @@ public class UserWelcomeController {
                         .sourceItemText("Privater Termin")
                         .sourceItemColor(KokuColorEnum.GREEN)
                         .build());
-        final LocalDate now = LocalDate.now();
+        final LocalDate now = LocalDate.now(DEFAULT_ZONE);
         dashboardFactory.addPanel(DashboardAppointmentsPanelDto.builder()
                 .headline("Heutige Termine")
                 .emptyMessage(EMPTY_MESSAGE)

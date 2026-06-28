@@ -11,6 +11,7 @@ import de.domschmidt.koku.dav.model.DavPropertyRequestType;
 import de.domschmidt.koku.dav.model.DavRequest;
 import de.domschmidt.koku.user.kafka.dto.UserAppointmentKafkaDto;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -33,9 +34,9 @@ class CalDavServiceTest {
                 .id(42L)
                 .userId("other-user")
                 .description("hidden")
-                .start(LocalDateTime.of(2026, 6, 12, 10, 0))
-                .end(LocalDateTime.of(2026, 6, 12, 11, 0))
-                .updated(LocalDateTime.of(2026, 6, 12, 9, 0))
+                .start(LocalDateTime.of(2026, Month.JUNE, 12, 10, 0))
+                .end(LocalDateTime.of(2026, Month.JUNE, 12, 11, 0))
+                .updated(LocalDateTime.of(2026, Month.JUNE, 12, 9, 0))
                 .build();
         when(userAppointmentRepository.findAllAppointments()).thenReturn(List.of(foreignAppointment));
         when(userAppointmentRepository.findActiveAppointment(42L)).thenReturn(Optional.of(foreignAppointment));

@@ -22,9 +22,9 @@ import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
+import de.domschmidt.koku.business_exception.dto.KokuBusinessErrorWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
-import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.business_logic.dto.*;
 import de.domschmidt.koku.customer.exceptions.*;
@@ -118,6 +118,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -129,11 +130,33 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping()
 @Slf4j
+@RequiredArgsConstructor
 public class CustomerAppointmentController {
     public static final DateTimeFormatter YEAR_MONTH_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
     private static final String VISITS_LABEL = "Besuche";
     private static final String REVENUE_LABEL = "Umsatz (€)";
     private static final String START_FILTER_PARAM = "start";
+    private static final String REVENUES_TITLE = "Umsätze";
+    private static final String EXPECTED_REVENUE_LABEL = "Erwartete Einnahme";
+    private static final String CURRENCY_EURO_ICON = "CURRENCY_EURO";
+    private static final String CUSTOMER_CREATED_EVENT = "customer-created";
+    private static final String ACTIVITY_CREATED_EVENT = "activity-created";
+    private static final String PRODUCT_CREATED_EVENT = "product-created";
+    private static final String PROMOTION_CREATED_EVENT = "promotion-created";
+    private static final String TREATMENT_PRODUCT_CREATED_EVENT = "treatment-product-created";
+    private static final String TREATMENT_ACTIVITY_STEP_CREATED_EVENT = "treatment-activitystep-created";
+    private static final String CUSTOMER_APPOINTMENT_CREATED_EVENT = "customer-appointment-created";
+    private static final String CUSTOMER_APPOINTMENT_UPDATED_EVENT = "customer-appointment-updated";
+    private static final String PRODUCT_SUMMARY_FORMAT = "%s / %s";
+    private static final String PRODUCTS_LABEL = "Produkte";
+    private static final String NAME_PARAM = ":name";
+    private static final String DATE_PARAM = ":date";
+    private static final String CUSTOMER_ID_PARAM = ":customerId";
+    private static final String APPOINTMENT_ID_PARAM = ":appointmentId";
+    private static final String APPOINTMENT_MESSAGE_PREFIX = "Termin von " + NAME_PARAM + " am " + DATE_PARAM;
+    private static final String CUSTOMER_APPOINTMENT_SERVICE_URL = "services/customers/customers/appointments/";
+    private static final String REVENUE_LABEL_PREFIX = "Umsatz ";
+    private static final ZoneId DEFAULT_ZONE = ZoneId.systemDefault();
     private final EntityManager entityManager;
     private final CustomerAppointmentRepository customerAppointmentRepository;
     private final CustomerAppointmentKafkaService customerAppointmentKafkaService;
@@ -144,29 +167,6 @@ public class CustomerAppointmentController {
     private final ProductManufacturerKTableProcessor productManufacturerKTableProcessor;
     private final PromotionKTableProcessor promotionKTableProcessor;
     private final UserKTableProcessor userKTableProcessor;
-
-    public CustomerAppointmentController(
-            final EntityManager entityManager,
-            final CustomerAppointmentRepository customerAppointmentRepository,
-            final CustomerAppointmentKafkaService customerAppointmentKafkaService,
-            final CustomerAppointmentToCustomerAppointmentDtoTransformer transformer,
-            final ActivityKTableProcessor activityKTableProcessor,
-            final ActivityStepKTableProcessor activityStepKTableProcessor,
-            final ProductKTableProcessor productKTableProcessor,
-            final ProductManufacturerKTableProcessor productManufacturerKTableProcessor,
-            final PromotionKTableProcessor promotionKTableProcessor,
-            final UserKTableProcessor userKTableProcessor) {
-        this.entityManager = entityManager;
-        this.customerAppointmentRepository = customerAppointmentRepository;
-        this.customerAppointmentKafkaService = customerAppointmentKafkaService;
-        this.transformer = transformer;
-        this.activityKTableProcessor = activityKTableProcessor;
-        this.activityStepKTableProcessor = activityStepKTableProcessor;
-        this.productKTableProcessor = productKTableProcessor;
-        this.productManufacturerKTableProcessor = productManufacturerKTableProcessor;
-        this.promotionKTableProcessor = promotionKTableProcessor;
-        this.userKTableProcessor = userKTableProcessor;
-    }
 
     @GetMapping("/customers/appointments/activitysummary")
     public KokuCustomerActivityPriceSummaryDto getActivitySum(KokuActivityPriceSummaryRequestDto request) {
@@ -199,15 +199,13 @@ public class CustomerAppointmentController {
                 .label("Kunde")
                 .alias(KokuCustomerAppointmentDto.Fields.customerId)
                 .possibleValues(customersSnapshot.stream()
-                        .map(customer -> {
-                            return SelectFormularFieldPossibleValue.builder()
-                                    .id(customer.getId() + "")
-                                    .text(Stream.of(customer.getFirstname(), customer.getLastname())
-                                            .filter(s -> s != null && !s.isEmpty())
-                                            .collect(Collectors.joining(" ")))
-                                    .disabled(customer.isDeleted())
-                                    .build();
-                        })
+                        .map(customer -> SelectFormularFieldPossibleValue.builder()
+                                .id(customer.getId() + "")
+                                .text(Stream.of(customer.getFirstname(), customer.getLastname())
+                                        .filter(s -> s != null && !s.isEmpty())
+                                        .collect(Collectors.joining(" ")))
+                                .disabled(customer.isDeleted())
+                                .build())
                         .toList())
                 .required(true)
                 .build());
@@ -238,17 +236,17 @@ public class CustomerAppointmentController {
                                         .onSaveEvents(Arrays.asList(
                                                 KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
                                                         .builder()
-                                                        .eventName("customer-created")
+                                                        .eventName(CUSTOMER_CREATED_EVENT)
                                                         .build()))
                                         .build())
                                 .build())
                         .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("customer-created")
+                                .eventName(CUSTOMER_CREATED_EVENT)
                                 .build())
                         .build())
                 .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
-                .eventName("customer-created")
+                .eventName(CUSTOMER_CREATED_EVENT)
                 .fieldValueMapping(Map.of(
                         customerSelectionFieldRef,
                         FormViewFieldReferenceValueMapping.builder()
@@ -296,9 +294,9 @@ public class CustomerAppointmentController {
 
         final String overallPriceSumStatFieldRef = formFactory.addContent(StatFormularField.builder()
                 .title("Gesamtkosten")
-                .description("Erwartete Einnahme")
+                .description(EXPECTED_REVENUE_LABEL)
                 .valuePath(KokuCustomerAppointmentDto.Fields.overallPriceSummary)
-                .icon("CURRENCY_EURO")
+                .icon(CURRENCY_EURO_ICON)
                 .build());
         formFactory.place(overallPriceSumStatFieldRef).in(rootId).outlet(FormOutlet.CONTENT);
 
@@ -352,17 +350,17 @@ public class CustomerAppointmentController {
                                         .onSaveEvents(Arrays.asList(
                                                 KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
                                                         .builder()
-                                                        .eventName("activity-created")
+                                                        .eventName(ACTIVITY_CREATED_EVENT)
                                                         .build()))
                                         .build())
                                 .build())
                         .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("activity-created")
+                                .eventName(ACTIVITY_CREATED_EVENT)
                                 .build())
                         .build())
                 .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
-                .eventName("activity-created")
+                .eventName(ACTIVITY_CREATED_EVENT)
                 .fieldValueMapping(Map.of(
                         activityFieldRef,
                         FormViewFieldReferenceMultiSelectValueMapping.builder()
@@ -400,9 +398,9 @@ public class CustomerAppointmentController {
 
         final String activityPriceSumStatFieldRef = formFactory.addContent(StatFormularField.builder()
                 .title("Tätigkeitskosten")
-                .description("Erwartete Einnahme")
+                .description(EXPECTED_REVENUE_LABEL)
                 .valuePath(KokuCustomerAppointmentDto.Fields.activityPriceSummary)
-                .icon("CURRENCY_EURO")
+                .icon(CURRENCY_EURO_ICON)
                 .build());
         formFactory.place(activityPriceSumStatFieldRef).in(container3Id).outlet(FormOutlet.CONTENT);
         final String activityDurationSumStatFieldRef = formFactory.addContent(StatFormularField.builder()
@@ -421,41 +419,37 @@ public class CustomerAppointmentController {
                                         .all(),
                                 Spliterator.DISTINCT),
                         false)
-                .map(activityStep -> {
-                    return MultiSelectFormularFieldPossibleValue.builder()
-                            .id("activity_step_" + activityStep.key)
-                            .valueMapping(KokuCustomerAppointmentActivityStepTreatmentDto.builder()
-                                    .activityStepId(activityStep.key)
-                                    .build())
-                            .text(activityStep.value.getName())
-                            .disabled(Boolean.TRUE.equals(activityStep.value.getDeleted()))
-                            .color(KokuColorEnum.SECONDARY)
-                            .category("Behandlungsschritte")
-                            .build();
-                })
+                .map(activityStep -> MultiSelectFormularFieldPossibleValue.builder()
+                        .id("activity_step_" + activityStep.key)
+                        .valueMapping(KokuCustomerAppointmentActivityStepTreatmentDto.builder()
+                                .activityStepId(activityStep.key)
+                                .build())
+                        .text(activityStep.value.getName())
+                        .disabled(Boolean.TRUE.equals(activityStep.value.getDeleted()))
+                        .color(KokuColorEnum.SECONDARY)
+                        .category("Behandlungsschritte")
+                        .build())
                 .toList());
         activityStepAndProductPossibleValuesUnion.addAll(StreamSupport.stream(
                         Spliterators.spliteratorUnknownSize(
                                 this.productKTableProcessor.getProducts().all(), Spliterator.DISTINCT),
                         false)
-                .map(product -> {
-                    return MultiSelectFormularFieldPossibleValue.builder()
-                            .id("product_" + product.key)
-                            .valueMapping(KokuCustomerAppointmentProductTreatmentDto.builder()
-                                    .productId(product.key)
-                                    .build())
-                            .text(String.format(
-                                    "%s / %s",
-                                    this.productManufacturerKTableProcessor
-                                            .getProductManufacturers()
-                                            .get(product.value.getManufacturerId())
-                                            .getName(),
-                                    product.value.getName()))
-                            .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
-                            .color(KokuColorEnum.PRIMARY)
-                            .category("Produkte")
-                            .build();
-                })
+                .map(product -> MultiSelectFormularFieldPossibleValue.builder()
+                        .id("product_" + product.key)
+                        .valueMapping(KokuCustomerAppointmentProductTreatmentDto.builder()
+                                .productId(product.key)
+                                .build())
+                        .text(String.format(
+                                PRODUCT_SUMMARY_FORMAT,
+                                this.productManufacturerKTableProcessor
+                                        .getProductManufacturers()
+                                        .get(product.value.getManufacturerId())
+                                        .getName(),
+                                product.value.getName()))
+                        .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
+                        .color(KokuColorEnum.PRIMARY)
+                        .category(PRODUCTS_LABEL)
+                        .build())
                 .toList());
 
         final String treatmentSequenceFieldRef = formFactory.addContent(MultiSelectFormularField.builder()
@@ -499,7 +493,8 @@ public class CustomerAppointmentController {
                                                                 .onSaveEvents(Arrays.asList(
                                                                         KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
                                                                                 .builder()
-                                                                                .eventName("treatment-product-created")
+                                                                                .eventName(
+                                                                                        TREATMENT_PRODUCT_CREATED_EVENT)
                                                                                 .build()))
                                                                 .build())
                                                         .build())
@@ -520,22 +515,22 @@ public class CustomerAppointmentController {
                                                                         KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
                                                                                 .builder()
                                                                                 .eventName(
-                                                                                        "treatment-activitystep-created")
+                                                                                        TREATMENT_ACTIVITY_STEP_CREATED_EVENT)
                                                                                 .build()))
                                                                 .build())
                                                         .build())
                                                 .build()))
                                 .build())
                         .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("treatment-activitystep-created")
+                                .eventName(TREATMENT_ACTIVITY_STEP_CREATED_EVENT)
                                 .build())
                         .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("treatment-product-created")
+                                .eventName(TREATMENT_PRODUCT_CREATED_EVENT)
                                 .build())
                         .build())
                 .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
-                .eventName("treatment-activitystep-created")
+                .eventName(TREATMENT_ACTIVITY_STEP_CREATED_EVENT)
                 .fieldValueMapping(Map.of(
                         treatmentSequenceFieldRef,
                         FormViewFieldReferenceMultiSelectValueMapping.builder()
@@ -598,7 +593,7 @@ public class CustomerAppointmentController {
                                 .build()))
                 .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
-                .eventName("treatment-product-created")
+                .eventName(TREATMENT_PRODUCT_CREATED_EVENT)
                 .fieldValueMapping(Map.of(
                         treatmentSequenceFieldRef,
                         FormViewFieldReferenceMultiSelectValueMapping.builder()
@@ -666,7 +661,7 @@ public class CustomerAppointmentController {
                                                                         + ".@type")
                                                         .build(),
                                                 StaticValueConfigMappingAppendListItemDto.builder()
-                                                        .value("Produkte")
+                                                        .value(PRODUCTS_LABEL)
                                                         .targetPath(
                                                                 MultiSelectFormularFieldPossibleValue.Fields.category)
                                                         .build()))
@@ -675,7 +670,7 @@ public class CustomerAppointmentController {
                 .build());
 
         final String container4Id = formFactory.addContent(
-                FieldsetContainer.builder().title("Produkte").build());
+                FieldsetContainer.builder().title(PRODUCTS_LABEL).build());
         formFactory.place(container4Id).in(rootId).outlet(FormOutlet.CONTENT);
         final String soldProductsFieldRef =
                 formFactory.addContent(MultiSelectWithPricingAdjustmentFormularField.builder()
@@ -690,19 +685,17 @@ public class CustomerAppointmentController {
                                         false)
                                 .sorted(Comparator.comparing(longProductKafkaDtoKeyValue ->
                                         longProductKafkaDtoKeyValue.value.getManufacturerId()))
-                                .map(product -> {
-                                    return MultiSelectWithPricingAdjustmentFormularFieldPossibleValue.builder()
-                                            .id(product.key + "")
-                                            .text(String.format(
-                                                    "%s / %s",
-                                                    this.productManufacturerKTableProcessor
-                                                            .getProductManufacturers()
-                                                            .get(product.value.getManufacturerId())
-                                                            .getName(),
-                                                    product.value.getName()))
-                                            .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
-                                            .build();
-                                })
+                                .map(product -> MultiSelectWithPricingAdjustmentFormularFieldPossibleValue.builder()
+                                        .id(product.key + "")
+                                        .text(String.format(
+                                                PRODUCT_SUMMARY_FORMAT,
+                                                this.productManufacturerKTableProcessor
+                                                        .getProductManufacturers()
+                                                        .get(product.value.getManufacturerId())
+                                                        .getName(),
+                                                product.value.getName()))
+                                        .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
+                                        .build())
                                 .toList())
                         .idPathMapping(KokuCustomerAppointmentSoldProductDto.Fields.productId)
                         .pricePathMapping(KokuCustomerAppointmentSoldProductDto.Fields.price)
@@ -735,17 +728,17 @@ public class CustomerAppointmentController {
                                         .onSaveEvents(Arrays.asList(
                                                 KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
                                                         .builder()
-                                                        .eventName("product-created")
+                                                        .eventName(PRODUCT_CREATED_EVENT)
                                                         .build()))
                                         .build())
                                 .build())
                         .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("product-created")
+                                .eventName(PRODUCT_CREATED_EVENT)
                                 .build())
                         .build())
                 .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
-                .eventName("product-created")
+                .eventName(PRODUCT_CREATED_EVENT)
                 .fieldValueMapping(Map.of(
                         soldProductsFieldRef,
                         FormViewFieldReferenceMultiSelectValueMapping.builder()
@@ -783,9 +776,9 @@ public class CustomerAppointmentController {
 
         final String productPriceSumStatFieldRef = formFactory.addContent(StatFormularField.builder()
                 .title("Produktkosten")
-                .description("Erwartete Einnahme")
+                .description(EXPECTED_REVENUE_LABEL)
                 .valuePath(KokuCustomerAppointmentDto.Fields.activitySoldProductSummary)
-                .icon("CURRENCY_EURO")
+                .icon(CURRENCY_EURO_ICON)
                 .build());
         formFactory.place(productPriceSumStatFieldRef).in(container5Id).outlet(FormOutlet.CONTENT);
 
@@ -800,13 +793,11 @@ public class CustomerAppointmentController {
                                                 .all(),
                                         Spliterator.DISTINCT),
                                 false)
-                        .map(promotion -> {
-                            return MultiSelectFormularFieldPossibleValue.builder()
-                                    .id(promotion.key + "")
-                                    .text(promotion.value.getName())
-                                    .disabled(Boolean.TRUE.equals(promotion.value.getDeleted()))
-                                    .build();
-                        })
+                        .map(promotion -> MultiSelectFormularFieldPossibleValue.builder()
+                                .id(promotion.key + "")
+                                .text(promotion.value.getName())
+                                .disabled(Boolean.TRUE.equals(promotion.value.getDeleted()))
+                                .build())
                         .toList())
                 .idPathMapping(KokuCustomerAppointmentPromotionDto.Fields.promotionId)
                 .uniqueValues(true)
@@ -838,17 +829,17 @@ public class CustomerAppointmentController {
                                         .onSaveEvents(Arrays.asList(
                                                 KokuBusinessRuleFormularContentAfterSavePropagateGlobalEventDto
                                                         .builder()
-                                                        .eventName("promotion-created")
+                                                        .eventName(PROMOTION_CREATED_EVENT)
                                                         .build()))
                                         .build())
                                 .build())
                         .closeEventListener(KokuBusinessRuleOpenContentCloseGlobalEventListenerDto.builder()
-                                .eventName("promotion-created")
+                                .eventName(PROMOTION_CREATED_EVENT)
                                 .build())
                         .build())
                 .build());
         formFactory.addGlobalEventListener(FormViewEventPayloadFieldUpdateGlobalEventListenerDto.builder()
-                .eventName("promotion-created")
+                .eventName(PROMOTION_CREATED_EVENT)
                 .fieldValueMapping(Map.of(
                         promotionFieldRef,
                         FormViewFieldReferenceMultiSelectValueMapping.builder()
@@ -894,17 +885,15 @@ public class CustomerAppointmentController {
                         .valuePath(KokuCustomerAppointmentDto.Fields.userId)
                         .label("Bedienung")
                         .possibleValues(this.userKTableProcessor.getUsers().values().stream()
-                                .map(user -> {
-                                    return SelectFormularFieldPossibleValue.builder()
-                                            .id(user.getId())
-                                            .text(String.join(
-                                                            " ",
-                                                            Objects.toString(user.getFirstname(), ""),
-                                                            Objects.toString(user.getLastname(), ""))
-                                                    .trim())
-                                            .disabled(Boolean.TRUE.equals(user.getDeleted()))
-                                            .build();
-                                })
+                                .map(user -> SelectFormularFieldPossibleValue.builder()
+                                        .id(user.getId())
+                                        .text(String.join(
+                                                        " ",
+                                                        Objects.toString(user.getFirstname(), ""),
+                                                        Objects.toString(user.getLastname(), ""))
+                                                .trim())
+                                        .disabled(Boolean.TRUE.equals(user.getDeleted()))
+                                        .build())
                                 .toList())
                         .defaultValue(SecurityContextHolder.getContext()
                                 .getAuthentication()
@@ -965,7 +954,7 @@ public class CustomerAppointmentController {
                         .loadingAnimation(true)
                         .build())
                 .execution(KokuBusinessRuleCallHttpEndpoint.builder()
-                        .url("services/customers/customers/appointments/activitysummary")
+                        .url(CUSTOMER_APPOINTMENT_SERVICE_URL + "activitysummary")
                         .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
                         .build())
                 .build());
@@ -1008,7 +997,7 @@ public class CustomerAppointmentController {
                         .loadingAnimation(true)
                         .build())
                 .execution(KokuBusinessRuleCallHttpEndpoint.builder()
-                        .url("services/customers/customers/appointments/overallsummary")
+                        .url(CUSTOMER_APPOINTMENT_SERVICE_URL + "overallsummary")
                         .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
                         .build())
                 .build());
@@ -1044,7 +1033,7 @@ public class CustomerAppointmentController {
                         .loadingAnimation(true)
                         .build())
                 .execution(KokuBusinessRuleCallHttpEndpoint.builder()
-                        .url("services/customers/customers/appointments/productsummary")
+                        .url(CUSTOMER_APPOINTMENT_SERVICE_URL + "productsummary")
                         .method(KokuBusinessRuleCallHttpEndpointMethodEnum.GET)
                         .build())
                 .build());
@@ -1069,44 +1058,44 @@ public class CustomerAppointmentController {
                                 .build())
                         .userConfirmation(FormUserConfirmationDto.builder()
                                 .headline("Kundentermin löschen")
-                                .content("Termin von :name am :date als gelöscht markieren?")
+                                .content(APPOINTMENT_MESSAGE_PREFIX + " als gelöscht markieren?")
                                 .params(Arrays.asList(
                                         FormButtonUserConfirmationSourcePathParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .sourcePath(KokuCustomerAppointmentDto.Fields.customerName)
                                                 .build(),
                                         FormButtonUserConfirmationSourcePathParamDto.builder()
-                                                .param(":date")
+                                                .param(DATE_PARAM)
                                                 .sourcePath(KokuCustomerAppointmentDto.Fields.date)
                                                 .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Termin von :name am :date erfolgreich als gelöscht markiert")
+                                        .text(APPOINTMENT_MESSAGE_PREFIX + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(
                                                 FormNotificationEventValueParamDto.builder()
-                                                        .param(":name")
+                                                        .param(NAME_PARAM)
                                                         .sourcePath(KokuCustomerAppointmentDto.Fields.customerName)
                                                         .build(),
                                                 FormNotificationEventDateValueParamDto.builder()
-                                                        .param(":date")
+                                                        .param(DATE_PARAM)
                                                         .sourcePath(KokuCustomerAppointmentDto.Fields.date)
                                                         .build()))
                                         .build(),
                                 FormPropagateGlobalEventDto.builder()
-                                        .eventName("customer-appointment-updated")
+                                        .eventName(CUSTOMER_APPOINTMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Termin von :name am :date konnte nicht als gelöscht markiert werden")
+                                .text(APPOINTMENT_MESSAGE_PREFIX + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(
                                         FormNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .sourcePath(KokuCustomerAppointmentDto.Fields.customerName)
                                                 .build(),
                                         FormNotificationEventDateValueParamDto.builder()
-                                                .param(":date")
+                                                .param(DATE_PARAM)
                                                 .sourcePath(KokuCustomerAppointmentDto.Fields.date)
                                                 .build()))
                                 .build()))
@@ -1134,44 +1123,44 @@ public class CustomerAppointmentController {
                                 .build())
                         .userConfirmation(FormUserConfirmationDto.builder()
                                 .headline("Kundentermin wiederherstellen")
-                                .content("Termin von :name am :date wiederherstellen?")
+                                .content(APPOINTMENT_MESSAGE_PREFIX + " wiederherstellen?")
                                 .params(Arrays.asList(
                                         FormButtonUserConfirmationSourcePathParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .sourcePath(KokuCustomerAppointmentDto.Fields.customerName)
                                                 .build(),
                                         FormButtonUserConfirmationSourcePathParamDto.builder()
-                                                .param(":date")
+                                                .param(DATE_PARAM)
                                                 .sourcePath(KokuCustomerAppointmentDto.Fields.date)
                                                 .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Termin von :name am :date wurde erfolgreich wiederhergestellt")
+                                        .text(APPOINTMENT_MESSAGE_PREFIX + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(
                                                 FormNotificationEventValueParamDto.builder()
-                                                        .param(":name")
+                                                        .param(NAME_PARAM)
                                                         .sourcePath(KokuCustomerAppointmentDto.Fields.customerName)
                                                         .build(),
                                                 FormNotificationEventDateValueParamDto.builder()
-                                                        .param(":date")
+                                                        .param(DATE_PARAM)
                                                         .sourcePath(KokuCustomerAppointmentDto.Fields.date)
                                                         .build()))
                                         .build(),
                                 FormPropagateGlobalEventDto.builder()
-                                        .eventName("customer-appointment-updated")
+                                        .eventName(CUSTOMER_APPOINTMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Termin von :name am :date konnte nicht wiederhergestellt werden")
+                                .text(APPOINTMENT_MESSAGE_PREFIX + " konnte nicht wiederhergestellt werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(
                                         FormNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .sourcePath(KokuCustomerAppointmentDto.Fields.customerName)
                                                 .build(),
                                         FormNotificationEventDateValueParamDto.builder()
-                                                .param(":date")
+                                                .param(DATE_PARAM)
                                                 .sourcePath(KokuCustomerAppointmentDto.Fields.date)
                                                 .build()))
                                 .build()))
@@ -1180,7 +1169,7 @@ public class CustomerAppointmentController {
                 .outlet(FormOutlet.CONTENT);
 
         formFactory.addGlobalEventListener(FormViewEventPayloadSourceUpdateGlobalEventListenerDto.builder()
-                .eventName("customer-appointment-updated")
+                .eventName(CUSTOMER_APPOINTMENT_UPDATED_EVENT)
                 .idPath(KokuCustomerAppointmentDto.Fields.id)
                 .build());
 
@@ -1192,8 +1181,7 @@ public class CustomerAppointmentController {
         final ListViewFactory listViewFactory =
                 new ListViewFactory(new DefaultListViewContentIdGenerator(), KokuCustomerAppointmentDto.Fields.id);
 
-        final ListViewSourcePathReference customerIdSourcePathRef =
-                listViewFactory.addSourcePath(KokuCustomerAppointmentDto.Fields.customerId);
+        listViewFactory.addSourcePath(KokuCustomerAppointmentDto.Fields.customerId);
         final ListViewSourcePathReference idSourcePathRef =
                 listViewFactory.addSourcePath(KokuCustomerAppointmentDto.Fields.id);
 
@@ -1243,7 +1231,7 @@ public class CustomerAppointmentController {
                 .text("Neuer Kundentermin")
                 .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
-                .eventName("customer-appointment-created")
+                .eventName(CUSTOMER_APPOINTMENT_CREATED_EVENT)
                 .idPath(KokuCustomerAppointmentDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuCustomerAppointmentDto.Fields.shortSummaryText, shortSummaryFieldRef,
@@ -1256,10 +1244,10 @@ public class CustomerAppointmentController {
                 .inlineContent(ListViewHeaderContentDto.builder()
                         .title("Neuer Kundentermin")
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/customers/customers/appointments/form")
+                                .formularUrl(CUSTOMER_APPOINTMENT_SERVICE_URL + "form")
                                 .submitUrl("services/customers/customers/appointments")
                                 .contentOverrides(Arrays.asList(ListViewRouteBasedFormularContentOverrideDto.builder()
-                                        .routeParam(":customerId")
+                                        .routeParam(CUSTOMER_ID_PARAM)
                                         .alias(KokuCustomerAppointmentDto.Fields.customerId)
                                         .disabled(true)
                                         .build()))
@@ -1267,14 +1255,14 @@ public class CustomerAppointmentController {
                                 .maxWidthInPx(800)
                                 .onSaveEvents(Arrays.asList(
                                         ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                .eventName("customer-appointment-created")
+                                                .eventName(CUSTOMER_APPOINTMENT_CREATED_EVENT)
                                                 .build(),
                                         ListViewOpenRoutedInlineFormularContentSaveEventDto.builder()
-                                                .route(":appointmentId")
+                                                .route(APPOINTMENT_ID_PARAM)
                                                 .params(Arrays.asList(
                                                         ListViewEventPayloadInlineFormularContentOpenRoutedContentParamDto
                                                                 .builder()
-                                                                .param(":appointmentId")
+                                                                .param(APPOINTMENT_ID_PARAM)
                                                                 .valuePath(KokuCustomerAppointmentDto.Fields.id)
                                                                 .build()))
                                                 .build()))
@@ -1283,14 +1271,14 @@ public class CustomerAppointmentController {
                 .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
-                .route(":appointmentId")
+                .route(APPOINTMENT_ID_PARAM)
                 .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
-                        .param(":appointmentId")
+                        .param(APPOINTMENT_ID_PARAM)
                         .valueReference(idSourcePathRef)
                         .build()))
                 .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadItemUpdateGlobalEventListenerDto.builder()
-                .eventName("customer-appointment-updated")
+                .eventName(CUSTOMER_APPOINTMENT_UPDATED_EVENT)
                 .idPath(KokuCustomerAppointmentDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuCustomerAppointmentDto.Fields.shortSummaryText, shortSummaryFieldRef,
@@ -1299,22 +1287,22 @@ public class CustomerAppointmentController {
                         KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef))
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
-                .route(":appointmentId")
-                .itemId(":appointmentId")
+                .route(APPOINTMENT_ID_PARAM)
+                .itemId(APPOINTMENT_ID_PARAM)
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .sourceUrl("services/customers/customers/appointments/:appointmentId/summary")
+                        .sourceUrl(CUSTOMER_APPOINTMENT_SERVICE_URL + APPOINTMENT_ID_PARAM + "/summary")
                         .titlePath(KokuCustomerAppointmentSummaryDto.Fields.appointmentSummary)
                         .globalEventListeners(
                                 Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
-                                        .eventName("customer-appointment-updated")
+                                        .eventName(CUSTOMER_APPOINTMENT_UPDATED_EVENT)
                                         .idPath(KokuCustomerAppointmentDto.Fields.id)
                                         .titleValuePath(KokuCustomerAppointmentDto.Fields.longSummaryText)
                                         .build()))
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/customers/customers/appointments/form")
-                                .sourceUrl("services/customers/customers/appointments/:appointmentId")
+                                .formularUrl(CUSTOMER_APPOINTMENT_SERVICE_URL + "form")
+                                .sourceUrl(CUSTOMER_APPOINTMENT_SERVICE_URL + APPOINTMENT_ID_PARAM)
                                 .contentOverrides(Arrays.asList(ListViewRouteBasedFormularContentOverrideDto.builder()
-                                        .routeParam(":customerId")
+                                        .routeParam(CUSTOMER_ID_PARAM)
                                         .alias(KokuCustomerAppointmentDto.Fields.customerId)
                                         .disabled(true)
                                         .build()))
@@ -1322,7 +1310,7 @@ public class CustomerAppointmentController {
                                 .maxWidthInPx(800)
                                 .onSaveEvents(Arrays.asList(
                                         ListViewInlineFormularContentAfterSavePropagateGlobalEventDto.builder()
-                                                .eventName("customer-appointment-updated")
+                                                .eventName(CUSTOMER_APPOINTMENT_UPDATED_EVENT)
                                                 .build()))
                                 .build())
                         .build())
@@ -1340,36 +1328,36 @@ public class CustomerAppointmentController {
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                        .url("services/customers/customers/appointments/:appointmentId/restore")
+                        .url(CUSTOMER_APPOINTMENT_SERVICE_URL + APPOINTMENT_ID_PARAM + "/restore")
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
-                                .param(":appointmentId")
+                                .param(APPOINTMENT_ID_PARAM)
                                 .valueReference(idSourcePathRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Termin wiederherstellen")
-                                .content("Termin von :name am :date wiederherstellen?")
+                                .content(APPOINTMENT_MESSAGE_PREFIX + " wiederherstellen?")
                                 .params(Arrays.asList(
                                         ListViewUserConfirmationValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .valueReference(customerNamePathRef)
                                                 .build(),
                                         ListViewUserConfirmationDateValueParamDto.builder()
-                                                .param(":date")
+                                                .param(DATE_PARAM)
                                                 .valueReference(shortSummaryFieldRef)
                                                 .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Termin von :name am :date wurde erfolgreich wiederhergestellt")
+                                        .text(APPOINTMENT_MESSAGE_PREFIX + " wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(
                                                 ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
+                                                        .param(NAME_PARAM)
                                                         .valueReference(customerNamePathRef)
                                                         .build(),
                                                 ListViewNotificationEventDateValueParamDto.builder()
-                                                        .param(":date")
+                                                        .param(DATE_PARAM)
                                                         .valueReference(shortSummaryFieldRef)
                                                         .build()))
                                         .build(),
@@ -1379,54 +1367,54 @@ public class CustomerAppointmentController {
                                                 Map.of(KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef))
                                         .build(),
                                 ListViewPropagateGlobalEventActionEventDto.builder()
-                                        .eventName("customer-appointment-updated")
+                                        .eventName(CUSTOMER_APPOINTMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text("Termin von :name am :date konnte nicht wiederhergestellt" + " werden")
+                                .text(APPOINTMENT_MESSAGE_PREFIX + " konnte nicht wiederhergestellt werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(
                                         ListViewNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .valueReference(customerNamePathRef)
                                                 .build(),
                                         ListViewNotificationEventDateValueParamDto.builder()
-                                                .param(":date")
+                                                .param(DATE_PARAM)
                                                 .valueReference(shortSummaryFieldRef)
                                                 .build()))
                                 .build()))
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
-                        .url("services/customers/customers/appointments/:appointmentId")
+                        .url(CUSTOMER_APPOINTMENT_SERVICE_URL + APPOINTMENT_ID_PARAM)
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
-                                .param(":appointmentId")
+                                .param(APPOINTMENT_ID_PARAM)
                                 .valueReference(idSourcePathRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Termin löschen")
-                                .content("Termin von :name am :date als gelöscht markieren?")
+                                .content(APPOINTMENT_MESSAGE_PREFIX + " als gelöscht markieren?")
                                 .params(Arrays.asList(
                                         ListViewUserConfirmationValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .valueReference(customerNamePathRef)
                                                 .build(),
                                         ListViewUserConfirmationDateValueParamDto.builder()
-                                                .param(":date")
+                                                .param(DATE_PARAM)
                                                 .valueReference(shortSummaryFieldRef)
                                                 .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Termin von :name am :date wurde erfolgreich als gelöscht" + " markiert")
+                                        .text(APPOINTMENT_MESSAGE_PREFIX + " wurde erfolgreich als gelöscht markiert")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(
                                                 ListViewNotificationEventValueParamDto.builder()
-                                                        .param(":name")
+                                                        .param(NAME_PARAM)
                                                         .valueReference(customerNamePathRef)
                                                         .build(),
                                                 ListViewNotificationEventDateValueParamDto.builder()
-                                                        .param(":date")
+                                                        .param(DATE_PARAM)
                                                         .valueReference(shortSummaryFieldRef)
                                                         .build()))
                                         .build(),
@@ -1436,18 +1424,18 @@ public class CustomerAppointmentController {
                                                 Map.of(KokuCustomerAppointmentDto.Fields.deleted, deletedSourcePathRef))
                                         .build(),
                                 ListViewPropagateGlobalEventActionEventDto.builder()
-                                        .eventName("customer-appointment-updated")
+                                        .eventName(CUSTOMER_APPOINTMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text("Termin von :name am :date konnte nicht als gelöscht markiert" + " werden")
+                                .text(APPOINTMENT_MESSAGE_PREFIX + " konnte nicht als gelöscht markiert werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(
                                         ListViewNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .valueReference(customerNamePathRef)
                                                 .build(),
                                         ListViewNotificationEventDateValueParamDto.builder()
-                                                .param(":date")
+                                                .param(DATE_PARAM)
                                                 .valueReference(shortSummaryFieldRef)
                                                 .build()))
                                 .build()))
@@ -1568,29 +1556,29 @@ public class CustomerAppointmentController {
                 this.entityManager.getReference(CustomerAppointment.class, appointmentId);
         if (!Boolean.TRUE.equals(forceUpdate)
                 && !customerAppointment.getVersion().equals(updatedDto.getVersion())) {
-            throw new KokuBusinessExceptionWithConfirmationMessage(
-                    KokuBusinessExceptionWithConfirmationMessageDto.builder()
-                            .headline("Konflikt")
-                            .confirmationMessage("Der Kundentermin wurde zwischenzeitlich bearbeitet.\n"
-                                    + "Willst Du die Speicherung dennoch vornehmen?")
-                            .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .icon("CLOSE")
-                                    .build())
-                            .closeOnClickOutside(true)
-                            .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
-                                    .text("Trotzdem speichern")
-                                    .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format(
-                                            "services/customers/customers/appointments/%s?forceUpdate=%s",
-                                            appointmentId, Boolean.TRUE))
-                                    .build())
-                            .button(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .build())
-                            .build());
+            throw new KokuBusinessExceptionWithConfirmationMessage(KokuBusinessErrorWithConfirmationMessageDto.builder()
+                    .headline("Konflikt")
+                    .confirmationMessage("Der Kundentermin wurde zwischenzeitlich bearbeitet.\n"
+                            + "Willst Du die Speicherung dennoch vornehmen?")
+                    .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .icon("CLOSE")
+                            .build())
+                    .closeOnClickOutside(true)
+                    .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
+                            .text("Trotzdem speichern")
+                            .title("Zwischenzeitliche Änderungen überschreiben")
+                            .endpointUrl(String.format(
+                                    CUSTOMER_APPOINTMENT_SERVICE_URL + "%s?forceUpdate=%s",
+                                    appointmentId,
+                                    Boolean.TRUE))
+                            .build())
+                    .button(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .build())
+                    .build());
         }
         this.transformer.transformToEntity(customerAppointment, updatedDto);
         this.entityManager.flush();
@@ -1653,14 +1641,14 @@ public class CustomerAppointmentController {
 
     @GetMapping(value = "/appointments/statistics")
     public BarChartDto getAppointmentStatistics(
-            @RequestParam(value = "start", required = false) final YearMonth startFilterRaw,
+            @RequestParam(value = START_FILTER_PARAM, required = false) final YearMonth startFilterRaw,
             @RequestParam(value = "end", required = false) final YearMonth endFilterRaw) {
         final LocalDateTime startFilter = startFilterRaw != null
                 ? startFilterRaw.atDay(1).atStartOfDay()
-                : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
+                : YearMonth.now(DEFAULT_ZONE).minusMonths(6).atDay(1).atStartOfDay();
         final LocalDateTime endFilter = endFilterRaw != null
                 ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX)
-                : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
+                : YearMonth.now(DEFAULT_ZONE).atEndOfMonth().atTime(LocalTime.MAX);
 
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
         final NumberExpression<BigDecimal> activitiesRevenueSnapshotSum = qClazz.activitiesRevenueSnapshot.sum();
@@ -1697,11 +1685,11 @@ public class CustomerAppointmentController {
         allMonthsBetweenQuery.add(lastMonth);
 
         return BarChartDto.builder()
-                .title("Umsätze")
+                .title(REVENUES_TITLE)
                 .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(startFilter))
                         .label("Von")
-                        .queryParamName("start")
+                        .queryParamName(START_FILTER_PARAM)
                         .build())
                 .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
@@ -1773,14 +1761,14 @@ public class CustomerAppointmentController {
 
     @GetMapping(value = "/products/statistics")
     public BarChartDto getProductRevenue(
-            @RequestParam(value = "start", required = false) final YearMonth startFilterRaw,
+            @RequestParam(value = START_FILTER_PARAM, required = false) final YearMonth startFilterRaw,
             @RequestParam(value = "end", required = false) final YearMonth endFilterRaw) {
         final LocalDateTime startFilter = startFilterRaw != null
                 ? startFilterRaw.atDay(1).atStartOfDay()
-                : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
+                : YearMonth.now(DEFAULT_ZONE).minusMonths(6).atDay(1).atStartOfDay();
         final LocalDateTime endFilter = endFilterRaw != null
                 ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX)
-                : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
+                : YearMonth.now(DEFAULT_ZONE).atEndOfMonth().atTime(LocalTime.MAX);
 
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
 
@@ -1812,7 +1800,7 @@ public class CustomerAppointmentController {
         }
 
         return BarChartDto.builder()
-                .title("Umsätze")
+                .title(REVENUES_TITLE)
                 .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(startFilter))
                         .label("Von")
@@ -1838,7 +1826,7 @@ public class CustomerAppointmentController {
                                                                 != 0
                                                         || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L)
                                         .map(product -> String.format(
-                                                        "%s / %s",
+                                                        PRODUCT_SUMMARY_FORMAT,
                                                         this.productManufacturerKTableProcessor
                                                                 .getProductManufacturers()
                                                                 .get(product.value.getManufacturerId())
@@ -1847,12 +1835,12 @@ public class CustomerAppointmentController {
                                                 .trim())
                                         .toList())
                                 .build())
-                        .y(YAxisDto.builder().text("Umsatz (€)").build())
+                        .y(YAxisDto.builder().text(REVENUE_LABEL).build())
                         .y(YAxisDto.builder().opposite(true).text("Verkäufe").build())
                         .build())
                 .series(List.of(
                         NumericSeriesDto.builder()
-                                .name("Umsatz (€)")
+                                .name(REVENUE_LABEL)
                                 .data(StreamSupport.stream(
                                                 Spliterators.spliteratorUnknownSize(
                                                         this.productKTableProcessor
@@ -1865,9 +1853,8 @@ public class CustomerAppointmentController {
                                                                         productKafkaDto.key, BigDecimal.ZERO))
                                                                 != 0
                                                         || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L)
-                                        .map(productKafkaDto -> {
-                                            return revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO);
-                                        })
+                                        .map(productKafkaDto ->
+                                                revenuePerProduct.getOrDefault(productKafkaDto.key, BigDecimal.ZERO))
                                         .toList())
                                 .build(),
                         NumericSeriesDto.builder()
@@ -1884,10 +1871,8 @@ public class CustomerAppointmentController {
                                                                         productKafkaDto.key, BigDecimal.ZERO))
                                                                 != 0
                                                         || salesPerProduct.getOrDefault(productKafkaDto.key, 0L) != 0L)
-                                        .map(productKafkaDto -> {
-                                            return BigDecimal.valueOf(
-                                                    salesPerProduct.getOrDefault(productKafkaDto.key, 0L));
-                                        })
+                                        .map(productKafkaDto -> BigDecimal.valueOf(
+                                                salesPerProduct.getOrDefault(productKafkaDto.key, 0L)))
                                         .toList())
                                 .build()))
                 .stacked(true)
@@ -1896,14 +1881,14 @@ public class CustomerAppointmentController {
 
     @GetMapping(value = "/activities/statistics")
     public BarChartDto getActivityRevenue(
-            @RequestParam(value = "start", required = false) final YearMonth startFilterRaw,
+            @RequestParam(value = START_FILTER_PARAM, required = false) final YearMonth startFilterRaw,
             @RequestParam(value = "end", required = false) final YearMonth endFilterRaw) {
         final LocalDateTime startFilter = startFilterRaw != null
                 ? startFilterRaw.atDay(1).atStartOfDay()
-                : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
+                : YearMonth.now(DEFAULT_ZONE).minusMonths(6).atDay(1).atStartOfDay();
         final LocalDateTime endFilter = endFilterRaw != null
                 ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX)
-                : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
+                : YearMonth.now(DEFAULT_ZONE).atEndOfMonth().atTime(LocalTime.MAX);
 
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
 
@@ -1936,11 +1921,11 @@ public class CustomerAppointmentController {
         }
 
         return BarChartDto.builder()
-                .title("Umsätze")
+                .title(REVENUES_TITLE)
                 .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(startFilter))
                         .label("Von")
-                        .queryParamName("start")
+                        .queryParamName(START_FILTER_PARAM)
                         .build())
                 .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
@@ -1964,12 +1949,12 @@ public class CustomerAppointmentController {
                                         .map(activity -> String.format("%s", activity.value.getName()))
                                         .toList())
                                 .build())
-                        .y(YAxisDto.builder().text("Umsatz (€)").build())
+                        .y(YAxisDto.builder().text(REVENUE_LABEL).build())
                         .y(YAxisDto.builder().opposite(true).text("Anwendungen").build())
                         .build())
                 .series(List.of(
                         NumericSeriesDto.builder()
-                                .name("Umsatz (€)")
+                                .name(REVENUE_LABEL)
                                 .data(StreamSupport.stream(
                                                 Spliterators.spliteratorUnknownSize(
                                                         this.activityKTableProcessor
@@ -2009,14 +1994,14 @@ public class CustomerAppointmentController {
 
     @GetMapping(value = "/customers/statistics")
     public BarChartDto getCustomerStatistics(
-            @RequestParam(value = "start", required = false) final YearMonth startFilterRaw,
+            @RequestParam(value = START_FILTER_PARAM, required = false) final YearMonth startFilterRaw,
             @RequestParam(value = "end", required = false) final YearMonth endFilterRaw) {
         final LocalDateTime startFilter = startFilterRaw != null
                 ? startFilterRaw.atDay(1).atStartOfDay()
-                : YearMonth.now().minusMonths(6).atDay(1).atStartOfDay();
+                : YearMonth.now(DEFAULT_ZONE).minusMonths(6).atDay(1).atStartOfDay();
         final LocalDateTime endFilter = endFilterRaw != null
                 ? endFilterRaw.atEndOfMonth().atTime(LocalTime.MAX)
-                : YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
+                : YearMonth.now(DEFAULT_ZONE).atEndOfMonth().atTime(LocalTime.MAX);
 
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
         final NumberExpression<BigDecimal> soldProductsRevenueSnapshotSum = qClazz.soldProductsRevenueSnapshot.sum();
@@ -2049,11 +2034,11 @@ public class CustomerAppointmentController {
                 .transform(GroupBy.groupBy(qClazz.customer).as(qClazz.count()));
 
         return BarChartDto.builder()
-                .title("Umsätze")
+                .title(REVENUES_TITLE)
                 .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(startFilter))
                         .label("Von")
-                        .queryParamName("start")
+                        .queryParamName(START_FILTER_PARAM)
                         .build())
                 .filter(MonthInputChartFilterDto.builder()
                         .value(YearMonth.from(endFilter))
@@ -2069,13 +2054,13 @@ public class CustomerAppointmentController {
                                         .toList())
                                 .build())
                         .y(YAxisDto.builder()
-                                .text("Umsatz (€)")
+                                .text(REVENUE_LABEL)
                                 .seriesName(List.of("Tätigkeiten (€)", "Produkte (€)"))
                                 .build())
                         .y(YAxisDto.builder()
                                 .opposite(true)
-                                .text("Besuche")
-                                .seriesName(List.of("Besuche"))
+                                .text(VISITS_LABEL)
+                                .seriesName(List.of(VISITS_LABEL))
                                 .build())
                         .build())
                 .series(List.of(
@@ -2104,7 +2089,7 @@ public class CustomerAppointmentController {
                                         .toList())
                                 .build(),
                         NumericSeriesDto.builder()
-                                .name("Besuche")
+                                .name(VISITS_LABEL)
                                 .data(visitsPerCustomer.keySet().stream()
                                         .map(customer -> {
                                             final Long count = visitsPerCustomer.get(customer);
@@ -2130,7 +2115,7 @@ public class CustomerAppointmentController {
                         .as(Projections.tuple(activityRevenueSnapshotSum, soldProductsRevenueSnapshotSum)));
 
         return BarChartDto.builder()
-                .title("Umsätze")
+                .title(REVENUES_TITLE)
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
                                 .categories(revenuesPerYear.keySet().stream()
@@ -2158,7 +2143,7 @@ public class CustomerAppointmentController {
 
     @GetMapping("/customers/dashboard/appointments")
     public DashboardTextPanelDto getAppointmentDashboardContent() {
-        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now(DEFAULT_ZONE);
         final YearMonth currentMonth = YearMonth.from(now);
 
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;
@@ -2216,7 +2201,7 @@ public class CustomerAppointmentController {
 
     @GetMapping("/customers/dashboard/revenueschart")
     public LineChartDto getRevenuesChartDashboardContent() {
-        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now(DEFAULT_ZONE);
         final Year currentYear = Year.from(now);
         final Year lastYear = currentYear.minusYears(1);
 
@@ -2247,7 +2232,7 @@ public class CustomerAppointmentController {
                 .title("Umsatzübersicht \uD83D\uDCCA")
                 .series(List.of(
                         NumericSeriesDto.builder()
-                                .name("Umsatz " + currentYear.getValue())
+                                .name(REVENUE_LABEL_PREFIX + currentYear.getValue())
                                 .data(Arrays.stream(Month.values())
                                         .map(month -> {
                                             BigDecimal result = sums.get(currentYear.atMonth(month));
@@ -2256,7 +2241,7 @@ public class CustomerAppointmentController {
                                         .toList())
                                 .build(),
                         NumericSeriesDto.builder()
-                                .name("Umsatz " + lastYear.getValue())
+                                .name(REVENUE_LABEL_PREFIX + lastYear.getValue())
                                 .data(Arrays.stream(Month.values())
                                         .map(month -> {
                                             BigDecimal result = sums.get(lastYear.atMonth(month));
@@ -2287,7 +2272,7 @@ public class CustomerAppointmentController {
 
     @GetMapping("/customers/dashboard/revenues/current")
     public DashboardTextPanelDto getRevenuesCurrentDashboardContent() {
-        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now(DEFAULT_ZONE);
         final YearMonth currentMonth = YearMonth.from(now);
 
         final BigDecimal overallRevenueThisMonth = getOverallRevenue(
@@ -2308,7 +2293,7 @@ public class CustomerAppointmentController {
                 .color(KokuColorEnum.BLUE)
                 .topHeadline("Monatsumsatz")
                 .headline(NumberFormat.getCurrencyInstance(Locale.GERMANY).format(overallRevenueThisMonth))
-                .subHeadline("Umsatz "
+                .subHeadline(REVENUE_LABEL_PREFIX
                         + currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN)
                         + " "
                         + currentMonth.getYear()
@@ -2344,7 +2329,7 @@ public class CustomerAppointmentController {
 
     @GetMapping("/customers/dashboard/revenues/preview")
     public DashboardTextPanelDto getRevenuesPreviewDashboardContent() {
-        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now(DEFAULT_ZONE);
         final YearMonth currentMonth = YearMonth.from(now);
 
         final BigDecimal overallRevenuePlanned = getOverallRevenue(
@@ -2377,7 +2362,7 @@ public class CustomerAppointmentController {
 
     @GetMapping("/customers/dashboard/topproduct")
     public DashboardTextPanelDto getTopProductDashboardContent() {
-        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now(DEFAULT_ZONE);
         final YearMonth currentMonth = YearMonth.from(now);
 
         final Map<Long, Integer> productUsages = getProductUsages(
@@ -2409,7 +2394,7 @@ public class CustomerAppointmentController {
 
     @GetMapping("/customers/dashboard/topactivity")
     public DashboardTextPanelDto getTopActivityDashboardContent() {
-        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now(DEFAULT_ZONE);
         final YearMonth currentMonth = YearMonth.from(now);
 
         final Map<Long, Integer> activityUsages = getActivityUsages(
@@ -2441,7 +2426,7 @@ public class CustomerAppointmentController {
 
     @GetMapping("/customers/dashboard/newcustomers")
     public DashboardTextPanelDto getNewCustomerDashboardContent() {
-        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now(DEFAULT_ZONE);
         final YearMonth currentMonth = YearMonth.from(now);
 
         final QCustomer qClazz = customer;
@@ -2466,7 +2451,7 @@ public class CustomerAppointmentController {
 
     @GetMapping("/customers/dashboard/topcustomers")
     public DashboardTextPanelDto getTopCustomerDashboardContent() {
-        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now(DEFAULT_ZONE);
         final YearMonth currentMonth = YearMonth.from(now);
 
         final QCustomerAppointment qClazz = QCustomerAppointment.customerAppointment;

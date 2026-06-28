@@ -15,9 +15,9 @@ import de.domschmidt.koku.activity.persistence.ActivityRepository;
 import de.domschmidt.koku.activity.persistence.QActivity;
 import de.domschmidt.koku.activity.transformer.ActivityToActivityDtoTransformer;
 import de.domschmidt.koku.activity.transformer.ActivityToActivitySummaryDtoTransformer;
+import de.domschmidt.koku.business_exception.dto.KokuBusinessErrorWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
-import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.dto.activity.KokuActivityDto;
 import de.domschmidt.koku.dto.activity.KokuActivitySummaryDto;
@@ -112,6 +112,9 @@ public class ActivityController {
     private static final String ACTIVITY_CREATED_EVENT = "activity-created";
     private static final String ACTIVITY_ID_PARAM = ":activityId";
     private static final String NAME_PARAM = ":name";
+    private static final String ACTIVITY_LABEL = "Tätigkeit ";
+    private static final String ACTIVITY_SERVICE_URL = "services/activities/activities/";
+    private static final String ACTIVITY_NOT_FOUND_MESSAGE = "Activity not found";
 
     private final EntityManager entityManager;
     private final ActivityRepository activityRepository;
@@ -184,8 +187,8 @@ public class ActivityController {
                                 .build())
                         .submitPayload(KokuActivityDto.builder().deleted(true).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Tätigkeit löschen")
-                                .content("Tätigkeit " + NAME_PARAM + " als gelöscht markieren?")
+                                .headline(ACTIVITY_LABEL + "löschen")
+                                .content(ACTIVITY_LABEL + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuActivityDto.Fields.name)
@@ -193,7 +196,7 @@ public class ActivityController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Tätigkeit " + NAME_PARAM + " erfolgreich als gelöscht markiert")
+                                        .text(ACTIVITY_LABEL + NAME_PARAM + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -204,7 +207,7 @@ public class ActivityController {
                                         .eventName(ACTIVITY_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Tätigkeit " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(ACTIVITY_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -232,8 +235,8 @@ public class ActivityController {
                                 .build())
                         .submitPayload(KokuActivityDto.builder().deleted(false).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Tätigkeit wiederherstellen")
-                                .content("Tätigkeit " + NAME_PARAM + " wiederherstellen?")
+                                .headline(ACTIVITY_LABEL + "wiederherstellen")
+                                .content(ACTIVITY_LABEL + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuActivityDto.Fields.name)
@@ -241,7 +244,7 @@ public class ActivityController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Tätigkeit " + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
+                                        .text(ACTIVITY_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -252,7 +255,7 @@ public class ActivityController {
                                         .eventName(ACTIVITY_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Tätigkeit " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(ACTIVITY_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -318,7 +321,7 @@ public class ActivityController {
                 .inlineContent(ListViewHeaderContentDto.builder()
                         .title("Neue Tätigkeit")
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/activities/activities/form")
+                                .formularUrl(ACTIVITY_SERVICE_URL + "form")
                                 .submitUrl("services/activities/activities")
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
                                 .maxWidthInPx(800)
@@ -357,7 +360,7 @@ public class ActivityController {
                 .route(ACTIVITY_ID_PARAM)
                 .itemId(ACTIVITY_ID_PARAM)
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .sourceUrl("services/activities/activities/" + ACTIVITY_ID_PARAM + "/summary")
+                        .sourceUrl(ACTIVITY_SERVICE_URL + ACTIVITY_ID_PARAM + "/summary")
                         .titlePath(KokuActivitySummaryDto.Fields.summary)
                         .globalEventListeners(
                                 Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
@@ -373,9 +376,8 @@ public class ActivityController {
                                                 .icon("INFORMATION_CIRCLE")
                                                 .title("Bearbeiten")
                                                 .content(ListViewFormularContentDto.builder()
-                                                        .formularUrl("services/activities/activities/form")
-                                                        .sourceUrl(
-                                                                "services/activities/activities/" + ACTIVITY_ID_PARAM)
+                                                        .formularUrl(ACTIVITY_SERVICE_URL + "form")
+                                                        .sourceUrl(ACTIVITY_SERVICE_URL + ACTIVITY_ID_PARAM)
                                                         .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
                                                         .maxWidthInPx(800)
                                                         .onSaveEvents(Arrays.asList(
@@ -393,7 +395,7 @@ public class ActivityController {
                                                 .content(ListViewGridContentDto.builder()
                                                         .cols(1)
                                                         .content(Arrays.asList(ListViewChartContentDto.builder()
-                                                                .chartUrl("services/activities/activities/"
+                                                                .chartUrl(ACTIVITY_SERVICE_URL
                                                                         + ACTIVITY_ID_PARAM
                                                                         + "/statistics/pricehistory")
                                                                 .build()))
@@ -416,15 +418,15 @@ public class ActivityController {
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                        .url("services/activities/activities/" + ACTIVITY_ID_PARAM + "/restore")
+                        .url(ACTIVITY_SERVICE_URL + ACTIVITY_ID_PARAM + "/restore")
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                 .param(ACTIVITY_ID_PARAM)
                                 .valueReference(idSourcePathRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
-                                .headline("Tätigkeit wiederherstellen")
-                                .content("Tätigkeit " + NAME_PARAM + " wiederherstellen?")
+                                .headline(ACTIVITY_LABEL + "wiederherstellen")
+                                .content(ACTIVITY_LABEL + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(NAME_PARAM)
                                         .valueReference(nameFieldRef)
@@ -432,7 +434,7 @@ public class ActivityController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Tätigkeit " + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
+                                        .text(ACTIVITY_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -444,7 +446,7 @@ public class ActivityController {
                                         .valueMapping(Map.of(KokuActivityDto.Fields.deleted, deletedSourcePathRef))
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text("Tätigkeit " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(ACTIVITY_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -454,15 +456,15 @@ public class ActivityController {
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
-                        .url("services/activities/activities/" + ACTIVITY_ID_PARAM)
+                        .url(ACTIVITY_SERVICE_URL + ACTIVITY_ID_PARAM)
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                 .param(ACTIVITY_ID_PARAM)
                                 .valueReference(idSourcePathRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
-                                .headline("Tätigkeit löschen")
-                                .content("Tätigkeit " + NAME_PARAM + " als gelöscht markieren?")
+                                .headline(ACTIVITY_LABEL + "löschen")
+                                .content(ACTIVITY_LABEL + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(NAME_PARAM)
                                         .valueReference(nameFieldRef)
@@ -470,7 +472,7 @@ public class ActivityController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Tätigkeit " + NAME_PARAM + " wurde erfolgreich als gelöscht markiert")
+                                        .text(ACTIVITY_LABEL + NAME_PARAM + " wurde erfolgreich als gelöscht markiert")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -482,7 +484,7 @@ public class ActivityController {
                                         .valueMapping(Map.of(KokuActivityDto.Fields.deleted, deletedSourcePathRef))
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text("Tätigkeit " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(ACTIVITY_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -516,7 +518,7 @@ public class ActivityController {
     public LineChartDto readPriceHistory(@PathVariable("activityId") Long activityId) {
         final Activity activity = this.activityRepository
                 .findById(activityId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ACTIVITY_NOT_FOUND_MESSAGE));
 
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm 'Uhr'", Locale.GERMAN);
 
@@ -531,9 +533,8 @@ public class ActivityController {
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
                                 .categories(activity.getPriceHistory().stream()
-                                        .map(activityPriceHistoryEntry -> {
-                                            return formatter.format(activityPriceHistoryEntry.getRecorded());
-                                        })
+                                        .map(activityPriceHistoryEntry ->
+                                                formatter.format(activityPriceHistoryEntry.getRecorded()))
                                         .toList())
                                 .build())
                         .build())
@@ -544,7 +545,7 @@ public class ActivityController {
     public KokuActivityDto read(@PathVariable("activityId") Long activityId) {
         final Activity activity = this.activityRepository
                 .findById(activityId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ACTIVITY_NOT_FOUND_MESSAGE));
         return this.transformer.transformToDto(activity);
     }
 
@@ -552,7 +553,7 @@ public class ActivityController {
     public KokuActivitySummaryDto readSummary(@PathVariable("activityId") Long activityId) {
         final Activity activity = this.activityRepository
                 .findById(activityId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ACTIVITY_NOT_FOUND_MESSAGE));
         return new ActivityToActivitySummaryDtoTransformer().transformToDto(activity);
     }
 
@@ -565,29 +566,27 @@ public class ActivityController {
             @RequestBody KokuActivityDto updatedDto) {
         final Activity activity = this.entityManager.getReference(Activity.class, activityId);
         if (!Boolean.TRUE.equals(forceUpdate) && !activity.getVersion().equals(updatedDto.getVersion())) {
-            throw new KokuBusinessExceptionWithConfirmationMessage(
-                    KokuBusinessExceptionWithConfirmationMessageDto.builder()
-                            .headline("Konflikt")
-                            .confirmationMessage("die Tätigkeit wurde zwischenzeitlich bearbeitet.\n"
-                                    + "Willst Du die Speicherung dennoch vornehmen?")
-                            .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .icon("CLOSE")
-                                    .build())
-                            .closeOnClickOutside(true)
-                            .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
-                                    .text("Trotzdem speichern")
-                                    .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format(
-                                            "services/activities/activities/%s?forceUpdate=%s",
-                                            activityId, Boolean.TRUE))
-                                    .build())
-                            .button(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .build())
-                            .build());
+            throw new KokuBusinessExceptionWithConfirmationMessage(KokuBusinessErrorWithConfirmationMessageDto.builder()
+                    .headline("Konflikt")
+                    .confirmationMessage("die Tätigkeit wurde zwischenzeitlich bearbeitet.\n"
+                            + "Willst Du die Speicherung dennoch vornehmen?")
+                    .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .icon("CLOSE")
+                            .build())
+                    .closeOnClickOutside(true)
+                    .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
+                            .text("Trotzdem speichern")
+                            .title("Zwischenzeitliche Änderungen überschreiben")
+                            .endpointUrl(
+                                    String.format(ACTIVITY_SERVICE_URL + "%s?forceUpdate=%s", activityId, Boolean.TRUE))
+                            .build())
+                    .button(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .build())
+                    .build());
         }
         this.transformer.transformToEntity(activity, updatedDto);
         this.entityManager.flush();

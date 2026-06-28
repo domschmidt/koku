@@ -13,10 +13,9 @@ public class DefaultDashboardViewContentIdGenerator implements IDashboardViewCon
         if (proposal == null) {
             proposal = prefix + "-" + UUID.randomUUID();
         } else if (knownNames.contains(proposal)) {
-            throw new IllegalArgumentException("Proposal "
-                    + proposal
-                    + " already exists. If you specify your own id, please make sure to set them"
-                    + " uniquely.");
+            throw new IllegalArgumentException(String.format(
+                    "Proposal %s already exists. If you specify your own id, please make sure to set them uniquely.",
+                    proposal));
         }
 
         String result = proposal;

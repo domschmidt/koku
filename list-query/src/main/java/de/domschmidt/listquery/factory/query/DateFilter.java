@@ -3,7 +3,9 @@ package de.domschmidt.listquery.factory.query;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateExpression;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.core.types.dsl.StringExpressions;
+import de.domschmidt.listquery.dto.request.EnumSearchOperator;
 import de.domschmidt.listquery.dto.request.EnumSearchOperatorHint;
 import de.domschmidt.listquery.dto.request.QueryPredicate;
 import de.domschmidt.listquery.factory.IListFilter;
@@ -18,12 +20,7 @@ public class DateFilter implements IListFilter {
             return null;
         }
 
-        return StringExpressions.lpad(castedExpr.dayOfMonth().stringValue(), 2, '0')
-                .append(".")
-                .append(StringExpressions.lpad(castedExpr.month().stringValue(), 2, '0'))
-                .append(".")
-                .append(StringExpressions.lpad(castedExpr.year().stringValue(), 4, '0'))
-                .like('%' + query + '%');
+        return formattedDateExpression(castedExpr).like('%' + query + '%');
     }
 
     @Override
@@ -37,106 +34,69 @@ public class DateFilter implements IListFilter {
 
         final String rawSearchExpr = query.getSearchExpression();
         final LocalDate searchExpression = LocalDate.parse(rawSearchExpr, DateTimeFormatter.ISO_DATE);
-        BooleanExpression result = null;
-        switch (query.getSearchOperator()) {
-            case LIKE, EQ -> {
-                if (EnumSearchOperatorHint.YEARLY_RECURRING.equals(query.getSearchOperatorHint())) {
-                    result = castedExpr
-                            .year()
-                            .loe(searchExpression.getYear())
-                            .and(castedExpr
-                                    .month()
-                                    .lt(searchExpression.getMonthValue())
-                                    .or(castedExpr
-                                            .month()
-                                            .eq(searchExpression.getMonthValue())
-                                            .and(castedExpr.dayOfMonth().eq(searchExpression.getDayOfMonth()))));
-                } else {
-                    result = castedExpr.eq(searchExpression);
-                }
-            }
-            case LESS -> {
-                if (EnumSearchOperatorHint.YEARLY_RECURRING.equals(query.getSearchOperatorHint())) {
-                    result = castedExpr
-                            .year()
-                            .loe(searchExpression.getYear())
-                            .and(castedExpr
-                                    .month()
-                                    .lt(searchExpression.getMonthValue())
-                                    .or(castedExpr
-                                            .month()
-                                            .eq(searchExpression.getMonthValue())
-                                            .and(castedExpr.dayOfMonth().lt(searchExpression.getDayOfMonth()))));
-                } else {
-                    result = castedExpr.lt(searchExpression);
-                }
-            }
-            case GREATER -> {
-                if (EnumSearchOperatorHint.YEARLY_RECURRING.equals(query.getSearchOperatorHint())) {
-                    result = castedExpr
-                            .year()
-                            .loe(searchExpression.getYear())
-                            .and(castedExpr
-                                    .month()
-                                    .gt(searchExpression.getMonthValue())
-                                    .or(castedExpr
-                                            .month()
-                                            .eq(searchExpression.getMonthValue())
-                                            .and(castedExpr.dayOfMonth().gt(searchExpression.getDayOfMonth()))));
-                } else {
-                    result = castedExpr.gt(searchExpression);
-                }
-            }
-            case LESS_OR_EQ -> {
-                if (EnumSearchOperatorHint.YEARLY_RECURRING.equals(query.getSearchOperatorHint())) {
-                    result = castedExpr
-                            .year()
-                            .loe(searchExpression.getYear())
-                            .and(castedExpr
-                                    .month()
-                                    .lt(searchExpression.getMonthValue())
-                                    .or(castedExpr
-                                            .month()
-                                            .eq(searchExpression.getMonthValue())
-                                            .and(castedExpr.dayOfMonth().loe(searchExpression.getDayOfMonth()))));
-                } else {
-                    result = castedExpr.loe(searchExpression);
-                }
-            }
-            case GREATER_OR_EQ -> {
-                if (EnumSearchOperatorHint.YEARLY_RECURRING.equals(query.getSearchOperatorHint())) {
-                    result = castedExpr
-                            .year()
-                            .loe(searchExpression.getYear())
-                            .and(castedExpr
-                                    .month()
-                                    .gt(searchExpression.getMonthValue())
-                                    .or(castedExpr
-                                            .month()
-                                            .eq(searchExpression.getMonthValue())
-                                            .and(castedExpr.dayOfMonth().goe(searchExpression.getDayOfMonth()))));
-                } else {
-                    result = castedExpr.goe(searchExpression);
-                }
-            }
-            case STARTS_WITH ->
-                result = StringExpressions.lpad(castedExpr.dayOfMonth().stringValue(), 2, '0')
-                        .append(".")
-                        .append(StringExpressions.lpad(castedExpr.month().stringValue(), 2, '0'))
-                        .append(".")
-                        .append(StringExpressions.lpad(castedExpr.year().stringValue(), 4, '0'))
-                        .startsWithIgnoreCase(rawSearchExpr);
-            case ENDS_WITH ->
-                result = StringExpressions.lpad(castedExpr.dayOfMonth().stringValue(), 2, '0')
-                        .append(".")
-                        .append(StringExpressions.lpad(castedExpr.month().stringValue(), 2, '0'))
-                        .append(".")
-                        .append(StringExpressions.lpad(castedExpr.year().stringValue(), 4, '0'))
-                        .endsWithIgnoreCase(rawSearchExpr);
+        final BooleanExpression result = buildSearchExpression(castedExpr, query, rawSearchExpr, searchExpression);
+        return Boolean.TRUE.equals(query.getNegate()) && result != null ? result.not() : result;
+    }
+
+    private BooleanExpression buildSearchExpression(
+            final DateExpression castedExpr,
+            final QueryPredicate query,
+            final String rawSearchExpr,
+            final LocalDate searchExpression) {
+        final EnumSearchOperator operator = query.getSearchOperator();
+        if (usesYearlyRecurringComparison(query, operator)) {
+            return buildYearlyRecurringSearchExpression(castedExpr, searchExpression, operator);
         }
-        if (result != null && Boolean.TRUE.equals(query.getNegate())) {
-            result = result.not();
-        }
-        return result;
+        return switch (operator) {
+            case LIKE, EQ -> castedExpr.eq(searchExpression);
+            case LESS -> castedExpr.lt(searchExpression);
+            case GREATER -> castedExpr.gt(searchExpression);
+            case LESS_OR_EQ -> castedExpr.loe(searchExpression);
+            case GREATER_OR_EQ -> castedExpr.goe(searchExpression);
+            case STARTS_WITH -> formattedDateExpression(castedExpr).startsWithIgnoreCase(rawSearchExpr);
+            case ENDS_WITH -> formattedDateExpression(castedExpr).endsWithIgnoreCase(rawSearchExpr);
+        };
+    }
+
+    private BooleanExpression buildYearlyRecurringSearchExpression(
+            final DateExpression castedExpr, final LocalDate searchExpression, final EnumSearchOperator operator) {
+        final BooleanExpression monthBeforeOrAfter =
+                switch (operator) {
+                    case LIKE, EQ, LESS, LESS_OR_EQ -> castedExpr.month().lt(searchExpression.getMonthValue());
+                    case GREATER, GREATER_OR_EQ -> castedExpr.month().gt(searchExpression.getMonthValue());
+                    default ->
+                        throw new IllegalArgumentException("Unsupported yearly recurring date operator: " + operator);
+                };
+        final BooleanExpression dayComparison =
+                switch (operator) {
+                    case LIKE, EQ -> castedExpr.dayOfMonth().eq(searchExpression.getDayOfMonth());
+                    case LESS -> castedExpr.dayOfMonth().lt(searchExpression.getDayOfMonth());
+                    case GREATER -> castedExpr.dayOfMonth().gt(searchExpression.getDayOfMonth());
+                    case LESS_OR_EQ -> castedExpr.dayOfMonth().loe(searchExpression.getDayOfMonth());
+                    case GREATER_OR_EQ -> castedExpr.dayOfMonth().goe(searchExpression.getDayOfMonth());
+                    default ->
+                        throw new IllegalArgumentException("Unsupported yearly recurring date operator: " + operator);
+                };
+
+        return castedExpr
+                .year()
+                .loe(searchExpression.getYear())
+                .and(monthBeforeOrAfter.or(
+                        castedExpr.month().eq(searchExpression.getMonthValue()).and(dayComparison)));
+    }
+
+    private static boolean usesYearlyRecurringComparison(
+            final QueryPredicate query, final EnumSearchOperator operator) {
+        return EnumSearchOperatorHint.YEARLY_RECURRING.equals(query.getSearchOperatorHint())
+                && operator != EnumSearchOperator.STARTS_WITH
+                && operator != EnumSearchOperator.ENDS_WITH;
+    }
+
+    private static StringExpression formattedDateExpression(final DateExpression castedExpr) {
+        return StringExpressions.lpad(castedExpr.dayOfMonth().stringValue(), 2, '0')
+                .append(".")
+                .append(StringExpressions.lpad(castedExpr.month().stringValue(), 2, '0'))
+                .append(".")
+                .append(StringExpressions.lpad(castedExpr.year().stringValue(), 4, '0'));
     }
 }

@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,6 +49,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
             DateTimeFormatter.ofPattern("'Kundentermin am' dd.MM.yyyy 'um' HH:mm 'Uhr'");
     private static final DateTimeFormatter SHORT_SUMMARY_DATETIME_FORMATTER =
             DateTimeFormatter.ofPattern("dd.MM.yyyy 'um' HH:mm 'Uhr'");
+    private static final ZoneId DEFAULT_ZONE = ZoneId.systemDefault();
 
     private static final NumberFormat PRICE_FORMATTER;
 
@@ -78,46 +80,11 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     private final UserKTableProcessor userKTableProcessor;
 
     public KokuCustomerAppointmentDto transformToDto(final CustomerAppointment model) {
-        final List<KokuCustomerAppointmentActivityDto> activities = new ArrayList<>();
-        if (model.getActivities() != null) {
-            for (final CustomerAppointmentActivity currentActivity : model.getActivities()) {
-                activities.add(KokuCustomerAppointmentActivityDto.builder()
-                        .price(currentActivity.getSellPrice())
-                        .activityId(currentActivity.getActivityId())
-                        .build());
-            }
-        }
-        final List<KokuCustomerAppointmentTreatmentDto> treatmentSequence = new ArrayList<>();
-        if (model.getTreatmentSequence() != null) {
-            for (final CustomerAppointmentTreatmentSequenceItem currentTreatment : model.getTreatmentSequence()) {
-                if (currentTreatment.getActivityStepId() != null) {
-                    treatmentSequence.add(KokuCustomerAppointmentActivityStepTreatmentDto.builder()
-                            .activityStepId(currentTreatment.getActivityStepId())
-                            .build());
-                } else if (currentTreatment.getProductId() != null) {
-                    treatmentSequence.add(KokuCustomerAppointmentProductTreatmentDto.builder()
-                            .productId(currentTreatment.getProductId())
-                            .build());
-                }
-            }
-        }
-        final List<KokuCustomerAppointmentSoldProductDto> soldProducts = new ArrayList<>();
-        if (model.getSoldProducts() != null) {
-            for (final CustomerAppointmentSoldProduct currentSoldProduct : model.getSoldProducts()) {
-                soldProducts.add(KokuCustomerAppointmentSoldProductDto.builder()
-                        .price(currentSoldProduct.getSellPrice())
-                        .productId(currentSoldProduct.getProductId())
-                        .build());
-            }
-        }
-        final List<KokuCustomerAppointmentPromotionDto> promotions = new ArrayList<>();
-        if (model.getPromotions() != null) {
-            for (final CustomerAppointmentPromotion currentPromotion : model.getPromotions()) {
-                promotions.add(KokuCustomerAppointmentPromotionDto.builder()
-                        .promotionId(currentPromotion.getPromotionId())
-                        .build());
-            }
-        }
+        final List<KokuCustomerAppointmentActivityDto> activities = transformActivities(model.getActivities());
+        final List<KokuCustomerAppointmentTreatmentDto> treatmentSequence =
+                transformTreatmentSequence(model.getTreatmentSequence());
+        final List<KokuCustomerAppointmentSoldProductDto> soldProducts = transformSoldProducts(model.getSoldProducts());
+        final List<KokuCustomerAppointmentPromotionDto> promotions = transformPromotions(model.getPromotions());
         BigDecimal activityPriceSum = calculateCustomerAppointmentActivityPriceSum(
                 model.getStart(),
                 activities.stream()
@@ -164,7 +131,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 .activityDurationSummary(
                         this.calculateCustomerAppointmentActivityDurationHumanReadable(activities.stream()
                                 .map(KokuCustomerAppointmentActivityDto::getActivityId)
-                                .collect(Collectors.toList())))
+                                .toList()))
                 .activitySoldProductSummary(PRICE_FORMATTER.format(soldProductPriceSum))
                 .activitySummarySnapshot(this.calculateCustomerAppointmentActivitySummary(activities.stream()
                         .map(KokuCustomerAppointmentActivityDomain::fromDto)
@@ -175,10 +142,94 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 .build();
     }
 
+    private static List<KokuCustomerAppointmentActivityDto> transformActivities(
+            final List<CustomerAppointmentActivity> activities) {
+        final List<KokuCustomerAppointmentActivityDto> result = new ArrayList<>();
+        if (activities == null) {
+            return result;
+        }
+
+        for (final CustomerAppointmentActivity currentActivity : activities) {
+            result.add(KokuCustomerAppointmentActivityDto.builder()
+                    .price(currentActivity.getSellPrice())
+                    .activityId(currentActivity.getActivityId())
+                    .build());
+        }
+        return result;
+    }
+
+    private static List<KokuCustomerAppointmentTreatmentDto> transformTreatmentSequence(
+            final List<CustomerAppointmentTreatmentSequenceItem> treatmentSequence) {
+        final List<KokuCustomerAppointmentTreatmentDto> result = new ArrayList<>();
+        if (treatmentSequence == null) {
+            return result;
+        }
+
+        for (final CustomerAppointmentTreatmentSequenceItem currentTreatment : treatmentSequence) {
+            if (currentTreatment.getActivityStepId() != null) {
+                result.add(KokuCustomerAppointmentActivityStepTreatmentDto.builder()
+                        .activityStepId(currentTreatment.getActivityStepId())
+                        .build());
+            } else if (currentTreatment.getProductId() != null) {
+                result.add(KokuCustomerAppointmentProductTreatmentDto.builder()
+                        .productId(currentTreatment.getProductId())
+                        .build());
+            }
+        }
+        return result;
+    }
+
+    private static List<KokuCustomerAppointmentSoldProductDto> transformSoldProducts(
+            final List<CustomerAppointmentSoldProduct> soldProducts) {
+        final List<KokuCustomerAppointmentSoldProductDto> result = new ArrayList<>();
+        if (soldProducts == null) {
+            return result;
+        }
+
+        for (final CustomerAppointmentSoldProduct currentSoldProduct : soldProducts) {
+            result.add(KokuCustomerAppointmentSoldProductDto.builder()
+                    .price(currentSoldProduct.getSellPrice())
+                    .productId(currentSoldProduct.getProductId())
+                    .build());
+        }
+        return result;
+    }
+
+    private static List<KokuCustomerAppointmentPromotionDto> transformPromotions(
+            final List<CustomerAppointmentPromotion> promotions) {
+        final List<KokuCustomerAppointmentPromotionDto> result = new ArrayList<>();
+        if (promotions == null) {
+            return result;
+        }
+
+        for (final CustomerAppointmentPromotion currentPromotion : promotions) {
+            result.add(KokuCustomerAppointmentPromotionDto.builder()
+                    .promotionId(currentPromotion.getPromotionId())
+                    .build());
+        }
+        return result;
+    }
+
     public CustomerAppointment transformToEntity(
             final CustomerAppointment model, final KokuCustomerAppointmentDto updatedDto)
             throws UserIdNotFoundException, ActivityIdNotFoundException, ActivityStepIdNotFoundException,
                     ProductIdNotFoundException, PromotionIdNotFoundException {
+        updateBaseFields(model, updatedDto);
+        updateAssignedUser(model, updatedDto);
+        updateCustomer(model, updatedDto);
+        replaceActivities(model, updatedDto);
+        replaceTreatmentSequence(model, updatedDto);
+        replaceSoldProducts(model, updatedDto);
+        replacePromotions(model, updatedDto);
+        refreshSnapshots(model);
+        updateFinalPriceSnapshots(model);
+        updateCalculatedEndSnapshot(model);
+        updateDeletedState(model, updatedDto);
+
+        return model;
+    }
+
+    private void updateBaseFields(final CustomerAppointment model, final KokuCustomerAppointmentDto updatedDto) {
         if (updatedDto.getDate() != null && updatedDto.getTime() != null) {
             model.setStart(updatedDto.getDate().atTime(updatedDto.getTime()));
         }
@@ -188,144 +239,196 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         if (updatedDto.getAdditionalInfo() != null) {
             model.setAdditionalInfo(updatedDto.getAdditionalInfo());
         }
-        if (updatedDto.getUserId() != null) {
-            if (!this.userKTableProcessor.getUsers().containsKey(updatedDto.getUserId())) {
-                throw new UserIdNotFoundException(updatedDto.getUserId());
-            }
-            model.setUserId(updatedDto.getUserId());
+    }
+
+    private void updateAssignedUser(final CustomerAppointment model, final KokuCustomerAppointmentDto updatedDto)
+            throws UserIdNotFoundException {
+        if (updatedDto.getUserId() == null) {
+            return;
         }
+        if (!this.userKTableProcessor.getUsers().containsKey(updatedDto.getUserId())) {
+            throw new UserIdNotFoundException(updatedDto.getUserId());
+        }
+        model.setUserId(updatedDto.getUserId());
+    }
+
+    private void updateCustomer(final CustomerAppointment model, final KokuCustomerAppointmentDto updatedDto) {
         if (updatedDto.getCustomerId() != null) {
             model.setCustomer(this.entityManager.getReference(Customer.class, updatedDto.getCustomerId()));
         }
-        if (updatedDto.getDate() != null && updatedDto.getTime() != null) {
-            model.setStart(updatedDto.getDate().atTime(updatedDto.getTime()));
+    }
+
+    private void replaceActivities(final CustomerAppointment model, final KokuCustomerAppointmentDto updatedDto)
+            throws ActivityIdNotFoundException {
+        if (updatedDto.getActivities() == null) {
+            return;
         }
-        if (updatedDto.getActivities() != null) {
-            final List<CustomerAppointmentActivity> newActivities = model.getActivities();
-            newActivities.clear();
-            int position = 0;
-            for (final KokuCustomerAppointmentActivityDto currentActivity : updatedDto.getActivities()) {
-                if (this.activityKTableProcessor.getActivities().get(currentActivity.getActivityId()) == null) {
-                    throw new ActivityIdNotFoundException(currentActivity.getActivityId());
-                }
 
-                final CustomerAppointmentActivity newActivity = new CustomerAppointmentActivity(
-                        model, currentActivity.getActivityId(), currentActivity.getPrice(), position++);
-
-                newActivities.add(newActivity);
+        final List<CustomerAppointmentActivity> newActivities = model.getActivities();
+        newActivities.clear();
+        int position = 0;
+        for (final KokuCustomerAppointmentActivityDto currentActivity : updatedDto.getActivities()) {
+            if (this.activityKTableProcessor.getActivities().get(currentActivity.getActivityId()) == null) {
+                throw new ActivityIdNotFoundException(currentActivity.getActivityId());
             }
-            model.setActivities(newActivities);
-        }
-        if (updatedDto.getTreatmentSequence() != null) {
-            final List<CustomerAppointmentTreatmentSequenceItem> newTreatments = model.getTreatmentSequence();
-            newTreatments.clear();
-            int position = 0;
-            for (final KokuCustomerAppointmentTreatmentDto currentTreatment : updatedDto.getTreatmentSequence()) {
-                switch (currentTreatment) {
-                    case KokuCustomerAppointmentActivityStepTreatmentDto activityStep -> {
-                        if (this.activityStepKTableProcessor.getActivitySteps().get(activityStep.getActivityStepId())
-                                == null) {
-                            throw new ActivityStepIdNotFoundException(activityStep.getActivityStepId());
-                        }
-                        newTreatments.add(new CustomerAppointmentTreatmentSequenceItem(
-                                model, activityStep.getActivityStepId(), null, position++));
-                    }
-                    case KokuCustomerAppointmentProductTreatmentDto product -> {
-                        if (this.productKTableProcessor.getProducts().get(product.getProductId()) == null) {
-                            throw new ProductIdNotFoundException(product.getProductId());
-                        }
-                        newTreatments.add(new CustomerAppointmentTreatmentSequenceItem(
-                                model, null, product.getProductId(), position++));
-                    }
-                    default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unexpected type");
-                }
-            }
-            model.setTreatmentSequence(newTreatments);
-        }
-        if (updatedDto.getSoldProducts() != null) {
-            final List<CustomerAppointmentSoldProduct> newSoldProducts = model.getSoldProducts();
-            newSoldProducts.clear();
-            int position = 0;
-            for (final KokuCustomerAppointmentSoldProductDto currentSoldProduct : updatedDto.getSoldProducts()) {
-                if (this.productKTableProcessor.getProducts().get(currentSoldProduct.getProductId()) == null) {
-                    throw new ProductIdNotFoundException(currentSoldProduct.getProductId());
-                }
 
-                final CustomerAppointmentSoldProduct newSoldProduct = new CustomerAppointmentSoldProduct(
-                        model, currentSoldProduct.getProductId(), currentSoldProduct.getPrice(), position++);
-
-                newSoldProducts.add(newSoldProduct);
-            }
-            model.setSoldProducts(newSoldProducts);
+            newActivities.add(new CustomerAppointmentActivity(
+                    model, currentActivity.getActivityId(), currentActivity.getPrice(), position++));
         }
-        if (updatedDto.getPromotions() != null) {
-            final List<CustomerAppointmentPromotion> newPromotions = model.getPromotions();
-            newPromotions.clear();
-            int position = 0;
-            for (final KokuCustomerAppointmentPromotionDto currentPromotion : updatedDto.getPromotions()) {
-                if (this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId()) == null) {
-                    throw new PromotionIdNotFoundException(currentPromotion.getPromotionId());
-                }
+        model.setActivities(newActivities);
+    }
 
-                newPromotions.add(
-                        new CustomerAppointmentPromotion(model, currentPromotion.getPromotionId(), position++));
-            }
-            model.setPromotions(newPromotions);
+    private void replaceTreatmentSequence(final CustomerAppointment model, final KokuCustomerAppointmentDto updatedDto)
+            throws ActivityStepIdNotFoundException, ProductIdNotFoundException {
+        if (updatedDto.getTreatmentSequence() == null) {
+            return;
         }
+
+        final List<CustomerAppointmentTreatmentSequenceItem> newTreatments = model.getTreatmentSequence();
+        newTreatments.clear();
+        int position = 0;
+        for (final KokuCustomerAppointmentTreatmentDto currentTreatment : updatedDto.getTreatmentSequence()) {
+            position = addTreatmentSequenceItem(model, newTreatments, currentTreatment, position);
+        }
+        model.setTreatmentSequence(newTreatments);
+    }
+
+    private int addTreatmentSequenceItem(
+            final CustomerAppointment model,
+            final List<CustomerAppointmentTreatmentSequenceItem> newTreatments,
+            final KokuCustomerAppointmentTreatmentDto currentTreatment,
+            final int position)
+            throws ActivityStepIdNotFoundException, ProductIdNotFoundException {
+        return switch (currentTreatment) {
+            case KokuCustomerAppointmentActivityStepTreatmentDto activityStep ->
+                addActivityStepTreatment(model, newTreatments, activityStep, position);
+            case KokuCustomerAppointmentProductTreatmentDto product ->
+                addProductTreatment(model, newTreatments, product, position);
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unexpected type");
+        };
+    }
+
+    private int addActivityStepTreatment(
+            final CustomerAppointment model,
+            final List<CustomerAppointmentTreatmentSequenceItem> newTreatments,
+            final KokuCustomerAppointmentActivityStepTreatmentDto activityStep,
+            final int position)
+            throws ActivityStepIdNotFoundException {
+        if (this.activityStepKTableProcessor.getActivitySteps().get(activityStep.getActivityStepId()) == null) {
+            throw new ActivityStepIdNotFoundException(activityStep.getActivityStepId());
+        }
+        newTreatments.add(
+                new CustomerAppointmentTreatmentSequenceItem(model, activityStep.getActivityStepId(), null, position));
+        return position + 1;
+    }
+
+    private int addProductTreatment(
+            final CustomerAppointment model,
+            final List<CustomerAppointmentTreatmentSequenceItem> newTreatments,
+            final KokuCustomerAppointmentProductTreatmentDto product,
+            final int position)
+            throws ProductIdNotFoundException {
+        if (this.productKTableProcessor.getProducts().get(product.getProductId()) == null) {
+            throw new ProductIdNotFoundException(product.getProductId());
+        }
+        newTreatments.add(new CustomerAppointmentTreatmentSequenceItem(model, null, product.getProductId(), position));
+        return position + 1;
+    }
+
+    private void replaceSoldProducts(final CustomerAppointment model, final KokuCustomerAppointmentDto updatedDto)
+            throws ProductIdNotFoundException {
+        if (updatedDto.getSoldProducts() == null) {
+            return;
+        }
+
+        final List<CustomerAppointmentSoldProduct> newSoldProducts = model.getSoldProducts();
+        newSoldProducts.clear();
+        int position = 0;
+        for (final KokuCustomerAppointmentSoldProductDto currentSoldProduct : updatedDto.getSoldProducts()) {
+            if (this.productKTableProcessor.getProducts().get(currentSoldProduct.getProductId()) == null) {
+                throw new ProductIdNotFoundException(currentSoldProduct.getProductId());
+            }
+
+            newSoldProducts.add(new CustomerAppointmentSoldProduct(
+                    model, currentSoldProduct.getProductId(), currentSoldProduct.getPrice(), position++));
+        }
+        model.setSoldProducts(newSoldProducts);
+    }
+
+    private void replacePromotions(final CustomerAppointment model, final KokuCustomerAppointmentDto updatedDto)
+            throws PromotionIdNotFoundException {
+        if (updatedDto.getPromotions() == null) {
+            return;
+        }
+
+        final List<CustomerAppointmentPromotion> newPromotions = model.getPromotions();
+        newPromotions.clear();
+        int position = 0;
+        for (final KokuCustomerAppointmentPromotionDto currentPromotion : updatedDto.getPromotions()) {
+            if (this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId()) == null) {
+                throw new PromotionIdNotFoundException(currentPromotion.getPromotionId());
+            }
+
+            newPromotions.add(new CustomerAppointmentPromotion(model, currentPromotion.getPromotionId(), position++));
+        }
+        model.setPromotions(newPromotions);
+    }
+
+    private void refreshSnapshots(final CustomerAppointment model) {
+        final List<KokuCustomerAppointmentSoldProductDomain> soldProductDomains = soldProductDomains(model);
+        final List<KokuCustomerAppointmentActivityDomain> activityDomains = activityDomains(model);
+        final List<KokuCustomerAppointmentPromotionDomain> promotionDomains = promotionDomains(model);
 
         model.setSoldProductsRevenueSnapshot(this.calculateCustomerAppointmentSoldProductPriceSum(
-                model.getStart(),
-                model.getSoldProducts().stream()
-                        .map(KokuCustomerAppointmentSoldProductDomain::fromEntity)
-                        .toList(),
-                model.getPromotions().stream()
-                        .map(KokuCustomerAppointmentPromotionDomain::fromEntity)
-                        .toList()));
-        model.setSoldProductsSummarySnapshot(
-                this.calculateCustomerAppointmentSoldProductSummary(model.getSoldProducts().stream()
-                        .map(KokuCustomerAppointmentSoldProductDomain::fromEntity)
-                        .toList()));
-        model.setActivitiesRevenueSnapshot(this.calculateCustomerAppointmentActivityPriceSum(
-                model.getStart(),
-                model.getActivities().stream()
-                        .map(KokuCustomerAppointmentActivityDomain::fromEntity)
-                        .toList(),
-                model.getPromotions().stream()
-                        .map(KokuCustomerAppointmentPromotionDomain::fromEntity)
-                        .toList()));
-        model.setActivitiesSummarySnapshot(
-                this.calculateCustomerAppointmentActivitySummary(model.getActivities().stream()
-                        .map(KokuCustomerAppointmentActivityDomain::fromEntity)
-                        .toList()));
+                model.getStart(), soldProductDomains, promotionDomains));
+        model.setSoldProductsSummarySnapshot(this.calculateCustomerAppointmentSoldProductSummary(soldProductDomains));
+        model.setActivitiesRevenueSnapshot(
+                this.calculateCustomerAppointmentActivityPriceSum(model.getStart(), activityDomains, promotionDomains));
+        model.setActivitiesSummarySnapshot(this.calculateCustomerAppointmentActivitySummary(activityDomains));
+    }
 
+    private void updateFinalPriceSnapshots(final CustomerAppointment model) {
+        final List<KokuCustomerAppointmentPromotionDomain> promotionDomains = promotionDomains(model);
         for (CustomerAppointmentSoldProduct soldProduct : model.getSoldProducts()) {
             soldProduct.setFinalPriceSnapshot(this.calculateSoldProductPrice(
                     model.getStart(),
                     KokuCustomerAppointmentSoldProductDomain.fromEntity(soldProduct),
-                    model.getPromotions().stream()
-                            .map(KokuCustomerAppointmentPromotionDomain::fromEntity)
-                            .toList()));
+                    promotionDomains));
         }
 
         for (CustomerAppointmentActivity activity : model.getActivities()) {
             activity.setFinalPriceSnapshot(this.calculateActivityPrice(
-                    model.getStart(),
-                    KokuCustomerAppointmentActivityDomain.fromEntity(activity),
-                    model.getPromotions().stream()
-                            .map(KokuCustomerAppointmentPromotionDomain::fromEntity)
-                            .toList()));
+                    model.getStart(), KokuCustomerAppointmentActivityDomain.fromEntity(activity), promotionDomains));
         }
+    }
 
-        model.setCalculatedEndSnapshot(this.calculateCustomerAppointmentEnd(
-                model.getStart(),
-                model.getActivities().stream()
-                        .map(KokuCustomerAppointmentActivityDomain::fromEntity)
-                        .toList()));
+    private void updateCalculatedEndSnapshot(final CustomerAppointment model) {
+        model.setCalculatedEndSnapshot(this.calculateCustomerAppointmentEnd(model.getStart(), activityDomains(model)));
+    }
+
+    private static void updateDeletedState(
+            final CustomerAppointment model, final KokuCustomerAppointmentDto updatedDto) {
         if (updatedDto.getDeleted() != null) {
             model.setDeleted(updatedDto.getDeleted());
         }
+    }
 
-        return model;
+    private static List<KokuCustomerAppointmentSoldProductDomain> soldProductDomains(final CustomerAppointment model) {
+        return model.getSoldProducts().stream()
+                .map(KokuCustomerAppointmentSoldProductDomain::fromEntity)
+                .toList();
+    }
+
+    private static List<KokuCustomerAppointmentActivityDomain> activityDomains(final CustomerAppointment model) {
+        return model.getActivities().stream()
+                .map(KokuCustomerAppointmentActivityDomain::fromEntity)
+                .toList();
+    }
+
+    private static List<KokuCustomerAppointmentPromotionDomain> promotionDomains(final CustomerAppointment model) {
+        return model.getPromotions().stream()
+                .map(KokuCustomerAppointmentPromotionDomain::fromEntity)
+                .toList();
     }
 
     public BigDecimal calculateCustomerAppointmentActivityPriceSum(
@@ -546,11 +649,11 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         if (request.getDate() != null && request.getTime() != null) {
             targetTimestamp = request.getDate().atTime(request.getTime());
         } else if (request.getDate() != null) {
-            targetTimestamp = request.getDate().atTime(LocalTime.now());
+            targetTimestamp = request.getDate().atTime(LocalTime.now(DEFAULT_ZONE));
         } else if (request.getTime() != null) {
-            targetTimestamp = LocalDate.now().atTime(request.getTime());
+            targetTimestamp = LocalDate.now(DEFAULT_ZONE).atTime(request.getTime());
         } else {
-            targetTimestamp = LocalDateTime.now();
+            targetTimestamp = LocalDateTime.now(DEFAULT_ZONE);
         }
 
         return KokuCustomerActivityPriceSummaryDto.builder()
@@ -575,11 +678,11 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         if (request.getDate() != null && request.getTime() != null) {
             targetTimestamp = request.getDate().atTime(request.getTime());
         } else if (request.getDate() != null) {
-            targetTimestamp = request.getDate().atTime(LocalTime.now());
+            targetTimestamp = request.getDate().atTime(LocalTime.now(DEFAULT_ZONE));
         } else if (request.getTime() != null) {
-            targetTimestamp = LocalDate.now().atTime(request.getTime());
+            targetTimestamp = LocalDate.now(DEFAULT_ZONE).atTime(request.getTime());
         } else {
-            targetTimestamp = LocalDateTime.now();
+            targetTimestamp = LocalDateTime.now(DEFAULT_ZONE);
         }
 
         final BigDecimal activityPriceSum = calculateCustomerAppointmentActivityPriceSum(
@@ -611,11 +714,11 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         if (request.getDate() != null && request.getTime() != null) {
             targetTimestamp = request.getDate().atTime(request.getTime());
         } else if (request.getDate() != null) {
-            targetTimestamp = request.getDate().atTime(LocalTime.now());
+            targetTimestamp = request.getDate().atTime(LocalTime.now(DEFAULT_ZONE));
         } else if (request.getTime() != null) {
-            targetTimestamp = LocalDate.now().atTime(request.getTime());
+            targetTimestamp = LocalDate.now(DEFAULT_ZONE).atTime(request.getTime());
         } else {
-            targetTimestamp = LocalDateTime.now();
+            targetTimestamp = LocalDateTime.now(DEFAULT_ZONE);
         }
 
         return KokuActivitySoldProductPriceSummaryDto.builder()

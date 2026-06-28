@@ -9,8 +9,8 @@ public class ActivityStepMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating ActivityStep...");
+    public void migrate() {
+        logInfo("Migrating ActivityStep...");
 
         read("SELECT id, recorded, updated, deleted, description FROM koku.activity_step", rs -> {
             try {
@@ -37,6 +37,6 @@ public class ActivityStepMigration extends BaseMigration {
             }
         });
 
-        System.out.println("✔ ActivityStep done.");
+        logInfo("ActivityStep done.");
     }
 }

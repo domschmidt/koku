@@ -47,7 +47,7 @@ public class KeycloakDirectAccessGrantAuthenticationProvider implements Authenti
         final KeycloakTokenResponse token = requestToken(username, password);
         final String subject = extractSubject(token);
         return UsernamePasswordAuthenticationToken.authenticated(
-                subject, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+                subject, "", List.of(new SimpleGrantedAuthority("ROLE_USER")));
     }
 
     @Override

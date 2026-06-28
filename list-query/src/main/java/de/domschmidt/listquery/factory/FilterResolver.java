@@ -26,6 +26,8 @@ public class FilterResolver {
         FILTERS = newFilters;
     }
 
+    private FilterResolver() {}
+
     public static IListFilter resolveFilter(final Class<?> clazz) {
         return FILTERS.get(clazz);
     }

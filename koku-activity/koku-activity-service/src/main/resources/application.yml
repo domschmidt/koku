@@ -23,7 +23,7 @@ spring:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/activities
     username: 'postgres'
-    password: 'koku'
+    password: ''
     hikari:
       maximum-pool-size: 4
       minimum-idle: 1

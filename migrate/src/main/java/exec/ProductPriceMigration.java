@@ -9,8 +9,8 @@ public class ProductPriceMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating ProductPriceHistory...");
+    public void migrate() {
+        logInfo("Migrating ProductPriceHistory...");
 
         read("SELECT id, recorded, updated, price, product_id FROM koku.product_price_history", rs -> {
             try {
@@ -37,6 +37,6 @@ public class ProductPriceMigration extends BaseMigration {
             }
         });
 
-        System.out.println("✔ ProductPriceHistory done.");
+        logInfo("ProductPriceHistory done.");
     }
 }

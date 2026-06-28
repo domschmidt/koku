@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import org.junit.jupiter.api.Test;
 
 class VCardFactoryTest {
@@ -22,20 +23,22 @@ class VCardFactoryTest {
                 .businessTelephoneNo("06244 123")
                 .mobileTelephoneNo("0170 123")
                 .privateTelephoneNo("06244 456")
-                .birthday(LocalDate.of(1990, 5, 4))
-                .updated(LocalDateTime.of(2026, 6, 11, 10, 0))
+                .birthday(LocalDate.of(1990, Month.MAY, 4))
+                .updated(LocalDateTime.of(2026, Month.JUNE, 11, 10, 0))
                 .build();
 
         final String vcard = vCardFactory.toVCard(contact);
 
-        assertThat(vcard).contains("VERSION:3.0\r\n");
-        assertThat(vcard).contains("PRODID:-//KoKu//KoKu Carddav//DE\r\n");
-        assertThat(vcard).contains("TEL;TYPE=work,voice:06244 123\r\n");
-        assertThat(vcard).contains("TEL;TYPE=cell,voice:0170 123\r\n");
-        assertThat(vcard).contains("TEL;TYPE=home,voice:06244 456\r\n");
-        assertThat(vcard).contains("BDAY:1990-05-04\r\n");
-        assertThat(vcard).contains("UID:42\r\n");
-        assertThat(vcard).contains("REV:");
-        assertThat(vcard).endsWith("END:VCARD\r\n");
+        assertThat(vcard)
+                .contains(
+                        "VERSION:3.0\r\n",
+                        "PRODID:-//KoKu//KoKu Carddav//DE\r\n",
+                        "TEL;TYPE=work,voice:06244 123\r\n",
+                        "TEL;TYPE=cell,voice:0170 123\r\n",
+                        "TEL;TYPE=home,voice:06244 456\r\n",
+                        "BDAY:1990-05-04\r\n",
+                        "UID:42\r\n",
+                        "REV:")
+                .endsWith("END:VCARD\r\n");
     }
 }

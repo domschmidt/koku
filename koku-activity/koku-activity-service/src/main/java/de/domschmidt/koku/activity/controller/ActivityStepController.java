@@ -10,9 +10,9 @@ import de.domschmidt.koku.activity.persistence.ActivityStepRepository;
 import de.domschmidt.koku.activity.persistence.QActivityStep;
 import de.domschmidt.koku.activity.transformer.ActivityStepToActivityStepDtoTransformer;
 import de.domschmidt.koku.activity.transformer.ActivityStepToActivityStepSummaryDtoTransformer;
+import de.domschmidt.koku.business_exception.dto.KokuBusinessErrorWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
-import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.dto.activity.KokuActivityStepDto;
 import de.domschmidt.koku.dto.activity.KokuActivityStepSummaryDto;
@@ -89,6 +89,8 @@ public class ActivityStepController {
     private static final String ACTIVITY_STEP_UPDATED_EVENT = "activitystep-updated";
     private static final String ACTIVITY_STEP_ID_PARAM = ":activityStepId";
     private static final String NAME_PARAM = ":name";
+    private static final String ACTIVITY_STEP_LABEL = "Behandlungsschritt ";
+    private static final String ACTIVITY_STEP_SERVICE_URL = "services/activities/activitysteps/";
 
     private final EntityManager entityManager;
     private final ActivityStepRepository activityStepRepository;
@@ -143,8 +145,8 @@ public class ActivityStepController {
                         .submitPayload(
                                 KokuActivityStepDto.builder().deleted(true).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Behandlungsschritt löschen")
-                                .content("Behandlungsschritt " + NAME_PARAM + " als gelöscht markieren?")
+                                .headline(ACTIVITY_STEP_LABEL + "löschen")
+                                .content(ACTIVITY_STEP_LABEL + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuActivityStepDto.Fields.name)
@@ -152,7 +154,7 @@ public class ActivityStepController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Behandlungsschritt " + NAME_PARAM + " erfolgreich als gelöscht markiert")
+                                        .text(ACTIVITY_STEP_LABEL + NAME_PARAM + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -163,7 +165,7 @@ public class ActivityStepController {
                                         .eventName(ACTIVITY_STEP_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Behandlungsschritt " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(ACTIVITY_STEP_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -192,8 +194,8 @@ public class ActivityStepController {
                         .submitPayload(
                                 KokuActivityStepDto.builder().deleted(false).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Behandlungsschritt wiederherstellen")
-                                .content("Behandlungsschritt " + NAME_PARAM + " wiederherstellen?")
+                                .headline(ACTIVITY_STEP_LABEL + "wiederherstellen")
+                                .content(ACTIVITY_STEP_LABEL + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuActivityStepDto.Fields.name)
@@ -201,8 +203,7 @@ public class ActivityStepController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Behandlungsschritt " + NAME_PARAM
-                                                + " wurde erfolgreich wiederhergestellt")
+                                        .text(ACTIVITY_STEP_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -213,7 +214,7 @@ public class ActivityStepController {
                                         .eventName(ACTIVITY_STEP_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Behandlungsschritt " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(ACTIVITY_STEP_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -280,7 +281,7 @@ public class ActivityStepController {
                 .inlineContent(ListViewHeaderContentDto.builder()
                         .title("Neuer Behandlungsschritt")
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/activities/activitysteps/form")
+                                .formularUrl(ACTIVITY_STEP_SERVICE_URL + "form")
                                 .submitUrl("services/activities/activitysteps")
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
                                 .maxWidthInPx(800)
@@ -319,7 +320,7 @@ public class ActivityStepController {
                 .route(ACTIVITY_STEP_ID_PARAM)
                 .itemId(ACTIVITY_STEP_ID_PARAM)
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .sourceUrl("services/activities/activitysteps/" + ACTIVITY_STEP_ID_PARAM + "/summary")
+                        .sourceUrl(ACTIVITY_STEP_SERVICE_URL + ACTIVITY_STEP_ID_PARAM + "/summary")
                         .titlePath(KokuActivityStepSummaryDto.Fields.summary)
                         .globalEventListeners(
                                 Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
@@ -328,8 +329,8 @@ public class ActivityStepController {
                                         .titleValuePath(KokuActivityStepDto.Fields.name)
                                         .build()))
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/activities/activitysteps/form")
-                                .sourceUrl("services/activities/activitysteps/" + ACTIVITY_STEP_ID_PARAM)
+                                .formularUrl(ACTIVITY_STEP_SERVICE_URL + "form")
+                                .sourceUrl(ACTIVITY_STEP_SERVICE_URL + ACTIVITY_STEP_ID_PARAM)
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
                                 .maxWidthInPx(800)
                                 .onSaveEvents(Arrays.asList(
@@ -352,15 +353,15 @@ public class ActivityStepController {
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                        .url("services/activities/activitysteps/" + ACTIVITY_STEP_ID_PARAM + "/restore")
+                        .url(ACTIVITY_STEP_SERVICE_URL + ACTIVITY_STEP_ID_PARAM + "/restore")
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                 .param(ACTIVITY_STEP_ID_PARAM)
                                 .valueReference(idSourcePathRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
-                                .headline("Behandlungsschritt wiederherstellen")
-                                .content("Behandlungsschritt " + NAME_PARAM + " wiederherstellen?")
+                                .headline(ACTIVITY_STEP_LABEL + "wiederherstellen")
+                                .content(ACTIVITY_STEP_LABEL + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(NAME_PARAM)
                                         .valueReference(nameFieldRef)
@@ -368,8 +369,7 @@ public class ActivityStepController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Behandlungsschritt " + NAME_PARAM
-                                                + " wurde erfolgreich wiederhergestellt")
+                                        .text(ACTIVITY_STEP_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -381,7 +381,7 @@ public class ActivityStepController {
                                         .valueMapping(Map.of(KokuActivityStepDto.Fields.deleted, deletedSourcePathRef))
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text("Behandlungsschritt " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(ACTIVITY_STEP_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -391,15 +391,15 @@ public class ActivityStepController {
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
-                        .url("services/activities/activitysteps/" + ACTIVITY_STEP_ID_PARAM)
+                        .url(ACTIVITY_STEP_SERVICE_URL + ACTIVITY_STEP_ID_PARAM)
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                 .param(ACTIVITY_STEP_ID_PARAM)
                                 .valueReference(idSourcePathRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
-                                .headline("Behandlungsschritt löschen")
-                                .content("Behandlungsschritt " + NAME_PARAM + " als gelöscht markieren?")
+                                .headline(ACTIVITY_STEP_LABEL + "löschen")
+                                .content(ACTIVITY_STEP_LABEL + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(NAME_PARAM)
                                         .valueReference(nameFieldRef)
@@ -407,7 +407,7 @@ public class ActivityStepController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Behandlungsschritt " + NAME_PARAM
+                                        .text(ACTIVITY_STEP_LABEL + NAME_PARAM
                                                 + " wurde erfolgreich als gelöscht markiert")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
@@ -420,7 +420,7 @@ public class ActivityStepController {
                                         .valueMapping(Map.of(KokuActivityStepDto.Fields.deleted, deletedSourcePathRef))
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text("Behandlungsschritt " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(ACTIVITY_STEP_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -473,29 +473,27 @@ public class ActivityStepController {
             @RequestBody KokuActivityStepDto updatedDto) {
         final ActivityStep activityStep = this.entityManager.getReference(ActivityStep.class, activityStepId);
         if (!Boolean.TRUE.equals(forceUpdate) && !activityStep.getVersion().equals(updatedDto.getVersion())) {
-            throw new KokuBusinessExceptionWithConfirmationMessage(
-                    KokuBusinessExceptionWithConfirmationMessageDto.builder()
-                            .headline("Konflikt")
-                            .confirmationMessage("der Behandlungsschritt wurde zwischenzeitlich bearbeitet.\n"
-                                    + "Willst Du die Speicherung dennoch vornehmen?")
-                            .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .icon("CLOSE")
-                                    .build())
-                            .closeOnClickOutside(true)
-                            .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
-                                    .text("Trotzdem speichern")
-                                    .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format(
-                                            "services/activities/activitysteps/%s?forceUpdate=%s",
-                                            activityStepId, Boolean.TRUE))
-                                    .build())
-                            .button(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .build())
-                            .build());
+            throw new KokuBusinessExceptionWithConfirmationMessage(KokuBusinessErrorWithConfirmationMessageDto.builder()
+                    .headline("Konflikt")
+                    .confirmationMessage("der Behandlungsschritt wurde zwischenzeitlich bearbeitet.\n"
+                            + "Willst Du die Speicherung dennoch vornehmen?")
+                    .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .icon("CLOSE")
+                            .build())
+                    .closeOnClickOutside(true)
+                    .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
+                            .text("Trotzdem speichern")
+                            .title("Zwischenzeitliche Änderungen überschreiben")
+                            .endpointUrl(String.format(
+                                    ACTIVITY_STEP_SERVICE_URL + "%s?forceUpdate=%s", activityStepId, Boolean.TRUE))
+                            .build())
+                    .button(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .build())
+                    .build());
         }
         this.transformer.transformToEntity(activityStep, updatedDto);
         this.entityManager.flush();
