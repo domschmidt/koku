@@ -161,7 +161,8 @@ public class DocumentController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM + " erfolgreich als gelöscht markiert")
+                                        .text(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM
+                                                + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -172,7 +173,8 @@ public class DocumentController {
                                         .eventName(DOCUMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM
+                                        + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -209,7 +211,8 @@ public class DocumentController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
+                                        .text(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM
+                                                + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
