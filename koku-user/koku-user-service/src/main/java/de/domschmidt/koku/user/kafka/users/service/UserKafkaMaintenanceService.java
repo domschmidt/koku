@@ -27,7 +27,10 @@ public class UserKafkaMaintenanceService implements ApplicationListener<Applicat
         this.userRepository.findAll().forEach(product -> {
             try {
                 this.userKafkaService.sendUser(product);
-            } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Error sending user", e);
+            } catch (ExecutionException | TimeoutException e) {
                 log.error("Error sending user", e);
             }
         });

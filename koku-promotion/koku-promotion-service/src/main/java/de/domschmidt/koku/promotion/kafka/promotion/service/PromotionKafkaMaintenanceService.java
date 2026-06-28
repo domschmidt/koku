@@ -27,7 +27,10 @@ public class PromotionKafkaMaintenanceService implements ApplicationListener<App
         this.promotionRepository.findAll().forEach(product -> {
             try {
                 this.promotionKafkaService.sendPromotion(product);
-            } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Error sending promotion", e);
+            } catch (ExecutionException | TimeoutException e) {
                 log.error("Error sending promotion", e);
             }
         });

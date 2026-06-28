@@ -30,7 +30,7 @@ public class AddressBookController extends DavControllerSupport {
         this.cardDavService = cardDavService;
     }
 
-    @RequestMapping(
+    @DavRequestMapping(
             value = {
                 "/{userName}",
                 "/{userName}/",

@@ -25,7 +25,7 @@ public class PrincipalController extends DavControllerSupport {
         this.cardDavService = cardDavService;
     }
 
-    @RequestMapping(value = {"/{username}", "/{username}/"})
+    @DavRequestMapping(value = {"/{username}", "/{username}/"})
     public ResponseEntity<String> principalRequest(
             final HttpServletRequest request,
             final @PathVariable String username,

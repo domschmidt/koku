@@ -76,7 +76,10 @@ public class CustomerAppointmentKafkaMaintenanceService {
 
             try {
                 this.customerAppointmentKafkaService.sendCustomerAppointment(model);
-            } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Error sending customer appointment", e);
+            } catch (ExecutionException | TimeoutException e) {
                 log.error("Error sending customer appointment", e);
             }
         });

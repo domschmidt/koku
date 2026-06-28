@@ -27,7 +27,10 @@ public class ProductKafkaMaintenanceService implements ApplicationListener<Appli
         this.productRepository.findAll().forEach(product -> {
             try {
                 this.productKafkaService.sendProduct(product);
-            } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Error sending product", e);
+            } catch (ExecutionException | TimeoutException e) {
                 log.error("Error sending product", e);
             }
         });

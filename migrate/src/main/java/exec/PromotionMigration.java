@@ -11,18 +11,7 @@ public class PromotionMigration extends BaseMigration {
     @Override
     public void migrate() {
         logInfo("Migrating Promotion...");
-
-        read("""
-                 SELECT promotion.id, promotion.recorded, promotion.updated, promotion.deleted, promotion.name,
-                        actset.absolute_item_savings as actset_absolute_item_savings, actset.absolute_savings as actset_absolute_savings, actset.relative_item_savings as actset_relative_item_savings, actset.relative_savings as actset_relative_savings,
-                        prodset.absolute_item_savings as prodset_absolute_item_savings, prodset.absolute_savings as prodset_absolute_savings, prodset.relative_item_savings as prodset_relative_item_savings, prodset.relative_savings as prodset_relative_savings
-                 FROM koku.promotion promotion
-                 LEFT OUTER JOIN koku.promotion_activity_settings actset ON (actset.id = promotion_activity_settings_id)
-                 LEFT OUTER JOIN koku.promotion_product_settings prodset ON (prodset.id = promotion_product_settings_id)
-                 """, rs -> {
-            try {
-                exec(
-                        """
+        final String upsertSql = """
                         INSERT INTO koku.promotion (
                           external_ref, recorded, updated, deleted, name,
                           activity_absolute_item_savings, activity_absolute_savings, activity_relative_item_savings, activity_relative_savings,
@@ -44,7 +33,19 @@ public class PromotionMigration extends BaseMigration {
                                       product_relative_savings = EXCLUDED.product_relative_savings,
                                       version = promotion.version + 1
                         WHERE EXCLUDED.updated > promotion.updated;
-                        """,
+                        """;
+
+        read("""
+                 SELECT promotion.id, promotion.recorded, promotion.updated, promotion.deleted, promotion.name,
+                        actset.absolute_item_savings as actset_absolute_item_savings, actset.absolute_savings as actset_absolute_savings, actset.relative_item_savings as actset_relative_item_savings, actset.relative_savings as actset_relative_savings,
+                        prodset.absolute_item_savings as prodset_absolute_item_savings, prodset.absolute_savings as prodset_absolute_savings, prodset.relative_item_savings as prodset_relative_item_savings, prodset.relative_savings as prodset_relative_savings
+                 FROM koku.promotion promotion
+                 LEFT OUTER JOIN koku.promotion_activity_settings actset ON (actset.id = promotion_activity_settings_id)
+                 LEFT OUTER JOIN koku.promotion_product_settings prodset ON (prodset.id = promotion_product_settings_id)
+                 """, rs -> {
+            try {
+                exec(
+                        upsertSql,
                         rs.getString("id"),
                         rs.getTimestamp("recorded"),
                         rs.getTimestamp("updated"),

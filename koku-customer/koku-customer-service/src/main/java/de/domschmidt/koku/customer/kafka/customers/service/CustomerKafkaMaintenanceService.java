@@ -32,7 +32,10 @@ public class CustomerKafkaMaintenanceService implements ApplicationListener<Appl
                 customer.setBusinessTelephoneNo(phoneNumberNormalizer.normalize(customer.getBusinessTelephoneNo()));
                 customer.setMobileTelephoneNo(phoneNumberNormalizer.normalize(customer.getMobileTelephoneNo()));
                 this.customerKafkaService.sendCustomer(customer);
-            } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Error sending customer ", e);
+            } catch (ExecutionException | TimeoutException e) {
                 log.error("Error sending customer ", e);
             }
         });

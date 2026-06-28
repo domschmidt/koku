@@ -1,6 +1,8 @@
 package de.domschmidt.koku.document.config;
 
 import de.domschmidt.koku.auth.config.KeycloakJwtAuthenticationConverter;
+import de.domschmidt.koku.auth.config.StatelessApiCsrfTokenRepository;
+import de.domschmidt.koku.auth.config.StatelessApiCsrfTokenRequestHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +17,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) {
-        http.csrf(csrf -> csrf.disable())
+        http.csrf(csrf -> csrf.csrfTokenRepository(new StatelessApiCsrfTokenRepository())
+                        .csrfTokenRequestHandler(new StatelessApiCsrfTokenRequestHandler()))
                 .sessionManagement(sessionMgmt -> sessionMgmt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(
                         (req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED)))

@@ -30,7 +30,7 @@ public class CalendarController extends DavControllerSupport {
         this.calDavService = calDavService;
     }
 
-    @RequestMapping(
+    @DavRequestMapping(
             value = {
                 "/{userName}",
                 "/{userName}/",
@@ -45,7 +45,7 @@ public class CalendarController extends DavControllerSupport {
                 davRequest -> calDavService.handleCalendarHome(davRequest, authentication.getName()));
     }
 
-    @RequestMapping(
+    @DavRequestMapping(
             value = {
                 "/{userName}/" + APIConstants.APPOINTMENTS_SEGMENT,
                 "/{userName}/" + APIConstants.APPOINTMENTS_SEGMENT + "/",
@@ -60,7 +60,7 @@ public class CalendarController extends DavControllerSupport {
                 davRequest -> calDavService.handleAppointmentCalendar(davRequest, authentication.getName()));
     }
 
-    @RequestMapping(
+    @DavRequestMapping(
             value = {
                 "/{userName}/" + APIConstants.PRIVATE_SEGMENT,
                 "/{userName}/" + APIConstants.PRIVATE_SEGMENT + "/",

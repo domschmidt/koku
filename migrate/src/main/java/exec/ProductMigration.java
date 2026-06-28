@@ -11,11 +11,7 @@ public class ProductMigration extends BaseMigration {
     @Override
     public void migrate() {
         logInfo("Migrating Product...");
-
-        read("SELECT id, recorded, updated, deleted, description, manufacturer_id FROM koku.product", rs -> {
-            try {
-                exec(
-                        """
+        final String upsertSql = """
                         INSERT INTO koku.product (external_ref, recorded, updated, deleted, name, manufacturer_id)
                         VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, ?, ?, (SELECT ID FROM koku.product_manufacturer where external_ref = ?))
                         ON CONFLICT (external_ref)
@@ -26,7 +22,12 @@ public class ProductMigration extends BaseMigration {
                                       manufacturer_id = EXCLUDED.manufacturer_id,
                                       version = product.version + 1
                         WHERE EXCLUDED.updated > product.updated;
-                        """,
+                        """;
+
+        read("SELECT id, recorded, updated, deleted, description, manufacturer_id FROM koku.product", rs -> {
+            try {
+                exec(
+                        upsertSql,
                         rs.getString("id"),
                         rs.getTimestamp("recorded"),
                         rs.getTimestamp("updated"),

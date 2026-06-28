@@ -1,5 +1,7 @@
 package de.domschmidt.koku.dav.config;
 
+import de.domschmidt.koku.auth.config.StatelessApiCsrfTokenRepository;
+import de.domschmidt.koku.auth.config.StatelessApiCsrfTokenRequestHandler;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -9,7 +11,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -37,7 +38,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(
             final HttpSecurity http, final AuthenticationProvider authenticationProvider) {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http.csrf(csrf -> csrf.csrfTokenRepository(new StatelessApiCsrfTokenRepository())
+                        .csrfTokenRequestHandler(new StatelessApiCsrfTokenRequestHandler()))
                 .authenticationProvider(authenticationProvider)
                 .sessionManagement(sessionMgmt -> sessionMgmt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize

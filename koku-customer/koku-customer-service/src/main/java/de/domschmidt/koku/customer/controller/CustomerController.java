@@ -673,7 +673,11 @@ public class CustomerController {
     public void sendCustomerUpdate(final Customer updatedCustomer) {
         try {
             this.customerKafkaService.sendCustomer(updatedCustomer);
-        } catch (final ExecutionException | InterruptedException | TimeoutException e) {
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Unable to export to kafka, due to: ", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to export to kafka");
+        } catch (final ExecutionException | TimeoutException e) {
             log.error("Unable to export to kafka, due to: ", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to export to kafka");
         }

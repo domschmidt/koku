@@ -11,11 +11,7 @@ public class ActivityStepMigration extends BaseMigration {
     @Override
     public void migrate() {
         logInfo("Migrating ActivityStep...");
-
-        read("SELECT id, recorded, updated, deleted, description FROM koku.activity_step", rs -> {
-            try {
-                exec(
-                        """
+        final String upsertSql = """
                         INSERT INTO koku.activity_step (external_ref, recorded, updated, deleted, name)
                         VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, ?, ?)
                         ON CONFLICT (external_ref)
@@ -25,7 +21,12 @@ public class ActivityStepMigration extends BaseMigration {
                                       name = EXCLUDED.name,
                                       version = activity_step.version + 1
                         WHERE EXCLUDED.updated > activity_step.updated;
-                        """,
+                        """;
+
+        read("SELECT id, recorded, updated, deleted, description FROM koku.activity_step", rs -> {
+            try {
+                exec(
+                        upsertSql,
                         rs.getString("id"),
                         rs.getTimestamp("recorded"),
                         rs.getTimestamp("updated"),

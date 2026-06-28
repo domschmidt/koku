@@ -737,7 +737,11 @@ public class ProductController {
     public void sendProductUpdate(final Product product) {
         try {
             this.productKafkaService.sendProduct(product);
-        } catch (final ExecutionException | InterruptedException | TimeoutException e) {
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Unable to export to kafka, due to: ", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to export to kafka");
+        } catch (final ExecutionException | TimeoutException e) {
             log.error("Unable to export to kafka, due to: ", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to export to kafka");
         }

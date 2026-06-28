@@ -17,6 +17,19 @@ public class CustomerAppointmentActivityMigration extends BaseMigration {
     @Override
     public void migrate() {
         logInfo("Migrating CustomerAppointmentActivity...");
+        final String upsertSql = """
+                                INSERT INTO koku.customer_appointment_activity (external_ref, recorded, updated, position, sell_price, activity_id, appointment_id)
+                                VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, ?, ?, ?, (SELECT ID FROM koku.customer_appointment where external_ref = ?))
+                                ON CONFLICT (external_ref)
+                                DO UPDATE SET recorded = COALESCE(EXCLUDED.recorded, EXCLUDED.updated, CURRENT_TIMESTAMP),
+                                              updated = EXCLUDED.updated,
+                                              position = EXCLUDED.position,
+                                              sell_price = EXCLUDED.sell_price,
+                                              activity_id = EXCLUDED.activity_id,
+                                              appointment_id = EXCLUDED.appointment_id,
+                                              version = customer_appointment_activity.version + 1
+                                WHERE EXCLUDED.updated > customer_appointment_activity.updated;
+                                """;
 
         Map<String, Long> activityExternalRefMapping = new HashMap<>();
         read(
@@ -40,19 +53,7 @@ public class CustomerAppointmentActivityMigration extends BaseMigration {
                             logWarning("Missing activity_id " + activityIdRaw);
                         }
                         exec(
-                                """
-                                INSERT INTO koku.customer_appointment_activity (external_ref, recorded, updated, position, sell_price, activity_id, appointment_id)
-                                VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, ?, ?, ?, (SELECT ID FROM koku.customer_appointment where external_ref = ?))
-                                ON CONFLICT (external_ref)
-                                DO UPDATE SET recorded = COALESCE(EXCLUDED.recorded, EXCLUDED.updated, CURRENT_TIMESTAMP),
-                                              updated = EXCLUDED.updated,
-                                              position = EXCLUDED.position,
-                                              sell_price = EXCLUDED.sell_price,
-                                              activity_id = EXCLUDED.activity_id,
-                                              appointment_id = EXCLUDED.appointment_id,
-                                              version = customer_appointment_activity.version + 1
-                                WHERE EXCLUDED.updated > customer_appointment_activity.updated;
-                                """,
+                                upsertSql,
                                 rs.getString("id"),
                                 rs.getTimestamp("recorded"),
                                 rs.getTimestamp("updated"),

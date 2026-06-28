@@ -217,7 +217,6 @@ public class DavXmlWriter {
             return standardPrefix;
         }
         final String safeNamespaceUri = StringUtils.defaultString(namespaceUri);
-        final String normalized = safeNamespaceUri.replaceAll("[^A-Za-z0-9]", "");
-        return normalized.isBlank() ? "x" : "x" + Math.abs(safeNamespaceUri.hashCode());
+        return safeNamespaceUri.isBlank() ? "x" : "x" + Math.abs(safeNamespaceUri.hashCode());
     }
 }

@@ -635,7 +635,11 @@ public class ActivityController {
     public void sendActivityUpdate(final Activity activity) {
         try {
             this.activityKafkaService.sendActivity(activity);
-        } catch (final ExecutionException | InterruptedException | TimeoutException e) {
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Unable to export to kafka, due to: ", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to export to kafka");
+        } catch (final ExecutionException | TimeoutException e) {
             log.error("Unable to export to kafka, due to: ", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to export to kafka");
         }
