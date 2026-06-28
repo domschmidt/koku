@@ -5,6 +5,7 @@ import de.domschmidt.koku.dav.model.*;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
@@ -68,69 +69,66 @@ public class DavXmlWriter {
     private void appendProperty(final Element prop, final DavProperty property) {
         final Element element = prop.addElement(qName(property.name()));
         switch (property.value()) {
-            case EmptyValue ignored -> {}
-            case CalendarDataValue calendarDataValue -> element.setText(calendarDataValue.calendarData());
-            case CollationSetValue collationSetValue -> appendCollationSet(property.name(), element, collationSetValue);
-            case HrefValue hrefValue -> addDav(element, "href").setText(hrefValue.href());
-            case PrivilegeSetValue privilegeSetValue -> appendPrivilegeSet(element, privilegeSetValue);
-            case ResourceTypeValue resourceTypeValue ->
-                resourceTypeValue.resourceTypes().forEach(resourceType -> element.addElement(qName(resourceType)));
-            case SupportedAddressDataValue supportedAddressDataValue ->
-                appendSupportedAddressData(element, supportedAddressDataValue);
-            case SupportedCalendarComponentSetValue supportedCalendarComponentSetValue ->
-                appendSupportedCalendarComponentSet(element, supportedCalendarComponentSetValue);
-            case SupportedCalendarDataValue supportedCalendarDataValue ->
-                appendSupportedCalendarData(element, supportedCalendarDataValue);
-            case SupportedReportSetValue supportedReportSetValue ->
-                appendSupportedReportSet(element, supportedReportSetValue);
-            case TextValue textValue -> element.setText(textValue.value());
-            case VCardValue vCardValue -> element.setText(vCardValue.vcard());
+            case EmptyValue() -> {
+                // Empty DAV properties are encoded by the presence of the element itself.
+            }
+            case CalendarDataValue(String calendarData) -> element.setText(calendarData);
+            case CollationSetValue(List<String> collations) -> appendCollationSet(property.name(), element, collations);
+            case HrefValue(String href) -> addDav(element, "href").setText(href);
+            case PrivilegeSetValue(List<DavPropertyName> privileges) -> appendPrivilegeSet(element, privileges);
+            case ResourceTypeValue(List<DavPropertyName> resourceTypes) ->
+                resourceTypes.forEach(resourceType -> element.addElement(qName(resourceType)));
+            case SupportedAddressDataValue(List<AddressDataType> addressDataTypes) ->
+                appendSupportedAddressData(element, addressDataTypes);
+            case SupportedCalendarComponentSetValue(List<DavPropertyName> components) ->
+                appendSupportedCalendarComponentSet(element, components);
+            case SupportedCalendarDataValue(List<CalendarDataType> calendarDataTypes) ->
+                appendSupportedCalendarData(element, calendarDataTypes);
+            case SupportedReportSetValue(List<DavPropertyName> reports) -> appendSupportedReportSet(element, reports);
+            case TextValue(String value) -> element.setText(value);
+            case VCardValue(String vcard) -> element.setText(vcard);
         }
     }
 
     private void appendCollationSet(
-            final DavPropertyName propertyName, final Element element, final CollationSetValue collationSetValue) {
+            final DavPropertyName propertyName, final Element element, final List<String> collations) {
         final Namespace namespace = DAVConstants.CALDAV_NAMESPACE.equals(propertyName.namespace()) ? CAL : CARD;
-        for (final String collation : collationSetValue.collations()) {
+        for (final String collation : collations) {
             element.addElement(qName("supported-collation", namespace)).setText(collation);
         }
     }
 
-    private void appendPrivilegeSet(final Element element, final PrivilegeSetValue privilegeSetValue) {
-        for (final DavPropertyName privilege : privilegeSetValue.privileges()) {
+    private void appendPrivilegeSet(final Element element, final List<DavPropertyName> privileges) {
+        for (final DavPropertyName privilege : privileges) {
             final Element privilegeElement = addDav(element, "privilege");
             privilegeElement.addElement(qName(privilege));
         }
     }
 
-    private void appendSupportedAddressData(
-            final Element element, final SupportedAddressDataValue supportedAddressDataValue) {
-        for (final AddressDataType addressDataType : supportedAddressDataValue.addressDataTypes()) {
+    private void appendSupportedAddressData(final Element element, final List<AddressDataType> addressDataTypes) {
+        for (final AddressDataType addressDataType : addressDataTypes) {
             final Element addressDataTypeElement = element.addElement(qName("address-data-type", CARD));
             addressDataTypeElement.addAttribute("content-type", addressDataType.contentType());
             addressDataTypeElement.addAttribute("version", addressDataType.version());
         }
     }
 
-    private void appendSupportedCalendarData(
-            final Element element, final SupportedCalendarDataValue supportedCalendarDataValue) {
-        for (final CalendarDataType calendarDataType : supportedCalendarDataValue.calendarDataTypes()) {
+    private void appendSupportedCalendarData(final Element element, final List<CalendarDataType> calendarDataTypes) {
+        for (final CalendarDataType calendarDataType : calendarDataTypes) {
             final Element calendarDataTypeElement = element.addElement(qName("calendar-data", CAL));
             calendarDataTypeElement.addAttribute("content-type", calendarDataType.contentType());
             calendarDataTypeElement.addAttribute("version", calendarDataType.version());
         }
     }
 
-    private void appendSupportedCalendarComponentSet(
-            final Element element, final SupportedCalendarComponentSetValue supportedCalendarComponentSetValue) {
-        for (final DavPropertyName component : supportedCalendarComponentSetValue.components()) {
+    private void appendSupportedCalendarComponentSet(final Element element, final List<DavPropertyName> components) {
+        for (final DavPropertyName component : components) {
             element.addElement(qName("comp", CAL)).addAttribute("name", component.name());
         }
     }
 
-    private void appendSupportedReportSet(
-            final Element element, final SupportedReportSetValue supportedReportSetValue) {
-        for (final DavPropertyName report : supportedReportSetValue.reports()) {
+    private void appendSupportedReportSet(final Element element, final List<DavPropertyName> reports) {
+        for (final DavPropertyName report : reports) {
             final Element supportedReport = addDav(element, "supported-report");
             final Element reportElement = addDav(supportedReport, "report");
             reportElement.addElement(qName(report));
@@ -193,27 +191,19 @@ public class DavXmlWriter {
                     namespaces.putIfAbsent(
                             property.name().namespace(),
                             namespacePrefix(property.name().namespace()));
-                    if (property.value() instanceof ResourceTypeValue resourceTypeValue) {
-                        resourceTypeValue
-                                .resourceTypes()
-                                .forEach(resourceType -> namespaces.putIfAbsent(
-                                        resourceType.namespace(), namespacePrefix(resourceType.namespace())));
-                    } else if (property.value() instanceof PrivilegeSetValue privilegeSetValue) {
-                        privilegeSetValue
-                                .privileges()
-                                .forEach(privilege -> namespaces.putIfAbsent(
-                                        privilege.namespace(), namespacePrefix(privilege.namespace())));
-                    } else if (property.value() instanceof SupportedReportSetValue supportedReportSetValue) {
-                        supportedReportSetValue
-                                .reports()
-                                .forEach(report -> namespaces.putIfAbsent(
-                                        report.namespace(), namespacePrefix(report.namespace())));
+                    if (property.value() instanceof ResourceTypeValue(List<DavPropertyName> resourceTypes)) {
+                        resourceTypes.forEach(resourceType -> namespaces.putIfAbsent(
+                                resourceType.namespace(), namespacePrefix(resourceType.namespace())));
+                    } else if (property.value() instanceof PrivilegeSetValue(List<DavPropertyName> privileges)) {
+                        privileges.forEach(privilege ->
+                                namespaces.putIfAbsent(privilege.namespace(), namespacePrefix(privilege.namespace())));
+                    } else if (property.value() instanceof SupportedReportSetValue(List<DavPropertyName> reports)) {
+                        reports.forEach(report ->
+                                namespaces.putIfAbsent(report.namespace(), namespacePrefix(report.namespace())));
                     } else if (property.value()
-                            instanceof SupportedCalendarComponentSetValue supportedCalendarComponentSetValue) {
-                        supportedCalendarComponentSetValue
-                                .components()
-                                .forEach(component -> namespaces.putIfAbsent(
-                                        component.namespace(), namespacePrefix(component.namespace())));
+                            instanceof SupportedCalendarComponentSetValue(List<DavPropertyName> components)) {
+                        components.forEach(component ->
+                                namespaces.putIfAbsent(component.namespace(), namespacePrefix(component.namespace())));
                     }
                 }
             }
@@ -226,7 +216,8 @@ public class DavXmlWriter {
         if (standardPrefix != null) {
             return standardPrefix;
         }
-        final String normalized = StringUtils.defaultString(namespaceUri).replaceAll("[^A-Za-z0-9]", "");
-        return normalized.isBlank() ? "x" : "x" + Math.abs(normalized.hashCode());
+        final String safeNamespaceUri = StringUtils.defaultString(namespaceUri);
+        final String normalized = safeNamespaceUri.replaceAll("[^A-Za-z0-9]", "");
+        return normalized.isBlank() ? "x" : "x" + Math.abs(safeNamespaceUri.hashCode());
     }
 }

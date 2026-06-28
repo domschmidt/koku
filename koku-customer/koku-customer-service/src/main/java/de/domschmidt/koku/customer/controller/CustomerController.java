@@ -7,9 +7,9 @@ import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
+import de.domschmidt.koku.business_exception.dto.KokuBusinessErrorWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
-import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.customer.kafka.customers.service.CustomerKafkaService;
 import de.domschmidt.koku.customer.persistence.Customer;
@@ -103,6 +103,8 @@ public class CustomerController {
     private static final String CUSTOMER_CREATED_EVENT = "customer-created";
     private static final String CUSTOMER_ID_PARAM = ":customerId";
     private static final String NAME_PARAM = ":name";
+    private static final String CUSTOMER_LABEL = "Kunde ";
+    private static final String CUSTOMER_SERVICE_URL = "services/customers/customers/";
 
     private final EntityManager entityManager;
     private final CustomerRepository customerRepository;
@@ -154,8 +156,8 @@ public class CustomerController {
                                 .build())
                         .submitPayload(KokuCustomerDto.builder().deleted(true).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Kunde löschen")
-                                .content("Kunde " + NAME_PARAM + " als gelöscht markieren?")
+                                .headline(CUSTOMER_LABEL + "löschen")
+                                .content(CUSTOMER_LABEL + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuCustomerDto.Fields.fullName)
@@ -163,7 +165,7 @@ public class CustomerController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Kunde " + NAME_PARAM + " erfolgreich als gelöscht markiert")
+                                        .text(CUSTOMER_LABEL + NAME_PARAM + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -174,7 +176,7 @@ public class CustomerController {
                                         .eventName(CUSTOMER_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Kunde " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(CUSTOMER_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -202,8 +204,8 @@ public class CustomerController {
                                 .build())
                         .submitPayload(KokuCustomerDto.builder().deleted(false).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Kunde wiederherstellen")
-                                .content("Kunde " + NAME_PARAM + " wiederherstellen?")
+                                .headline(CUSTOMER_LABEL + "wiederherstellen")
+                                .content(CUSTOMER_LABEL + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuCustomerDto.Fields.fullName)
@@ -211,7 +213,7 @@ public class CustomerController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Kunde " + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
+                                        .text(CUSTOMER_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -222,7 +224,7 @@ public class CustomerController {
                                         .eventName(CUSTOMER_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Kunde " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(CUSTOMER_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -259,8 +261,7 @@ public class CustomerController {
                 listViewFactory.addSourcePath(KokuCustomerDto.Fields.id);
         final ListViewSourcePathReference deletedSourceRef =
                 listViewFactory.addSourcePath(KokuCustomerDto.Fields.deleted);
-        final ListViewSourcePathReference initialsSourceRef =
-                listViewFactory.addSourcePath(KokuCustomerDto.Fields.initials);
+        listViewFactory.addSourcePath(KokuCustomerDto.Fields.initials);
 
         listViewFactory.addFilter(
                 KokuCustomerDto.Fields.deleted,
@@ -299,7 +300,7 @@ public class CustomerController {
                 .inlineContent(ListViewHeaderContentDto.builder()
                         .title("Neuer Kunde")
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/customers/customers/form")
+                                .formularUrl(CUSTOMER_SERVICE_URL + "form")
                                 .submitUrl("services/customers/customers")
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
                                 .maxWidthInPx(800)
@@ -340,7 +341,7 @@ public class CustomerController {
                 .route(CUSTOMER_ID_PARAM)
                 .itemId(CUSTOMER_ID_PARAM)
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .sourceUrl("services/customers/customers/" + CUSTOMER_ID_PARAM + "/summary")
+                        .sourceUrl(CUSTOMER_SERVICE_URL + CUSTOMER_ID_PARAM + "/summary")
                         .titlePath(KokuCustomerSummaryDto.Fields.fullName)
                         .globalEventListeners(
                                 Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
@@ -356,8 +357,8 @@ public class CustomerController {
                                                 .icon("INFORMATION_CIRCLE")
                                                 .title("Bearbeiten")
                                                 .content(ListViewFormularContentDto.builder()
-                                                        .formularUrl("services/customers/customers/form")
-                                                        .sourceUrl("services/customers/customers/" + CUSTOMER_ID_PARAM)
+                                                        .formularUrl(CUSTOMER_SERVICE_URL + "form")
+                                                        .sourceUrl(CUSTOMER_SERVICE_URL + CUSTOMER_ID_PARAM)
                                                         .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
                                                         .maxWidthInPx(800)
                                                         .onSaveEvents(Arrays.asList(
@@ -373,8 +374,8 @@ public class CustomerController {
                                                 .icon("CALENDAR")
                                                 .title("Termine")
                                                 .content(ListViewListContentDto.builder()
-                                                        .listUrl("services/customers/customers/appointments/list")
-                                                        .sourceUrl("services/customers/customers/" + CUSTOMER_ID_PARAM
+                                                        .listUrl(CUSTOMER_SERVICE_URL + "appointments/list")
+                                                        .sourceUrl(CUSTOMER_SERVICE_URL + CUSTOMER_ID_PARAM
                                                                 + "/appointments/query")
                                                         .build())
                                                 .build(),
@@ -386,7 +387,7 @@ public class CustomerController {
                                                 .content(ListViewListContentDto.builder()
                                                         .listUrl("services/files/files/list?customerId="
                                                                 + CUSTOMER_ID_PARAM
-                                                                + "&contextEndpointUrl=services/customers/customers/"
+                                                                + "&contextEndpointUrl=" + CUSTOMER_SERVICE_URL
                                                                 + CUSTOMER_ID_PARAM)
                                                         .sourceUrl("services/files/files/query?customerId="
                                                                 + CUSTOMER_ID_PARAM)
@@ -402,12 +403,12 @@ public class CustomerController {
                                                         .xl5(2)
                                                         .content(Arrays.asList(
                                                                 ListViewChartContentDto.builder()
-                                                                        .chartUrl("services/customers/customers/"
+                                                                        .chartUrl(CUSTOMER_SERVICE_URL
                                                                                 + CUSTOMER_ID_PARAM
                                                                                 + "/statistics/yearlyvisits")
                                                                         .build(),
                                                                 ListViewChartContentDto.builder()
-                                                                        .chartUrl("services/customers/customers/"
+                                                                        .chartUrl(CUSTOMER_SERVICE_URL
                                                                                 + CUSTOMER_ID_PARAM
                                                                                 + "/statistics/yearlyrevenue")
                                                                         .build()))
@@ -430,14 +431,14 @@ public class CustomerController {
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                        .url("services/customers/customers/" + CUSTOMER_ID_PARAM + "/restore")
+                        .url(CUSTOMER_SERVICE_URL + CUSTOMER_ID_PARAM + "/restore")
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                 .param(CUSTOMER_ID_PARAM)
                                 .valueReference(idSourcePathFieldRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
-                                .headline("Kunde wiederherstellen")
+                                .headline(CUSTOMER_LABEL + "wiederherstellen")
                                 .content(NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -468,14 +469,14 @@ public class CustomerController {
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
-                        .url("services/customers/customers/" + CUSTOMER_ID_PARAM)
+                        .url(CUSTOMER_SERVICE_URL + CUSTOMER_ID_PARAM)
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                 .param(CUSTOMER_ID_PARAM)
                                 .valueReference(idSourcePathFieldRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
-                                .headline("Kunde löschen")
+                                .headline(CUSTOMER_LABEL + "löschen")
                                 .content(NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -604,28 +605,26 @@ public class CustomerController {
             @RequestBody KokuCustomerDto updatedDto) {
         final Customer customer = this.entityManager.getReference(Customer.class, id);
         if (!Boolean.TRUE.equals(forceUpdate) && !customer.getVersion().equals(updatedDto.getVersion())) {
-            throw new KokuBusinessExceptionWithConfirmationMessage(
-                    KokuBusinessExceptionWithConfirmationMessageDto.builder()
-                            .headline("Konflikt")
-                            .confirmationMessage("Der Kunde wurde zwischenzeitlich bearbeitet.\n"
-                                    + "Willst Du die Speicherung dennoch vornehmen?")
-                            .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .icon("CLOSE")
-                                    .build())
-                            .closeOnClickOutside(true)
-                            .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
-                                    .text("Trotzdem speichern")
-                                    .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format(
-                                            "services/customers/customers/%s?forceUpdate=%s", id, Boolean.TRUE))
-                                    .build())
-                            .button(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .build())
-                            .build());
+            throw new KokuBusinessExceptionWithConfirmationMessage(KokuBusinessErrorWithConfirmationMessageDto.builder()
+                    .headline("Konflikt")
+                    .confirmationMessage("Der Kunde wurde zwischenzeitlich bearbeitet.\n"
+                            + "Willst Du die Speicherung dennoch vornehmen?")
+                    .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .icon("CLOSE")
+                            .build())
+                    .closeOnClickOutside(true)
+                    .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
+                            .text("Trotzdem speichern")
+                            .title("Zwischenzeitliche Änderungen überschreiben")
+                            .endpointUrl(String.format(CUSTOMER_SERVICE_URL + "%s?forceUpdate=%s", id, Boolean.TRUE))
+                            .build())
+                    .button(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .build())
+                    .build());
         }
         this.transformer.transformToEntity(customer, updatedDto);
         this.entityManager.flush();

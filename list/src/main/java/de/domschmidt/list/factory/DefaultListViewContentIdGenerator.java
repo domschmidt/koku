@@ -9,10 +9,9 @@ public class DefaultListViewContentIdGenerator implements IListViewContentIdGene
 
     public String generateUniqueId(final String proposal) {
         if (knownNames.contains(proposal)) {
-            throw new IllegalArgumentException("Proposal "
-                    + proposal
-                    + " already exists. If you specify your own id, please make sure to set them"
-                    + " uniquely.");
+            throw new IllegalArgumentException(String.format(
+                    "Proposal %s already exists. If you specify your own id, please make sure to set them uniquely.",
+                    proposal));
         }
         knownNames.add(proposal);
         return proposal;

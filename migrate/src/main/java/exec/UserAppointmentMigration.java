@@ -9,8 +9,8 @@ public class UserAppointmentMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating UserAppointment...");
+    public void migrate() {
+        logInfo("Migrating UserAppointment...");
 
         read(
                 "SELECT id, recorded, updated, deleted, description, start, user_id, ending FROM"
@@ -48,6 +48,6 @@ public class UserAppointmentMigration extends BaseMigration {
                     }
                 });
 
-        System.out.println("✔ UserAppointment done.");
+        logInfo("UserAppointment done.");
     }
 }

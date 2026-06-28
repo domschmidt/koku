@@ -19,12 +19,10 @@ public class KafkaStreamsStateListener {
     @PostConstruct
     public void registerListener() {
         // KafkaStreams ist erst nach dem Start verfügbar
-        factoryBean.setKafkaStreamsCustomizer(kafkaStreams -> {
-            kafkaStreams.setStateListener((newState, oldState) -> {
-                if (newState == KafkaStreams.State.RUNNING) {
-                    applicationEventPublisher.publishEvent(new KafkaStreamsRunningEvent(this));
-                }
-            });
-        });
+        factoryBean.setKafkaStreamsCustomizer(kafkaStreams -> kafkaStreams.setStateListener((newState, oldState) -> {
+            if (newState == KafkaStreams.State.RUNNING) {
+                applicationEventPublisher.publishEvent(new KafkaStreamsRunningEvent(this));
+            }
+        }));
     }
 }

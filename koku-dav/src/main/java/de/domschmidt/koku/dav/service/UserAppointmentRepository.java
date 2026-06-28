@@ -4,6 +4,7 @@ import de.domschmidt.koku.dav.kafka.users.service.UserAppointmentKTableProcessor
 import de.domschmidt.koku.user.kafka.dto.UserAppointmentKafkaDto;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -28,7 +29,7 @@ public class UserAppointmentRepository {
                                 Spliterator.DISTINCT),
                         false)
                 .map(entry -> entry.value)
-                .filter(appointment -> appointment != null)
+                .filter(Objects::nonNull)
                 .sorted(Comparator.comparing(
                         UserAppointmentKafkaDto::getStart, Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();

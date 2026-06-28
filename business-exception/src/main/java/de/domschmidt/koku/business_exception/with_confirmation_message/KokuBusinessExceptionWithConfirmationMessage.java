@@ -1,15 +1,15 @@
 package de.domschmidt.koku.business_exception.with_confirmation_message;
 
-import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
+import de.domschmidt.koku.business_exception.dto.KokuBusinessErrorWithConfirmationMessageDto;
 import lombok.Getter;
 
 @Getter
 public class KokuBusinessExceptionWithConfirmationMessage extends RuntimeException {
 
-    private final transient KokuBusinessExceptionWithConfirmationMessageDto confirmationMessage;
+    private final transient KokuBusinessErrorWithConfirmationMessageDto confirmationMessage;
 
     public KokuBusinessExceptionWithConfirmationMessage(
-            final KokuBusinessExceptionWithConfirmationMessageDto confirmationMessage) {
+            final KokuBusinessErrorWithConfirmationMessageDto confirmationMessage) {
         super(confirmationMessage.getConfirmationMessage());
         this.confirmationMessage = confirmationMessage;
     }

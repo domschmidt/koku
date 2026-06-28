@@ -24,7 +24,7 @@ public class CalDavService {
 
     private static final String CUSTOMER_APPOINTMENT_SYNC_STATE_PREFIX = "urn:koku:caldav:sync:";
     private static final String PRIVATE_APPOINTMENT_SYNC_STATE_PREFIX = "urn:koku:caldav:private:sync:";
-    private static final Pattern ICS_ID_PATTERN = Pattern.compile(".*/(\\d+)\\.ics$");
+    private static final Pattern ICS_ID_PATTERN = Pattern.compile("/(\\d+)\\.ics$");
 
     private final CustomerAppointmentRepository customerAppointmentRepository;
     private final CustomerContactRepository customerContactRepository;

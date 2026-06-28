@@ -2,6 +2,7 @@ package de.domschmidt.koku.dav.service;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -17,7 +18,7 @@ final class DavResourceMetadata {
     }
 
     static String lastModified(final LocalDateTime updated) {
-        final LocalDateTime timestamp = updated == null ? LocalDateTime.of(1970, 1, 1, 0, 0) : updated;
+        final LocalDateTime timestamp = updated == null ? LocalDateTime.of(1970, Month.JANUARY, 1, 0, 0) : updated;
         return DateTimeFormatter.RFC_1123_DATE_TIME.format(timestamp.atOffset(ZoneOffset.UTC));
     }
 

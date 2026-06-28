@@ -3,6 +3,7 @@ package de.domschmidt.koku.dav.service;
 import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
 import de.domschmidt.koku.dav.kafka.customers.service.CustomerKTableProcessor;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -30,7 +31,7 @@ public class CustomerContactRepository {
                                 this.customerKTableProcessor.getCustomers().all(), Spliterator.DISTINCT),
                         false)
                 .map(entry -> entry.value)
-                .filter(customer -> customer != null)
+                .filter(Objects::nonNull)
                 .toList();
     }
 

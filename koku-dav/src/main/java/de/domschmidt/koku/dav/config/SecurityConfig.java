@@ -35,17 +35,25 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(final HttpSecurity http, final AuthenticationProvider authenticationProvider)
-            throws Exception {
+    public SecurityFilterChain filterChain(
+            final HttpSecurity http, final AuthenticationProvider authenticationProvider) {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authenticationProvider(authenticationProvider)
-                .sessionManagement((sessionMgmt) -> sessionMgmt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests((authorize) -> authorize
+                .sessionManagement(sessionMgmt -> sessionMgmt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/error", "/actuator/health")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
                 .httpBasic(Customizer.withDefaults());
-        return http.build();
+        return buildSecurityFilterChain(http);
+    }
+
+    private static SecurityFilterChain buildSecurityFilterChain(final HttpSecurity http) {
+        try {
+            return http.build();
+        } catch (final Exception exception) {
+            throw new IllegalStateException("Unable to build security filter chain", exception);
+        }
     }
 }

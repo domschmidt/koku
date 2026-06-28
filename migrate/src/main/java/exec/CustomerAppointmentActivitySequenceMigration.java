@@ -18,8 +18,8 @@ public class CustomerAppointmentActivitySequenceMigration extends BaseMigration 
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating CustomerAppointmentActivitySequence...");
+    public void migrate() {
+        logInfo("Migrating CustomerAppointmentActivitySequence...");
 
         Map<String, Long> activityStepExternalRefMapping = new HashMap<>();
         read(
@@ -78,6 +78,6 @@ public class CustomerAppointmentActivitySequenceMigration extends BaseMigration 
                     }
                 });
 
-        System.out.println("✔ CustomerAppointmentActivitySequence done.");
+        logInfo("CustomerAppointmentActivitySequence done.");
     }
 }

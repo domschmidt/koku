@@ -2,13 +2,10 @@ package de.domschmidt.koku.promotion.transformer;
 
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
 import de.domschmidt.koku.promotion.persistence.Promotion;
-import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PromotionToPromotionDtoTransformer {
-
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     public KokuPromotionDto transformToDto(final Promotion model) {
         return KokuPromotionDto.builder()

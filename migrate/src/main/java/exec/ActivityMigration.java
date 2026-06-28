@@ -9,8 +9,8 @@ public class ActivityMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating Activity...");
+    public void migrate() {
+        logInfo("Migrating Activity...");
 
         read(
                 "SELECT id, recorded, updated, approximately_duration, deleted, description FROM" + " koku.activity",
@@ -40,6 +40,6 @@ public class ActivityMigration extends BaseMigration {
                     }
                 });
 
-        System.out.println("✔ Activity done.");
+        logInfo("Activity done.");
     }
 }

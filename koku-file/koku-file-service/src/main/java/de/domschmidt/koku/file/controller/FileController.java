@@ -75,6 +75,11 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 @RequiredArgsConstructor
 public class FileController {
+    private static final String FILE_ID_PARAM = ":fileId";
+    private static final String NAME_PARAM = ":name";
+    private static final String CAPTURE_ROUTE = "capture";
+    private static final String FILE_ID_URL = "services/files/files/" + FILE_ID_PARAM;
+
     private final EntityManager entityManager;
     private final FileRepository fileRepository;
     private final FileToFileDtoTransformer transformer;
@@ -167,7 +172,7 @@ public class FileController {
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
                 .route("capture-barcode")
-                .itemId(":fileId")
+                .itemId(FILE_ID_PARAM)
                 .modalContent(ListViewHeaderContentDto.builder()
                         .title("Barcode Scannen")
                         .content(ListViewBarcodeContentDto.builder()
@@ -180,11 +185,11 @@ public class FileController {
                 .build());
 
         listViewFactory.addAction(ListViewOpenRoutedContentActionDto.builder()
-                .route("capture")
+                .route(CAPTURE_ROUTE)
                 .icon("CAPTURE")
                 .build());
         listViewFactory.addRoutedItem(ListViewRoutedDummyItemDto.builder()
-                .route("capture")
+                .route(CAPTURE_ROUTE)
                 .text("Neues Dokument")
                 .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadAddItemGlobalEventListenerDto.builder()
@@ -196,9 +201,9 @@ public class FileController {
                 .build());
         listViewFactory.addGlobalEventListener(ListViewEventPayloadOpenRoutedContentGlobalEventListenerDto.builder()
                 .eventName("document-captured")
-                .route(":fileId")
+                .route(FILE_ID_PARAM)
                 .params(Arrays.asList(ListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto.builder()
-                        .param(":fileId")
+                        .param(FILE_ID_PARAM)
                         .valuePath(KokuFileDto.Fields.id)
                         .build()))
                 .build());
@@ -222,8 +227,8 @@ public class FileController {
         }
 
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
-                .route("capture")
-                .itemId(":fileId")
+                .route(CAPTURE_ROUTE)
+                .itemId(FILE_ID_PARAM)
                 .modalContent(ListViewHeaderContentDto.builder()
                         .title("Dokument Erfassen")
                         .content(ListViewListContentDto.builder()
@@ -237,21 +242,21 @@ public class FileController {
                 .build());
 
         listViewFactory.setItemClickAction(ListViewItemClickOpenRoutedContentActionDto.builder()
-                .route(":fileId")
+                .route(FILE_ID_PARAM)
                 .params(Arrays.asList(ListViewItemClickOpenRoutedContentActionItemValueParamDto.builder()
-                        .param(":fileId")
+                        .param(FILE_ID_PARAM)
                         .valueReference(idSourcePathFieldRef)
                         .build()))
                 .build());
         listViewFactory.addRoutedContent(ListViewRoutedContentDto.builder()
-                .route(":fileId")
-                .itemId(":fileId")
+                .route(FILE_ID_PARAM)
+                .itemId(FILE_ID_PARAM)
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .sourceUrl("services/files/files/:fileId")
+                        .sourceUrl(FILE_ID_URL)
                         .titlePath(KokuFileDto.Fields.filename)
                         .content(ListViewFileViewerContentDto.builder()
-                                .sourceUrl("services/files/files/:fileId")
-                                .fileUrl("services/files/files/:fileId/content")
+                                .sourceUrl(FILE_ID_URL)
+                                .fileUrl(FILE_ID_URL + "/content")
                                 .mimeTypeSourcePath(KokuFileDto.Fields.mimeType)
                                 .build())
                         .build())
@@ -269,26 +274,26 @@ public class FileController {
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                        .url("services/files/files/:fileId/restore")
+                        .url(FILE_ID_URL + "/restore")
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
-                                .param(":fileId")
+                                .param(FILE_ID_PARAM)
                                 .valueReference(idSourcePathFieldRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Datei wiederherstellen")
-                                .content(":name wiederherstellen?")
+                                .content(NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .valueReference(filenameFieldRef)
                                         .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text(":name wurde erfolgreich wiederhergestellt")
+                                        .text(NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .valueReference(filenameFieldRef)
                                                 .build()))
                                         .build(),
@@ -297,36 +302,36 @@ public class FileController {
                                         .valueMapping(Map.of(KokuFileDto.Fields.deleted, deletedSourceRef))
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text(":name konnte nicht wiederhergestellt werden")
+                                .text(NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .valueReference(filenameFieldRef)
                                         .build()))
                                 .build()))
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
-                        .url("services/files/files/:fileId")
+                        .url(FILE_ID_URL)
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
-                                .param(":fileId")
+                                .param(FILE_ID_PARAM)
                                 .valueReference(idSourcePathFieldRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Datei löschen")
-                                .content(":name als gelöscht markieren?")
+                                .content(NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .valueReference(filenameFieldRef)
                                         .build()))
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text(":name erfolgreich als gelöscht markiert")
+                                        .text(NAME_PARAM + " erfolgreich als gelöscht markiert")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                                .param(":name")
+                                                .param(NAME_PARAM)
                                                 .valueReference(filenameFieldRef)
                                                 .build()))
                                         .build(),
@@ -335,10 +340,10 @@ public class FileController {
                                         .valueMapping(Map.of(KokuFileDto.Fields.deleted, deletedSourceRef))
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text(":name konnte nicht als gelöscht markiert werden")
+                                .text(NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                        .param(":name")
+                                        .param(NAME_PARAM)
                                         .valueReference(filenameFieldRef)
                                         .build()))
                                 .build()))

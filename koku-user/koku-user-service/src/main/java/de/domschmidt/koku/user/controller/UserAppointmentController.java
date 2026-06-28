@@ -6,9 +6,9 @@ import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
+import de.domschmidt.koku.business_exception.dto.KokuBusinessErrorWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
-import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
@@ -115,6 +115,8 @@ public class UserAppointmentController {
     private static final String USER_APPOINTMENT_UPDATED_EVENT = "user-appointment-updated";
     private static final String APPOINTMENT_ID_PARAM = ":appointmentId";
     private static final String DATE_PARAM = ":date";
+    private static final String APPOINTMENT_DATE_LABEL = "Termin vom ";
+    private static final String USER_APPOINTMENT_SERVICE_URL = "services/users/users/appointments/";
 
     private final EntityManager entityManager;
     private final UserAppointmentRepository userAppointmentRepository;
@@ -147,15 +149,13 @@ public class UserAppointmentController {
                         .label("Nutzer")
                         .alias(KokuUserAppointmentDto.Fields.userId)
                         .possibleValues(usersSnapshot.stream()
-                                .map(user -> {
-                                    return SelectFormularFieldPossibleValue.builder()
-                                            .id(user.getId())
-                                            .text(Stream.of(user.getFirstname(), user.getLastname())
-                                                    .filter(s -> s != null && !s.isEmpty())
-                                                    .collect(Collectors.joining(" ")))
-                                            .disabled(user.isDeleted())
-                                            .build();
-                                })
+                                .map(user -> SelectFormularFieldPossibleValue.builder()
+                                        .id(user.getId())
+                                        .text(Stream.of(user.getFirstname(), user.getLastname())
+                                                .filter(s -> s != null && !s.isEmpty())
+                                                .collect(Collectors.joining(" ")))
+                                        .disabled(user.isDeleted())
+                                        .build())
                                 .toList())
                         .defaultValue(SecurityContextHolder.getContext()
                                 .getAuthentication()
@@ -256,7 +256,7 @@ public class UserAppointmentController {
                                 KokuUserAppointmentDto.builder().deleted(true).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
                                 .headline("Termin löschen")
-                                .content("Termin vom " + DATE_PARAM + " als gelöscht markieren?")
+                                .content(APPOINTMENT_DATE_LABEL + DATE_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(DATE_PARAM)
                                         .sourcePath(KokuUserAppointmentDto.Fields.startDate)
@@ -264,7 +264,8 @@ public class UserAppointmentController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Termin vom " + DATE_PARAM + " erfolgreich als gelöscht markiert")
+                                        .text(APPOINTMENT_DATE_LABEL + DATE_PARAM
+                                                + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
                                                 .param(DATE_PARAM)
@@ -275,7 +276,8 @@ public class UserAppointmentController {
                                         .eventName(USER_APPOINTMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Termin vom " + DATE_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(APPOINTMENT_DATE_LABEL + DATE_PARAM
+                                        + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
                                         .param(DATE_PARAM)
@@ -306,7 +308,7 @@ public class UserAppointmentController {
                                 KokuUserAppointmentDto.builder().deleted(false).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
                                 .headline("Termin wiederherstellen")
-                                .content("Termin vom " + DATE_PARAM + " wiederherstellen?")
+                                .content(APPOINTMENT_DATE_LABEL + DATE_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(DATE_PARAM)
                                         .sourcePath(KokuUserAppointmentDto.Fields.startDate)
@@ -314,7 +316,8 @@ public class UserAppointmentController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Termin vom " + DATE_PARAM + " wurde erfolgreich wiederhergestellt")
+                                        .text(APPOINTMENT_DATE_LABEL + DATE_PARAM
+                                                + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
                                                 .param(DATE_PARAM)
@@ -325,7 +328,7 @@ public class UserAppointmentController {
                                         .eventName(USER_APPOINTMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Termin vom " + DATE_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(APPOINTMENT_DATE_LABEL + DATE_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventDateValueParamDto.builder()
                                         .param(DATE_PARAM)
@@ -399,7 +402,7 @@ public class UserAppointmentController {
                 .inlineContent(ListViewHeaderContentDto.builder()
                         .title("Neuer Privater Termin")
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/users/users/appointments/form")
+                                .formularUrl(USER_APPOINTMENT_SERVICE_URL + "form")
                                 .submitUrl("services/users/users/appointments")
                                 .contentOverrides(Arrays.asList(ListViewRouteBasedFormularContentOverrideDto.builder()
                                         .routeParam(":userId")
@@ -445,7 +448,7 @@ public class UserAppointmentController {
                 .route(APPOINTMENT_ID_PARAM)
                 .itemId(APPOINTMENT_ID_PARAM)
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .sourceUrl("services/users/users/appointments/" + APPOINTMENT_ID_PARAM + "/summary")
+                        .sourceUrl(USER_APPOINTMENT_SERVICE_URL + APPOINTMENT_ID_PARAM + "/summary")
                         .titlePath(KokuUserAppointmentSummaryDto.Fields.summary)
                         .globalEventListeners(
                                 Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
@@ -454,8 +457,8 @@ public class UserAppointmentController {
                                         .titleValuePath(KokuUserAppointmentDto.Fields.summary)
                                         .build()))
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/users/users/appointments/form")
-                                .sourceUrl("services/users/users/appointments/" + APPOINTMENT_ID_PARAM)
+                                .formularUrl(USER_APPOINTMENT_SERVICE_URL + "form")
+                                .sourceUrl(USER_APPOINTMENT_SERVICE_URL + APPOINTMENT_ID_PARAM)
                                 .contentOverrides(Arrays.asList(ListViewRouteBasedFormularContentOverrideDto.builder()
                                         .routeParam(":userId")
                                         .alias(KokuUserAppointmentDto.Fields.userId)
@@ -483,7 +486,7 @@ public class UserAppointmentController {
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                        .url("services/users/users/appointments/" + APPOINTMENT_ID_PARAM + "/restore")
+                        .url(USER_APPOINTMENT_SERVICE_URL + APPOINTMENT_ID_PARAM + "/restore")
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                 .param(APPOINTMENT_ID_PARAM)
                                 .valueReference(idSourcePathFieldRef)
@@ -491,7 +494,7 @@ public class UserAppointmentController {
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Termin wiederherstellen")
-                                .content("Termin vom " + DATE_PARAM + " wiederherstellen?")
+                                .content(APPOINTMENT_DATE_LABEL + DATE_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(DATE_PARAM)
                                         .valueReference(startDateFieldRef)
@@ -499,7 +502,8 @@ public class UserAppointmentController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Termin vom " + DATE_PARAM + " wurde erfolgreich wiederhergestellt")
+                                        .text(APPOINTMENT_DATE_LABEL + DATE_PARAM
+                                                + " wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                 .param(DATE_PARAM)
@@ -514,7 +518,7 @@ public class UserAppointmentController {
                                         .eventName(USER_APPOINTMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text("Termin vom " + DATE_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(APPOINTMENT_DATE_LABEL + DATE_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                         .param(DATE_PARAM)
@@ -524,7 +528,7 @@ public class UserAppointmentController {
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
-                        .url("services/users/users/appointments/" + APPOINTMENT_ID_PARAM)
+                        .url(USER_APPOINTMENT_SERVICE_URL + APPOINTMENT_ID_PARAM)
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                 .param(APPOINTMENT_ID_PARAM)
                                 .valueReference(idSourcePathFieldRef)
@@ -532,7 +536,7 @@ public class UserAppointmentController {
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
                                 .headline("Termin löschen")
-                                .content("Termin vom " + DATE_PARAM + " als gelöscht markieren?")
+                                .content(APPOINTMENT_DATE_LABEL + DATE_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(DATE_PARAM)
                                         .valueReference(startDateFieldRef)
@@ -540,7 +544,8 @@ public class UserAppointmentController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Termin vom " + DATE_PARAM + " erfolgreich als gelöscht markiert")
+                                        .text(APPOINTMENT_DATE_LABEL + DATE_PARAM
+                                                + " erfolgreich als gelöscht markiert")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                 .param(DATE_PARAM)
@@ -555,7 +560,8 @@ public class UserAppointmentController {
                                         .eventName(USER_APPOINTMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text("Termin vom " + DATE_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(APPOINTMENT_DATE_LABEL + DATE_PARAM
+                                        + " konnte nicht als gelöscht markiert werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                         .param(DATE_PARAM)
@@ -631,29 +637,27 @@ public class UserAppointmentController {
             @RequestBody KokuUserAppointmentDto updatedDto) {
         final UserAppointment userAppointment = this.entityManager.getReference(UserAppointment.class, appointmentId);
         if (!Boolean.TRUE.equals(forceUpdate) && !userAppointment.getVersion().equals(updatedDto.getVersion())) {
-            throw new KokuBusinessExceptionWithConfirmationMessage(
-                    KokuBusinessExceptionWithConfirmationMessageDto.builder()
-                            .headline("Konflikt")
-                            .confirmationMessage("Der Termin wurde zwischenzeitlich bearbeitet.\n"
-                                    + "Willst Du die Speicherung dennoch vornehmen?")
-                            .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .icon("CLOSE")
-                                    .build())
-                            .closeOnClickOutside(true)
-                            .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
-                                    .text("Trotzdem speichern")
-                                    .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format(
-                                            "services/users/users/appointments/%s?forceUpdate=%s",
-                                            appointmentId, Boolean.TRUE))
-                                    .build())
-                            .button(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .build())
-                            .build());
+            throw new KokuBusinessExceptionWithConfirmationMessage(KokuBusinessErrorWithConfirmationMessageDto.builder()
+                    .headline("Konflikt")
+                    .confirmationMessage("Der Termin wurde zwischenzeitlich bearbeitet.\n"
+                            + "Willst Du die Speicherung dennoch vornehmen?")
+                    .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .icon("CLOSE")
+                            .build())
+                    .closeOnClickOutside(true)
+                    .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
+                            .text("Trotzdem speichern")
+                            .title("Zwischenzeitliche Änderungen überschreiben")
+                            .endpointUrl(String.format(
+                                    USER_APPOINTMENT_SERVICE_URL + "%s?forceUpdate=%s", appointmentId, Boolean.TRUE))
+                            .build())
+                    .button(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .build())
+                    .build());
         }
         this.transformer.transformToEntity(userAppointment, updatedDto);
         this.entityManager.flush();

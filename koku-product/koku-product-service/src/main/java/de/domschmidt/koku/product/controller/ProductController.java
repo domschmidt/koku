@@ -12,9 +12,9 @@ import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
+import de.domschmidt.koku.business_exception.dto.KokuBusinessErrorWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
-import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.business_logic.dto.*;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
@@ -110,6 +110,10 @@ public class ProductController {
     private static final String PRODUCT_ID_PARAM = ":productId";
     private static final String NAME_PARAM = ":name";
     private static final String PRODUCT_MANUFACTURER_CREATED_EVENT = "productmanufacturer-created";
+    private static final String PRICE_LABEL = "Preis";
+    private static final String PRODUCT_LABEL = "Produkt ";
+    private static final String PRODUCT_SERVICE_URL = "services/products/products/";
+    private static final String PRODUCT_NOT_FOUND_MESSAGE = "Product not found";
 
     private final EntityManager entityManager;
     private final ProductRepository productRepository;
@@ -132,13 +136,11 @@ public class ProductController {
                 .label("Hersteller")
                 .required(true)
                 .possibleValues(productManufacturersSnapshot.stream()
-                        .map(productManufacturer -> {
-                            return SelectFormularFieldPossibleValue.builder()
-                                    .id(productManufacturer.getId() + "")
-                                    .text(productManufacturer.getName())
-                                    .disabled(productManufacturer.isDeleted())
-                                    .build();
-                        })
+                        .map(productManufacturer -> SelectFormularFieldPossibleValue.builder()
+                                .id(productManufacturer.getId() + "")
+                                .text(productManufacturer.getName())
+                                .disabled(productManufacturer.isDeleted())
+                                .build())
                         .toList())
                 .build());
         formFactory.place(productManufacturerFieldRef).in(rootId).outlet(FormOutlet.CONTENT);
@@ -222,7 +224,7 @@ public class ProductController {
                 .place(formFactory.addContent(InputFormularField.builder()
                         .valuePath(KokuProductDto.Fields.price)
                         .type(EnumInputFormularFieldType.NUMBER)
-                        .label("Preis")
+                        .label(PRICE_LABEL)
                         .regexp("^\\d{0,19}([\\.]\\d{0,2})?$")
                         .build()))
                 .in(rootId)
@@ -260,8 +262,8 @@ public class ProductController {
                                 .build())
                         .submitPayload(KokuProductDto.builder().deleted(true).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Produkt löschen")
-                                .content("Produkt " + NAME_PARAM + " als gelöscht markieren?")
+                                .headline(PRODUCT_LABEL + "löschen")
+                                .content(PRODUCT_LABEL + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuProductDto.Fields.name)
@@ -269,7 +271,7 @@ public class ProductController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Produkt " + NAME_PARAM + " erfolgreich als gelöscht markiert")
+                                        .text(PRODUCT_LABEL + NAME_PARAM + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -280,7 +282,7 @@ public class ProductController {
                                         .eventName(PRODUCT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Produkt " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(PRODUCT_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -308,8 +310,8 @@ public class ProductController {
                                 .build())
                         .submitPayload(KokuProductDto.builder().deleted(false).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Produkt wiederherstellen")
-                                .content("Produkt " + NAME_PARAM + " wiederherstellen?")
+                                .headline(PRODUCT_LABEL + "wiederherstellen")
+                                .content(PRODUCT_LABEL + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuProductDto.Fields.name)
@@ -317,7 +319,7 @@ public class ProductController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Produkt " + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
+                                        .text(PRODUCT_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -328,7 +330,7 @@ public class ProductController {
                                         .eventName(PRODUCT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Produkt " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(PRODUCT_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -364,7 +366,7 @@ public class ProductController {
         final ListViewFieldReference priceFieldRef = listViewFactory.addField(
                 KokuProductDto.Fields.price,
                 ListViewInputFieldDto.builder()
-                        .label("Preis")
+                        .label(PRICE_LABEL)
                         .type(ListViewInputFieldTypeEnumDto.NUMBER)
                         .build());
 
@@ -405,7 +407,7 @@ public class ProductController {
                 .inlineContent(ListViewHeaderContentDto.builder()
                         .title("Neues Produkt")
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/products/products/form")
+                                .formularUrl(PRODUCT_SERVICE_URL + "form")
                                 .submitUrl("services/products/products")
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
                                 .maxWidthInPx(800)
@@ -446,7 +448,7 @@ public class ProductController {
                 .route(PRODUCT_ID_PARAM)
                 .itemId(PRODUCT_ID_PARAM)
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .sourceUrl("services/products/products/" + PRODUCT_ID_PARAM + "/summary")
+                        .sourceUrl(PRODUCT_SERVICE_URL + PRODUCT_ID_PARAM + "/summary")
                         .titlePath(KokuProductSummaryDto.Fields.summary)
                         .globalEventListeners(
                                 Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
@@ -462,8 +464,8 @@ public class ProductController {
                                                 .icon("INFORMATION_CIRCLE")
                                                 .title("Bearbeiten")
                                                 .content(ListViewFormularContentDto.builder()
-                                                        .formularUrl("services/products/products/form")
-                                                        .sourceUrl("services/products/products/" + PRODUCT_ID_PARAM)
+                                                        .formularUrl(PRODUCT_SERVICE_URL + "form")
+                                                        .sourceUrl(PRODUCT_SERVICE_URL + PRODUCT_ID_PARAM)
                                                         .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
                                                         .maxWidthInPx(800)
                                                         .onSaveEvents(Arrays.asList(
@@ -481,8 +483,8 @@ public class ProductController {
                                                 .content(ListViewGridContentDto.builder()
                                                         .cols(1)
                                                         .content(Arrays.asList(ListViewChartContentDto.builder()
-                                                                .chartUrl("services/products/products/"
-                                                                        + PRODUCT_ID_PARAM + "/statistics/pricehistory")
+                                                                .chartUrl(PRODUCT_SERVICE_URL + PRODUCT_ID_PARAM
+                                                                        + "/statistics/pricehistory")
                                                                 .build()))
                                                         .build())
                                                 .build()))
@@ -502,15 +504,15 @@ public class ProductController {
                 .expectedValue(Boolean.TRUE)
                 .positiveAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                        .url("services/products/products/" + PRODUCT_ID_PARAM + "/restore")
+                        .url(PRODUCT_SERVICE_URL + PRODUCT_ID_PARAM + "/restore")
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                 .param(PRODUCT_ID_PARAM)
                                 .valueReference(idSourcePathRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
-                                .headline("Produkt wiederherstellen")
-                                .content("Produkt " + NAME_PARAM + " wiederherstellen?")
+                                .headline(PRODUCT_LABEL + "wiederherstellen")
+                                .content(PRODUCT_LABEL + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(NAME_PARAM)
                                         .valueReference(nameFieldRef)
@@ -518,7 +520,7 @@ public class ProductController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Produkt " + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
+                                        .text(PRODUCT_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -530,7 +532,7 @@ public class ProductController {
                                         .valueMapping(Map.of(KokuProductDto.Fields.deleted, deletedSourcePathRef))
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text("Produkt " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(PRODUCT_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -540,15 +542,15 @@ public class ProductController {
                         .build())
                 .negativeAction(ListViewCallHttpListItemActionDto.builder()
                         .icon("TRASH")
-                        .url("services/products/products/" + PRODUCT_ID_PARAM)
+                        .url(PRODUCT_SERVICE_URL + PRODUCT_ID_PARAM)
                         .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
                                 .param(PRODUCT_ID_PARAM)
                                 .valueReference(idSourcePathRef)
                                 .build()))
                         .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
                         .userConfirmation(ListViewUserConfirmationDto.builder()
-                                .headline("Produkt löschen")
-                                .content("Produkt " + NAME_PARAM + " als gelöscht markieren?")
+                                .headline(PRODUCT_LABEL + "löschen")
+                                .content(PRODUCT_LABEL + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
                                         .param(NAME_PARAM)
                                         .valueReference(nameFieldRef)
@@ -556,7 +558,7 @@ public class ProductController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 ListViewNotificationEvent.builder()
-                                        .text("Produkt " + NAME_PARAM + " wurde erfolgreich als gelöscht markiert")
+                                        .text(PRODUCT_LABEL + NAME_PARAM + " wurde erfolgreich als gelöscht markiert")
                                         .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -568,7 +570,7 @@ public class ProductController {
                                         .valueMapping(Map.of(KokuProductDto.Fields.deleted, deletedSourcePathRef))
                                         .build()))
                         .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                .text("Produkt " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(PRODUCT_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -617,14 +619,14 @@ public class ProductController {
     public LineChartDto readProductPriceHistory(@PathVariable("productId") Long productId) {
         final Product product = this.productRepository
                 .findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, PRODUCT_NOT_FOUND_MESSAGE));
 
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm 'Uhr'", Locale.GERMAN);
 
         return LineChartDto.builder()
                 .title("Preishistorie")
                 .series(List.of(NumericSeriesDto.builder()
-                        .name("Preis")
+                        .name(PRICE_LABEL)
                         .data(product.getPriceHistory().stream()
                                 .map(ProductPriceHistoryEntry::getPrice)
                                 .toList())
@@ -632,9 +634,8 @@ public class ProductController {
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
                                 .categories(product.getPriceHistory().stream()
-                                        .map(productPriceHistoryEntry -> {
-                                            return formatter.format(productPriceHistoryEntry.getRecorded());
-                                        })
+                                        .map(productPriceHistoryEntry ->
+                                                formatter.format(productPriceHistoryEntry.getRecorded()))
                                         .toList())
                                 .build())
                         .build())
@@ -645,7 +646,7 @@ public class ProductController {
     public KokuProductDto read(@PathVariable("productId") Long productId) {
         final Product product = this.productRepository
                 .findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, PRODUCT_NOT_FOUND_MESSAGE));
         return this.transformer.transformToDto(product);
     }
 
@@ -653,7 +654,7 @@ public class ProductController {
     public KokuProductSummaryDto readSummary(@PathVariable("productId") Long productId) {
         final Product product = this.productRepository
                 .findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, PRODUCT_NOT_FOUND_MESSAGE));
         return new ProductToProductSummaryDtoTransformer().transformToDto(product);
     }
 
@@ -667,28 +668,27 @@ public class ProductController {
             throws ManufacturerIdNotFoundException {
         final Product product = this.entityManager.getReference(Product.class, productId);
         if (!Boolean.TRUE.equals(forceUpdate) && !product.getVersion().equals(updatedDto.getVersion())) {
-            throw new KokuBusinessExceptionWithConfirmationMessage(
-                    KokuBusinessExceptionWithConfirmationMessageDto.builder()
-                            .headline("Konflikt")
-                            .confirmationMessage("Das Produkt wurde zwischenzeitlich bearbeitet.\n"
-                                    + "Willst Du die Speicherung dennoch vornehmen?")
-                            .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .icon("CLOSE")
-                                    .build())
-                            .closeOnClickOutside(true)
-                            .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
-                                    .text("Trotzdem speichern")
-                                    .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format(
-                                            "services/products/products/%s?forceUpdate=%s", productId, Boolean.TRUE))
-                                    .build())
-                            .button(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .build())
-                            .build());
+            throw new KokuBusinessExceptionWithConfirmationMessage(KokuBusinessErrorWithConfirmationMessageDto.builder()
+                    .headline("Konflikt")
+                    .confirmationMessage("Das Produkt wurde zwischenzeitlich bearbeitet.\n"
+                            + "Willst Du die Speicherung dennoch vornehmen?")
+                    .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .icon("CLOSE")
+                            .build())
+                    .closeOnClickOutside(true)
+                    .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
+                            .text("Trotzdem speichern")
+                            .title("Zwischenzeitliche Änderungen überschreiben")
+                            .endpointUrl(
+                                    String.format(PRODUCT_SERVICE_URL + "%s?forceUpdate=%s", productId, Boolean.TRUE))
+                            .build())
+                    .button(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .build())
+                    .build());
         }
         this.transformer.transformToEntity(product, updatedDto);
         this.entityManager.flush();

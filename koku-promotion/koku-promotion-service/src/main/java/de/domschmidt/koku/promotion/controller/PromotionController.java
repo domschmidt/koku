@@ -4,9 +4,9 @@ import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
+import de.domschmidt.koku.business_exception.dto.KokuBusinessErrorWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
-import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
@@ -79,6 +79,8 @@ public class PromotionController {
     private static final String PROMOTION_UPDATED_EVENT = "promotion-updated";
     private static final String PROMOTION_ID_PARAM = ":promotionId";
     private static final String NAME_PARAM = ":name";
+    private static final String PROMOTION_LABEL = "Aktion ";
+    private static final String PROMOTION_SERVICE_URL = "services/promotions/promotions/";
 
     private final EntityManager entityManager;
     private final PromotionRepository promotionRepository;
@@ -209,8 +211,8 @@ public class PromotionController {
                                 .build())
                         .submitPayload(KokuPromotionDto.builder().deleted(true).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Aktion löschen")
-                                .content("Aktion " + NAME_PARAM + " als gelöscht markieren?")
+                                .headline(PROMOTION_LABEL + "löschen")
+                                .content(PROMOTION_LABEL + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuPromotionDto.Fields.name)
@@ -218,7 +220,7 @@ public class PromotionController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Aktion " + NAME_PARAM + " erfolgreich als gelöscht markiert")
+                                        .text(PROMOTION_LABEL + NAME_PARAM + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -229,7 +231,7 @@ public class PromotionController {
                                         .eventName(PROMOTION_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Aktion " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(PROMOTION_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -257,8 +259,8 @@ public class PromotionController {
                                 .build())
                         .submitPayload(KokuPromotionDto.builder().deleted(false).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Aktion wiederherstellen")
-                                .content("Aktion " + NAME_PARAM + " wiederherstellen?")
+                                .headline(PROMOTION_LABEL + "wiederherstellen")
+                                .content(PROMOTION_LABEL + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuPromotionDto.Fields.name)
@@ -266,7 +268,7 @@ public class PromotionController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Aktion " + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
+                                        .text(PROMOTION_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -277,7 +279,7 @@ public class PromotionController {
                                         .eventName(PROMOTION_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Aktion " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(PROMOTION_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -347,7 +349,7 @@ public class PromotionController {
                 .inlineContent(ListViewHeaderContentDto.builder()
                         .title("Neue Aktion")
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/promotions/promotions/form")
+                                .formularUrl(PROMOTION_SERVICE_URL + "form")
                                 .submitUrl("services/promotions/promotions")
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.POST)
                                 .maxWidthInPx(800)
@@ -387,7 +389,7 @@ public class PromotionController {
                 .route(PROMOTION_ID_PARAM)
                 .itemId(PROMOTION_ID_PARAM)
                 .inlineContent(ListViewHeaderContentDto.builder()
-                        .sourceUrl("services/promotions/promotions/" + PROMOTION_ID_PARAM + "/summary")
+                        .sourceUrl(PROMOTION_SERVICE_URL + PROMOTION_ID_PARAM + "/summary")
                         .titlePath(KokuPromotionSummaryDto.Fields.summary)
                         .globalEventListeners(
                                 Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
@@ -396,8 +398,8 @@ public class PromotionController {
                                         .titleValuePath(KokuPromotionDto.Fields.longSummary)
                                         .build()))
                         .content(ListViewFormularContentDto.builder()
-                                .formularUrl("services/promotions/promotions/form")
-                                .sourceUrl("services/promotions/promotions/" + PROMOTION_ID_PARAM)
+                                .formularUrl(PROMOTION_SERVICE_URL + "form")
+                                .sourceUrl(PROMOTION_SERVICE_URL + PROMOTION_ID_PARAM)
                                 .submitMethod(ListViewFormularActionSubmitMethodEnumDto.PUT)
                                 .maxWidthInPx(800)
                                 .onSaveEvents(Arrays.asList(
@@ -414,13 +416,13 @@ public class PromotionController {
     @PostMapping("/promotions/query")
     public ListPage findAll(@RequestBody(required = false) final ListQuery predicate) {
         final QPromotion qClazz = QPromotion.promotion;
-        final ListQueryFactory<Promotion> ListQueryFactory =
+        final ListQueryFactory<Promotion> listQueryFactory =
                 new ListQueryFactory<>(this.entityManager, qClazz, qClazz.id, predicate);
 
-        ListQueryFactory.addFetchExpr(KokuPromotionDto.Fields.id, qClazz.id);
-        ListQueryFactory.addFetchExpr(KokuPromotionDto.Fields.name, qClazz.name);
+        listQueryFactory.addFetchExpr(KokuPromotionDto.Fields.id, qClazz.id);
+        listQueryFactory.addFetchExpr(KokuPromotionDto.Fields.name, qClazz.name);
 
-        return ListQueryFactory.create();
+        return listQueryFactory.create();
     }
 
     @GetMapping(value = "/promotions/{promotionId}")
@@ -448,29 +450,27 @@ public class PromotionController {
             @RequestBody KokuPromotionDto updatedDto) {
         final Promotion promotion = this.entityManager.getReference(Promotion.class, promotionId);
         if (!Boolean.TRUE.equals(forceUpdate) && !promotion.getVersion().equals(updatedDto.getVersion())) {
-            throw new KokuBusinessExceptionWithConfirmationMessage(
-                    KokuBusinessExceptionWithConfirmationMessageDto.builder()
-                            .headline("Konflikt")
-                            .confirmationMessage("Die Aktion wurde zwischenzeitlich bearbeitet.\n"
-                                    + "Willst Du die Speicherung dennoch vornehmen?")
-                            .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .icon("CLOSE")
-                                    .build())
-                            .closeOnClickOutside(true)
-                            .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
-                                    .text("Trotzdem speichern")
-                                    .title("Zwischenzeitliche Änderungen überschreiben")
-                                    .endpointUrl(String.format(
-                                            "services/promotions/promotions/%s?forceUpdate=%s",
-                                            promotionId, Boolean.TRUE))
-                                    .build())
-                            .button(KokuBusinessExceptionCloseButtonDto.builder()
-                                    .text("Abbrechen")
-                                    .title("Abbruch")
-                                    .build())
-                            .build());
+            throw new KokuBusinessExceptionWithConfirmationMessage(KokuBusinessErrorWithConfirmationMessageDto.builder()
+                    .headline("Konflikt")
+                    .confirmationMessage("Die Aktion wurde zwischenzeitlich bearbeitet.\n"
+                            + "Willst Du die Speicherung dennoch vornehmen?")
+                    .headerButton(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .icon("CLOSE")
+                            .build())
+                    .closeOnClickOutside(true)
+                    .button(KokuBusinessExceptionSendToDifferentEndpointButtonDto.builder()
+                            .text("Trotzdem speichern")
+                            .title("Zwischenzeitliche Änderungen überschreiben")
+                            .endpointUrl(String.format(
+                                    PROMOTION_SERVICE_URL + "%s?forceUpdate=%s", promotionId, Boolean.TRUE))
+                            .build())
+                    .button(KokuBusinessExceptionCloseButtonDto.builder()
+                            .text("Abbrechen")
+                            .title("Abbruch")
+                            .build())
+                    .build());
         }
         this.transformer.transformToEntity(promotion, updatedDto);
         this.entityManager.flush();

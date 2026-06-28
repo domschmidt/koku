@@ -9,8 +9,8 @@ public class PromotionMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating Promotion...");
+    public void migrate() {
+        logInfo("Migrating Promotion...");
 
         read("""
                  SELECT promotion.id, promotion.recorded, promotion.updated, promotion.deleted, promotion.name,
@@ -64,6 +64,6 @@ public class PromotionMigration extends BaseMigration {
             }
         });
 
-        System.out.println("✔ Promotion done.");
+        logInfo("Promotion done.");
     }
 }

@@ -60,7 +60,17 @@ public class CustomerToCustomerDtoTransformer {
     }
 
     public Customer transformToEntity(final Customer model, final KokuCustomerDto updatedDto) {
+        updateIdentityAndAddress(model, updatedDto);
+        updatePhoneNumbers(model, updatedDto);
+        updateNotesAndBirthday(model, updatedDto);
+        updateBooleanProfileFields(model, updatedDto);
+        updateMedicalTextFields(model, updatedDto);
+        updateDeletionState(model, updatedDto);
 
+        return model;
+    }
+
+    private void updateIdentityAndAddress(final Customer model, final KokuCustomerDto updatedDto) {
         if (updatedDto.getFirstName() != null) {
             model.setFirstname(updatedDto.getFirstName());
         }
@@ -79,6 +89,9 @@ public class CustomerToCustomerDtoTransformer {
         if (updatedDto.getCity() != null) {
             model.setCity(updatedDto.getCity());
         }
+    }
+
+    private void updatePhoneNumbers(final Customer model, final KokuCustomerDto updatedDto) {
         if (updatedDto.getPrivateTelephoneNo() != null) {
             model.setPrivateTelephoneNo(phoneNumberNormalizer.normalize(updatedDto.getPrivateTelephoneNo()));
         }
@@ -88,6 +101,9 @@ public class CustomerToCustomerDtoTransformer {
         if (updatedDto.getMobileTelephoneNo() != null) {
             model.setMobileTelephoneNo(phoneNumberNormalizer.normalize(updatedDto.getMobileTelephoneNo()));
         }
+    }
+
+    private static void updateNotesAndBirthday(final Customer model, final KokuCustomerDto updatedDto) {
         if (updatedDto.getMedicalTolerance() != null) {
             model.setMedicalTolerance(updatedDto.getMedicalTolerance());
         }
@@ -97,6 +113,9 @@ public class CustomerToCustomerDtoTransformer {
         if (updatedDto.getBirthday() != null) {
             model.setBirthday(updatedDto.getBirthday());
         }
+    }
+
+    private static void updateBooleanProfileFields(final Customer model, final KokuCustomerDto updatedDto) {
         if (updatedDto.getOnFirstnameBasis() != null) {
             model.setOnFirstnameBasis(Boolean.TRUE.equals(updatedDto.getOnFirstnameBasis()));
         }
@@ -136,23 +155,27 @@ public class CustomerToCustomerDtoTransformer {
         if (updatedDto.getGlasses() != null) {
             model.setGlasses(Boolean.TRUE.equals(updatedDto.getGlasses()));
         }
-        if (updatedDto.getEyeDisease() != null) {
-            model.setEyeDisease(updatedDto.getEyeDisease());
-        }
-        if (updatedDto.getAllergy() != null) {
-            model.setAllergy(updatedDto.getAllergy());
-        }
         if (updatedDto.getCovid19vaccinated() != null) {
             model.setCovid19vaccinated(Boolean.TRUE.equals(updatedDto.getCovid19vaccinated()));
         }
         if (updatedDto.getCovid19boostered() != null) {
             model.setCovid19boostered(Boolean.TRUE.equals(updatedDto.getCovid19boostered()));
         }
+    }
+
+    private static void updateMedicalTextFields(final Customer model, final KokuCustomerDto updatedDto) {
+        if (updatedDto.getEyeDisease() != null) {
+            model.setEyeDisease(updatedDto.getEyeDisease());
+        }
+        if (updatedDto.getAllergy() != null) {
+            model.setAllergy(updatedDto.getAllergy());
+        }
+    }
+
+    private static void updateDeletionState(final Customer model, final KokuCustomerDto updatedDto) {
         if (updatedDto.getDeleted() != null) {
             model.setDeleted(updatedDto.getDeleted());
         }
-
-        return model;
     }
 
     private static String formatAddressLine(final Customer model) {

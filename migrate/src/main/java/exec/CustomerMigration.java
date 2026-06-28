@@ -9,8 +9,8 @@ public class CustomerMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating Customer...");
+    public void migrate() {
+        logInfo("Migrating Customer...");
 
         read("""
                 SELECT  id, recorded, updated,
@@ -110,6 +110,6 @@ public class CustomerMigration extends BaseMigration {
             }
         });
 
-        System.out.println("✔ Customer done.");
+        logInfo("Customer done.");
     }
 }

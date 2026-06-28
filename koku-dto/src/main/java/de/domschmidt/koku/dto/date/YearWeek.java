@@ -3,6 +3,7 @@ package de.domschmidt.koku.dto.date;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.temporal.IsoFields;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,7 +48,7 @@ public class YearWeek implements Comparable<YearWeek> {
     }
 
     private static int weeksInIsoYear(final int year) {
-        return LocalDate.of(year, 12, 28).get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+        return LocalDate.of(year, Month.DECEMBER, 28).get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
     }
 
     @JsonValue

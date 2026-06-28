@@ -14,8 +14,8 @@ public class CustomerAppointmentPromotionMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating CustomerAppointmentPromotion...");
+    public void migrate() {
+        logInfo("Migrating CustomerAppointmentPromotion...");
         Map<String, Long> promotionTargetExternalRefMapping = new HashMap<>();
         read(
                 "SELECT id, external_ref FROM koku.promotion",
@@ -54,6 +54,6 @@ public class CustomerAppointmentPromotionMigration extends BaseMigration {
                     }
                 });
 
-        System.out.println("✔ CustomerAppointmentPromotion done.");
+        logInfo("CustomerAppointmentPromotion done.");
     }
 }

@@ -23,8 +23,8 @@ public class FilesMigration extends BaseMigration {
     }
 
     @Override
-    public void migrate() throws Exception {
-        System.out.println("Migrating Files...");
+    public void migrate() {
+        logInfo("Migrating Files...");
 
         Map<String, Long> customerExternalRefMapping = new HashMap<>();
         read(
@@ -52,15 +52,15 @@ public class FilesMigration extends BaseMigration {
                         Paths.get(uploadsDir, String.format("%s.%s", fileUUID, FilenameUtils.getExtension(fileName)));
                 byte[] content = Files.readAllBytes(filePath);
 
-                String mime_type = rs.getString("media_type");
-                if (mime_type == null) {
-                    mime_type = Files.probeContentType(filePath);
+                String mimeType = rs.getString("media_type");
+                if (mimeType == null) {
+                    mimeType = Files.probeContentType(filePath);
                 }
-                if (mime_type == null) {
-                    mime_type = URLConnection.guessContentTypeFromName(fileName);
+                if (mimeType == null) {
+                    mimeType = URLConnection.guessContentTypeFromName(fileName);
                 }
-                if (mime_type == null) {
-                    mime_type = "application/octet-stream";
+                if (mimeType == null) {
+                    mimeType = "application/octet-stream";
                 }
 
                 exec(
@@ -85,7 +85,7 @@ public class FilesMigration extends BaseMigration {
                         rs.getBoolean("deleted"),
                         fileName,
                         content,
-                        mime_type,
+                        mimeType,
                         rs.getLong("size"),
                         mappedCustomerId);
             } catch (Exception e) {
@@ -93,6 +93,6 @@ public class FilesMigration extends BaseMigration {
             }
         });
 
-        System.out.println("✔ Files done.");
+        logInfo("Files done.");
     }
 }
