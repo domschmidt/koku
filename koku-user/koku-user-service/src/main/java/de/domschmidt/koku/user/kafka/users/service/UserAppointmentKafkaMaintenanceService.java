@@ -27,7 +27,10 @@ public class UserAppointmentKafkaMaintenanceService implements ApplicationListen
         userAppointmentRepository.findAll().forEach(userAppointment -> {
             try {
                 userAppointmentKafkaService.sendUserAppointment(userAppointment);
-            } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Error sending user appointment", e);
+            } catch (ExecutionException | TimeoutException e) {
                 log.error("Error sending user appointment", e);
             }
         });

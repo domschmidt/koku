@@ -15,17 +15,7 @@ public class CustomerAppointmentMigration extends BaseMigration {
     @Override
     public void migrate() {
         logInfo("Migrating CustomerAppointment...");
-
-        read(
-                "SELECT id, recorded, updated, additional_info, description, start, customer_id, user_id"
-                        + " FROM koku.customer_appointment",
-                rs -> {
-                    try {
-                        String originUserId = rs.getString("user_id");
-                        String mappedUserId = this.userMapping.get(originUserId);
-                        if (mappedUserId != null) {
-                            exec(
-                                    """
+        final String upsertSql = """
                                     INSERT INTO koku.customer_appointment (external_ref, recorded, updated, deleted, additional_info, description, start, customer_id, user_id)
                                     VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, ?, COALESCE(?, ''), COALESCE(?, ''), ?, (SELECT ID FROM koku.customer where external_ref = ?), ?)
                                     ON CONFLICT (external_ref)
@@ -39,7 +29,18 @@ public class CustomerAppointmentMigration extends BaseMigration {
                                                   user_id = EXCLUDED.user_id,
                                                   version = customer_appointment.version + 1
                                     WHERE EXCLUDED.updated > customer_appointment.updated;
-                                    """,
+                                    """;
+
+        read(
+                "SELECT id, recorded, updated, additional_info, description, start, customer_id, user_id"
+                        + " FROM koku.customer_appointment",
+                rs -> {
+                    try {
+                        String originUserId = rs.getString("user_id");
+                        String mappedUserId = this.userMapping.get(originUserId);
+                        if (mappedUserId != null) {
+                            exec(
+                                    upsertSql,
                                     rs.getString("id"),
                                     rs.getTimestamp("recorded"),
                                     rs.getTimestamp("updated"),

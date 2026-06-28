@@ -90,6 +90,7 @@ public class DocumentController {
     private static final String DOCUMENT_CREATED_EVENT = "document-created";
     private static final String DOCUMENT_UPDATED_EVENT = "document-updated";
     private static final String NEW_DOCUMENT_LABEL = "Neues Dokument";
+    private static final String DOCUMENT_TEMPLATE_LABEL = "Dokumentvorlage ";
     private static final String DOCUMENT_FORM_URL = "services/documents/documents/form";
     private static final String DUPLICATE_DOCUMENT_ROUTE = "duplicate/" + DOCUMENT_ID_PARAM;
     private static final String DOCUMENT_ID_URL = "services/documents/documents/" + DOCUMENT_ID_PARAM;
@@ -151,8 +152,8 @@ public class DocumentController {
                                 .build())
                         .submitPayload(KokuDocumentDto.builder().deleted(true).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Dokumentvorlage löschen")
-                                .content("Dokumentvorlage " + NAME_PARAM + " als gelöscht markieren?")
+                                .headline(DOCUMENT_TEMPLATE_LABEL + "löschen")
+                                .content(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM + " als gelöscht markieren?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuDocumentDto.Fields.name)
@@ -160,7 +161,7 @@ public class DocumentController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Dokumentvorlage " + NAME_PARAM + " erfolgreich als gelöscht markiert")
+                                        .text(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM + " erfolgreich als gelöscht markiert")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -171,7 +172,7 @@ public class DocumentController {
                                         .eventName(DOCUMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Dokumentvorlage " + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
+                                .text(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)
@@ -199,8 +200,8 @@ public class DocumentController {
                                 .build())
                         .submitPayload(KokuDocumentDto.builder().deleted(false).build())
                         .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline("Dokumentvorlage wiederherstellen")
-                                .content("Dokumentvorlage " + NAME_PARAM + " wiederherstellen?")
+                                .headline(DOCUMENT_TEMPLATE_LABEL + "wiederherstellen")
+                                .content(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM + " wiederherstellen?")
                                 .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
                                         .param(NAME_PARAM)
                                         .sourcePath(KokuDocumentDto.Fields.name)
@@ -208,7 +209,7 @@ public class DocumentController {
                                 .build())
                         .successEvents(Arrays.asList(
                                 FormNotificationEvent.builder()
-                                        .text("Dokumentvorlage " + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
+                                        .text(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
                                         .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
                                         .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                                 .param(NAME_PARAM)
@@ -219,7 +220,7 @@ public class DocumentController {
                                         .eventName(DOCUMENT_UPDATED_EVENT)
                                         .build()))
                         .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text("Dokumentvorlage " + NAME_PARAM + " konnte nicht wiederhergestellt werden")
+                                .text(DOCUMENT_TEMPLATE_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
                                 .serenity(FormNotificationEventSerenityEnumDto.ERROR)
                                 .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
                                         .param(NAME_PARAM)

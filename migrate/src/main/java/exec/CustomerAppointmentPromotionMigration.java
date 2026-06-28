@@ -16,6 +16,16 @@ public class CustomerAppointmentPromotionMigration extends BaseMigration {
     @Override
     public void migrate() {
         logInfo("Migrating CustomerAppointmentPromotion...");
+        final String upsertSql = """
+                                INSERT INTO koku.customer_appointment_promotion (external_ref, recorded, updated, appointment_id, promotion_id, position)
+                                VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT ID FROM koku.customer_appointment where external_ref = ?), ?, ?)
+                                ON CONFLICT (external_ref)
+                                DO UPDATE SET updated = CURRENT_TIMESTAMP,
+                                              appointment_id = EXCLUDED.appointment_id,
+                                              promotion_id = EXCLUDED.promotion_id,
+                                              version = customer_appointment_promotion.version + 1
+                                WHERE EXCLUDED.updated > customer_appointment_promotion.updated;
+                                """;
         Map<String, Long> promotionTargetExternalRefMapping = new HashMap<>();
         read(
                 "SELECT id, external_ref FROM koku.promotion",
@@ -35,16 +45,7 @@ public class CustomerAppointmentPromotionMigration extends BaseMigration {
                     try {
                         String promotionIdRaw = rs.getString("promotion_id");
                         exec(
-                                """
-                                INSERT INTO koku.customer_appointment_promotion (external_ref, recorded, updated, appointment_id, promotion_id, position)
-                                VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT ID FROM koku.customer_appointment where external_ref = ?), ?, ?)
-                                ON CONFLICT (external_ref)
-                                DO UPDATE SET updated = CURRENT_TIMESTAMP,
-                                              appointment_id = EXCLUDED.appointment_id,
-                                              promotion_id = EXCLUDED.promotion_id,
-                                              version = customer_appointment_promotion.version + 1
-                                WHERE EXCLUDED.updated > customer_appointment_promotion.updated;
-                                """,
+                                upsertSql,
                                 rs.getString("customer_appointment_id") + rs.getString("promotion_id"),
                                 rs.getString("customer_appointment_id"),
                                 promotionTargetExternalRefMapping.get(promotionIdRaw),

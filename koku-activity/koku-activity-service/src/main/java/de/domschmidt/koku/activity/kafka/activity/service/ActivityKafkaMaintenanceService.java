@@ -27,7 +27,10 @@ public class ActivityKafkaMaintenanceService implements ApplicationListener<Appl
         this.activityRepository.findAll().forEach(activity -> {
             try {
                 this.activityKafkaService.sendActivity(activity);
-            } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Error sending activity", e);
+            } catch (ExecutionException | TimeoutException e) {
                 log.error("Error sending activity", e);
             }
         });

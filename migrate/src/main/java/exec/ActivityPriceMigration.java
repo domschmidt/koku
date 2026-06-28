@@ -11,11 +11,7 @@ public class ActivityPriceMigration extends BaseMigration {
     @Override
     public void migrate() {
         logInfo("Migrating ActivityPriceHistory...");
-
-        read("SELECT id, recorded, updated, price, activity_id FROM koku.activity_price_history", rs -> {
-            try {
-                exec(
-                        """
+        final String upsertSql = """
                         INSERT INTO koku.activity_price_history (external_ref, recorded, updated, price, activity_id)
                         VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, ?, (SELECT ID FROM koku.activity where external_ref = ?))
                         ON CONFLICT (external_ref)
@@ -25,7 +21,12 @@ public class ActivityPriceMigration extends BaseMigration {
                                       activity_id = EXCLUDED.activity_id,
                                       version = activity_price_history.version + 1
                         WHERE EXCLUDED.updated > activity_price_history.updated;
-                        """,
+                        """;
+
+        read("SELECT id, recorded, updated, price, activity_id FROM koku.activity_price_history", rs -> {
+            try {
+                exec(
+                        upsertSql,
                         rs.getString("id"),
                         rs.getTimestamp("recorded"),
                         rs.getTimestamp("updated"),

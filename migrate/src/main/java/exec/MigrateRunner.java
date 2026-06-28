@@ -1,12 +1,17 @@
-import exec.*;
+package exec;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class MigrateRunner {
 
-    public static void main(String[] args) throws Exception {
+    private static final Logger LOGGER = Logger.getLogger(MigrateRunner.class.getName());
+
+    public static void main(String[] args) throws SQLException {
 
         try (Connection source = DriverManager.getConnection(System.getenv("db_source"));
                 Connection products = DriverManager.getConnection(System.getenv("db_target_products"));
@@ -24,7 +29,7 @@ public class MigrateRunner {
             }
 
             source.setAutoCommit(false);
-            System.out.println("Starting migration...");
+            LOGGER.info("Starting migration...");
 
             new ProductManufacturerMigration(source, products).migrate();
             new ProductMigration(source, products).migrate();
@@ -43,7 +48,7 @@ public class MigrateRunner {
             new CustomerAppointmentSoldProductMigration(source, customers, products).migrate();
             new FilesMigration(source, files, customers, uploadsDir).migrate();
 
-            System.out.println("\n🎉 Migration finished successfully.");
+            LOGGER.info("Migration finished successfully.");
         }
     }
 }

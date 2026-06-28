@@ -27,7 +27,10 @@ public class ActivityStepKafkaMaintenanceService implements ApplicationListener<
         this.activityStepRepository.findAll().forEach(activityStep -> {
             try {
                 this.activityStepKafkaService.sendActivityStep(activityStep);
-            } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Error sending activity step", e);
+            } catch (ExecutionException | TimeoutException e) {
                 log.error("Error sending activity step", e);
             }
         });

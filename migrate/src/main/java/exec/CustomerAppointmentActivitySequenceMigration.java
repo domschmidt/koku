@@ -20,6 +20,19 @@ public class CustomerAppointmentActivitySequenceMigration extends BaseMigration 
     @Override
     public void migrate() {
         logInfo("Migrating CustomerAppointmentActivitySequence...");
+        final String upsertSql = """
+                                INSERT INTO koku.customer_appointment_activity_sequence (external_ref, recorded, updated, appointment_id, activity_step_id, product_id, position)
+                                VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, (SELECT ID FROM koku.customer_appointment where external_ref = ?), ?, ?, ?)
+                                ON CONFLICT (external_ref)
+                                DO UPDATE SET recorded = COALESCE(EXCLUDED.recorded, EXCLUDED.updated, CURRENT_TIMESTAMP),
+                                              updated = EXCLUDED.updated,
+                                              appointment_id = EXCLUDED.appointment_id,
+                                              activity_step_id = EXCLUDED.activity_step_id,
+                                              product_id = EXCLUDED.product_id,
+                                              position = EXCLUDED.position,
+                                              version = customer_appointment_activity_sequence.version + 1
+                                WHERE EXCLUDED.updated > customer_appointment_activity_sequence.updated;
+                                """;
 
         Map<String, Long> activityStepExternalRefMapping = new HashMap<>();
         read(
@@ -52,19 +65,7 @@ public class CustomerAppointmentActivitySequenceMigration extends BaseMigration 
                         String activityStepIdRaw = rs.getString("optional_activity_step_id");
                         String productIdRaw = rs.getString("optional_product_id");
                         exec(
-                                """
-                                INSERT INTO koku.customer_appointment_activity_sequence (external_ref, recorded, updated, appointment_id, activity_step_id, product_id, position)
-                                VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, (SELECT ID FROM koku.customer_appointment where external_ref = ?), ?, ?, ?)
-                                ON CONFLICT (external_ref)
-                                DO UPDATE SET recorded = COALESCE(EXCLUDED.recorded, EXCLUDED.updated, CURRENT_TIMESTAMP),
-                                              updated = EXCLUDED.updated,
-                                              appointment_id = EXCLUDED.appointment_id,
-                                              activity_step_id = EXCLUDED.activity_step_id,
-                                              product_id = EXCLUDED.product_id,
-                                              position = EXCLUDED.position,
-                                              version = customer_appointment_activity_sequence.version + 1
-                                WHERE EXCLUDED.updated > customer_appointment_activity_sequence.updated;
-                                """,
+                                upsertSql,
                                 rs.getString("id"),
                                 rs.getTimestamp("recorded"),
                                 rs.getTimestamp("updated"),

@@ -24,7 +24,7 @@ public class RootController extends DavControllerSupport {
         this.cardDavService = cardDavService;
     }
 
-    @RequestMapping
+    @DavRequestMapping
     public ResponseEntity<String> rootRequest(final HttpServletRequest request, final Authentication authentication) {
         return multistatus(
                 request,

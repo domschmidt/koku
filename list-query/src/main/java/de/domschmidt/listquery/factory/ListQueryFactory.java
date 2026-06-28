@@ -165,7 +165,7 @@ public class ListQueryFactory<T> {
                 .from(this.qClazz)
                 .orderBy(buildOrderSpecifiers(queryOrderSpecifiers))
                 .where(queryFilterUnion)
-                .limit(pageSettings.queryPageSize() + 1)
+                .limit(pageSettings.queryPageSize() + 1L)
                 .offset(pageSettings.queryOffset());
 
         for (final Path<?> join : this.joins) {

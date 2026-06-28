@@ -11,14 +11,7 @@ public class UserAppointmentMigration extends BaseMigration {
     @Override
     public void migrate() {
         logInfo("Migrating UserAppointment...");
-
-        read(
-                "SELECT id, recorded, updated, deleted, description, start, user_id, ending FROM"
-                        + " koku.private_appointment",
-                rs -> {
-                    try {
-                        exec(
-                                """
+        final String upsertSql = """
                         INSERT INTO koku.user_appointment (external_ref, recorded, updated, deleted, description, start_timestamp, end_timestamp, user_id)
                         VALUES (?, COALESCE(?, ?, CURRENT_TIMESTAMP), ?, ?, COALESCE(?, ''), ?, ?, (SELECT ID FROM koku.user where external_ref = ?))
                         ON CONFLICT (external_ref)
@@ -31,7 +24,15 @@ public class UserAppointmentMigration extends BaseMigration {
                                       user_id = EXCLUDED.user_id,
                                       version = user_appointment.version + 1
                         WHERE EXCLUDED.updated > user_appointment.updated;
-                        """,
+                        """;
+
+        read(
+                "SELECT id, recorded, updated, deleted, description, start, user_id, ending FROM"
+                        + " koku.private_appointment",
+                rs -> {
+                    try {
+                        exec(
+                                upsertSql,
                                 rs.getString("id"),
                                 rs.getTimestamp("recorded"),
                                 rs.getTimestamp("updated"),

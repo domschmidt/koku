@@ -27,7 +27,10 @@ public class ProductManufacturerKafkaMaintenanceService implements ApplicationLi
         this.productManufacturerRepository.findAll().forEach(product -> {
             try {
                 this.productManufacturerKafkaService.sendProductManufacturer(product);
-            } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Error sending product manufacturer", e);
+            } catch (ExecutionException | TimeoutException e) {
                 log.error("Error sending product manufacturer", e);
             }
         });

@@ -25,6 +25,21 @@ public class FilesMigration extends BaseMigration {
     @Override
     public void migrate() {
         logInfo("Migrating Files...");
+        final String upsertSql = """
+                                INSERT INTO koku.file (external_ref, recorded, updated, deleted, filename, content, mime_type, size, customer_id)
+                                VALUES (?, COALESCE(?, CURRENT_TIMESTAMP), ?, ?, ?, ?, ?, ?, ?)
+                                ON CONFLICT (external_ref)
+                                DO UPDATE SET recorded = COALESCE(EXCLUDED.recorded, EXCLUDED.updated, CURRENT_TIMESTAMP),
+                                              updated = EXCLUDED.updated,
+                                              deleted = EXCLUDED.deleted,
+                                              filename = EXCLUDED.filename,
+                                              content = EXCLUDED.content,
+                                              mime_type = EXCLUDED.mime_type,
+                                              size = EXCLUDED.size,
+                                              customer_id = EXCLUDED.customer_id,
+                                              version = "file".version + 1
+                                WHERE EXCLUDED.updated > "file".updated;
+                                """;
 
         Map<String, Long> customerExternalRefMapping = new HashMap<>();
         read(
@@ -64,21 +79,7 @@ public class FilesMigration extends BaseMigration {
                 }
 
                 exec(
-                        """
-                                INSERT INTO koku.file (external_ref, recorded, updated, deleted, filename, content, mime_type, size, customer_id)
-                                VALUES (?, COALESCE(?, CURRENT_TIMESTAMP), ?, ?, ?, ?, ?, ?, ?)
-                                ON CONFLICT (external_ref)
-                                DO UPDATE SET recorded = COALESCE(EXCLUDED.recorded, EXCLUDED.updated, CURRENT_TIMESTAMP),
-                                              updated = EXCLUDED.updated,
-                                              deleted = EXCLUDED.deleted,
-                                              filename = EXCLUDED.filename,
-                                              content = EXCLUDED.content,
-                                              mime_type = EXCLUDED.mime_type,
-                                              size = EXCLUDED.size,
-                                              customer_id = EXCLUDED.customer_id,
-                                              version = "file".version + 1
-                                WHERE EXCLUDED.updated > "file".updated;
-                                """,
+                        upsertSql,
                         fileUUID,
                         rs.getTimestamp("creation_date"),
                         rs.getTimestamp("creation_date"),

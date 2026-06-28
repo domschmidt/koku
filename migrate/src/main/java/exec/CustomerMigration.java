@@ -11,20 +11,7 @@ public class CustomerMigration extends BaseMigration {
     @Override
     public void migrate() {
         logInfo("Migrating Customer...");
-
-        read("""
-                SELECT  id, recorded, updated,
-                    additional_info, address, business_telephone_no, city, email, first_name, last_name,
-                    medical_tolerance, mobile_telephone_no, postal_code, private_telephone_no, birthday,
-                    on_first_name_basis, deleted, hay_fever, glasses, epilepsy, dry_eyes, diabetes,
-                    cyanoacrylate_allergy, contacts, claustrophobia, circulation_problems, asthma,
-                    plaster_allergy, neurodermatitis, eye_disease, allergy, covid19vaccinated,
-                    covid19boostered
-                FROM koku.customer
-            """, rs -> {
-            try {
-                exec(
-                        """
+        final String upsertSql = """
                         INSERT INTO koku.customer (external_ref, recorded, updated,
                             firstname, lastname, email, address, postal_code, city, private_telephone_no,
                             business_telephone_no, mobile_telephone_no, medical_tolerance, additional_info,
@@ -70,7 +57,21 @@ public class CustomerMigration extends BaseMigration {
                                       birthday = EXCLUDED.birthday,
                                       version = customer.version + 1
                         WHERE EXCLUDED.updated > customer.updated;
-                        """,
+                        """;
+
+        read("""
+                SELECT  id, recorded, updated,
+                    additional_info, address, business_telephone_no, city, email, first_name, last_name,
+                    medical_tolerance, mobile_telephone_no, postal_code, private_telephone_no, birthday,
+                    on_first_name_basis, deleted, hay_fever, glasses, epilepsy, dry_eyes, diabetes,
+                    cyanoacrylate_allergy, contacts, claustrophobia, circulation_problems, asthma,
+                    plaster_allergy, neurodermatitis, eye_disease, allergy, covid19vaccinated,
+                    covid19boostered
+                FROM koku.customer
+            """, rs -> {
+            try {
+                exec(
+                        upsertSql,
                         rs.getString("id"),
                         rs.getTimestamp("recorded"),
                         rs.getTimestamp("updated"),
