@@ -350,7 +350,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
         catchError((error) => {
           return new Observable((subscriber) => {
             if (error.error && error.error['@type'] === 'business-error-with-confirmation-message') {
-              const castedError = error.error as KokuDto.KokuBusinessExceptionWithConfirmationMessageDto;
+              const castedError = error.error as KokuDto.KokuBusinessErrorWithConfirmationMessageDto;
               const buttons: ModalButtonType[] = [];
               for (const buttonCfg of castedError.buttons || []) {
                 switch (buttonCfg['@type']) {

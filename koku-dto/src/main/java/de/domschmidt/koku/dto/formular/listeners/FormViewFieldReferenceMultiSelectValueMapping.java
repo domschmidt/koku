@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("append-list")
+@EqualsAndHashCode(callSuper = true)
 @Getter
 @FieldNameConstants
 public class FormViewFieldReferenceMultiSelectValueMapping extends AbstractFormViewFieldValueMapping {

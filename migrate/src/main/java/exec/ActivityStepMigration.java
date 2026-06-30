@@ -34,7 +34,7 @@ public class ActivityStepMigration extends BaseMigration {
                         rs.getBoolean("deleted"),
                         rs.getString("description"));
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new MigrationException("Unable to migrate row", e);
             }
         });
 

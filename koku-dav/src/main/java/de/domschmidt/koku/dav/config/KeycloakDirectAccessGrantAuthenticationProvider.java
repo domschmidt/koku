@@ -15,7 +15,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
@@ -36,11 +35,14 @@ public class KeycloakDirectAccessGrantAuthenticationProvider implements Authenti
 
     @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
+        if (authentication == null) {
+            throw new BadCredentialsException("Missing DAV authentication");
+        }
         final String username = authentication.getName();
         final String password = authentication.getCredentials() == null
                 ? ""
                 : authentication.getCredentials().toString();
-        if (!StringUtils.hasText(username) || !StringUtils.hasText(password)) {
+        if (!hasText(username) || !hasText(password)) {
             throw new BadCredentialsException("Missing DAV credentials");
         }
 
@@ -56,22 +58,30 @@ public class KeycloakDirectAccessGrantAuthenticationProvider implements Authenti
     }
 
     private KeycloakTokenResponse requestToken(final String username, final String password) {
+        final String tokenUri = properties.tokenUri();
+        final String clientId = properties.clientId();
+        if (!hasText(tokenUri) || !hasText(clientId)) {
+            throw new IllegalStateException("DAV Keycloak token URI and client ID must be configured");
+        }
+
         final MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("grant_type", "password");
-        form.add("client_id", properties.clientId());
+        form.add("client_id", clientId);
         form.add("username", username);
         form.add("password", password);
-        if (StringUtils.hasText(properties.clientSecret())) {
-            form.add("client_secret", properties.clientSecret());
+        final String clientSecret = properties.clientSecret();
+        if (hasText(clientSecret)) {
+            form.add("client_secret", clientSecret);
         }
-        if (StringUtils.hasText(properties.scope())) {
-            form.add("scope", properties.scope());
+        final String scope = properties.scope();
+        if (hasText(scope)) {
+            form.add("scope", scope);
         }
 
         try {
             return restClient
                     .post()
-                    .uri(properties.tokenUri())
+                    .uri(tokenUri)
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(form)
                     .retrieve()
@@ -84,18 +94,23 @@ public class KeycloakDirectAccessGrantAuthenticationProvider implements Authenti
     }
 
     private String extractSubject(final KeycloakTokenResponse token) {
-        if (token == null || !StringUtils.hasText(token.accessToken())) {
+        if (token == null || !hasText(token.accessToken())) {
             throw new BadCredentialsException("Keycloak token response did not contain an access token");
         }
         try {
             final Jwt jwt = jwtDecoder.decode(token.accessToken());
-            if (StringUtils.hasText(jwt.getSubject())) {
-                return jwt.getSubject();
+            final String subject = jwt.getSubject();
+            if (hasText(subject)) {
+                return subject;
             }
         } catch (final BadJwtException e) {
             throw new BadCredentialsException("Unable to validate Keycloak access token", e);
         }
         throw new BadCredentialsException("Keycloak access token did not contain a subject");
+    }
+
+    private static boolean hasText(final String value) {
+        return value != null && !value.isBlank();
     }
 
     private record KeycloakTokenResponse(

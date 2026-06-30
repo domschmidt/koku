@@ -30,14 +30,14 @@ public class CalendarController extends DavControllerSupport {
         this.calDavService = calDavService;
     }
 
-    @DavRequestMapping(
+    @RequestMapping(
             value = {
                 "/{userName}",
                 "/{userName}/",
             })
     public ResponseEntity<String> calendarHomeRequest(
             final HttpServletRequest request,
-            final @PathVariable String userName,
+            @PathVariable("userName") final String userName,
             final Authentication authentication) {
         return multistatus(
                 request,
@@ -45,14 +45,14 @@ public class CalendarController extends DavControllerSupport {
                 davRequest -> calDavService.handleCalendarHome(davRequest, authentication.getName()));
     }
 
-    @DavRequestMapping(
+    @RequestMapping(
             value = {
                 "/{userName}/" + APIConstants.APPOINTMENTS_SEGMENT,
                 "/{userName}/" + APIConstants.APPOINTMENTS_SEGMENT + "/",
             })
     public ResponseEntity<String> appointmentCalendarRequest(
             final HttpServletRequest request,
-            final @PathVariable String userName,
+            @PathVariable("userName") final String userName,
             final Authentication authentication) {
         return multistatus(
                 request,
@@ -60,14 +60,14 @@ public class CalendarController extends DavControllerSupport {
                 davRequest -> calDavService.handleAppointmentCalendar(davRequest, authentication.getName()));
     }
 
-    @DavRequestMapping(
+    @RequestMapping(
             value = {
                 "/{userName}/" + APIConstants.PRIVATE_SEGMENT,
                 "/{userName}/" + APIConstants.PRIVATE_SEGMENT + "/",
             })
     public ResponseEntity<String> privateCalendarRequest(
             final HttpServletRequest request,
-            final @PathVariable String userName,
+            @PathVariable("userName") final String userName,
             final Authentication authentication) {
         return multistatus(
                 request,
@@ -81,8 +81,8 @@ public class CalendarController extends DavControllerSupport {
             },
             produces = DavMediaTypes.ICALENDAR)
     public ResponseEntity<String> getAppointment(
-            final @PathVariable String userName,
-            final @PathVariable long appointmentId,
+            @PathVariable("userName") final String userName,
+            @PathVariable("appointmentId") final long appointmentId,
             final Authentication authentication) {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(DavMediaTypes.ICALENDAR_UTF8))
@@ -97,8 +97,8 @@ public class CalendarController extends DavControllerSupport {
             },
             produces = DavMediaTypes.ICALENDAR)
     public ResponseEntity<String> getPrivateAppointment(
-            final @PathVariable String userName,
-            final @PathVariable long appointmentId,
+            @PathVariable("userName") final String userName,
+            @PathVariable("appointmentId") final long appointmentId,
             final Authentication authentication) {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(DavMediaTypes.ICALENDAR_UTF8))

@@ -32,17 +32,18 @@ public class PromotionMigration extends BaseMigration {
                                       product_relative_item_savings = EXCLUDED.product_relative_item_savings,
                                       product_relative_savings = EXCLUDED.product_relative_savings,
                                       version = promotion.version + 1
-                        WHERE EXCLUDED.updated > promotion.updated;
+        WHERE EXCLUDED.updated > promotion.updated;
                         """;
-
-        read("""
+        final String selectSql = """
                  SELECT promotion.id, promotion.recorded, promotion.updated, promotion.deleted, promotion.name,
                         actset.absolute_item_savings as actset_absolute_item_savings, actset.absolute_savings as actset_absolute_savings, actset.relative_item_savings as actset_relative_item_savings, actset.relative_savings as actset_relative_savings,
                         prodset.absolute_item_savings as prodset_absolute_item_savings, prodset.absolute_savings as prodset_absolute_savings, prodset.relative_item_savings as prodset_relative_item_savings, prodset.relative_savings as prodset_relative_savings
                  FROM koku.promotion promotion
                  LEFT OUTER JOIN koku.promotion_activity_settings actset ON (actset.id = promotion_activity_settings_id)
                  LEFT OUTER JOIN koku.promotion_product_settings prodset ON (prodset.id = promotion_product_settings_id)
-                 """, rs -> {
+                 """;
+
+        read(selectSql, rs -> {
             try {
                 exec(
                         upsertSql,
@@ -61,7 +62,7 @@ public class PromotionMigration extends BaseMigration {
                         rs.getBigDecimal("prodset_relative_item_savings"),
                         rs.getBigDecimal("prodset_relative_savings"));
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new MigrationException("Unable to migrate row", e);
             }
         });
 

@@ -34,7 +34,7 @@ public class ProductPriceMigration extends BaseMigration {
                         rs.getBigDecimal("price"),
                         rs.getString("product_id"));
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new MigrationException("Unable to migrate row", e);
             }
         });
 

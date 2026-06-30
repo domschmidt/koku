@@ -36,7 +36,7 @@ public class CustomerAppointmentSoldProductMigration extends BaseMigration {
                     try {
                         productTargetExternalRefMapping.put(rs.getString("external_ref"), rs.getLong("id"));
                     } catch (SQLException e) {
-                        throw new RuntimeException(e);
+                        throw new MigrationException("Unable to migrate row", e);
                     }
                 },
                 this.productTarget);
@@ -58,7 +58,7 @@ public class CustomerAppointmentSoldProductMigration extends BaseMigration {
                                 rs.getInt("position"),
                                 rs.getBigDecimal("sell_price"));
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new MigrationException("Unable to migrate row", e);
                     }
                 });
 

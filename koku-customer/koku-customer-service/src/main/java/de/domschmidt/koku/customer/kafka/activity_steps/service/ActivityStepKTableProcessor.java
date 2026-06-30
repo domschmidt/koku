@@ -3,6 +3,7 @@ package de.domschmidt.koku.customer.kafka.activity_steps.service;
 import de.domschmidt.koku.activity.kafka.dto.ActivityStepKafkaDto;
 import de.domschmidt.koku.activity.kafka.dto.ActivityStepKafkaDtoSerdes;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
@@ -38,10 +39,17 @@ public class ActivityStepKTableProcessor {
     }
 
     public ReadOnlyKeyValueStore<Long, ActivityStepKafkaDto> getActivitySteps() {
-        return factoryBean
-                .getKafkaStreams()
+        return getKafkaStreams()
                 .store(StoreQueryParameters.fromNameAndType(
                         ActivityStepKTableProcessor.STORE_NAME,
                         QueryableStoreTypes.<Long, ActivityStepKafkaDto>keyValueStore()));
+    }
+
+    private KafkaStreams getKafkaStreams() {
+        final KafkaStreams kafkaStreams = factoryBean.getKafkaStreams();
+        if (kafkaStreams == null) {
+            throw new IllegalStateException("Kafka Streams are not started");
+        }
+        return kafkaStreams;
     }
 }

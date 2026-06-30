@@ -33,7 +33,7 @@ public class CustomerAppointmentPromotionMigration extends BaseMigration {
                     try {
                         promotionTargetExternalRefMapping.put(rs.getString("external_ref"), rs.getLong("id"));
                     } catch (SQLException e) {
-                        throw new RuntimeException(e);
+                        throw new MigrationException("Unable to migrate row", e);
                     }
                 },
                 this.promotionTarget);
@@ -51,7 +51,7 @@ public class CustomerAppointmentPromotionMigration extends BaseMigration {
                                 promotionTargetExternalRefMapping.get(promotionIdRaw),
                                 rs.getInt("promotions_order"));
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new MigrationException("Unable to migrate row", e);
                     }
                 });
 

@@ -92,6 +92,7 @@ import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -157,9 +158,7 @@ public class UserAppointmentController {
                                         .disabled(user.isDeleted())
                                         .build())
                                 .toList())
-                        .defaultValue(SecurityContextHolder.getContext()
-                                .getAuthentication()
-                                .getName())
+                        .defaultValue(currentUserName())
                         .readonly(true)
                         .build()))
                 .in(rootId)
@@ -714,5 +713,17 @@ public class UserAppointmentController {
         } catch (ExecutionException | TimeoutException e) {
             log.error("Error sending user appointment update", e);
         }
+    }
+
+    private static String currentUserName() {
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing authentication");
+        }
+        final String userName = authentication.getName();
+        if (userName == null || userName.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing authentication name");
+        }
+        return userName;
     }
 }

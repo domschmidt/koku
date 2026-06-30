@@ -12,7 +12,7 @@ public class UUIDFilter implements IListFilter {
 
     @Override
     public BooleanExpression buildGlobalSearchExpression(final Expression<?> expr, final String query) {
-        if (query == null || query.isEmpty() || !(expr instanceof ComparableExpression)) {
+        if (query == null || query.isEmpty() || !(expr instanceof ComparableExpression<?>)) {
             return null;
         }
 
@@ -29,7 +29,7 @@ public class UUIDFilter implements IListFilter {
         if (query == null
                 || query.getSearchExpression() == null
                 || query.getSearchExpression().isEmpty()
-                || !(expr instanceof ComparableExpression)) {
+                || !(expr instanceof ComparableExpression<?>)) {
             return null;
         }
 

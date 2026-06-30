@@ -25,10 +25,10 @@ public class PrincipalController extends DavControllerSupport {
         this.cardDavService = cardDavService;
     }
 
-    @DavRequestMapping(value = {"/{username}", "/{username}/"})
+    @RequestMapping(value = {"/{username}", "/{username}/"})
     public ResponseEntity<String> principalRequest(
             final HttpServletRequest request,
-            final @PathVariable String username,
+            @PathVariable("username") final String username,
             final Authentication authentication) {
         return multistatus(
                 request,

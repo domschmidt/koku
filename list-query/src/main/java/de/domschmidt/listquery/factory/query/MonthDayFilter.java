@@ -23,10 +23,11 @@ public class MonthDayFilter implements IListFilter {
 
     @Override
     public BooleanExpression buildGlobalSearchExpression(final Expression<?> expr, final String query) {
-        if (query == null || query.isEmpty() || !(expr instanceof DateExpression castedExpr)) {
+        if (query == null || query.isEmpty() || !(expr instanceof DateExpression<?> dateExpression)) {
             return null;
         }
 
+        final DateExpression<?> castedExpr = dateExpression;
         return StringExpressions.lpad(castedExpr.dayOfMonth().stringValue(), 2, '0')
                 .append(".")
                 .append(StringExpressions.lpad(castedExpr.month().stringValue(), 2, '0'))
@@ -38,10 +39,11 @@ public class MonthDayFilter implements IListFilter {
         if (query == null
                 || query.getSearchExpression() == null
                 || query.getSearchExpression().isEmpty()
-                || !(expr instanceof DateExpression castedExpr)) {
+                || !(expr instanceof DateExpression<?> dateExpression)) {
             return null;
         }
 
+        final DateExpression<MonthDay> castedExpr = castDateExpression(dateExpression);
         final String rawSearchExpr = query.getSearchExpression();
         final MonthDay searchExpression = MonthDay.parse(rawSearchExpr, MONTH_DAY_FORMATTER);
         BooleanExpression result = null;
@@ -66,5 +68,9 @@ public class MonthDayFilter implements IListFilter {
             result = result.not();
         }
         return result;
+    }
+
+    private static DateExpression<MonthDay> castDateExpression(final DateExpression<?> dateExpression) {
+        return (DateExpression<MonthDay>) dateExpression;
     }
 }

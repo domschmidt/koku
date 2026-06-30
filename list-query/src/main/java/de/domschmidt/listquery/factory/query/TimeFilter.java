@@ -13,10 +13,11 @@ public class TimeFilter implements IListFilter {
 
     @Override
     public BooleanExpression buildGlobalSearchExpression(final Expression<?> expr, final String query) {
-        if (query == null || query.isEmpty() || !(expr instanceof TimeExpression castedExpr)) {
+        if (query == null || query.isEmpty() || !(expr instanceof TimeExpression<?> timeExpression)) {
             return null;
         }
 
+        final TimeExpression<?> castedExpr = timeExpression;
         return StringExpressions.lpad(castedExpr.hour().stringValue(), 2, '0')
                 .append(":")
                 .append(StringExpressions.lpad(castedExpr.minute().stringValue(), 2, '0'))
@@ -28,10 +29,11 @@ public class TimeFilter implements IListFilter {
         if (query == null
                 || query.getSearchExpression() == null
                 || query.getSearchExpression().isEmpty()
-                || !(expr instanceof TimeExpression castedExpr)) {
+                || !(expr instanceof TimeExpression<?> timeExpression)) {
             return null;
         }
 
+        final TimeExpression<LocalTime> castedExpr = castTimeExpression(timeExpression);
         final String rawSearchExpr = query.getSearchExpression();
         final LocalTime searchExpression = LocalTime.parse(rawSearchExpr, DateTimeFormatter.ofPattern("HH:mm[:ss]"));
         BooleanExpression result = null;
@@ -56,5 +58,9 @@ public class TimeFilter implements IListFilter {
             result = result.not();
         }
         return result;
+    }
+
+    private static TimeExpression<LocalTime> castTimeExpression(final TimeExpression<?> timeExpression) {
+        return (TimeExpression<LocalTime>) timeExpression;
     }
 }

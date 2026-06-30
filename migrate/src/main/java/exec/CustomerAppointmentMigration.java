@@ -55,7 +55,7 @@ public class CustomerAppointmentMigration extends BaseMigration {
                             logWarning(originUserId + " is not available in user mapping");
                         }
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new MigrationException("Unable to migrate row", e);
                     }
                 });
 

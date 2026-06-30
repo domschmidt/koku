@@ -3,6 +3,7 @@ package de.domschmidt.koku.customer.kafka.products.service;
 import de.domschmidt.koku.product.kafka.dto.ProductKafkaDto;
 import de.domschmidt.koku.product.kafka.dto.ProductKafkaDtoSerdes;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
@@ -37,9 +38,16 @@ public class ProductKTableProcessor {
     }
 
     public ReadOnlyKeyValueStore<Long, ProductKafkaDto> getProducts() {
-        return factoryBean
-                .getKafkaStreams()
+        return getKafkaStreams()
                 .store(StoreQueryParameters.fromNameAndType(
                         ProductKTableProcessor.STORE_NAME, QueryableStoreTypes.<Long, ProductKafkaDto>keyValueStore()));
+    }
+
+    private KafkaStreams getKafkaStreams() {
+        final KafkaStreams kafkaStreams = factoryBean.getKafkaStreams();
+        if (kafkaStreams == null) {
+            throw new IllegalStateException("Kafka Streams are not started");
+        }
+        return kafkaStreams;
     }
 }

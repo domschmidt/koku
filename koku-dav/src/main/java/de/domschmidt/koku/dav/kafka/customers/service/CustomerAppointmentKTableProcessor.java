@@ -3,6 +3,7 @@ package de.domschmidt.koku.dav.kafka.customers.service;
 import de.domschmidt.koku.customer.kafka.dto.CustomerAppointmentKafkaDto;
 import de.domschmidt.koku.customer.kafka.dto.CustomerAppointmentKafkaDtoSerdes;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
@@ -38,10 +39,17 @@ public class CustomerAppointmentKTableProcessor {
     }
 
     public ReadOnlyKeyValueStore<Long, CustomerAppointmentKafkaDto> getCustomerAppointments() {
-        return factoryBean
-                .getKafkaStreams()
+        return getKafkaStreams()
                 .store(StoreQueryParameters.fromNameAndType(
                         CustomerAppointmentKTableProcessor.STORE_NAME,
                         QueryableStoreTypes.<Long, CustomerAppointmentKafkaDto>keyValueStore()));
+    }
+
+    private KafkaStreams getKafkaStreams() {
+        final KafkaStreams kafkaStreams = factoryBean.getKafkaStreams();
+        if (kafkaStreams == null) {
+            throw new IllegalStateException("Kafka Streams are not started");
+        }
+        return kafkaStreams;
     }
 }

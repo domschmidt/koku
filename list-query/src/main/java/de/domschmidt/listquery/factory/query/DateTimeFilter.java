@@ -13,10 +13,11 @@ public class DateTimeFilter implements IListFilter {
 
     @Override
     public BooleanExpression buildGlobalSearchExpression(final Expression<?> expr, final String query) {
-        if (query == null || query.isEmpty() || !(expr instanceof DateTimeExpression castedExpr)) {
+        if (query == null || query.isEmpty() || !(expr instanceof DateTimeExpression<?> dateTimeExpression)) {
             return null;
         }
 
+        final DateTimeExpression<?> castedExpr = dateTimeExpression;
         return StringExpressions.lpad(castedExpr.dayOfMonth().stringValue(), 2, '0')
                 .append(".")
                 .append(StringExpressions.lpad(castedExpr.month().stringValue(), 2, '0'))
@@ -34,10 +35,11 @@ public class DateTimeFilter implements IListFilter {
         if (query == null
                 || query.getSearchExpression() == null
                 || query.getSearchExpression().isEmpty()
-                || !(expr instanceof DateTimeExpression castedExpr)) {
+                || !(expr instanceof DateTimeExpression<?> dateTimeExpression)) {
             return null;
         }
 
+        final DateTimeExpression<LocalDateTime> castedExpr = castDateTimeExpression(dateTimeExpression);
         final String rawSearchExpr = query.getSearchExpression();
         final LocalDateTime searchExpression =
                 LocalDateTime.parse(rawSearchExpr, DateTimeFormatter.ofPattern("[dd.MM.yyyy[ HH:mm[:ss]]]"));
@@ -75,5 +77,10 @@ public class DateTimeFilter implements IListFilter {
             result = result.not();
         }
         return result;
+    }
+
+    private static DateTimeExpression<LocalDateTime> castDateTimeExpression(
+            final DateTimeExpression<?> dateTimeExpression) {
+        return (DateTimeExpression<LocalDateTime>) dateTimeExpression;
     }
 }

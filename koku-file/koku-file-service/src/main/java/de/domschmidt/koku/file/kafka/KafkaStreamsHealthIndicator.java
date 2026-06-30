@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaStreamsHealthIndicator implements HealthIndicator {
 
+    private static final String KAFKA_STREAMS_STATE = "kafkaStreamsState";
+    private static final String NOT_INITIALIZED_STATE = "not-initialized";
+
     private final StreamsBuilderFactoryBean factoryBean;
 
     @Autowired
@@ -19,12 +22,18 @@ public class KafkaStreamsHealthIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
-        KafkaStreams kafkaStreams = factoryBean.getKafkaStreams();
-        if (kafkaStreams == null || kafkaStreams.state() != KafkaStreams.State.RUNNING) {
+        final KafkaStreams kafkaStreams = factoryBean.getKafkaStreams();
+        if (kafkaStreams == null) {
             return Health.down()
-                    .withDetail("kafkaStreamsState", kafkaStreams.state())
+                    .withDetail(KAFKA_STREAMS_STATE, NOT_INITIALIZED_STATE)
                     .build();
         }
-        return Health.up().withDetail("kafkaStreamsState", kafkaStreams.state()).build();
+        final KafkaStreams.State kafkaStreamsState = kafkaStreams.state();
+        if (kafkaStreamsState != KafkaStreams.State.RUNNING) {
+            return Health.down()
+                    .withDetail(KAFKA_STREAMS_STATE, kafkaStreamsState)
+                    .build();
+        }
+        return Health.up().withDetail(KAFKA_STREAMS_STATE, kafkaStreamsState).build();
     }
 }

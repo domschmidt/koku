@@ -26,8 +26,9 @@ public class UserRegionController {
 
     @GetMapping("/@self/region")
     public KokuUserRegionDto getMyRegionDetails(@AuthenticationPrincipal Jwt jwt) {
+        final String subject = requireSubject(jwt);
         final User user = this.userRepository
-                .findById(jwt.getSubject())
+                .findById(subject)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         final UserRegion userRegion;
         if (user.getRegion() == null) {
@@ -36,5 +37,13 @@ public class UserRegionController {
             userRegion = user.getRegion();
         }
         return this.transformer.transformToDto(userRegion);
+    }
+
+    private static String requireSubject(final Jwt jwt) {
+        final String subject = jwt == null ? null : jwt.getSubject();
+        if (subject == null || subject.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing JWT subject");
+        }
+        return subject;
     }
 }

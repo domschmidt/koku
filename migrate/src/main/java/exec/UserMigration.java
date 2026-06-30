@@ -31,12 +31,13 @@ public class UserMigration extends BaseMigration {
                                                   version = "user".version + 1
                                     WHERE EXCLUDED.updated > "user".updated;
                                     """;
-
-        read("""
+        final String selectSql = """
                      SELECT usr.id, usr.recorded, usr.updated, usr.deleted, usr.username, details.avatar_base64, details.firstname, details.lastname
                      FROM koku.user usr
                      LEFT OUTER JOIN koku.user_details details ON (details.id = usr.user_details_id);
-                """, rs -> {
+                """;
+
+        read(selectSql, rs -> {
             try {
                 String originUserId = rs.getString("id");
                 String mappedUserId = this.userMapping.get(originUserId);
@@ -64,7 +65,7 @@ public class UserMigration extends BaseMigration {
                     logWarning(originUserId + " is not available in user mapping");
                 }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new MigrationException("Unable to migrate row", e);
             }
         });
 

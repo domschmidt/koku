@@ -45,7 +45,7 @@ public class UserAppointmentMigration extends BaseMigration {
                                         : rs.getTimestamp("start"),
                                 rs.getString("user_id"));
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new MigrationException("Unable to migrate row", e);
                     }
                 });
 

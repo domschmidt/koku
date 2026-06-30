@@ -135,7 +135,7 @@ public class ListQueryFactory<T> {
 
         queryOrderSpecifiers.put(
                 predicateValue.getSortRanking(),
-                new OrderSpecifier(predicateValue.getSort() == EnumQuerySort.DESC ? Order.DESC : Order.ASC, path));
+                orderSpecifier(predicateValue.getSort() == EnumQuerySort.DESC ? Order.DESC : Order.ASC, path));
     }
 
     private PageSettings getPageSettings() {
@@ -149,6 +149,11 @@ public class ListQueryFactory<T> {
                 ? this.predicate.getPage()
                 : 0;
         return new PageSettings(page, queryPageSize, (long) page * queryPageSize);
+    }
+
+    private static OrderSpecifier<?> orderSpecifier(final Order order, final Expression<?> path) {
+        final Expression<Comparable<?>> orderPath = (Expression<Comparable<?>>) path;
+        return new OrderSpecifier<>(order, orderPath);
     }
 
     private BooleanExpression buildQueryFilter(final BooleanExpression filters, final BooleanExpression globalFilters) {

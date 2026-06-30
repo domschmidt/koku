@@ -5,11 +5,13 @@ import de.domschmidt.list.dto.response.actions.AbstractListViewContentDto;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("grid")
+@EqualsAndHashCode(callSuper = true)
 @Getter
 public class ListViewGridContentDto extends AbstractListViewContentDto {
 
