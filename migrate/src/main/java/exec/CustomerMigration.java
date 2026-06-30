@@ -56,10 +56,9 @@ public class CustomerMigration extends BaseMigration {
                                       allergy = EXCLUDED.allergy,
                                       birthday = EXCLUDED.birthday,
                                       version = customer.version + 1
-                        WHERE EXCLUDED.updated > customer.updated;
+        WHERE EXCLUDED.updated > customer.updated;
                         """;
-
-        read("""
+        final String selectSql = """
                 SELECT  id, recorded, updated,
                     additional_info, address, business_telephone_no, city, email, first_name, last_name,
                     medical_tolerance, mobile_telephone_no, postal_code, private_telephone_no, birthday,
@@ -68,7 +67,9 @@ public class CustomerMigration extends BaseMigration {
                     plaster_allergy, neurodermatitis, eye_disease, allergy, covid19vaccinated,
                     covid19boostered
                 FROM koku.customer
-            """, rs -> {
+            """;
+
+        read(selectSql, rs -> {
             try {
                 exec(
                         upsertSql,
@@ -107,7 +108,7 @@ public class CustomerMigration extends BaseMigration {
                         rs.getDate("birthday"));
 
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new MigrationException("Unable to migrate row", e);
             }
         });
 

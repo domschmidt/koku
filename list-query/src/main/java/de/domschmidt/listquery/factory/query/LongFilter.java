@@ -10,7 +10,7 @@ public class LongFilter implements IListFilter {
 
     @Override
     public BooleanExpression buildGlobalSearchExpression(final Expression<?> expr, final String query) {
-        if (query == null || query.isEmpty() || !(expr instanceof NumberExpression castedExpr)) {
+        if (query == null || query.isEmpty() || !(expr instanceof NumberExpression<?> castedExpr)) {
             return null;
         }
 
@@ -19,14 +19,15 @@ public class LongFilter implements IListFilter {
 
     @Override
     public BooleanExpression buildSearchExpression(final Expression<?> expr, final QueryPredicate query) {
-        String searchExpressionRaw = query.getSearchExpression();
         if (query == null
-                || searchExpressionRaw == null
-                || searchExpressionRaw.isEmpty()
-                || !(expr instanceof NumberExpression castedExpr)) {
+                || query.getSearchExpression() == null
+                || query.getSearchExpression().isEmpty()
+                || !(expr instanceof NumberExpression<?> numberExpression)) {
             return null;
         }
 
+        final String searchExpressionRaw = query.getSearchExpression();
+        final NumberExpression<Long> castedExpr = numberExpression.longValue();
         final Long searchExpression = Long.valueOf(searchExpressionRaw);
         BooleanExpression result = null;
         switch (query.getSearchOperator()) {

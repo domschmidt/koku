@@ -34,7 +34,7 @@ public class ProductManufacturerMigration extends BaseMigration {
                         rs.getBoolean("deleted"),
                         rs.getString("name"));
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new MigrationException("Unable to migrate row", e);
             }
         });
 

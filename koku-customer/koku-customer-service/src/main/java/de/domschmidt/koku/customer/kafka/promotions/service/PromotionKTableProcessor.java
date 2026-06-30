@@ -3,6 +3,7 @@ package de.domschmidt.koku.customer.kafka.promotions.service;
 import de.domschmidt.koku.promotion.kafka.dto.PromotionKafkaDto;
 import de.domschmidt.koku.promotion.kafka.dto.PromotionKafkaDtoSerdes;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
@@ -38,10 +39,17 @@ public class PromotionKTableProcessor {
     }
 
     public ReadOnlyKeyValueStore<Long, PromotionKafkaDto> getPromotions() {
-        return factoryBean
-                .getKafkaStreams()
+        return getKafkaStreams()
                 .store(StoreQueryParameters.fromNameAndType(
                         PromotionKTableProcessor.STORE_NAME,
                         QueryableStoreTypes.<Long, PromotionKafkaDto>keyValueStore()));
+    }
+
+    private KafkaStreams getKafkaStreams() {
+        final KafkaStreams kafkaStreams = factoryBean.getKafkaStreams();
+        if (kafkaStreams == null) {
+            throw new IllegalStateException("Kafka Streams are not started");
+        }
+        return kafkaStreams;
     }
 }

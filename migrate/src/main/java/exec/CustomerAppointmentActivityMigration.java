@@ -38,7 +38,7 @@ public class CustomerAppointmentActivityMigration extends BaseMigration {
                     try {
                         activityExternalRefMapping.put(rs.getString("external_ref"), rs.getLong("id"));
                     } catch (SQLException e) {
-                        throw new RuntimeException(e);
+                        throw new MigrationException("Unable to migrate row", e);
                     }
                 },
                 this.activityTarget);
@@ -63,7 +63,7 @@ public class CustomerAppointmentActivityMigration extends BaseMigration {
                                 activityExternalRefMapping.get(activityIdRaw),
                                 rs.getString("customer_appointment_id"));
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new MigrationException("Unable to migrate row", e);
                     }
                 });
 

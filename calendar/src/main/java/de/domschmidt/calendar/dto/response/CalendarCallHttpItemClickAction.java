@@ -6,11 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("call-http")
+@EqualsAndHashCode(callSuper = true)
 @Getter
 public class CalendarCallHttpItemClickAction extends AbstractCalendarItemClickAction {
 

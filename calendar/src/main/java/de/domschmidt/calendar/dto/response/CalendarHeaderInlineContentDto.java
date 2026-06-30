@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("header")
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class CalendarHeaderInlineContentDto extends AbstractCalendarInlineContentDto {
 
     String title;

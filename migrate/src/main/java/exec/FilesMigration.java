@@ -48,15 +48,16 @@ public class FilesMigration extends BaseMigration {
                     try {
                         customerExternalRefMapping.put(rs.getString("external_ref"), rs.getLong("id"));
                     } catch (SQLException e) {
-                        throw new RuntimeException(e);
+                        throw new MigrationException("Unable to migrate row", e);
                     }
                 },
                 this.customersTarget);
-
-        read("""
+        final String selectSql = """
                      SELECT uuid, creation_date, deleted, file_name, customer_id, size, media_type
                      FROM koku.file;
-                """, rs -> {
+                """;
+
+        read(selectSql, rs -> {
             try {
                 String originCustomerId = rs.getString("customer_id");
                 Long mappedCustomerId = customerExternalRefMapping.get(originCustomerId);
@@ -90,7 +91,7 @@ public class FilesMigration extends BaseMigration {
                         rs.getLong("size"),
                         mappedCustomerId);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new MigrationException("Unable to migrate row", e);
             }
         });
 

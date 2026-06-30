@@ -36,10 +36,10 @@ abstract class DavControllerSupport {
             final Set<DavMethod> allowedMethods,
             final Function<DavRequest, DavMultiStatus> handler) {
         try {
-            final DavRequest davRequest = davXmlReader.read(request);
-            if (!allowedMethods.contains(davRequest.method())) {
+            if (!allowedMethods.contains(DavMethod.from(request.getMethod()))) {
                 throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED);
             }
+            final DavRequest davRequest = davXmlReader.read(request);
             return ResponseEntity.status(HttpStatus.MULTI_STATUS)
                     .contentType(MediaType.APPLICATION_XML)
                     .cacheControl(CacheControl.noStore())

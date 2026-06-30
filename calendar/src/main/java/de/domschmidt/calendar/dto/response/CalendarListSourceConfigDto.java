@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import de.domschmidt.listquery.dto.request.EnumSearchOperatorHint;
 import java.util.List;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
@@ -15,6 +16,7 @@ import lombok.experimental.SuperBuilder;
 @JsonTypeName("list")
 @SuperBuilder
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class CalendarListSourceConfigDto extends AbstractCalendarListSourceConfigDto {
 
     String sourceUrl;

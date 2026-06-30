@@ -24,7 +24,7 @@ public final class StatelessApiCsrfTokenRepository implements CsrfTokenRepositor
     private final CsrfTokenRepository delegate;
 
     public StatelessApiCsrfTokenRepository() {
-        this(CookieCsrfTokenRepository.withHttpOnlyFalse());
+        this(cookieCsrfTokenRepository());
     }
 
     StatelessApiCsrfTokenRepository(final CsrfTokenRepository delegate) {
@@ -67,6 +67,12 @@ public final class StatelessApiCsrfTokenRepository implements CsrfTokenRepositor
 
     private static CsrfToken statelessMarker() {
         return new DefaultCsrfToken(CSRF_HEADER_NAME, CSRF_PARAMETER_NAME, STATELESS_MARKER_VALUE);
+    }
+
+    private static CsrfTokenRepository cookieCsrfTokenRepository() {
+        final CookieCsrfTokenRepository repository = new CookieCsrfTokenRepository();
+        repository.setCookieCustomizer(cookie -> cookie.httpOnly(true));
+        return repository;
     }
 
     private static boolean isStatelessMarker(final CsrfToken token) {

@@ -7,7 +7,6 @@ import java.io.StringWriter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -216,7 +215,9 @@ public class DavXmlWriter {
         if (standardPrefix != null) {
             return standardPrefix;
         }
-        final String safeNamespaceUri = StringUtils.defaultString(namespaceUri);
-        return safeNamespaceUri.isBlank() ? "x" : "x" + Math.abs(safeNamespaceUri.hashCode());
+        if (namespaceUri == null || namespaceUri.isBlank()) {
+            return "x";
+        }
+        return "x" + Integer.toUnsignedString(namespaceUri.hashCode());
     }
 }

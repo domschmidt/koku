@@ -5,6 +5,7 @@ import de.domschmidt.koku.user.kafka.dto.UserKafkaDtoSerdes;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -41,15 +42,23 @@ public class UserKTableProcessor {
 
     public Map<String, UserKafkaDto> getUsers() {
         final Map<String, UserKafkaDto> result = new HashMap<>();
-        final KeyValueIterator<String, UserKafkaDto> userStore = factoryBean
-                .getKafkaStreams()
+        try (KeyValueIterator<String, UserKafkaDto> userStore = getKafkaStreams()
                 .store(StoreQueryParameters.fromNameAndType(
                         UserKTableProcessor.STORE_NAME, QueryableStoreTypes.<String, UserKafkaDto>keyValueStore()))
-                .all();
-        while (userStore.hasNext()) {
-            final KeyValue<String, UserKafkaDto> currentUser = userStore.next();
-            result.put(currentUser.key, currentUser.value);
+                .all()) {
+            while (userStore.hasNext()) {
+                final KeyValue<String, UserKafkaDto> currentUser = userStore.next();
+                result.put(currentUser.key, currentUser.value);
+            }
         }
         return result;
+    }
+
+    private KafkaStreams getKafkaStreams() {
+        final KafkaStreams kafkaStreams = factoryBean.getKafkaStreams();
+        if (kafkaStreams == null) {
+            throw new IllegalStateException("Kafka Streams are not started");
+        }
+        return kafkaStreams;
     }
 }

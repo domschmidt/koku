@@ -480,25 +480,26 @@ public class UserController {
 
     @GetMapping("/@self")
     public KokuUserDto getMyDetails(@AuthenticationPrincipal Jwt jwt) {
-        return read(jwt.getSubject());
+        return read(requireSubject(jwt));
     }
 
     @PutMapping("/@self")
     @Transactional
     public void updateMyDetails(@RequestBody KokuUserDto updatedDto, @AuthenticationPrincipal Jwt jwt) {
-        updateOrCreateUser(jwt.getSubject(), true, updatedDto);
+        updateOrCreateUser(requireSubject(jwt), true, updatedDto);
     }
 
     @PostMapping("/@self/sync")
     @Transactional
     public void syncMyDetails(@AuthenticationPrincipal Jwt jwt) {
-        final Optional<User> userOptional = this.userRepository.findById(jwt.getSubject());
+        final String userId = requireSubject(jwt);
+        final Optional<User> userOptional = this.userRepository.findById(userId);
         boolean dirty = false;
         final User user;
         if (userOptional.isPresent()) {
             user = userOptional.get();
         } else {
-            user = this.userRepository.save(new User(jwt.getSubject()));
+            user = this.userRepository.save(new User(userId));
             dirty = true;
         }
         final String givenName = jwt.getClaimAsString("given_name");
@@ -616,6 +617,14 @@ public class UserController {
         final User savedUser = this.userRepository.saveAndFlush(newUser);
         sendUserUpdate(newUser);
         return this.transformer.transformToDto(savedUser);
+    }
+
+    private static String requireSubject(final Jwt jwt) {
+        final String subject = jwt == null ? null : jwt.getSubject();
+        if (subject == null || subject.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing JWT subject");
+        }
+        return subject;
     }
 
     public void sendUserUpdate(final User updatedUser) {

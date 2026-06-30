@@ -18,14 +18,14 @@ public class BooleanFilter implements IListFilter {
 
     @Override
     public BooleanExpression buildSearchExpression(final Expression<?> expr, final QueryPredicate query) {
-        String searchExpressionRaw = query.getSearchExpression();
         if (query == null
-                || searchExpressionRaw == null
-                || searchExpressionRaw.isEmpty()
+                || query.getSearchExpression() == null
+                || query.getSearchExpression().isEmpty()
                 || !(expr instanceof BooleanExpression castedExpr)) {
             return null;
         }
 
+        final String searchExpressionRaw = query.getSearchExpression();
         final Boolean searchExpression = Boolean.valueOf(searchExpressionRaw);
         BooleanExpression result = null;
         switch (query.getSearchOperator()) {

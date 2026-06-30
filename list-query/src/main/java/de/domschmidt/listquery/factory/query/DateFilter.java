@@ -16,11 +16,11 @@ public class DateFilter implements IListFilter {
 
     @Override
     public BooleanExpression buildGlobalSearchExpression(final Expression<?> expr, final String query) {
-        if (query == null || query.isEmpty() || !(expr instanceof DateExpression castedExpr)) {
+        if (query == null || query.isEmpty() || !(expr instanceof DateExpression<?> dateExpression)) {
             return null;
         }
 
-        return formattedDateExpression(castedExpr).like('%' + query + '%');
+        return formattedDateExpression(dateExpression).like('%' + query + '%');
     }
 
     @Override
@@ -28,10 +28,11 @@ public class DateFilter implements IListFilter {
         if (query == null
                 || query.getSearchExpression() == null
                 || query.getSearchExpression().isEmpty()
-                || !(expr instanceof DateExpression castedExpr)) {
+                || !(expr instanceof DateExpression<?> dateExpression)) {
             return null;
         }
 
+        final DateExpression<LocalDate> castedExpr = castDateExpression(dateExpression);
         final String rawSearchExpr = query.getSearchExpression();
         final LocalDate searchExpression = LocalDate.parse(rawSearchExpr, DateTimeFormatter.ISO_DATE);
         final BooleanExpression result = buildSearchExpression(castedExpr, query, rawSearchExpr, searchExpression);
@@ -39,7 +40,7 @@ public class DateFilter implements IListFilter {
     }
 
     private BooleanExpression buildSearchExpression(
-            final DateExpression castedExpr,
+            final DateExpression<LocalDate> castedExpr,
             final QueryPredicate query,
             final String rawSearchExpr,
             final LocalDate searchExpression) {
@@ -59,7 +60,9 @@ public class DateFilter implements IListFilter {
     }
 
     private BooleanExpression buildYearlyRecurringSearchExpression(
-            final DateExpression castedExpr, final LocalDate searchExpression, final EnumSearchOperator operator) {
+            final DateExpression<LocalDate> castedExpr,
+            final LocalDate searchExpression,
+            final EnumSearchOperator operator) {
         final BooleanExpression monthBeforeOrAfter =
                 switch (operator) {
                     case LIKE, EQ, LESS, LESS_OR_EQ -> castedExpr.month().lt(searchExpression.getMonthValue());
@@ -92,11 +95,15 @@ public class DateFilter implements IListFilter {
                 && operator != EnumSearchOperator.ENDS_WITH;
     }
 
-    private static StringExpression formattedDateExpression(final DateExpression castedExpr) {
+    private static StringExpression formattedDateExpression(final DateExpression<?> castedExpr) {
         return StringExpressions.lpad(castedExpr.dayOfMonth().stringValue(), 2, '0')
                 .append(".")
                 .append(StringExpressions.lpad(castedExpr.month().stringValue(), 2, '0'))
                 .append(".")
                 .append(StringExpressions.lpad(castedExpr.year().stringValue(), 4, '0'));
+    }
+
+    private static DateExpression<LocalDate> castDateExpression(final DateExpression<?> dateExpression) {
+        return (DateExpression<LocalDate>) dateExpression;
     }
 }

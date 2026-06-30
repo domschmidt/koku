@@ -34,7 +34,7 @@ public class ActivityPriceMigration extends BaseMigration {
                         rs.getBigDecimal("price"),
                         rs.getString("activity_id"));
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new MigrationException("Unable to migrate row", e);
             }
         });
 

@@ -651,7 +651,7 @@ export class BusinessExceptionPlugin implements FormularPlugin {
     submitData: any,
   ): boolean {
     if (error.error && error.error['@type'] === 'business-error-with-confirmation-message') {
-      const castedError = error.error as KokuDto.KokuBusinessExceptionWithConfirmationMessageDto;
+      const castedError = error.error as KokuDto.KokuBusinessErrorWithConfirmationMessageDto;
       const buttons: ModalButtonType[] = [];
       for (const buttonCfg of castedError.buttons || []) {
         switch (buttonCfg['@type']) {

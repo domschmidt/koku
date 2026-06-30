@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @JsonTypeName("open-routed-content")
+@EqualsAndHashCode(callSuper = true)
 @Getter
 public class CalendarOpenRoutedContentItemClickAction extends AbstractCalendarItemClickAction {
 

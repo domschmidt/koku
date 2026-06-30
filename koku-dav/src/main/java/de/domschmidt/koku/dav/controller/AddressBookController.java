@@ -30,14 +30,14 @@ public class AddressBookController extends DavControllerSupport {
         this.cardDavService = cardDavService;
     }
 
-    @DavRequestMapping(
+    @RequestMapping(
             value = {
                 "/{userName}",
                 "/{userName}/",
             })
     public ResponseEntity<String> propfindOrReportRequest(
             final HttpServletRequest request,
-            final @PathVariable String userName,
+            @PathVariable("userName") final String userName,
             final Authentication authentication) {
         return multistatus(
                 request,
@@ -51,8 +51,8 @@ public class AddressBookController extends DavControllerSupport {
             },
             produces = DavMediaTypes.VCARD)
     public ResponseEntity<String> getContact(
-            final @PathVariable String userName,
-            final @PathVariable long contactId,
+            @PathVariable("userName") final String userName,
+            @PathVariable("contactId") final long contactId,
             final Authentication authentication) {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(DavMediaTypes.VCARD_UTF8))
