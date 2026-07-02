@@ -149,7 +149,7 @@ export class BusinessRulesDockContainerComponent {
           let firstEntry: ExtendedKokuBusinessRuleDockContentItemDto | null = null;
           const firstEntryRaw = (content || [])[0];
           if (firstEntryRaw) {
-            const segmentMapping: Record<string, string> = { ...(this.urlSegments() || {}) };
+            const segmentMapping: Record<string, string> = { ...this.urlSegments() };
             firstEntry = {
               ...firstEntryRaw,
               parentRoutePath: [

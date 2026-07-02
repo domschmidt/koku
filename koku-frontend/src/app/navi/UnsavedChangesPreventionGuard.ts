@@ -18,7 +18,7 @@ export class UnsavedChangesPreventionGuard<T> implements CanDeactivate<T> {
     return new Observable<boolean>((observer) => {
       const unsavedChangesPreventionRegistryEntries = this.unsavedChangesPreventionRegistry.values();
       const currentEntry = unsavedChangesPreventionRegistryEntries.next();
-      if (currentEntry && currentEntry.value) {
+      if (currentEntry?.value) {
         currentEntry.value().subscribe((shouldProceed) => {
           observer.next(shouldProceed);
           observer.complete();

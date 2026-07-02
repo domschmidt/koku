@@ -30,19 +30,19 @@ export interface BusinessRuleExecutorHooks {
 }
 
 class BusinessRuleExecutor {
-  private loadingAnimationContentIds = new Set<string>();
+  private readonly loadingAnimationContentIds = new Set<string>();
   private asyncLoadingSubscription: Subscription | undefined;
   private contentEventSubscriptions: Subscription[] = [];
 
-  private uniqueInstanceRef = UNIQUE_REF_GENERATOR.generate();
+  private readonly uniqueInstanceRef = UNIQUE_REF_GENERATOR.generate();
 
   constructor(
-    private httpClient: HttpClient,
-    private modalService: ModalService,
-    private modalSetup: Partial<ModalContentSetup>,
-    private config: KokuDto.KokuBusinessRuleDto,
-    private contentRuntime: BusinessRuleExecutorContentRuntime,
-    private hooks: BusinessRuleExecutorHooks = {},
+    private readonly httpClient: HttpClient,
+    private readonly modalService: ModalService,
+    private readonly modalSetup: Partial<ModalContentSetup>,
+    private readonly config: KokuDto.KokuBusinessRuleDto,
+    private readonly contentRuntime: BusinessRuleExecutorContentRuntime,
+    private readonly hooks: BusinessRuleExecutorHooks = {},
   ) {
     for (const currentReference of config.references || []) {
       if (!currentReference.reference) {
@@ -127,28 +127,19 @@ class BusinessRuleExecutor {
         });
 
         for (const currentCloseEventListener of castedExecution.closeEventListeners || []) {
-          switch (currentCloseEventListener['@type']) {
-            case 'global-event-listener': {
-              const castedCloseEventListener =
-                currentCloseEventListener as KokuDto.KokuBusinessRuleOpenContentCloseGlobalEventListenerDto;
-
-              if (!castedCloseEventListener.eventName) {
-                throw new Error('Missing eventName in Listener');
-              }
-
-              GLOBAL_EVENT_BUS.addGlobalEventListener(
-                this.uniqueInstanceRef,
-                castedCloseEventListener.eventName,
-                () => {
-                  newModal.close();
-                },
-              );
-              break;
-            }
-            default: {
-              throw new Error(`Unknown event listener type ${currentCloseEventListener['@type']}`);
-            }
+          if (currentCloseEventListener['@type'] !== 'global-event-listener') {
+            throw new Error(`Unknown event listener type ${currentCloseEventListener['@type']}`);
           }
+          const castedCloseEventListener =
+            currentCloseEventListener as KokuDto.KokuBusinessRuleOpenContentCloseGlobalEventListenerDto;
+
+          if (!castedCloseEventListener.eventName) {
+            throw new Error('Missing eventName in Listener');
+          }
+
+          GLOBAL_EVENT_BUS.addGlobalEventListener(this.uniqueInstanceRef, castedCloseEventListener.eventName, () => {
+            newModal.close();
+          });
         }
         this.setLoadingAnimation(false);
         break;
@@ -227,20 +218,15 @@ class BusinessRuleExecutor {
         throw new Error(`Reference not found: ${currentReference.reference}`);
       }
 
-      switch (currentReference.resultUpdateMode) {
-        case 'ALWAYS': {
-          if (!currentReference.resultValuePath) {
-            throw new Error('Reference resultValuePath not specified');
-          }
-          if (!referencedContent.value) {
-            throw new Error(`Reference has no value: ${currentReference.reference}`);
-          }
-          const resultValue = get(result, currentReference.resultValuePath);
-          this.contentRuntime.updateContentValue(currentReference.reference, resultValue);
-          break;
+      if (currentReference.resultUpdateMode === 'ALWAYS') {
+        if (!currentReference.resultValuePath) {
+          throw new Error('Reference resultValuePath not specified');
         }
-        default:
-          break;
+        if (!referencedContent.value) {
+          throw new Error(`Reference has no value: ${currentReference.reference}`);
+        }
+        const resultValue = get(result, currentReference.resultValuePath);
+        this.contentRuntime.updateContentValue(currentReference.reference, resultValue);
       }
     }
 

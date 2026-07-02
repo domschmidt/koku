@@ -242,9 +242,9 @@ export class FormularRuntime {
   styleUrl: './formular.component.css',
 })
 export class FormularComponent implements OnDestroy, OnChanges {
-  httpClient = inject(HttpClient);
-  toastService = inject(ToastService);
-  formularPluginsConfig = inject(FORMULAR_PLUGIN, {
+  readonly httpClient = inject(HttpClient);
+  readonly toastService = inject(ToastService);
+  readonly formularPluginsConfig = inject(FORMULAR_PLUGIN, {
     optional: true,
   });
 
@@ -268,12 +268,12 @@ export class FormularComponent implements OnDestroy, OnChanges {
 
   saved = output<any>();
 
-  runtime = new FormularRuntime(() => this.setDirty());
+  readonly runtime = new FormularRuntime(() => this.setDirty());
   readonly source = this.runtime.source;
 
   private lastSourceSubscription: Subscription | undefined;
   private lastFormularSubscription: Subscription | undefined;
-  private pluginInstances: FormularPlugin[] = [];
+  private readonly pluginInstances: FormularPlugin[];
 
   constructor() {
     const pluginInstances = [];

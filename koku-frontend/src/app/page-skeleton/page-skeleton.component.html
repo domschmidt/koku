@@ -10,7 +10,7 @@
     <div class="flex h-full flex-col" style="min-height: var(--vh); max-height: var(--vh)">
       <div class="navbar bg-base-200 min-h-0 p-1">
         <div class="flex-none">
-          <label for="koku-drawer" class="btn drawer-button btn-square btn-ghost">
+          <label for="koku-drawer" class="btn drawer-button btn-square btn-ghost" aria-label="Navigation oeffnen">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -33,8 +33,6 @@
   </div>
   <div class="drawer-side z-10">
     <label for="koku-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-    <ul class="menu bg-base-100 text-base-content min-h-full w-80 p-4">
-      <koku-navi-list />
-    </ul>
+    <koku-navi-list class="flex h-full max-h-full min-h-0 flex-1 flex-col overflow-hidden" />
   </div>
 </div>

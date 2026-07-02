@@ -22,9 +22,7 @@ export interface BusinessRulesContentRenderContext {
 export type BusinessRulesContentRecipeFactory = (context: BusinessRulesContentRenderContext) => DynamicRenderRecipe;
 export interface BusinessRulesContentRegistry {
   modalContentRegistry: Partial<ModalContentSetup>;
-  contentRegistry: Partial<
-    Record<KokuDto.AbstractKokuBusinessRuleContentDto['@type'] | string, BusinessRulesContentRecipeFactory>
-  >;
+  contentRegistry: Partial<Record<string, BusinessRulesContentRecipeFactory>>;
 }
 type ContentRegistryItem = NonNullable<BusinessRulesContentRegistry['contentRegistry'][string]>;
 type ModalContentRegistryItem = NonNullable<ModalContentSetup[string]>;
@@ -37,9 +35,7 @@ const modalCloseOutputs = (context: ModalContentRenderContext): DynamicOutputs =
     }
   },
 });
-const MODAL_CONTENT_REGISTRY: Partial<
-  Record<KokuDto.AbstractKokuBusinessRuleContentDto['@type'] | string, ModalContentRegistryItem>
-> = {
+const MODAL_CONTENT_REGISTRY: Partial<Record<string, ModalContentRegistryItem>> = {
   formular: (context: ModalContentRenderContext<KokuDto.KokuBusinessRuleFormularContentDto>) => {
     const content = computed(() => context.content());
     const sourceUrl = computed(() => replaceSegments(content().sourceUrl, context.modal.urlSegments));
@@ -98,9 +94,7 @@ const MODAL_CONTENT_REGISTRY: Partial<
     };
   },
 };
-const BUSINESS_RULES_CONTENT_REGISTRY: Partial<
-  Record<KokuDto.AbstractKokuBusinessRuleContentDto['@type'] | string, ContentRegistryItem>
-> = {
+const BUSINESS_RULES_CONTENT_REGISTRY: Partial<Record<string, ContentRegistryItem>> = {
   formular: (context: BusinessRulesContentRenderContext) => {
     const content = computed(() => context.content() as KokuDto.KokuBusinessRuleFormularContentDto);
     const sourceUrl = computed(() => replaceSegments(content().sourceUrl, context.urlSegments()));
@@ -146,7 +140,7 @@ const BUSINESS_RULES_CONTENT_REGISTRY: Partial<
   },
   header: (context: BusinessRulesContentRenderContext) => {
     const content = computed(() => context.content() as KokuDto.KokuBusinessRuleHeaderContentDto);
-    const segmentMapping = computed(() => ({ ...(context.urlSegments() || {}) }));
+    const segmentMapping = computed(() => ({ ...context.urlSegments() }));
     return {
       loadComponent: () =>
         import('./header-container/business-rules-header-container.component').then(

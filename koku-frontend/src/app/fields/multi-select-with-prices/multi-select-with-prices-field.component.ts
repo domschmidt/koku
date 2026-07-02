@@ -86,7 +86,7 @@ export class MultiSelectWithPricesFieldComponent {
 
   applyPrice() {
     const priceModalSnapshot = this.priceModal();
-    if (priceModalSnapshot && priceModalSnapshot.item) {
+    if (priceModalSnapshot?.item) {
       const selectionValuesSnapshot = this.selectionValues();
       const itemIdx = selectionValuesSnapshot.indexOf(priceModalSnapshot.item);
       if (itemIdx >= 0) {

@@ -23,10 +23,10 @@ export class BusinessRulePlugin implements FormularPlugin {
   private sourceInitialized = false;
 
   constructor(
-    private httpClient: HttpClient,
-    private modalService: ModalService,
-    private toastService: ToastService,
-    private formularInstance: FormularComponent,
+    private readonly httpClient: HttpClient,
+    private readonly modalService: ModalService,
+    private readonly toastService: ToastService,
+    private readonly formularInstance: FormularComponent,
   ) {}
 
   onFormularLoaded(formularData: KokuDto.FormViewDto): void {
@@ -78,9 +78,9 @@ export class BusinessRulePlugin implements FormularPlugin {
 }
 
 export class GlobalEventListenerPlugin implements FormularPlugin {
-  componentRef = UNIQUE_REF_GENERATOR.generate();
+  readonly componentRef = UNIQUE_REF_GENERATOR.generate();
 
-  constructor(private formularInstance: FormularComponent) {}
+  constructor(private readonly formularInstance: FormularComponent) {}
 
   onFormularLoaded(formularData: KokuDto.FormViewDto): void {
     this.clearGlobalEventListeners();
@@ -390,28 +390,24 @@ export class ButtonListenerPlugin implements FormularPlugin {
                       switch (currentParam['@type']) {
                         case 'value': {
                           const castedParam = currentParam as KokuDto.FormNotificationEventValueParamDto;
-                          if (castedParam.sourcePath) {
-                            notificationText = notificationText.replaceAll(
-                              currentParam.param,
-                              get(this.formularInstance.source(), castedParam.sourcePath),
-                            );
-                            break;
-                          } else {
+                          if (!castedParam.sourcePath) {
                             throw new Error(`Missing valuePath for param: ${currentParam.param}`);
                           }
+                          notificationText = notificationText.replaceAll(
+                            currentParam.param,
+                            get(this.formularInstance.source(), castedParam.sourcePath),
+                          );
                           break;
                         }
                         case 'date-value': {
                           const castedParam = currentParam as KokuDto.FormNotificationEventValueParamDto;
-                          if (castedParam.sourcePath) {
-                            notificationText = notificationText.replaceAll(
-                              currentParam.param,
-                              get(this.formularInstance.source(), castedParam.sourcePath),
-                            );
-                            break;
-                          } else {
+                          if (!castedParam.sourcePath) {
                             throw new Error(`Missing valuePath for param: ${currentParam.param}`);
                           }
+                          notificationText = notificationText.replaceAll(
+                            currentParam.param,
+                            get(this.formularInstance.source(), castedParam.sourcePath),
+                          );
                           break;
                         }
                         default: {
@@ -461,26 +457,21 @@ export class ButtonListenerPlugin implements FormularPlugin {
                   if (!currentParam.param) {
                     throw new Error(`Missing param`);
                   }
-                  switch (currentParam['@type']) {
-                    case 'source-path': {
-                      const castedParam = currentParam as KokuDto.FormButtonUserConfirmationSourcePathParamDto;
-                      if (!castedParam.sourcePath) {
-                        throw new Error('Missing valuePath in FieldReference');
-                      }
-                      headline = headline.replaceAll(
-                        currentParam.param,
-                        get(this.formularInstance.source(), castedParam.sourcePath),
-                      );
-                      content = content.replaceAll(
-                        currentParam.param,
-                        get(this.formularInstance.source(), castedParam.sourcePath),
-                      );
-                      break;
-                    }
-                    default: {
-                      throw new Error(`Unknown param type ${currentParam['@type']}`);
-                    }
+                  if (currentParam['@type'] !== 'source-path') {
+                    throw new Error(`Unknown param type ${currentParam['@type']}`);
                   }
+                  const castedParam = currentParam as KokuDto.FormButtonUserConfirmationSourcePathParamDto;
+                  if (!castedParam.sourcePath) {
+                    throw new Error('Missing valuePath in FieldReference');
+                  }
+                  headline = headline.replaceAll(
+                    currentParam.param,
+                    get(this.formularInstance.source(), castedParam.sourcePath),
+                  );
+                  content = content.replaceAll(
+                    currentParam.param,
+                    get(this.formularInstance.source(), castedParam.sourcePath),
+                  );
                 }
 
                 const confirmationModal = this.modalService.add({
@@ -537,14 +528,10 @@ export class ButtonListenerPlugin implements FormularPlugin {
                       tap(
                         (rawValue) => {
                           for (const currentPostProcessingAction of castedButtonCfg.postProcessingActions || []) {
-                            switch (currentPostProcessingAction['@type']) {
-                              case 'reload': {
-                                this.formularInstance.loadSource();
-                                break;
-                              }
-                              default:
-                                throw new Error('Unknown PostProcessingAction');
+                            if (currentPostProcessingAction['@type'] !== 'reload') {
+                              throw new Error('Unknown PostProcessingAction');
                             }
+                            this.formularInstance.loadSource();
                           }
                           executeEvents(castedButtonCfg.successEvents || [], rawValue);
                         },
@@ -639,8 +626,8 @@ export class UnsavedChangesPreventionGuardPlugin implements FormularPlugin {
 
 export class BusinessExceptionPlugin implements FormularPlugin {
   constructor(
-    private modalService: ModalService,
-    private formularInstance: FormularComponent,
+    private readonly modalService: ModalService,
+    private readonly formularInstance: FormularComponent,
   ) {}
 
   onSubmitError(
@@ -654,75 +641,73 @@ export class BusinessExceptionPlugin implements FormularPlugin {
       const castedError = error.error as KokuDto.KokuBusinessErrorWithConfirmationMessageDto;
       const buttons: ModalButtonType[] = [];
       for (const buttonCfg of castedError.buttons || []) {
-        switch (buttonCfg['@type']) {
-          case 'close-button':
-            buttons.push({
-              loading: buttonCfg.loading,
-              disabled: buttonCfg.disabled,
-              buttonType: 'BUTTON',
-              title: buttonCfg.title,
-              icon: buttonCfg.icon,
-              text: buttonCfg.text,
-              styles: buttonCfg.styles,
-              size: buttonCfg.size,
-              onClick: () => {
-                this.modalService.close(confirmationModal);
-                request.complete();
-              },
-            });
-            break;
-          case 'send-to-different-endpoint-button': {
-            const castedButtonCfg = buttonCfg as KokuDto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
-
-            buttons.push({
-              loading: castedButtonCfg.loading,
-              disabled: castedButtonCfg.disabled,
-              buttonType: 'BUTTON',
-              title: castedButtonCfg.title,
-              icon: castedButtonCfg.icon,
-              text: castedButtonCfg.text,
-              styles: castedButtonCfg.styles,
-              size: castedButtonCfg.size,
-              onClick: (event: Event, modal: ModalType, button: ModalButtonType) => {
-                if (castedButtonCfg.showLoadingAnimation) {
-                  button.loading = true;
-                }
-                if (castedButtonCfg.showDisabledState) {
-                  button.disabled = true;
-                }
-
-                this.formularInstance
-                  .requestSubmit(
-                    castedButtonCfg.endpointMethod || submitMethod,
-                    castedButtonCfg.endpointUrl || submitUrl,
-                    submitData,
-                  )
-                  .subscribe({
-                    next: (response) => {
-                      this.modalService.close(confirmationModal);
-                      request.next(response);
-                      request.complete();
-                    },
-                    error: () => {
-                      if (castedButtonCfg.showLoadingAnimation) {
-                        button.loading = false;
-                      }
-                      if (castedButtonCfg.showDisabledState) {
-                        button.disabled = false;
-                      }
-                    },
-                    complete: () => {
-                      this.modalService.close(confirmationModal);
-                      request.complete();
-                    },
-                  });
-              },
-            });
-            break;
-          }
-          default:
-            throw new Error('Unknown button type');
+        if (buttonCfg['@type'] === 'close-button') {
+          buttons.push({
+            loading: buttonCfg.loading,
+            disabled: buttonCfg.disabled,
+            buttonType: 'BUTTON',
+            title: buttonCfg.title,
+            icon: buttonCfg.icon,
+            text: buttonCfg.text,
+            styles: buttonCfg.styles,
+            size: buttonCfg.size,
+            onClick: () => {
+              this.modalService.close(confirmationModal);
+              request.complete();
+            },
+          });
+          continue;
         }
+        if (buttonCfg['@type'] === 'send-to-different-endpoint-button') {
+          const castedButtonCfg = buttonCfg as KokuDto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
+
+          buttons.push({
+            loading: castedButtonCfg.loading,
+            disabled: castedButtonCfg.disabled,
+            buttonType: 'BUTTON',
+            title: castedButtonCfg.title,
+            icon: castedButtonCfg.icon,
+            text: castedButtonCfg.text,
+            styles: castedButtonCfg.styles,
+            size: castedButtonCfg.size,
+            onClick: (event: Event, modal: ModalType, button: ModalButtonType) => {
+              if (castedButtonCfg.showLoadingAnimation) {
+                button.loading = true;
+              }
+              if (castedButtonCfg.showDisabledState) {
+                button.disabled = true;
+              }
+
+              this.formularInstance
+                .requestSubmit(
+                  castedButtonCfg.endpointMethod || submitMethod,
+                  castedButtonCfg.endpointUrl || submitUrl,
+                  submitData,
+                )
+                .subscribe({
+                  next: (response) => {
+                    this.modalService.close(confirmationModal);
+                    request.next(response);
+                    request.complete();
+                  },
+                  error: () => {
+                    if (castedButtonCfg.showLoadingAnimation) {
+                      button.loading = false;
+                    }
+                    if (castedButtonCfg.showDisabledState) {
+                      button.disabled = false;
+                    }
+                  },
+                  complete: () => {
+                    this.modalService.close(confirmationModal);
+                    request.complete();
+                  },
+                });
+            },
+          });
+          continue;
+        }
+        throw new Error('Unknown button type');
       }
 
       const confirmationModal = this.modalService.add({

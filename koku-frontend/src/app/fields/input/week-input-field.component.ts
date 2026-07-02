@@ -122,7 +122,7 @@ export class WeekInputFieldComponent {
 
   validate(): boolean {
     const valueSnapshot = this.value() ?? '';
-    if ((!valueSnapshot || !valueSnapshot.length) && this.required()) {
+    if (!valueSnapshot?.length && this.required()) {
       return false;
     }
     return !valueSnapshot || this.parseValue(valueSnapshot).isValid();

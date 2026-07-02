@@ -29,6 +29,17 @@ import { CALENDAR_CONTENT_SETUP } from './calendar-binding/registry';
 
 dayjs.extend(dayOfYear);
 
+interface CalendarItemValueParam {
+  '@type'?: string;
+  param?: string;
+  valuePath?: string;
+}
+
+interface CalendarPropagateGlobalEventSuccessEvent {
+  '@type'?: string;
+  eventName?: string;
+}
+
 export class CalendarInteractionPlugin implements CalendarPlugin {
   constructor(private calendarInstance: CalendarComponent) {}
 
@@ -40,33 +51,27 @@ export class CalendarInteractionPlugin implements CalendarPlugin {
 
   onDateSelect(dateClickInfo: DateSelection): void {
     const calendarConfig = this.calendarInstance.config();
-    if (calendarConfig !== undefined) {
-      const clickAction = calendarConfig.calendarClickAction;
-      if (clickAction) {
-        switch (clickAction['@type']) {
-          case 'open-routed-content': {
-            const castedClickAction = clickAction as KokuDto.CalendarOpenRoutedContentClickActionDto;
-            if (castedClickAction.route) {
-              let context: CalendarContext | undefined = undefined;
-              if (dateClickInfo && dateClickInfo.selectionStart) {
-                context = {
-                  selectionStartDate: dayjs(dateClickInfo.selectionStart).format('YYYY-MM-DD'),
-                  selectionStartTime: dayjs(dateClickInfo.selectionStart).format('HH:mm'),
-                  selectionStartDateTime: dayjs(dateClickInfo.selectionStart).format("YYYY-MM-DD'T'HH:mm"),
-                  selectionEndDate: dayjs(dateClickInfo.selectionEnd).format('YYYY-MM-DD'),
-                  selectionEndTime: dayjs(dateClickInfo.selectionEnd).format('HH:mm'),
-                  selectionEndDateTime: dayjs(dateClickInfo.selectionEnd).format("YYYY-MM-DD'T'HH:mm"),
-                };
-              }
-              this.calendarInstance.openRoutedContent(castedClickAction.route.split('/'), context);
-            }
-            break;
-          }
-          default: {
-            throw new Error(`Unknown ClickAction Type ${clickAction['@type']}`);
-          }
-        }
+    const clickAction = calendarConfig?.calendarClickAction;
+    if (!clickAction) {
+      return;
+    }
+    if (clickAction['@type'] !== 'open-routed-content') {
+      throw new Error(`Unknown ClickAction Type ${clickAction['@type']}`);
+    }
+    const castedClickAction = clickAction as KokuDto.CalendarOpenRoutedContentClickActionDto;
+    if (castedClickAction.route) {
+      let context: CalendarContext | undefined = undefined;
+      if (dateClickInfo?.selectionStart) {
+        context = {
+          selectionStartDate: dayjs(dateClickInfo.selectionStart).format('YYYY-MM-DD'),
+          selectionStartTime: dayjs(dateClickInfo.selectionStart).format('HH:mm'),
+          selectionStartDateTime: dayjs(dateClickInfo.selectionStart).format("YYYY-MM-DD'T'HH:mm"),
+          selectionEndDate: dayjs(dateClickInfo.selectionEnd).format('YYYY-MM-DD'),
+          selectionEndTime: dayjs(dateClickInfo.selectionEnd).format('HH:mm'),
+          selectionEndDateTime: dayjs(dateClickInfo.selectionEnd).format("YYYY-MM-DD'T'HH:mm"),
+        };
       }
+      this.calendarInstance.openRoutedContent(castedClickAction.route.split('/'), context);
     }
   }
 }
@@ -154,29 +159,27 @@ export class CalendarUserSelectActionPlugin implements CalendarPlugin {
     currentCalendarAction: KokuDto.AbstractCalendarActionDto,
     updateCb: (updatedAction: KokuDto.AbstractCalendarActionDto) => void,
   ): void {
-    switch (currentCalendarAction['@type']) {
-      case 'select-user': {
+    if (currentCalendarAction['@type'] !== 'select-user') {
+      return;
+    }
+
+    updateCb({
+      ...currentCalendarAction,
+      loading: true,
+    });
+
+    if (this.selectedUserSubscription) {
+      this.selectedUserSubscription.unsubscribe();
+    }
+    this.selectedUserSubscription = this.selectedUserDetails
+      .pipe(filter((value) => value !== null))
+      .subscribe((selectedUserDetails) => {
         updateCb({
           ...currentCalendarAction,
-          loading: true,
+          loading: false,
+          imgBase64: selectedUserDetails.avatarBase64,
         });
-
-        if (this.selectedUserSubscription) {
-          this.selectedUserSubscription.unsubscribe();
-        }
-        this.selectedUserSubscription = this.selectedUserDetails
-          .pipe(filter((value) => value !== null))
-          .subscribe((selectedUserDetails) => {
-            updateCb({
-              ...currentCalendarAction,
-              loading: false,
-              imgBase64: selectedUserDetails.avatarBase64,
-            });
-          });
-
-        break;
-      }
-    }
+      });
   }
 }
 
@@ -203,15 +206,10 @@ export class CalendarGlobalEventPlugin implements CalendarPlugin {
         throw new Error('Missing eventName in Listener Config');
       }
       GLOBAL_EVENT_BUS.addGlobalEventListener(this.componentRefInlineContent, currentListener.eventName, () => {
-        switch (currentListener['@type']) {
-          case 'close': {
-            this.calendarInstance.closeInlineContent().subscribe();
-            break;
-          }
-          default: {
-            throw new Error(`Unexpected listener Type: ${currentListener['@type']}`);
-          }
+        if (currentListener['@type'] !== 'close') {
+          throw new Error(`Unexpected listener Type: ${currentListener['@type']}`);
         }
+        this.calendarInstance.closeInlineContent().subscribe();
       });
     }
   }
@@ -232,86 +230,79 @@ export class CalendarGlobalEventPlugin implements CalendarPlugin {
         String(this.componentRef),
         currentEventListener.eventName,
         (eventPayload) => {
-          switch (currentEventListener['@type']) {
-            case 'refresh': {
-              this.calendarInstance.calendarComponent()?.getApi().refetchEvents();
-              break;
+          if (currentEventListener['@type'] === 'refresh') {
+            this.calendarInstance.calendarComponent()?.getApi().refetchEvents();
+          } else if (currentEventListener['@type'] === 'replace-via-payload') {
+            const castedEventListener =
+              currentEventListener as KokuDto.CalendarReplaceItemViaPayloadGlobalEventListenerDto;
+
+            if (castedEventListener.sourceId === undefined) {
+              throw new Error(`Missing sourceId`);
             }
-            case 'replace-via-payload': {
-              const castedEventListener =
-                currentEventListener as KokuDto.CalendarReplaceItemViaPayloadGlobalEventListenerDto;
 
-              if (castedEventListener.sourceId === undefined) {
-                throw new Error(`Missing sourceId`);
-              }
+            const eventSource = this.calendarInstance
+              .calendarComponent()
+              ?.getApi()
+              .getEventSourceById(castedEventListener.sourceId);
+            if (!eventSource) {
+              throw new Error(`eventSource ${castedEventListener.sourceId} cannot be resolved`);
+            }
+            const calendarSourceFactory =
+              this.calendarInstance.registeredEventSourceFactories[castedEventListener.sourceId];
+            if (!calendarSourceFactory) {
+              throw new Error(`EventSourceFactory ${castedEventListener.sourceId} missing`);
+            }
 
-              const eventSource = this.calendarInstance
-                .calendarComponent()
-                ?.getApi()
-                .getEventSourceById(castedEventListener.sourceId);
-              if (!eventSource) {
-                throw new Error(`eventSource ${castedEventListener.sourceId} cannot be resolved`);
+            let lookedUpEvent = calendarSourceFactory.lookupEvent(eventPayload);
+            let toBeDeleted = false;
+            if (castedEventListener.deletedPath && castedEventListener.deletedExpression !== undefined) {
+              toBeDeleted =
+                get(eventPayload, castedEventListener.deletedPath) === castedEventListener.deletedExpression;
+            }
+            if (toBeDeleted) {
+              if (lookedUpEvent) {
+                lookedUpEvent.remove();
               }
-              const calendarSourceFactory =
-                this.calendarInstance.registeredEventSourceFactories[castedEventListener.sourceId];
-              if (!calendarSourceFactory) {
-                throw new Error(`EventSourceFactory ${castedEventListener.sourceId} missing`);
-              }
+            } else {
+              const newEvent = calendarSourceFactory.generateEventItem(eventPayload);
 
-              let lookedUpEvent = calendarSourceFactory.lookupEvent(eventPayload);
-              let toBeDeleted = false;
-              if (castedEventListener.deletedPath && castedEventListener.deletedExpression !== undefined) {
-                toBeDeleted =
-                  get(eventPayload, castedEventListener.deletedPath) === castedEventListener.deletedExpression;
-              }
-              if (toBeDeleted) {
-                if (lookedUpEvent) {
-                  lookedUpEvent.remove();
-                }
+              if (!lookedUpEvent) {
+                lookedUpEvent = this.calendarInstance.calendarComponent()?.getApi().addEvent(newEvent, eventSource);
+              } else if (newEvent.rrule !== undefined) {
+                // FullCalendar does not rebuild recurrence instances when rrule is changed via setProp.
+                lookedUpEvent.remove();
+                lookedUpEvent = this.calendarInstance.calendarComponent()?.getApi().addEvent(newEvent, eventSource);
               } else {
-                const newEvent = calendarSourceFactory.generateEventItem(eventPayload);
-
-                if (!lookedUpEvent) {
-                  lookedUpEvent = this.calendarInstance.calendarComponent()?.getApi().addEvent(newEvent, eventSource);
-                } else if (newEvent.rrule !== undefined) {
-                  // FullCalendar does not rebuild recurrence instances when rrule is changed via setProp.
-                  lookedUpEvent.remove();
-                  lookedUpEvent = this.calendarInstance.calendarComponent()?.getApi().addEvent(newEvent, eventSource);
+                if (newEvent.allDay !== undefined && newEvent.allDay !== !!lookedUpEvent.allDay) {
+                  lookedUpEvent.setAllDay(newEvent.allDay);
+                }
+                if (newEvent.start !== undefined && newEvent.end !== undefined) {
+                  lookedUpEvent.setDates(newEvent.start, newEvent.end);
                 } else {
-                  if (newEvent.allDay !== undefined && newEvent.allDay !== !!lookedUpEvent.allDay) {
-                    lookedUpEvent.setAllDay(newEvent.allDay);
+                  if (newEvent.start !== undefined) {
+                    lookedUpEvent.setStart(newEvent.start, { maintainDuration: true });
                   }
-                  if (newEvent.start !== undefined && newEvent.end !== undefined) {
-                    lookedUpEvent.setDates(newEvent.start, newEvent.end);
-                  } else {
-                    if (newEvent.start !== undefined) {
-                      lookedUpEvent.setStart(newEvent.start, { maintainDuration: true });
-                    }
-                    if (newEvent.end !== undefined) {
-                      lookedUpEvent.setEnd(newEvent.end, { maintainDuration: true });
-                    }
+                  if (newEvent.end !== undefined) {
+                    lookedUpEvent.setEnd(newEvent.end, { maintainDuration: true });
                   }
-                  lookedUpEvent.setProp('title', newEvent.title);
-                  lookedUpEvent.setProp('display', newEvent.display);
-                  lookedUpEvent.setProp('className', newEvent.className);
-                  lookedUpEvent.setExtendedProp('item', eventPayload);
                 }
-                if (lookedUpEvent) {
-                  const classnameSnapshot = [...lookedUpEvent.classNames];
-                  setTimeout(() => {
-                    classnameSnapshot.splice(classnameSnapshot.indexOf('calendar-item--flash'), 1);
-                    lookedUpEvent.setProp('classNames', classnameSnapshot);
-                  }, 1000);
-                  classnameSnapshot.push('calendar-item--flash');
-                  lookedUpEvent.setProp('classNames', classnameSnapshot);
-                }
+                lookedUpEvent.setProp('title', newEvent.title);
+                lookedUpEvent.setProp('display', newEvent.display);
+                lookedUpEvent.setProp('className', newEvent.className);
+                lookedUpEvent.setExtendedProp('item', eventPayload);
               }
-
-              break;
+              if (lookedUpEvent) {
+                const classnameSnapshot = [...lookedUpEvent.classNames];
+                setTimeout(() => {
+                  classnameSnapshot.splice(classnameSnapshot.indexOf('calendar-item--flash'), 1);
+                  lookedUpEvent.setProp('classNames', classnameSnapshot);
+                }, 1000);
+                classnameSnapshot.push('calendar-item--flash');
+                lookedUpEvent.setProp('classNames', classnameSnapshot);
+              }
             }
-            default: {
-              throw new Error(`Unknown event Listener Type: ${currentEventListener['@type']}`);
-            }
+          } else {
+            throw new Error(`Unknown event Listener Type: ${currentEventListener['@type']}`);
           }
         },
       );
@@ -353,70 +344,68 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
               const castedError = error.error as KokuDto.KokuBusinessErrorWithConfirmationMessageDto;
               const buttons: ModalButtonType[] = [];
               for (const buttonCfg of castedError.buttons || []) {
-                switch (buttonCfg['@type']) {
-                  case 'close-button':
-                    buttons.push({
-                      loading: buttonCfg.loading,
-                      disabled: buttonCfg.disabled,
-                      buttonType: 'BUTTON',
-                      title: buttonCfg.title,
-                      icon: buttonCfg.icon,
-                      text: buttonCfg.text,
-                      styles: buttonCfg.styles,
-                      size: buttonCfg.size,
-                      onClick: () => {
-                        this.modalService.close(confirmationModal);
-                        subscriber.error(error);
-                      },
-                    });
-                    break;
-                  case 'send-to-different-endpoint-button': {
-                    const castedButtonCfg = buttonCfg as KokuDto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
-
-                    buttons.push({
-                      loading: castedButtonCfg.loading,
-                      disabled: castedButtonCfg.disabled,
-                      buttonType: 'BUTTON',
-                      title: castedButtonCfg.title,
-                      icon: castedButtonCfg.icon,
-                      text: castedButtonCfg.text,
-                      styles: castedButtonCfg.styles,
-                      size: castedButtonCfg.size,
-                      onClick: (event: Event, modal: ModalType, button: ModalButtonType) => {
-                        if (castedButtonCfg.showLoadingAnimation) {
-                          button.loading = true;
-                        }
-                        if (castedButtonCfg.showDisabledState) {
-                          button.disabled = true;
-                        }
-
-                        this.callHttpEndpount(
-                          castedButtonCfg.endpointMethod || method,
-                          castedButtonCfg.endpointUrl || url,
-                          requestBody,
-                        ).subscribe({
-                          next: (args) => {
-                            this.modalService.close(confirmationModal);
-                            subscriber.next(args);
-                            subscriber.complete();
-                          },
-                          error: (args) => {
-                            if (castedButtonCfg.showLoadingAnimation) {
-                              button.loading = false;
-                            }
-                            if (castedButtonCfg.showDisabledState) {
-                              button.disabled = false;
-                            }
-                            subscriber.error(args);
-                          },
-                        });
-                      },
-                    });
-                    break;
-                  }
-                  default:
-                    throw new Error('Unknown button type');
+                if (buttonCfg['@type'] === 'close-button') {
+                  buttons.push({
+                    loading: buttonCfg.loading,
+                    disabled: buttonCfg.disabled,
+                    buttonType: 'BUTTON',
+                    title: buttonCfg.title,
+                    icon: buttonCfg.icon,
+                    text: buttonCfg.text,
+                    styles: buttonCfg.styles,
+                    size: buttonCfg.size,
+                    onClick: () => {
+                      this.modalService.close(confirmationModal);
+                      subscriber.error(error);
+                    },
+                  });
+                  continue;
                 }
+                if (buttonCfg['@type'] === 'send-to-different-endpoint-button') {
+                  const castedButtonCfg = buttonCfg as KokuDto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
+
+                  buttons.push({
+                    loading: castedButtonCfg.loading,
+                    disabled: castedButtonCfg.disabled,
+                    buttonType: 'BUTTON',
+                    title: castedButtonCfg.title,
+                    icon: castedButtonCfg.icon,
+                    text: castedButtonCfg.text,
+                    styles: castedButtonCfg.styles,
+                    size: castedButtonCfg.size,
+                    onClick: (event: Event, modal: ModalType, button: ModalButtonType) => {
+                      if (castedButtonCfg.showLoadingAnimation) {
+                        button.loading = true;
+                      }
+                      if (castedButtonCfg.showDisabledState) {
+                        button.disabled = true;
+                      }
+
+                      this.callHttpEndpount(
+                        castedButtonCfg.endpointMethod || method,
+                        castedButtonCfg.endpointUrl || url,
+                        requestBody,
+                      ).subscribe({
+                        next: (args) => {
+                          this.modalService.close(confirmationModal);
+                          subscriber.next(args);
+                          subscriber.complete();
+                        },
+                        error: (args) => {
+                          if (castedButtonCfg.showLoadingAnimation) {
+                            button.loading = false;
+                          }
+                          if (castedButtonCfg.showDisabledState) {
+                            button.disabled = false;
+                          }
+                          subscriber.error(args);
+                        },
+                      });
+                    },
+                  });
+                  continue;
+                }
+                throw new Error('Unknown button type');
               }
 
               const confirmationModal = this.modalService.add({
@@ -434,6 +423,42 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
           });
         }),
       );
+  }
+
+  private replaceItemValueParams(
+    url: string,
+    params: CalendarItemValueParam[] | undefined,
+    item: Record<string, never>,
+  ): string {
+    let result = url;
+    for (const currentParam of params || []) {
+      if (!currentParam.param) {
+        throw new Error(`Missing param`);
+      }
+      if (currentParam['@type'] !== 'item-value') {
+        throw new Error(`Unknown param type ${currentParam['@type']}`);
+      }
+      if (currentParam.valuePath === undefined) {
+        throw new Error(`Missing valuePath`);
+      }
+      result = result.replaceAll(currentParam.param, String(get({ ...item }, currentParam.valuePath)));
+    }
+    return result;
+  }
+
+  private propagateSuccessEvents(
+    events: CalendarPropagateGlobalEventSuccessEvent[] | undefined,
+    response: unknown,
+  ): void {
+    for (const currentEvent of events || []) {
+      if (currentEvent['@type'] !== 'propagate-global-event') {
+        throw new Error(`Unknown event type ${currentEvent['@type']}`);
+      }
+      if (!currentEvent.eventName) {
+        throw new Error(`Missing eventName`);
+      }
+      GLOBAL_EVENT_BUS.propagateGlobalEvent(currentEvent.eventName, response);
+    }
   }
 
   provideEventSourceFactory(
@@ -494,48 +519,17 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
           editable: castedSource.editable !== false,
           onClickHandler: (event: { item: Record<string, never> }) => {
             if (castedSource.clickAction) {
-              switch (castedSource.clickAction['@type']) {
-                case 'open-routed-content': {
-                  const castedActionType = castedSource.clickAction as KokuDto.CalendarOpenRoutedContentItemClickAction;
-                  let url = castedActionType.route || '';
-                  for (const currentParam of castedActionType.params || []) {
-                    if (!currentParam.param) {
-                      throw new Error(`Missing param`);
-                    }
-                    switch (currentParam['@type']) {
-                      case 'item-value': {
-                        const castedCurrentParam =
-                          currentParam as KokuDto.ItemValueCalendarOpenRoutedContentItemParamDto;
-                        if (castedCurrentParam.valuePath === undefined) {
-                          throw new Error(`Missing valuePath`);
-                        }
-                        url = url.replaceAll(
-                          currentParam.param,
-                          String(
-                            get(
-                              {
-                                ...event.item,
-                              },
-                              castedCurrentParam.valuePath,
-                            ),
-                          ),
-                        );
-                        break;
-                      }
-                      default: {
-                        throw new Error(`Unknown param type ${currentParam['@type']}`);
-                      }
-                    }
-                  }
-
-                  if (castedActionType.route) {
-                    this.calendarInstance.openRoutedContent(url.split('/'));
-                  }
-                  break;
-                }
-                default: {
-                  throw new Error(`Unknown item click action type ${castedSource.clickAction['@type']}`);
-                }
+              if (castedSource.clickAction['@type'] !== 'open-routed-content') {
+                throw new Error(`Unknown item click action type ${castedSource.clickAction['@type']}`);
+              }
+              const castedActionType = castedSource.clickAction as KokuDto.CalendarOpenRoutedContentItemClickAction;
+              const url = this.replaceItemValueParams(
+                castedActionType.route || '',
+                castedActionType.params as CalendarItemValueParam[] | undefined,
+                event.item,
+              );
+              if (castedActionType.route) {
+                this.calendarInstance.openRoutedContent(url.split('/'));
               }
             }
           },
@@ -549,101 +543,59 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
           }) => {
             let dropHandled = false;
             if (castedSource.dropAction) {
-              switch (castedSource.dropAction['@type']) {
-                case 'call-http': {
-                  const castedActionType = castedSource.dropAction as KokuDto.CalendarCallHttpItemClickAction;
-                  let url = castedActionType.url || '';
-                  for (const currentParam of castedActionType.urlParams || []) {
-                    if (!currentParam.param) {
-                      throw new Error(`Missing param`);
-                    }
-                    switch (currentParam['@type']) {
-                      case 'item-value': {
-                        const castedCurrentParam =
-                          currentParam as KokuDto.ItemValueCalendarOpenRoutedContentItemParamDto;
-                        if (castedCurrentParam.valuePath === undefined) {
-                          throw new Error(`Missing valuePath`);
-                        }
-                        url = url.replaceAll(
-                          currentParam.param,
-                          String(
-                            get(
-                              {
-                                ...event.item,
-                              },
-                              castedCurrentParam.valuePath,
-                            ),
-                          ),
-                        );
-                        break;
-                      }
-                      default: {
-                        throw new Error(`Unknown param type ${currentParam['@type']}`);
-                      }
-                    }
-                  }
-                  if (!castedActionType.method) {
-                    throw new Error(`Missing method`);
-                  }
-                  if (!castedActionType.startDatePath) {
-                    throw new Error(`Missing startDatePath`);
-                  }
-                  if (!castedActionType.startTimePath) {
-                    throw new Error(`Missing startTimePath`);
-                  }
-
-                  const requestBody = {};
-                  set(requestBody, castedActionType.startDatePath, dayjs(event.newStart).format('YYYY-MM-DD'));
-                  set(requestBody, castedActionType.startTimePath, dayjs(event.newStart).format('HH:mm'));
-                  if (castedActionType.endDatePath) {
-                    set(requestBody, castedActionType.endDatePath, dayjs(event.newEnd).format('YYYY-MM-DD'));
-                  }
-                  if (castedActionType.endTimePath) {
-                    set(requestBody, castedActionType.endTimePath, dayjs(event.newEnd).format('HH:mm'));
-                  }
-
-                  for (const [source, target] of Object.entries(castedActionType.valueMapping || {})) {
-                    set(requestBody, target, get(event.item, source, null));
-                  }
-
-                  event.setLoading(true);
-                  this.callHttpEndpount(castedActionType.method, url, requestBody).subscribe({
-                    next: (response) => {
-                      event.setLoading(false);
-                      for (const currentEvent of castedActionType.successEvents || []) {
-                        switch (currentEvent['@type']) {
-                          case 'propagate-global-event': {
-                            const castedEvent =
-                              currentEvent as KokuDto.CalendarCallHttpItemActionPropagateGlobalEventSuccessEventDto;
-                            if (!castedEvent.eventName) {
-                              throw new Error(`Missing eventName`);
-                            }
-                            GLOBAL_EVENT_BUS.propagateGlobalEvent(castedEvent.eventName, response);
-                            break;
-                          }
-                          default: {
-                            throw new Error(`Unknown event type ${currentEvent['@type']}`);
-                          }
-                        }
-                      }
-                      this.toastService.add(`Erfolgreich gespeichert`, 'success');
-                    },
-                    error: () => {
-                      event.setLoading(false);
-                      event.revert();
-                      this.toastService.add(
-                        `Es ist ein Fehler bei der Anfrage aufgetreten. Versuche es später erneut!`,
-                        'error',
-                      );
-                    },
-                  });
-                  dropHandled = true;
-                  break;
+              if (castedSource.dropAction['@type'] === 'call-http') {
+                const castedActionType = castedSource.dropAction as KokuDto.CalendarCallHttpItemClickAction;
+                const url = this.replaceItemValueParams(
+                  castedActionType.url || '',
+                  castedActionType.urlParams as CalendarItemValueParam[] | undefined,
+                  event.item,
+                );
+                if (!castedActionType.method) {
+                  throw new Error(`Missing method`);
                 }
-                default: {
-                  console.log(`Unknown item drop action type ${castedSource.dropAction['@type']}`);
-                  break;
+                if (!castedActionType.startDatePath) {
+                  throw new Error(`Missing startDatePath`);
                 }
+                if (!castedActionType.startTimePath) {
+                  throw new Error(`Missing startTimePath`);
+                }
+
+                const requestBody = {};
+                set(requestBody, castedActionType.startDatePath, dayjs(event.newStart).format('YYYY-MM-DD'));
+                set(requestBody, castedActionType.startTimePath, dayjs(event.newStart).format('HH:mm'));
+                if (castedActionType.endDatePath) {
+                  set(requestBody, castedActionType.endDatePath, dayjs(event.newEnd).format('YYYY-MM-DD'));
+                }
+                if (castedActionType.endTimePath) {
+                  set(requestBody, castedActionType.endTimePath, dayjs(event.newEnd).format('HH:mm'));
+                }
+
+                for (const [source, target] of Object.entries(castedActionType.valueMapping || {})) {
+                  set(requestBody, target, get(event.item, source, null));
+                }
+
+                event.setLoading(true);
+                this.callHttpEndpount(castedActionType.method, url, requestBody).subscribe({
+                  next: (response) => {
+                    event.setLoading(false);
+                    this.propagateSuccessEvents(
+                      castedActionType.successEvents as CalendarPropagateGlobalEventSuccessEvent[] | undefined,
+                      response,
+                    );
+                    this.toastService.add(`Erfolgreich gespeichert`, 'success');
+                  },
+                  error: () => {
+                    event.setLoading(false);
+                    event.revert();
+                    this.toastService.add(
+                      `Es ist ein Fehler bei der Anfrage aufgetreten. Versuche es später erneut!`,
+                      'error',
+                    );
+                  },
+                });
+                dropHandled = true;
+              } else {
+                console.log(`Unknown item drop action type ${castedSource.dropAction['@type']}`);
               }
             }
             if (!dropHandled) {
@@ -660,96 +612,54 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
             let resizeHandled = false;
 
             if (castedSource.resizeAction) {
-              switch (castedSource.resizeAction['@type']) {
-                case 'call-http': {
-                  const castedActionType = castedSource.resizeAction as KokuDto.CalendarCallHttpItemResizeAction;
-                  let url = castedActionType.url || '';
-                  for (const currentParam of castedActionType.urlParams || []) {
-                    if (!currentParam.param) {
-                      throw new Error(`Missing param`);
-                    }
-                    switch (currentParam['@type']) {
-                      case 'item-value': {
-                        const castedCurrentParam =
-                          currentParam as KokuDto.ItemValueCalendarOpenRoutedContentItemParamDto;
-                        if (castedCurrentParam.valuePath === undefined) {
-                          throw new Error(`Missing valuePath`);
-                        }
-                        url = url.replaceAll(
-                          currentParam.param,
-                          String(
-                            get(
-                              {
-                                ...event.item,
-                              },
-                              castedCurrentParam.valuePath,
-                            ),
-                          ),
-                        );
-                        break;
-                      }
-                      default: {
-                        throw new Error(`Unknown param type ${currentParam['@type']}`);
-                      }
-                    }
-                  }
-                  if (!castedActionType.method) {
-                    throw new Error(`Missing method`);
-                  }
-                  if (!castedActionType.endDatePath) {
-                    throw new Error(`Missing endDatePath`);
-                  }
-                  if (!castedActionType.endTimePath) {
-                    throw new Error(`Missing endTimePath`);
-                  }
-
-                  const requestBody = {};
-                  set(requestBody, castedActionType.endDatePath, dayjs(event.newEnd).format('YYYY-MM-DD'));
-                  set(requestBody, castedActionType.endTimePath, dayjs(event.newEnd).format('HH:mm'));
-
-                  for (const [source, target] of Object.entries(castedActionType.valueMapping || {})) {
-                    set(requestBody, target, get(event.item, source, null));
-                  }
-
-                  event.setLoading(true);
-                  this.callHttpEndpount(castedActionType.method, url, requestBody).subscribe({
-                    next: (response) => {
-                      event.setLoading(false);
-                      for (const currentEvent of castedActionType.successEvents || []) {
-                        switch (currentEvent['@type']) {
-                          case 'propagate-global-event': {
-                            const castedEvent =
-                              currentEvent as KokuDto.CalendarCallHttpItemActionPropagateGlobalEventSuccessEventDto;
-                            if (!castedEvent.eventName) {
-                              throw new Error(`Missing eventName`);
-                            }
-                            GLOBAL_EVENT_BUS.propagateGlobalEvent(castedEvent.eventName, response);
-                            break;
-                          }
-                          default: {
-                            throw new Error(`Unknown event type ${currentEvent['@type']}`);
-                          }
-                        }
-                      }
-                      this.toastService.add(`Erfolgreich gespeichert`, 'success');
-                    },
-                    error: () => {
-                      event.setLoading(false);
-                      event.revert();
-                      this.toastService.add(
-                        `Es ist ein Fehler bei der Anfrage aufgetreten. Versuche es später erneut!`,
-                        'error',
-                      );
-                    },
-                  });
-                  resizeHandled = true;
-                  break;
+              if (castedSource.resizeAction['@type'] === 'call-http') {
+                const castedActionType = castedSource.resizeAction as KokuDto.CalendarCallHttpItemResizeAction;
+                const url = this.replaceItemValueParams(
+                  castedActionType.url || '',
+                  castedActionType.urlParams as CalendarItemValueParam[] | undefined,
+                  event.item,
+                );
+                if (!castedActionType.method) {
+                  throw new Error(`Missing method`);
                 }
-                default: {
-                  console.log(`Unknown item drop action type ${castedSource.resizeAction['@type']}`);
-                  resizeHandled = false;
-                  break;
+                if (!castedActionType.endDatePath) {
+                  throw new Error(`Missing endDatePath`);
                 }
+                if (!castedActionType.endTimePath) {
+                  throw new Error(`Missing endTimePath`);
+                }
+
+                const requestBody = {};
+                set(requestBody, castedActionType.endDatePath, dayjs(event.newEnd).format('YYYY-MM-DD'));
+                set(requestBody, castedActionType.endTimePath, dayjs(event.newEnd).format('HH:mm'));
+
+                for (const [source, target] of Object.entries(castedActionType.valueMapping || {})) {
+                  set(requestBody, target, get(event.item, source, null));
+                }
+
+                event.setLoading(true);
+                this.callHttpEndpount(castedActionType.method, url, requestBody).subscribe({
+                  next: (response) => {
+                    event.setLoading(false);
+                    this.propagateSuccessEvents(
+                      castedActionType.successEvents as CalendarPropagateGlobalEventSuccessEvent[] | undefined,
+                      response,
+                    );
+                    this.toastService.add(`Erfolgreich gespeichert`, 'success');
+                  },
+                  error: () => {
+                    event.setLoading(false);
+                    event.revert();
+                    this.toastService.add(
+                      `Es ist ein Fehler bei der Anfrage aufgetreten. Versuche es später erneut!`,
+                      'error',
+                    );
+                  },
+                });
+                resizeHandled = true;
+              } else {
+                console.log(`Unknown item drop action type ${castedSource.resizeAction['@type']}`);
+                resizeHandled = false;
               }
             }
 
@@ -970,9 +880,7 @@ export class CalendarHolidaySourcePlugin implements CalendarPlugin {
                 }
 
                 const rangeOfYears = (startYear: number, endYear: number) => {
-                  return Array<number>(endYear - startYear + 1)
-                    .fill(startYear)
-                    .map((year, index) => year + index);
+                  return new Array<number>(endYear - startYear + 1).fill(startYear).map((year, index) => year + index);
                 };
                 const years = rangeOfYears(arg.start.getFullYear(), arg.end.getFullYear());
 

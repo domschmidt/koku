@@ -9,7 +9,7 @@
     <div class="avatar avatar-placeholder relative">
       <div class="bg-neutral text-neutral-content w-64 rounded-full" [class.skeleton]="loading()">
         @if (value() || defaultValue()) {
-          <img [src]="!loading() ? value() : defaultValue()" alt="uploaded picture" />
+          <img [src]="!loading() ? value() : defaultValue()" alt="Vorschau" />
         }
       </div>
 

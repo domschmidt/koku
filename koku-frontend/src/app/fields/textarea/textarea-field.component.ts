@@ -24,7 +24,7 @@ export class TextareaFieldComponent {
   typed = output<string>();
   blurred = output<void>();
   focused = output<void>();
-  private supportsFieldSizingNatively: boolean;
+  private readonly supportsFieldSizingNatively: boolean;
   id = `textarea-field-${uniqueId++}`;
 
   constructor() {
@@ -67,7 +67,7 @@ export class TextareaFieldComponent {
 
   validate(): boolean {
     const valueSnapshot = this.value();
-    if ((!valueSnapshot || !valueSnapshot.length) && this.required()) {
+    if (!valueSnapshot?.length && this.required()) {
       return false;
     }
     return true;

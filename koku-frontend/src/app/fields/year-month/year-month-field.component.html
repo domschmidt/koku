@@ -1,3 +1,11 @@
+<label class="w-full" [attr.for]="id">
+  @if (label(); as label) {
+    <div class="label">
+      <span class="label-text">{{ label }}</span>
+    </div>
+  }
+</label>
+
 <input
   [name]="name()"
   type="month"
@@ -8,4 +16,5 @@
   (input)="typeRaw($event)"
   (blur)="blurredRaw($event)"
   (focus)="focused.emit()"
+  [attr.id]="id"
 />

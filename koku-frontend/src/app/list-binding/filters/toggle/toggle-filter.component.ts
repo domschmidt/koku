@@ -1,4 +1,5 @@
 import { Component, ElementRef, input, output, signal, viewChild } from '@angular/core';
+import { UNIQUE_REF_GENERATOR } from '../../../utils/uniqueRef';
 
 export type ToggleFilterTriState = 'checked' | 'unchecked' | 'indeterminate';
 
@@ -8,6 +9,8 @@ export type ToggleFilterTriState = 'checked' | 'unchecked' | 'indeterminate';
   styleUrl: './toggle-filter.component.css',
 })
 export class ToggleFilterComponent {
+  readonly id = UNIQUE_REF_GENERATOR.generate();
+
   label = input.required<string>();
   inputElement = viewChild<ElementRef<HTMLInputElement>>('inputElement');
   state = signal<ToggleFilterTriState>('unchecked');

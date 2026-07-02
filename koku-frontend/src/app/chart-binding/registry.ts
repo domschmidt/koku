@@ -4,7 +4,7 @@ type FilterRegistryItem = NonNullable<ChartFilterRegistry[string]>;
 const changedOutput = (context: ChartFilterRenderContext) => ({
   changed: (data: string | number | boolean) => context.emit(data),
 });
-const FILTER_REGISTRY: Partial<Record<KokuDto.AbstractChartFilterDto['@type'] | string, FilterRegistryItem>> = {
+const FILTER_REGISTRY: Partial<Record<string, FilterRegistryItem>> = {
   input: (context: ChartFilterRenderContext) => {
     const filter = computed(() => context.content() as KokuDto.InputChartFilterDto);
     return {

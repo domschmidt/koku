@@ -12,20 +12,13 @@ import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDiff
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.dto.formular.buttons.ButtonDockableSettings;
 import de.domschmidt.koku.dto.formular.buttons.EnumButtonStyle;
-import de.domschmidt.koku.dto.formular.buttons.FormButtonUserConfirmationSourcePathParamDto;
 import de.domschmidt.koku.dto.formular.buttons.KokuFormButton;
-import de.domschmidt.koku.dto.formular.containers.conditional.ConditionalContainer;
 import de.domschmidt.koku.dto.formular.containers.grid.GridContainer;
-import de.domschmidt.koku.dto.formular.events.FormNotificationEvent;
-import de.domschmidt.koku.dto.formular.events.FormNotificationEventSerenityEnumDto;
-import de.domschmidt.koku.dto.formular.events.FormNotificationEventValueParamDto;
-import de.domschmidt.koku.dto.formular.events.FormPropagateGlobalEventDto;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.formular.fields.picture_upload.PictureUploadFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularFieldPossibleValue;
 import de.domschmidt.koku.dto.formular.listeners.FormViewEventPayloadSourceUpdateGlobalEventListenerDto;
-import de.domschmidt.koku.dto.formular.user_confirmation.FormUserConfirmationDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDto;
@@ -43,8 +36,6 @@ import de.domschmidt.koku.user.transformer.UserToKokuUserDtoTransformer;
 import de.domschmidt.koku.user.transformer.UserToKokuUserSummaryDtoTransformer;
 import de.domschmidt.list.dto.response.ListViewDto;
 import de.domschmidt.list.dto.response.ListViewSourcePathReference;
-import de.domschmidt.list.dto.response.actions.ListViewUserConfirmationDto;
-import de.domschmidt.list.dto.response.actions.ListViewUserConfirmationValueParamDto;
 import de.domschmidt.list.dto.response.events.ListViewEventPayloadItemUpdateGlobalEventListenerDto;
 import de.domschmidt.list.dto.response.fields.ListViewFieldReference;
 import de.domschmidt.list.dto.response.inline_content.ListViewRoutedContentDto;
@@ -55,19 +46,11 @@ import de.domschmidt.list.dto.response.inline_content.formular.ListViewInlineFor
 import de.domschmidt.list.dto.response.inline_content.header.ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto;
 import de.domschmidt.list.dto.response.inline_content.header.ListViewHeaderContentDto;
 import de.domschmidt.list.dto.response.inline_content.list.ListViewListContentDto;
-import de.domschmidt.list.dto.response.items.actions.ListViewConditionalItemValueActionDto;
 import de.domschmidt.list.dto.response.items.actions.ListViewFormularActionSubmitMethodEnumDto;
-import de.domschmidt.list.dto.response.items.actions.call_http.ListViewCallHttpListItemActionDto;
-import de.domschmidt.list.dto.response.items.actions.call_http.ListViewCallHttpListItemActionMethodEnumDto;
-import de.domschmidt.list.dto.response.items.actions.call_http.ListViewCallHttpListValueActionParamDto;
 import de.domschmidt.list.dto.response.items.actions.inline_content.ListViewItemClickOpenRoutedContentActionDto;
 import de.domschmidt.list.dto.response.items.actions.inline_content.ListViewItemClickOpenRoutedContentActionItemValueParamDto;
 import de.domschmidt.list.dto.response.items.actions.inline_content.ListViewItemClickPropagateGlobalEventActionDto;
 import de.domschmidt.list.dto.response.items.preview.ListViewItemPreviewAvatarDto;
-import de.domschmidt.list.dto.response.notifications.ListViewEventPayloadUpdateActionEventDto;
-import de.domschmidt.list.dto.response.notifications.ListViewNotificationEvent;
-import de.domschmidt.list.dto.response.notifications.ListViewNotificationEventSerenityEnumDto;
-import de.domschmidt.list.dto.response.notifications.ListViewNotificationEventValueParamDto;
 import de.domschmidt.list.factory.DefaultListViewContentIdGenerator;
 import de.domschmidt.list.factory.ListViewFactory;
 import de.domschmidt.listquery.dto.request.EnumSearchOperator;
@@ -97,8 +80,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserController {
     private static final String USER_UPDATED_EVENT = "user-updated";
     private static final String USER_ID_PARAM = ":userId";
-    private static final String NAME_PARAM = ":name";
-    private static final String USER_LABEL = "Nutzer ";
     private static final String USER_SERVICE_URL = "services/users/users/";
     private final EntityManager entityManager;
     private final UserRepository userRepository;
@@ -163,102 +144,6 @@ public class UserController {
                                 .build())
                         .build()))
                 .in(rootId)
-                .outlet(FormOutlet.CONTENT);
-
-        final String deleteContainerId = formFactory.addContent(ConditionalContainer.builder()
-                .compareValuePath(KokuUserDto.Fields.deleted)
-                .expectedValue(Boolean.FALSE)
-                .build());
-        formFactory.place(deleteContainerId).in(rootId).outlet(FormOutlet.CONTENT);
-        formFactory
-                .place(formFactory.addContent(KokuFormButton.builder()
-                        .buttonType(EnumButtonType.SUBMIT)
-                        .text("Löschen")
-                        .title("Jetzt löschen")
-                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.ERROR, EnumButtonStyle.OUTLINE))
-                        .dockableSettings(ButtonDockableSettings.builder()
-                                .icon("TRASH")
-                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.ERROR))
-                                .build())
-                        .submitPayload(KokuUserDto.builder().deleted(true).build())
-                        .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline(USER_LABEL + "löschen")
-                                .content(USER_LABEL + NAME_PARAM + " als gelöscht markieren?")
-                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
-                                        .param(NAME_PARAM)
-                                        .sourcePath(KokuUserDto.Fields.fullname)
-                                        .build()))
-                                .build())
-                        .successEvents(Arrays.asList(
-                                FormNotificationEvent.builder()
-                                        .text(USER_LABEL + NAME_PARAM + " erfolgreich als gelöscht markiert")
-                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                                .param(NAME_PARAM)
-                                                .sourcePath(KokuUserDto.Fields.fullname)
-                                                .build()))
-                                        .build(),
-                                FormPropagateGlobalEventDto.builder()
-                                        .eventName(USER_UPDATED_EVENT)
-                                        .build()))
-                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text(USER_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
-                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
-                                .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                        .param(NAME_PARAM)
-                                        .sourcePath(KokuUserDto.Fields.fullname)
-                                        .build()))
-                                .build()))
-                        .build()))
-                .in(deleteContainerId)
-                .outlet(FormOutlet.CONTENT);
-
-        final String restoreContainerId = formFactory.addContent(ConditionalContainer.builder()
-                .compareValuePath(KokuUserDto.Fields.deleted)
-                .expectedValue(Boolean.TRUE)
-                .build());
-        formFactory.place(restoreContainerId).in(rootId).outlet(FormOutlet.CONTENT);
-        formFactory
-                .place(formFactory.addContent(KokuFormButton.builder()
-                        .buttonType(EnumButtonType.SUBMIT)
-                        .text("Wiederherstellen")
-                        .title("Jetzt wiederherstellen")
-                        .styles(Arrays.asList(EnumButtonStyle.BLOCK, EnumButtonStyle.SUCCESS, EnumButtonStyle.OUTLINE))
-                        .dockableSettings(ButtonDockableSettings.builder()
-                                .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                                .styles(Arrays.asList(EnumButtonStyle.CIRCLE, EnumButtonStyle.SUCCESS))
-                                .build())
-                        .submitPayload(KokuUserDto.builder().deleted(false).build())
-                        .userConfirmation(FormUserConfirmationDto.builder()
-                                .headline(USER_LABEL + "wiederherstellen")
-                                .content(USER_LABEL + NAME_PARAM + " wiederherstellen?")
-                                .params(Arrays.asList(FormButtonUserConfirmationSourcePathParamDto.builder()
-                                        .param(NAME_PARAM)
-                                        .sourcePath(KokuUserDto.Fields.fullname)
-                                        .build()))
-                                .build())
-                        .successEvents(Arrays.asList(
-                                FormNotificationEvent.builder()
-                                        .text(USER_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
-                                        .serenity(FormNotificationEventSerenityEnumDto.SUCCESS)
-                                        .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                                .param(NAME_PARAM)
-                                                .sourcePath(KokuUserDto.Fields.fullname)
-                                                .build()))
-                                        .build(),
-                                FormPropagateGlobalEventDto.builder()
-                                        .eventName(USER_UPDATED_EVENT)
-                                        .build()))
-                        .failEvents(Arrays.asList(FormNotificationEvent.builder()
-                                .text(USER_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
-                                .serenity(FormNotificationEventSerenityEnumDto.ERROR)
-                                .params(Arrays.asList(FormNotificationEventValueParamDto.builder()
-                                        .param(NAME_PARAM)
-                                        .sourcePath(KokuUserDto.Fields.fullname)
-                                        .build()))
-                                .build()))
-                        .build()))
-                .in(restoreContainerId)
                 .outlet(FormOutlet.CONTENT);
 
         formFactory.addGlobalEventListener(FormViewEventPayloadSourceUpdateGlobalEventListenerDto.builder()
@@ -364,86 +249,6 @@ public class UserController {
                     .positiveStyling(ListViewItemStylingDto.builder()
                             .lineThrough(true)
                             .opacity((short) 50)
-                            .build())
-                    .build());
-            listViewFactory.addItemAction(ListViewConditionalItemValueActionDto.builder()
-                    .compareValuePath(KokuUserDto.Fields.deleted)
-                    .expectedValue(Boolean.TRUE)
-                    .positiveAction(ListViewCallHttpListItemActionDto.builder()
-                            .icon("ARROW_LEFT_START_ON_RECTANGLE")
-                            .url(USER_SERVICE_URL + USER_ID_PARAM + "/restore")
-                            .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
-                                    .param(USER_ID_PARAM)
-                                    .valueReference(idSourcePathRef)
-                                    .build()))
-                            .method(ListViewCallHttpListItemActionMethodEnumDto.PUT)
-                            .userConfirmation(ListViewUserConfirmationDto.builder()
-                                    .headline(USER_LABEL + "wiederherstellen")
-                                    .content(USER_LABEL + NAME_PARAM + " wiederherstellen?")
-                                    .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
-                                            .param(NAME_PARAM)
-                                            .valueReference(fullnameFieldRef)
-                                            .build()))
-                                    .build())
-                            .successEvents(Arrays.asList(
-                                    ListViewNotificationEvent.builder()
-                                            .text(USER_LABEL + NAME_PARAM + " wurde erfolgreich wiederhergestellt")
-                                            .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                            .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                                    .param(NAME_PARAM)
-                                                    .valueReference(fullnameFieldRef)
-                                                    .build()))
-                                            .build(),
-                                    ListViewEventPayloadUpdateActionEventDto.builder()
-                                            .idPath(KokuUserDto.Fields.id)
-                                            .valueMapping(Map.of(KokuUserDto.Fields.deleted, deletedSourcePathRef))
-                                            .build()))
-                            .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                    .text(USER_LABEL + NAME_PARAM + " konnte nicht wiederhergestellt werden")
-                                    .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                    .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                            .param(NAME_PARAM)
-                                            .valueReference(fullnameFieldRef)
-                                            .build()))
-                                    .build()))
-                            .build())
-                    .negativeAction(ListViewCallHttpListItemActionDto.builder()
-                            .icon("TRASH")
-                            .url(USER_SERVICE_URL + USER_ID_PARAM)
-                            .params(Arrays.asList(ListViewCallHttpListValueActionParamDto.builder()
-                                    .param(USER_ID_PARAM)
-                                    .valueReference(idSourcePathRef)
-                                    .build()))
-                            .method(ListViewCallHttpListItemActionMethodEnumDto.DELETE)
-                            .userConfirmation(ListViewUserConfirmationDto.builder()
-                                    .headline(USER_LABEL + "löschen")
-                                    .content(USER_LABEL + NAME_PARAM + " als gelöscht markieren?")
-                                    .params(Arrays.asList(ListViewUserConfirmationValueParamDto.builder()
-                                            .param(NAME_PARAM)
-                                            .valueReference(fullnameFieldRef)
-                                            .build()))
-                                    .build())
-                            .successEvents(Arrays.asList(
-                                    ListViewNotificationEvent.builder()
-                                            .text(USER_LABEL + NAME_PARAM + " wurde erfolgreich als gelöscht markiert")
-                                            .serenity(ListViewNotificationEventSerenityEnumDto.SUCCESS)
-                                            .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                                    .param(NAME_PARAM)
-                                                    .valueReference(fullnameFieldRef)
-                                                    .build()))
-                                            .build(),
-                                    ListViewEventPayloadUpdateActionEventDto.builder()
-                                            .idPath(KokuUserDto.Fields.id)
-                                            .valueMapping(Map.of(KokuUserDto.Fields.deleted, deletedSourcePathRef))
-                                            .build()))
-                            .failEvents(Arrays.asList(ListViewNotificationEvent.builder()
-                                    .text(USER_LABEL + NAME_PARAM + " konnte nicht als gelöscht markiert werden")
-                                    .serenity(ListViewNotificationEventSerenityEnumDto.ERROR)
-                                    .params(Arrays.asList(ListViewNotificationEventValueParamDto.builder()
-                                            .param(NAME_PARAM)
-                                            .valueReference(fullnameFieldRef)
-                                            .build()))
-                                    .build()))
                             .build())
                     .build());
         } else {

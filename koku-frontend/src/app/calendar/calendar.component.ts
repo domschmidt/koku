@@ -66,10 +66,8 @@ export interface CalendarActionRenderContext {
 export type CalendarActionRecipeFactory = (context: CalendarActionRenderContext) => DynamicRenderRecipe;
 
 export interface CalendarContentSetup {
-  inlineContentRegistry: Partial<
-    Record<KokuDto.AbstractCalendarInlineContentDto['@type'] | string, CalendarInlineContentRecipeFactory>
-  >;
-  actionRegistry: Partial<Record<KokuDto.AbstractCalendarActionDto['@type'] | string, CalendarActionRecipeFactory>>;
+  inlineContentRegistry: Partial<Record<string, CalendarInlineContentRecipeFactory>>;
+  actionRegistry: Partial<Record<string, CalendarActionRecipeFactory>>;
   modalContentRegistry: Partial<ModalContentSetup>;
 }
 
@@ -162,17 +160,17 @@ interface CalendarPersistedSettings {
 })
 export class CalendarComponent implements OnDestroy {
   readonly colorBorderClass = colorBorderClass;
-  destroyRef = inject(DestroyRef);
-  router = inject(Router);
-  modalService = inject(ModalService);
+  readonly destroyRef = inject(DestroyRef);
+  readonly router = inject(Router);
+  readonly modalService = inject(ModalService);
 
-  calendarPluginsConfig = inject(CALENDAR_PLUGIN, {
+  readonly calendarPluginsConfig = inject(CALENDAR_PLUGIN, {
     optional: true,
   });
 
-  componentRef = UNIQUE_REF_GENERATOR.generate();
+  readonly componentRef = UNIQUE_REF_GENERATOR.generate();
 
-  calendarComponent = viewChild<FullCalendarComponent>('calendar');
+  readonly calendarComponent = viewChild<FullCalendarComponent>('calendar');
 
   config = input.required<KokuDto.CalendarConfigDto>();
   urlSegments = input<Record<string, string> | null>(null);
@@ -184,7 +182,7 @@ export class CalendarComponent implements OnDestroy {
   currentStartDate = signal<Date>(new Date());
   loading = signal(false);
   hiddenSources = signal<Set<string>>(new Set<string>());
-  private pluginInstances: Record<string, { instance: CalendarPlugin; api: any }> = {};
+  private readonly pluginInstances: Record<string, { instance: CalendarPlugin; api: any }>;
 
   private routerUrlSubscription: Subscription | undefined;
 

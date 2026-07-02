@@ -27,9 +27,7 @@ export interface ChartFilterRenderContext {
 
 export type ChartFilterRecipeFactory = (context: ChartFilterRenderContext) => DynamicRenderRecipe;
 
-export type ChartFilterRegistry = Partial<
-  Record<KokuDto.AbstractChartFilterDto['@type'] | string, ChartFilterRecipeFactory>
->;
+export type ChartFilterRegistry = Partial<Record<string, ChartFilterRecipeFactory>>;
 
 @Component({
   selector: 'koku-chart',
@@ -39,9 +37,9 @@ export type ChartFilterRegistry = Partial<
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChartComponent implements OnDestroy {
-  httpClient = inject(HttpClient);
-  toastService = inject(ToastService);
-  chartRoot = viewChild<ElementRef<HTMLDivElement>>('chartRoot');
+  readonly httpClient = inject(HttpClient);
+  readonly toastService = inject(ToastService);
+  readonly chartRoot = viewChild<ElementRef<HTMLDivElement>>('chartRoot');
 
   chartUrl = input.required<string>();
   filterRegistry = input.required<ChartFilterRegistry>();
@@ -122,15 +120,7 @@ export class ChartComponent implements OnDestroy {
               bar: {
                 dataLabels: {
                   total: {
-                    enabled: ((chartData) => {
-                      switch (chartData['@type']) {
-                        case 'bar': {
-                          const castedChartData = chartData as KokuDto.BarChartDto;
-                          return castedChartData.showTotals;
-                        }
-                      }
-                      return false;
-                    })(chartData),
+                    enabled: chartData['@type'] === 'bar' ? (chartData as KokuDto.BarChartDto).showTotals : false,
                     offsetY: -10,
                     style: {
                       color: 'var(--color-base-content)',

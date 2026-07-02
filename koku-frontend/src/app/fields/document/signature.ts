@@ -10,7 +10,7 @@ const getEffectiveScale = (element: HTMLElement | null) => {
     const style = window.getComputedStyle(element);
     const transform = style.transform;
     if (transform && transform !== 'none') {
-      const localScale = parseFloat(transform.match(/matrix\((.+)\)/)?.[1].split(', ')[3] || '1');
+      const localScale = Number.parseFloat(transform.match(/matrix\((.+)\)/)?.[1].split(', ')[3] || '1');
       scale *= localScale;
     }
     element = element.parentElement;

@@ -106,7 +106,7 @@ export interface ListFilterDefinition {
 
 export type ItemStylingSetup = Partial<
   Record<
-    KokuDto.AbstractListViewGlobalItemStylingDto['@type'] | string,
+    string,
     {
       itemClasses?(
         stylingDefinition: KokuDto.AbstractListViewGlobalItemStylingDto,
@@ -119,12 +119,10 @@ export type ItemStylingSetup = Partial<
 export type ListFilterSetup = Readonly<Record<string, ListFilterDefinition | undefined>>;
 
 export interface ListContentSetup {
-  fieldRegistry: Partial<Record<KokuDto.AbstractListViewFieldDto<any>['@type'] | string, ListFieldRecipeFactory>>;
-  previewRegistry: Partial<Record<KokuDto.AbstractListViewItemPreviewDto['@type'] | string, ListPreviewRecipeFactory>>;
-  inlineContentRegistry: Partial<
-    Record<KokuDto.AbstractListViewContentDto['@type'] | string, ListInlineContentRecipeFactory>
-  >;
-  actionRegistry: Partial<Record<KokuDto.AbstractListViewItemActionDto['@type'] | string, ListItemActionRecipeFactory>>;
+  fieldRegistry: Partial<Record<string, ListFieldRecipeFactory>>;
+  previewRegistry: Partial<Record<string, ListPreviewRecipeFactory>>;
+  inlineContentRegistry: Partial<Record<string, ListInlineContentRecipeFactory>>;
+  actionRegistry: Partial<Record<string, ListItemActionRecipeFactory>>;
   filterRegistry: ListFilterSetup;
   modalRegistry: ModalContentSetup;
   itemStylingRegistry: ItemStylingSetup;
@@ -485,8 +483,8 @@ export class ListComponent implements OnDestroy, OnChanges {
       }
 
       const newQueryParams = {
-        ...(this.lastSourceQuery || {}),
-        ...(query || {}),
+        ...this.lastSourceQuery,
+        ...query,
       };
       const newQuery = this.httpClient
         .post<KokuDto.ListPage>(sourceUrlSnapshot, {
@@ -694,21 +692,15 @@ export class ListComponent implements OnDestroy, OnChanges {
   }
 
   itemAction(event: Event, result: ListItemSetup, action: ExtendedAbstractListViewItemActionDto) {
-    switch (action['@type']) {
-      case 'open-inline-content': {
-        event.stopPropagation();
-        const castedActionType = action as KokuDto.ListViewOpenInlineContentItemActionDto;
-        if (castedActionType.inlineContent) {
-          this.openInlineContent({
-            content: castedActionType.inlineContent,
-            id: result.id,
-            urlSegments: null,
-          });
-        }
-        break;
-      }
-      case 'http-call': {
-        break;
+    if (action['@type'] === 'open-inline-content') {
+      event.stopPropagation();
+      const castedActionType = action as KokuDto.ListViewOpenInlineContentItemActionDto;
+      if (castedActionType.inlineContent) {
+        this.openInlineContent({
+          content: castedActionType.inlineContent,
+          id: result.id,
+          urlSegments: null,
+        });
       }
     }
   }
@@ -730,46 +722,42 @@ export class ListComponent implements OnDestroy, OnChanges {
             let replacedRoute = castedActionType.route || '';
             for (const currentParam of castedActionType.params || []) {
               if (currentParam.param) {
-                switch (currentParam['@type']) {
-                  case 'value': {
-                    const castedParamType =
-                      currentParam as KokuDto.ListViewItemClickOpenRoutedContentActionItemValueParamDto;
-                    if (castedParamType.valueReference) {
-                      switch (castedParamType.valueReference['@type']) {
-                        case 'field-reference': {
-                          const castedReference = castedParamType.valueReference as KokuDto.ListViewFieldReference;
-                          if (!castedReference.fieldId) {
-                            throw new Error('Missing fieldId in FieldReference');
-                          }
-                          const field = item.fields[castedReference.fieldId];
-                          if (!field) {
-                            throw new Error('FieldReference not resolvable');
-                          }
-                          replacedRoute = replacedRoute.replaceAll(currentParam.param, field.value());
-                          break;
-                        }
-                        case 'source-path-reference': {
-                          const castedReference = castedParamType.valueReference as KokuDto.ListViewSourcePathReference;
-                          if (!castedReference.valuePath) {
-                            throw new Error('Missing valuePath in FieldReference');
-                          }
-                          replacedRoute = replacedRoute.replaceAll(
-                            currentParam.param,
-                            get(item.source(), castedReference.valuePath),
-                          );
-                          break;
-                        }
-                        default: {
-                          throw new Error(`Unknown value reference type: ${castedParamType.valueReference['@type']}`);
-                        }
+                if (currentParam['@type'] !== 'value') {
+                  throw new Error(`Unknown param Type: ${currentParam['@type']}`);
+                }
+                const castedParamType =
+                  currentParam as KokuDto.ListViewItemClickOpenRoutedContentActionItemValueParamDto;
+                if (castedParamType.valueReference) {
+                  switch (castedParamType.valueReference['@type']) {
+                    case 'field-reference': {
+                      const castedReference = castedParamType.valueReference as KokuDto.ListViewFieldReference;
+                      if (!castedReference.fieldId) {
+                        throw new Error('Missing fieldId in FieldReference');
                       }
-                    } else {
-                      throw new Error(`Missing valuePath for param: ${currentParam.param}`);
+                      const field = item.fields[castedReference.fieldId];
+                      if (!field) {
+                        throw new Error('FieldReference not resolvable');
+                      }
+                      replacedRoute = replacedRoute.replaceAll(currentParam.param, field.value());
+                      break;
                     }
-                    break;
+                    case 'source-path-reference': {
+                      const castedReference = castedParamType.valueReference as KokuDto.ListViewSourcePathReference;
+                      if (!castedReference.valuePath) {
+                        throw new Error('Missing valuePath in FieldReference');
+                      }
+                      replacedRoute = replacedRoute.replaceAll(
+                        currentParam.param,
+                        get(item.source(), castedReference.valuePath),
+                      );
+                      break;
+                    }
+                    default: {
+                      throw new Error(`Unknown value reference type: ${castedParamType.valueReference['@type']}`);
+                    }
                   }
-                  default:
-                    throw new Error(`Unknown param Type: ${currentParam['@type']}`);
+                } else {
+                  throw new Error(`Missing valuePath for param: ${currentParam.param}`);
                 }
               }
             }
@@ -900,7 +888,7 @@ export class ListComponent implements OnDestroy, OnChanges {
       preview: (listDataSnapshot || {}).itemPreview,
       id: currentItemId,
       source: signal({
-        ...(listItem.values || {}),
+        ...listItem.values,
         ...(itemIdPath ? { [itemIdPath]: currentItemId } : {}),
       }),
     };
@@ -914,7 +902,7 @@ export class ListComponent implements OnDestroy, OnChanges {
           if (currentFieldSelection.valuePath) {
             currentFieldValue = get(
               {
-                ...(listItem.values || {}),
+                ...listItem.values,
               },
               currentFieldSelection.valuePath,
               defaultValue,

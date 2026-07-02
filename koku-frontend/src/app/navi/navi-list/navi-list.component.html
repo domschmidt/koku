@@ -1,29 +1,22 @@
-<div class="flex flex-1 flex-col">
-  @if (navi(); as navi) {
-    @for (currentNaviEntry of navi; track currentNaviEntry.path) {
-      @if (!currentNaviEntry.bottom) {
-        @if (currentNaviEntry.divider === 'before') {
-          <div class="divider divider-accent"></div>
-        }
-        <li koku-navi-entry [naviEntry]="currentNaviEntry" class="gap-2"></li>
-        @if (currentNaviEntry.divider === 'after') {
-          <div class="divider divider-accent"></div>
-        }
+<nav
+  class="bg-base-100 text-base-content flex h-full min-h-0 w-80 flex-col overflow-y-auto overscroll-contain p-4"
+  aria-label="Navigation"
+>
+  @if (topNavi(); as topNavi) {
+    <ul class="menu w-full shrink-0 p-0">
+      @for (currentNaviEntry of topNavi; track $index) {
+        <li koku-navi-entry [naviEntry]="currentNaviEntry"></li>
       }
-    }
+    </ul>
+  }
 
-    <div class="flex-1"></div>
-
-    @for (currentNaviEntry of navi; track currentNaviEntry.path) {
-      @if (currentNaviEntry.bottom) {
-        @if (currentNaviEntry.divider === 'before') {
-          <div class="divider divider-accent"></div>
+  @if (bottomNavi(); as bottomNavi) {
+    @if (bottomNavi.length > 0) {
+      <ul class="menu mt-auto w-full shrink-0 p-0">
+        @for (currentNaviEntry of bottomNavi; track $index) {
+          <li koku-navi-entry [naviEntry]="currentNaviEntry"></li>
         }
-        <li koku-navi-entry [naviEntry]="currentNaviEntry" class="gap-2"></li>
-        @if (currentNaviEntry.divider === 'after') {
-          <div class="divider divider-accent"></div>
-        }
-      }
+      </ul>
     }
   }
-</div>
+</nav>

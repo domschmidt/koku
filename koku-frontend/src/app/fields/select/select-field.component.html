@@ -56,46 +56,44 @@
                         <h2 class="menu-title">{{ possibleSelectionGroup.key }}</h2>
                         <ul>
                           @for (possibleSelection of currentSelectionCategoryList; track possibleSelection.id) {
-                            <li
-                              (pointerdown)="onOptionPointerDown()"
-                              (click)="selectOption(possibleSelection); $event.preventDefault()"
-                              (keydown.enter)="selectOption(possibleSelection); $event.preventDefault()"
-                              (keydown.space)="selectOption(possibleSelection); $event.preventDefault()"
-                              [attr.tabindex]="possibleSelection.disabled === true ? -1 : 0"
-                              role="option"
-                              [attr.aria-selected]="possibleSelection.id === selectedId()"
-                              [class.menu-disabled]="possibleSelection.disabled === true"
-                              [class]="colorTextClass(possibleSelection.color)"
-                            >
-                              <a [class.menu-active]="possibleSelection.id === selectedId()">
+                            <li [class.menu-disabled]="possibleSelection.disabled === true">
+                              <button
+                                type="button"
+                                (pointerdown)="onOptionPointerDown()"
+                                (click)="selectOption(possibleSelection); $event.preventDefault()"
+                                role="option"
+                                [attr.aria-selected]="possibleSelection.id === selectedId()"
+                                [class.menu-active]="possibleSelection.id === selectedId()"
+                                [class]="colorTextClass(possibleSelection.color)"
+                                [disabled]="possibleSelection.disabled === true"
+                              >
                                 <span [class.line-through]="possibleSelection.disabled === true">{{
                                   possibleSelection.text
                                 }}</span>
                                 <span>{{ possibleSelection.disabled === true ? ' (deaktiviert)' : '' }}</span>
-                              </a>
+                              </button>
                             </li>
                           }
                         </ul>
                       </li>
                     } @else {
                       @for (possibleSelection of currentSelectionCategoryList; track possibleSelection.id) {
-                        <li
-                          (pointerdown)="onOptionPointerDown()"
-                          (click)="selectOption(possibleSelection); $event.preventDefault()"
-                          (keydown.enter)="selectOption(possibleSelection); $event.preventDefault()"
-                          (keydown.space)="selectOption(possibleSelection); $event.preventDefault()"
-                          [attr.tabindex]="possibleSelection.disabled === true ? -1 : 0"
-                          role="option"
-                          [attr.aria-selected]="possibleSelection.id === selectedId()"
-                          [class.menu-disabled]="possibleSelection.disabled === true"
-                          [class]="colorTextClass(possibleSelection.color)"
-                        >
-                          <a [class.menu-active]="possibleSelection.id === selectedId()">
+                        <li [class.menu-disabled]="possibleSelection.disabled === true">
+                          <button
+                            type="button"
+                            (pointerdown)="onOptionPointerDown()"
+                            (click)="selectOption(possibleSelection); $event.preventDefault()"
+                            role="option"
+                            [attr.aria-selected]="possibleSelection.id === selectedId()"
+                            [class.menu-active]="possibleSelection.id === selectedId()"
+                            [class]="colorTextClass(possibleSelection.color)"
+                            [disabled]="possibleSelection.disabled === true"
+                          >
                             <span [class.line-through]="possibleSelection.disabled === true">{{
                               possibleSelection.text
                             }}</span>
                             <span>{{ possibleSelection.disabled === true ? ' (deaktiviert)' : '' }}</span>
-                          </a>
+                          </button>
                         </li>
                       }
                     }

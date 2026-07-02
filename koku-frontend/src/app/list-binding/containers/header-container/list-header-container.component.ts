@@ -59,23 +59,18 @@ export class ListHeaderContainerComponent implements OnDestroy {
           String(this.componentRef),
           currentEventListener.eventName,
           (eventPayload) => {
-            switch (currentEventListener['@type']) {
-              case 'event-payload': {
-                const castedEventListener =
-                  currentEventListener as KokuDto.ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto;
+            if (currentEventListener['@type'] !== 'event-payload') {
+              throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
+            }
+            const castedEventListener =
+              currentEventListener as KokuDto.ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto;
 
-                if (!castedEventListener.idPath) {
-                  throw new Error('Missing idPath configuration in EventListener');
-                }
+            if (!castedEventListener.idPath) {
+              throw new Error('Missing idPath configuration in EventListener');
+            }
 
-                if (castedEventListener.titleValuePath) {
-                  this.loadedTitle.set(String(get(eventPayload, castedEventListener.titleValuePath, '')));
-                }
-                break;
-              }
-              default: {
-                throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
-              }
+            if (castedEventListener.titleValuePath) {
+              this.loadedTitle.set(String(get(eventPayload, castedEventListener.titleValuePath, '')));
             }
           },
         );

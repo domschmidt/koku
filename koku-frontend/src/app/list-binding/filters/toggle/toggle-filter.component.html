@@ -1,5 +1,5 @@
-<div class="flex w-full justify-between">
-  {{ label() }}
+<label class="flex w-full justify-between" [attr.for]="id">
+  <span>{{ label() }}</span>
 
-  <input type="checkbox" class="toggle" #inputElement (click)="onToggle()" />
-</div>
+  <input [attr.id]="id" type="checkbox" class="toggle" #inputElement (change)="onToggle()" />
+</label>

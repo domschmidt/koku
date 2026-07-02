@@ -35,34 +35,29 @@ export class ListInlineListContainerComponent {
         if (value) {
           const observables: Observable<any>[] = [];
           for (const [currentKey, currentValue] of Object.entries(value || {})) {
-            switch (currentValue['@type']) {
-              case 'endpoint': {
-                const castedValue = currentValue as KokuDto.EndpointListViewListContentContextDto;
-                if (!castedValue.endpointMethod) {
-                  throw new Error('Missing endpoint method');
-                }
-                if (!castedValue.endpointUrl) {
-                  throw new Error('Missing endpoint url');
-                }
-
-                let endpointUrl = castedValue.endpointUrl;
-                for (const [segment, value] of Object.entries(this.urlSegments() || {})) {
-                  endpointUrl = endpointUrl.replace(segment, value);
-                }
-
-                observables.push(
-                  this.httpClient.request(castedValue.endpointMethod, endpointUrl).pipe(
-                    map((response) => {
-                      resolvedContext[currentKey] = response;
-                    }),
-                  ),
-                );
-                break;
-              }
-              default: {
-                throw new Error(`Unknown context type ${currentValue['@type']}`);
-              }
+            if (currentValue['@type'] !== 'endpoint') {
+              throw new Error(`Unknown context type ${currentValue['@type']}`);
             }
+            const castedValue = currentValue as KokuDto.EndpointListViewListContentContextDto;
+            if (!castedValue.endpointMethod) {
+              throw new Error('Missing endpoint method');
+            }
+            if (!castedValue.endpointUrl) {
+              throw new Error('Missing endpoint url');
+            }
+
+            let endpointUrl = castedValue.endpointUrl;
+            for (const [segment, value] of Object.entries(this.urlSegments() || {})) {
+              endpointUrl = endpointUrl.replace(segment, value);
+            }
+
+            observables.push(
+              this.httpClient.request(castedValue.endpointMethod, endpointUrl).pipe(
+                map((response) => {
+                  resolvedContext[currentKey] = response;
+                }),
+              ),
+            );
           }
           if (observables.length > 0) {
             forkJoin(observables).subscribe({
