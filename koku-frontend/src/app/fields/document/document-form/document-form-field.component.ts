@@ -103,7 +103,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
                 {
                   ...contextSnapshot,
                   ...utils,
-                  ...(this.documentMeta || {}),
+                  ...this.documentMeta,
                 },
                 (key || '').trim(),
                 `{${key}}`,
@@ -119,7 +119,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
                 {
                   ...contextSnapshot,
                   ...utils,
-                  ...(this.documentMeta || {}),
+                  ...this.documentMeta,
                 },
                 (key || '').trim(),
                 `{${key}}`,
@@ -134,7 +134,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
                 {
                   ...contextSnapshot,
                   ...utils,
-                  ...(this.documentMeta || {}),
+                  ...this.documentMeta,
                 },
                 currentVariable.trim(),
                 `{${currentVariable}}`,
@@ -152,7 +152,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
                 {
                   ...contextSnapshot,
                   ...utils,
-                  ...(this.documentMeta || {}),
+                  ...this.documentMeta,
                 },
                 (key || '').trim(),
                 `{${key}}`,

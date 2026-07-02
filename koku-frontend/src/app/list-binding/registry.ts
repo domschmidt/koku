@@ -60,20 +60,15 @@ const modalCloseOutputs = (context: ModalContentRenderContext): DynamicOutputs =
 const documentSubmittedOutputs = (content: () => KokuDto.ListViewDocumentFormContentDto): DynamicOutputs => ({
   submitted: (payload: any) => {
     for (const currentOnSubmitEvent of content().onSubmitEvents || []) {
-      switch (currentOnSubmitEvent['@type']) {
-        case 'propagate-global-event': {
-          const castedEventJob =
-            currentOnSubmitEvent as KokuDto.ListViewInlineFormularContentAfterSavePropagateGlobalEventDto;
-          if (!castedEventJob.eventName) {
-            throw new Error(`Missing eventName in saveEvent`);
-          }
-          GLOBAL_EVENT_BUS.propagateGlobalEvent(castedEventJob.eventName, payload);
-          break;
-        }
-        default: {
-          throw new Error(`Unknown onSubmitEvent type ${currentOnSubmitEvent['@type']}`);
-        }
+      if (currentOnSubmitEvent['@type'] !== 'propagate-global-event') {
+        throw new Error(`Unknown onSubmitEvent type ${currentOnSubmitEvent['@type']}`);
       }
+      const castedEventJob =
+        currentOnSubmitEvent as KokuDto.ListViewInlineFormularContentAfterSavePropagateGlobalEventDto;
+      if (!castedEventJob.eventName) {
+        throw new Error(`Missing eventName in saveEvent`);
+      }
+      GLOBAL_EVENT_BUS.propagateGlobalEvent(castedEventJob.eventName, payload);
     }
   },
 });
@@ -214,9 +209,7 @@ const PREVIEW_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemPreviewDto['@
     })),
   }),
 };
-const INLINE_CONTENT_REGISTRY: Partial<
-  Record<KokuDto.AbstractListViewContentDto['@type'] | string, InlineContentRegistryItem>
-> = {
+const INLINE_CONTENT_REGISTRY: Partial<Record<string, InlineContentRegistryItem>> = {
   formular: (context: ListInlineContentRenderContext) => {
     const content = computed(() => context.content() as KokuDto.ListViewFormularContentDto);
     const sourceUrl = computed(() => replaceSegments(content().sourceUrl, context.urlSegments()));
@@ -296,7 +289,7 @@ const INLINE_CONTENT_REGISTRY: Partial<
   },
   header: (context: ListInlineContentRenderContext) => {
     const content = computed(() => context.content() as KokuDto.ListViewHeaderContentDto);
-    const segmentMapping = computed(() => ({ ...(context.urlSegments() || {}) }));
+    const segmentMapping = computed(() => ({ ...context.urlSegments() }));
     return {
       loadComponent: () =>
         import('./containers/header-container/list-header-container.component').then(
@@ -364,16 +357,12 @@ const INLINE_CONTENT_REGISTRY: Partial<
       outputs: {
         afterCapture: (capturedValue: string) => {
           for (const currentEvent of content().onCaptureEvents || []) {
-            switch (currentEvent['@type']) {
-              case 'propagate-global-event': {
-                const castedEvent =
-                  currentEvent as KokuDto.ListViewBarcodeContentDtoAfterCapturePropagateGlobalEventDto;
-                if (!castedEvent.eventName) {
-                  throw new Error(`Missing eventName`);
-                }
-                GLOBAL_EVENT_BUS.propagateGlobalEvent(castedEvent.eventName, capturedValue);
-                break;
+            if (currentEvent['@type'] === 'propagate-global-event') {
+              const castedEvent = currentEvent as KokuDto.ListViewBarcodeContentDtoAfterCapturePropagateGlobalEventDto;
+              if (!castedEvent.eventName) {
+                throw new Error(`Missing eventName`);
               }
+              GLOBAL_EVENT_BUS.propagateGlobalEvent(castedEvent.eventName, capturedValue);
             }
           }
           context.close();
@@ -441,7 +430,7 @@ const MODAL_REGISTRY: ModalContentSetup = {
     outputs: modalCloseOutputs(context),
   }),
   header: (context: ModalContentRenderContext<KokuDto.ListViewHeaderContentDto>) => {
-    const segmentMapping: Record<string, string> = { ...(context.modal.urlSegments || {}) };
+    const segmentMapping: Record<string, string> = { ...context.modal.urlSegments };
     return {
       loadComponent: () =>
         import('./containers/header-container/list-header-container.component').then(
@@ -658,7 +647,7 @@ const resolvedHttpUrl = (
   }
   return url;
 };
-const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractListViewItemActionDto['@type'] | string, ActionRegistryItem>> = {
+const ACTION_REGISTRY: Partial<Record<string, ActionRegistryItem>> = {
   'http-call': (context: ListItemActionRenderContext) => ({
     loadComponent: () =>
       import('./actions/button-action/button-action.component').then((module) => module.ButtonActionComponent),

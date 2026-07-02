@@ -10,7 +10,7 @@ export class PortalDirective implements AfterViewInit, OnDestroy {
   append = input<boolean>();
 
   private viewRef?: EmbeddedViewRef<unknown>;
-  private templateRef = inject(TemplateRef<unknown>);
+  private readonly templateRef = inject(TemplateRef<unknown>);
 
   ngAfterViewInit() {
     const outletSnapshot = this.portalOutlet();

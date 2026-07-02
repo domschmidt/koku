@@ -1,12 +1,5 @@
 @for (modal of modalService.renderedModals(); track modal.uid; let stackIndex = $index) {
-  <dialog
-    class="modal modal-open"
-    tabindex="0"
-    [style.z-index]="stackIndex"
-    (click)="handleBackdropClick($event, modal)"
-    (keydown.enter)="handleBackdropClick($event, modal)"
-    (keydown.space)="handleBackdropClick($event, modal)"
-  >
+  <dialog class="modal modal-open" open [style.z-index]="stackIndex">
     <div
       class="modal-box"
       [class.h-full]="modal.fullscreen"
@@ -47,5 +40,11 @@
         </div>
       }
     </div>
+    <button
+      type="button"
+      class="modal-backdrop"
+      aria-label="Dialog schliessen"
+      (click)="handleBackdropClick($event, modal)"
+    ></button>
   </dialog>
 }

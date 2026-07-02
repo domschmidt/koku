@@ -45,12 +45,12 @@ export class KokuDynamicHostDirective implements OnDestroy {
   kokuDynamicCreated = output<ComponentRef<unknown>>();
   kokuDynamicLoadError = output<unknown>();
 
-  viewContainerRef = inject(ViewContainerRef);
+  readonly viewContainerRef = inject(ViewContainerRef);
 
   private componentRef: ComponentRef<unknown> | null = null;
   private currentComponentType: Type<unknown> | null = null;
   private outputSubscriptions: DynamicOutputSubscription[] = [];
-  private appliedInputs = new Map<string, unknown>();
+  private readonly appliedInputs = new Map<string, unknown>();
   private connectedOutputs: DynamicOutputs | null | undefined;
   private activeRecipe: DynamicRenderRecipe | null | undefined;
   private activeInputs: DynamicInputs | null | undefined;

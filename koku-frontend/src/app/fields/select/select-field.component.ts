@@ -118,11 +118,11 @@ export class SelectFieldComponent {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       const next = selectedIdxSnapshot === -1 ? 0 : (selectedIdxSnapshot + 1) % filteredPossibleValuesSnapshot.length;
-      this.selectedId.set((filteredPossibleValuesSnapshot[next] || {}).id || null);
+      this.selectedId.set(filteredPossibleValuesSnapshot[next]?.id || null);
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
       const prev = selectedIdxSnapshot <= 0 ? filteredPossibleValuesSnapshot.length - 1 : selectedIdxSnapshot - 1;
-      this.selectedId.set((filteredPossibleValuesSnapshot[prev] || {}).id || null);
+      this.selectedId.set(filteredPossibleValuesSnapshot[prev]?.id || null);
     } else if (event.key === 'Enter') {
       event.preventDefault();
       const currentSelectedValue = filteredPossibleValuesSnapshot[selectedIdxSnapshot];
@@ -158,7 +158,7 @@ export class SelectFieldComponent {
 
   validate(): boolean {
     const valueSnapshot = this.value();
-    if ((!valueSnapshot || !valueSnapshot.length) && this.required()) {
+    if (!valueSnapshot?.length && this.required()) {
       return false;
     }
     return true;

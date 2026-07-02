@@ -5,18 +5,18 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class ThemingService {
-  private ref = inject(ApplicationRef);
+  private readonly ref = inject(ApplicationRef);
 
-  theme = new BehaviorSubject<'koku-light' | 'koku-dark'>('koku-light');
+  readonly theme = new BehaviorSubject<'koku-light' | 'koku-dark'>('koku-light');
 
   constructor() {
-    const darkModeOn = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const darkModeQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
 
-    if (darkModeOn) {
+    if (darkModeQuery?.matches) {
       this.theme.next('koku-dark');
     }
 
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    darkModeQuery?.addEventListener('change', (e) => {
       this.theme.next(e.matches ? 'koku-dark' : 'koku-light');
       this.ref.tick();
     });

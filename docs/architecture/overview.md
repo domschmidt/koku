@@ -34,7 +34,7 @@ flowchart LR
     Products["koku-products\n:9320"]
     Documents["koku-documents\n:8720"]
     Files["koku-files\n:8020"]
-    CardDav["koku-carddav\n:8220"]
+    Dav["koku-dav\nCardDAV / CalDAV\n:8220"]
   end
 
   subgraph Platform["Plattformdienste"]
@@ -54,7 +54,7 @@ flowchart LR
   Nginx --> Products
   Nginx --> Documents
   Nginx --> Files
-  Nginx --> CardDav
+  Nginx --> Dav
 
   Users -->|JWT Validierung| Keycloak
   Customers -->|JWT Validierung| Keycloak
@@ -78,7 +78,7 @@ flowchart LR
   Promotions -->|promotions| Kafka
   Activities -->|activities, activitysteps| Kafka
   Products -->|products, productmanufacturers| Kafka
-  CardDav -->|Kafka-Konfiguration / Integrationsdaten| Kafka
+  Dav -->|Kafka-Konfiguration / Integrationsdaten| Kafka
   KafkaUI --> Kafka
 ```
 
@@ -105,7 +105,7 @@ Koku kombiniert mehrere Muster:
 | `koku-activity` | Service | Aktivitäten, Aktivitätsschritte, Preisverläufe |
 | `koku-document` | Service | Dokumente und Dokumentvorlagen |
 | `koku-file` | Service | Datei-Upload, Dateiabruf und Dateiverwaltung |
-| `koku-carddav` | Integrationsservice | CardDAV-kompatible Schnittstellen |
+| `koku-dav` | Integrationsservice | CardDAV-/CalDAV-kompatible Schnittstellen |
 | `koku-dto` | Bibliothek | Gemeinsame Koku-DTOs |
 | `formular`, `list`, `calendar`, `chart`, `dashboard` | Bibliotheken | Deklarative UI-Verträge und Factories |
 | `business-logic`, `business-exception` | Bibliotheken | Business Rules und fachliche Fehlerdialoge |

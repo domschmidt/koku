@@ -1,10 +1,10 @@
 # ---- Build Angular App ----
-FROM node:22 as build
+FROM node:22 AS build
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 COPY . .
 RUN npm run build --production
@@ -26,10 +26,14 @@ COPY authconfig.template.json /usr/share/nginx/html/authconfig.template.json
 
 # Copy entrypoint script
 COPY entrypoint.sh /entrypoint.sh
-RUN sed -i 's/\r$//' entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh \
+    && sed -i '/^user[[:space:]]/d; s#^pid .*#pid /tmp/nginx.pid;#' /etc/nginx/nginx.conf \
+    && chmod +x /entrypoint.sh \
+    && chown -R nginx:nginx /entrypoint.sh /usr/share/nginx/html /var/cache/nginx /var/log/nginx /var/run
 
-EXPOSE 80 443
+USER nginx
+
+EXPOSE 8080 8443
 
 # Use entrypoint to generate authconfig.json dynamically
 CMD ["/entrypoint.sh"]

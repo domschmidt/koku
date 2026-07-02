@@ -1,4 +1,4 @@
-import { booleanAttribute, Component, inject, input, output } from '@angular/core';
+import { booleanAttribute, Component, inject, input, OnDestroy, output } from '@angular/core';
 import { ToastService } from '../../toast/toast.service';
 import Compressor from 'compressorjs';
 
@@ -8,8 +8,9 @@ import Compressor from 'compressorjs';
   templateUrl: './picture-upload.component.html',
   styleUrl: './picture-upload.component.css',
 })
-export class PictureUploadComponent {
+export class PictureUploadComponent implements OnDestroy {
   private static readonly SUPPORTED_MIME_TYPES: string[] = ['image/png', 'image/jpeg', 'image/gif'];
+  private currentCompressor: Compressor | undefined;
 
   toastService = inject(ToastService);
 
@@ -32,11 +33,13 @@ export class PictureUploadComponent {
       if (PictureUploadComponent.SUPPORTED_MIME_TYPES.indexOf(file.type) < 0) {
         this.toastService.add('Bildformat wird nicht unterstützt.', 'error');
       } else {
-        new Compressor(file, {
+        this.currentCompressor?.abort();
+        this.currentCompressor = new Compressor(file, {
           quality: 0.6,
           maxWidth: (this.compressMaxResolution() || [])[0],
           maxHeight: (this.compressMaxResolution() || [])[1],
           success: (result) => {
+            this.currentCompressor = undefined;
             const reader = new FileReader();
             reader.onload = (e) => {
               const result = e.target?.result as string;
@@ -45,6 +48,7 @@ export class PictureUploadComponent {
             reader.readAsDataURL(result);
           },
           error: () => {
+            this.currentCompressor = undefined;
             this.toastService.add('Fehler bei der Bildbearbeitung', 'error');
           },
         });
@@ -54,5 +58,9 @@ export class PictureUploadComponent {
 
   clearImage() {
     this.changed.emit('');
+  }
+
+  ngOnDestroy(): void {
+    this.currentCompressor?.abort();
   }
 }

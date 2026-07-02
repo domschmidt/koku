@@ -117,7 +117,7 @@ export class MonthInputFieldComponent {
 
   validate(): boolean {
     const valueSnapshot = this.value() ?? '';
-    if ((!valueSnapshot || !valueSnapshot.length) && this.required()) {
+    if (!valueSnapshot?.length && this.required()) {
       return false;
     }
     return !valueSnapshot || this.parseValue(valueSnapshot).isValid();
@@ -216,15 +216,20 @@ export class MonthInputFieldComponent {
 
   private readNamedMonthValue(value: string): string | null {
     const normalizedValue = this.normalizeText(value);
-    const match = /^([^\d]+?)\s+(\d{2}|\d{4})$/.exec(normalizedValue);
-    if (!match) {
+    const separatorIndex = normalizedValue.lastIndexOf(' ');
+    if (separatorIndex < 0) {
       return null;
     }
-    const month = this.monthNameLookup[match[1].trim()];
+    const monthName = normalizedValue.slice(0, separatorIndex).trim();
+    const year = normalizedValue.slice(separatorIndex + 1).trim();
+    if (!/^(?:\d{2}|\d{4})$/.test(year)) {
+      return null;
+    }
+    const month = this.monthNameLookup[monthName];
     if (!month) {
       return null;
     }
-    return `${this.normalizeYear(match[2])}-${month}`;
+    return `${this.normalizeYear(year)}-${month}`;
   }
 
   private createMonthNameLookup(): Record<string, string> {

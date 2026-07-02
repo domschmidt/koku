@@ -116,9 +116,7 @@ const modalCloseOutputs = (context: ModalContentRenderContext): DynamicOutputs =
     }
   },
 });
-const MODAL_CONTENT_REGISTRY: Partial<
-  Record<KokuDto.AbstractCalendarInlineContentDto['@type'] | string, ModalContentRegistryItem>
-> = {
+const MODAL_CONTENT_REGISTRY: Partial<Record<string, ModalContentRegistryItem>> = {
   formular: (context: ModalContentRenderContext<KokuDto.CalendarFormularInlineContentDto>) => {
     const content = computed(() => context.content());
     const sourceUrl = computed(() => replaceSegments(content().sourceUrl, context.modal.urlSegments));
@@ -193,9 +191,7 @@ const MODAL_CONTENT_REGISTRY: Partial<
     };
   },
 };
-const INLINE_CONTENT_REGISTRY: Partial<
-  Record<KokuDto.AbstractCalendarInlineContentDto['@type'] | string, InlineContentRegistryItem>
-> = {
+const INLINE_CONTENT_REGISTRY: Partial<Record<string, InlineContentRegistryItem>> = {
   formular: (context: CalendarInlineContentRenderContext) => {
     const content = computed(() => context.content() as KokuDto.CalendarFormularInlineContentDto);
     const sourceUrl = computed(() => replaceSegments(content().sourceUrl, context.urlSegments()));
@@ -243,7 +239,7 @@ const INLINE_CONTENT_REGISTRY: Partial<
   },
   header: (context: CalendarInlineContentRenderContext) => {
     const content = computed(() => context.content() as KokuDto.CalendarHeaderInlineContentDto);
-    const segmentMapping = computed(() => ({ ...(context.urlSegments() || {}) }));
+    const segmentMapping = computed(() => ({ ...context.urlSegments() }));
     return {
       loadComponent: () =>
         import('./header-container/calendar-inline-header-container.component').then(
@@ -297,7 +293,7 @@ const createActionButtonRecipe = (context: CalendarActionRenderContext, outputs:
   })),
   outputs,
 });
-const ACTION_REGISTRY: Partial<Record<KokuDto.AbstractCalendarActionDto['@type'] | string, ActionRegistryItem>> = {
+const ACTION_REGISTRY: Partial<Record<string, ActionRegistryItem>> = {
   'open-routed-content': (context: CalendarActionRenderContext) =>
     createActionButtonRecipe(context, {
       clicked: () => {

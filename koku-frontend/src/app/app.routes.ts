@@ -726,7 +726,7 @@ export const routes: Routes = [
           submitMethod: 'PUT',
           contentRegistry: FORMULAR_CONTENT_REGISTRY,
           maxWidth: '900px',
-          naviDivider: 'after',
+          naviDivider: true,
           naviIcon: 'USER',
         },
         canDeactivate: [UnsavedChangesPreventionGuard],

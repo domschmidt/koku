@@ -1,5 +1,6 @@
 import { booleanAttribute, Component, input, output } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { UNIQUE_REF_GENERATOR } from '../../utils/uniqueRef';
 
 @Component({
   selector: 'year-month-field',
@@ -9,6 +10,8 @@ import { toObservable } from '@angular/core/rxjs-interop';
   standalone: true,
 })
 export class YearMonthFieldComponent {
+  readonly id = UNIQUE_REF_GENERATOR.generate();
+
   value = input.required<string>();
   name = input<string>();
   placeholder = input<string>();

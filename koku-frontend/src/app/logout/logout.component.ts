@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { ToastService } from '../toast/toast.service';
 import { from } from 'rxjs';
@@ -8,12 +8,12 @@ import { from } from 'rxjs';
   templateUrl: './logout.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LogoutComponent {
+export class LogoutComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   loading = signal(false);
 
-  constructor() {
+  ngOnInit(): void {
     const authService = this.authService;
 
     this.loading.set(true);

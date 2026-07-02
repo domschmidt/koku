@@ -9,6 +9,11 @@ import { IconComponent } from '../../icon/icon.component';
   templateUrl: './navi-entry.component.html',
   imports: [RouterLink, RouterLinkActive, IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.gap-2]': "naviEntry().type === 'link'",
+    '[class.menu-title]': "naviEntry().type === 'divider'",
+    '[class.p-0]': "naviEntry().type === 'divider'",
+  },
 })
 export class NaviEntryComponent {
   naviEntry = input.required<Navi>();

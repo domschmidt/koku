@@ -8,7 +8,7 @@ Dieses Dokument beschreibt, wie Nutzer, Frontend, Backends und Plattformdienste 
 | --- | --- |
 | Nutzer | Verwendet die Angular-Anwendung im Browser |
 | Keycloak | Stellt Login, OIDC-Konfiguration, JWTs und JWKs bereit |
-| CardDAV-Clients | Können über `koku-carddav` Adressbuch-/Principal-Endpunkte verwenden |
+| CardDAV-/CalDAV-Clients | Können über `koku-dav` Adressbuch-, Kalender- und Principal-Endpunkte verwenden |
 | Betreiber / Entwickler | Nutzen Logs, Healthchecks und Kafka UI für Betrieb und Analyse |
 
 ## Request-Flow
@@ -49,7 +49,10 @@ Das Frontend spricht Backend-APIs über `/services/...` an. Nginx routet diese P
 | `/services/products/*` | `koku-products` | `9320` |
 | `/services/documents/*` | `koku-documents` | `8720` |
 | `/services/files/*` | `koku-files` | `8020` |
-| `/services/carddav/*` | `koku-carddav` | `8220` |
+| `/services/carddav/*` | `koku-dav` | `8220` |
+| `/services/caldav/*` | `koku-dav` | `8220` |
+
+Nginx stellt zusätzlich die DAV-Auto-Discovery-Pfade `/.well-known/carddav` und `/.well-known/caldav` bereit und leitet sie auf die jeweiligen `/services/...`-Präfixe weiter.
 
 ## Kommunikationsarten
 

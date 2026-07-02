@@ -45,10 +45,6 @@ export class BarcodeCaptureComponent implements AfterViewInit, OnDestroy {
     if (!scanner) {
       return;
     }
-    try {
-      void scanner.clear().catch(() => undefined);
-    } catch {
-      // The scanner may already have been stopped while its camera was initializing.
-    }
+    void scanner.clear().catch(() => undefined);
   }
 }

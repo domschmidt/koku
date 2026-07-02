@@ -26,9 +26,7 @@ export type DashboardContentRecipeFactory<TContent extends DashboardContent = an
   context: DashboardContentRenderContext<TContent>,
 ) => DynamicRenderRecipe;
 
-export type DashboardContentRegistry = Partial<
-  Record<DashboardContent['@type'] | string, DashboardContentRecipeFactory>
->;
+export type DashboardContentRegistry = Partial<Record<string, DashboardContentRecipeFactory>>;
 
 export interface DashboardPlugin {
   destroy(): void;
@@ -52,13 +50,13 @@ export class DashboardComponent implements OnDestroy, OnChanges {
   dashboardData = signal<KokuDto.DashboardViewDto | null>(null);
   private lastDashboardSubscription: Subscription | undefined;
 
-  httpClient = inject(HttpClient);
-  toastService = inject(ToastService);
-  dashboardPluginsConfig = inject(DASHBOARD_PLUGIN, {
+  readonly httpClient = inject(HttpClient);
+  readonly toastService = inject(ToastService);
+  readonly dashboardPluginsConfig = inject(DASHBOARD_PLUGIN, {
     optional: true,
   });
 
-  private pluginInstances: DashboardPlugin[] = [];
+  private readonly pluginInstances: DashboardPlugin[];
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['dashboardUrl']) {
