@@ -14,7 +14,7 @@ import { get } from '../utils/get';
 import { ToastTypeUnion } from '../toast/toast.service';
 import { set } from '../utils/set';
 import { CHART_FILTER_REGISTRY } from '../chart-binding/registry';
-import { ModalContentRenderContext, ModalContentSetup } from '../modal/modal.type';
+import { ModalButtonType, ModalContentRenderContext, ModalContentSetup, RenderedModalType } from '../modal/modal.type';
 import { GLOBAL_EVENT_BUS } from '../events/global-events';
 import { ToggleFilterTriState } from './filters/toggle/toggle-filter.component';
 import { DynamicOutputs } from '../dynamic-host/dynamic-host.directive';
@@ -303,7 +303,7 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<string, InlineContentRegistryItem>
           }
           return content()
             .sourceUrl!.split('/')
-            .map((part) => (part.indexOf(':') === 0 ? segmentMapping()[part] : part))
+            .map((part) => (part.startsWith(':') ? segmentMapping()[part] : part))
             .join('/');
         })(),
         titlePath: content().titlePath,
@@ -442,7 +442,7 @@ const MODAL_REGISTRY: ModalContentSetup = {
           ? context
               .content()
               .sourceUrl!.split('/')
-              .map((part) => (part.indexOf(':') === 0 ? segmentMapping[part] : part))
+              .map((part) => (part.startsWith(':') ? segmentMapping[part] : part))
               .join('/')
           : undefined,
         titlePath: context.content().titlePath,
@@ -501,101 +501,126 @@ const executeHttpActionEvents = (
   eventPayload: Record<string, any> = {},
 ) => {
   for (const currentEvent of events || []) {
-    switch (currentEvent['@type']) {
-      case 'reload': {
-        instance.reloadRequested.emit();
-        break;
-      }
-      case 'event-payload-update': {
-        const castedEvent = currentEvent as KokuDto.ListViewEventPayloadUpdateActionEventDto;
-        if (!castedEvent.idPath) {
-          throw new Error('Missing id in event payload update');
-        }
-        const listRegisterIdx: Record<string, ListItemSetup> = {};
-        for (const currentEntry of instance.listRegister()) {
-          if (currentEntry.id !== undefined && currentEntry.id !== null) {
-            listRegisterIdx[currentEntry.id] = currentEntry;
-          }
-        }
-        const item = listRegisterIdx[String(get(eventPayload, castedEvent.idPath, ''))];
-        if (item !== undefined) {
-          for (const [currentMappingPath, listViewReference] of Object.entries(castedEvent.valueMapping || {})) {
-            const mappablePayloadValue = get(eventPayload, currentMappingPath);
-            if (mappablePayloadValue !== undefined) {
-              switch (listViewReference['@type']) {
-                case 'field-reference': {
-                  const castedReference = listViewReference as KokuDto.ListViewFieldReference;
-                  if (!castedReference.fieldId) {
-                    throw new Error('Missing fieldId in FieldReference');
-                  }
-                  const field = item.fields[castedReference.fieldId];
-                  if (!field) {
-                    throw new Error('FieldReference not resolvable');
-                  }
-                  field.value.set(mappablePayloadValue);
-                  break;
-                }
-                case 'source-path-reference': {
-                  const castedReference = listViewReference as KokuDto.ListViewSourcePathReference;
-                  if (!castedReference.valuePath) {
-                    throw new Error('Missing valuePath in FieldReference');
-                  }
-                  const itemSourceSnapshot = { ...item.source() };
-                  set(itemSourceSnapshot, castedReference.valuePath, mappablePayloadValue);
-                  item.source.set(itemSourceSnapshot);
-                  break;
-                }
-                default: {
-                  throw new Error(`Unknown Reference ${listViewReference['@type']}`);
-                }
-              }
-            }
-          }
-        }
-        break;
-      }
-      case 'notification': {
-        const castedEvent = currentEvent as KokuDto.ListViewNotificationEvent;
-        if (!castedEvent.text) {
-          throw new Error('Missing text in Notification');
-        }
-        let notificationText = castedEvent.text;
-        for (const currentParam of castedEvent.params || []) {
-          if (!currentParam.param) {
-            throw new Error(`Missing param`);
-          }
-          const value = resolveListActionParamValue(instance, currentParam);
-          notificationText = notificationText.replaceAll(currentParam.param, value);
-        }
-        let serenity: ToastTypeUnion = 'info';
-        if (castedEvent.serenity) {
-          switch (castedEvent.serenity) {
-            case 'SUCCESS':
-              serenity = 'success';
-              break;
-            case 'ERROR':
-              serenity = 'error';
-              break;
-            default:
-              throw new Error(`Unknown Notification serenity ${serenity}`);
-          }
-        }
-        instance.toastService.add(notificationText, serenity);
-        break;
-      }
-      case 'propagate-global-event': {
-        const castedEvent = currentEvent as KokuDto.ListViewPropagateGlobalEventActionEventDto;
-        if (!castedEvent.eventName) {
-          throw new Error('Missing eventName');
-        }
-        GLOBAL_EVENT_BUS.propagateGlobalEvent(castedEvent.eventName, eventPayload);
-        break;
-      }
-      default: {
-        throw new Error(`Unknown event type ${currentEvent}`);
-      }
+    executeHttpActionEvent(instance, currentEvent, eventPayload);
+  }
+};
+const executeHttpActionEvent = (
+  instance: ListItemActionRenderContext['parent'],
+  currentEvent: KokuDto.AbstractListViewActionEventDto,
+  eventPayload: Record<string, any>,
+) => {
+  if (currentEvent['@type'] === 'reload') {
+    instance.reloadRequested.emit();
+    return;
+  }
+  if (currentEvent['@type'] === 'event-payload-update') {
+    updateEventPayload(instance, currentEvent as KokuDto.ListViewEventPayloadUpdateActionEventDto, eventPayload);
+    return;
+  }
+  if (currentEvent['@type'] === 'notification') {
+    showActionNotification(instance, currentEvent as KokuDto.ListViewNotificationEvent);
+    return;
+  }
+  if (currentEvent['@type'] === 'propagate-global-event') {
+    propagateActionEvent(currentEvent as KokuDto.ListViewPropagateGlobalEventActionEventDto, eventPayload);
+    return;
+  }
+  throw new Error(`Unknown event type ${currentEvent['@type']}`);
+};
+const updateEventPayload = (
+  instance: ListItemActionRenderContext['parent'],
+  event: KokuDto.ListViewEventPayloadUpdateActionEventDto,
+  eventPayload: Record<string, any>,
+) => {
+  if (!event.idPath) {
+    throw new Error('Missing id in event payload update');
+  }
+  const item = indexListRegister(instance)[String(get(eventPayload, event.idPath, ''))];
+  if (item === undefined) {
+    return;
+  }
+  for (const [currentMappingPath, listViewReference] of Object.entries(event.valueMapping || {})) {
+    const mappablePayloadValue = get(eventPayload, currentMappingPath);
+    if (mappablePayloadValue !== undefined) {
+      updateMappedListItemValue(item, listViewReference, mappablePayloadValue);
     }
   }
+};
+const indexListRegister = (instance: ListItemActionRenderContext['parent']): Record<string, ListItemSetup> => {
+  const listRegisterIdx: Record<string, ListItemSetup> = {};
+  for (const currentEntry of instance.listRegister()) {
+    if (currentEntry.id != null) {
+      listRegisterIdx[currentEntry.id] = currentEntry;
+    }
+  }
+  return listRegisterIdx;
+};
+const updateMappedListItemValue = (
+  item: ListItemSetup,
+  listViewReference: KokuDto.ListViewReference,
+  mappablePayloadValue: any,
+) => {
+  if (listViewReference['@type'] === 'field-reference') {
+    const castedReference = listViewReference as KokuDto.ListViewFieldReference;
+    if (!castedReference.fieldId) {
+      throw new Error('Missing fieldId in FieldReference');
+    }
+    const field = item.fields[castedReference.fieldId];
+    if (!field) {
+      throw new Error('FieldReference not resolvable');
+    }
+    field.value.set(mappablePayloadValue);
+    return;
+  }
+  if (listViewReference['@type'] === 'source-path-reference') {
+    const castedReference = listViewReference as KokuDto.ListViewSourcePathReference;
+    if (!castedReference.valuePath) {
+      throw new Error('Missing valuePath in FieldReference');
+    }
+    const itemSourceSnapshot = { ...item.source() };
+    set(itemSourceSnapshot, castedReference.valuePath, mappablePayloadValue);
+    item.source.set(itemSourceSnapshot);
+    return;
+  }
+  throw new Error(`Unknown Reference ${listViewReference['@type']}`);
+};
+const showActionNotification = (
+  instance: ListItemActionRenderContext['parent'],
+  event: KokuDto.ListViewNotificationEvent,
+) => {
+  if (!event.text) {
+    throw new Error('Missing text in Notification');
+  }
+  let notificationText = event.text;
+  for (const currentParam of event.params || []) {
+    if (!currentParam.param) {
+      throw new Error(`Missing param`);
+    }
+    const value = resolveListActionParamValue(instance, currentParam);
+    notificationText = notificationText.replaceAll(currentParam.param, value);
+  }
+  instance.toastService.add(notificationText, notificationSerenity(event));
+};
+const notificationSerenity = (event: KokuDto.ListViewNotificationEvent): ToastTypeUnion => {
+  if (event.serenity === undefined) {
+    return 'info';
+  }
+  if (event.serenity === 'SUCCESS') {
+    return 'success';
+  }
+  if (event.serenity === 'ERROR') {
+    return 'error';
+  }
+  throw new Error(`Unknown Notification serenity ${event.serenity}`);
+};
+const propagateActionEvent = (
+  event: KokuDto.ListViewPropagateGlobalEventActionEventDto,
+  eventPayload: Record<string, any>,
+) => {
+  if (!event.eventName) {
+    throw new Error('Missing eventName');
+  }
+  GLOBAL_EVENT_BUS.propagateGlobalEvent(event.eventName, eventPayload);
 };
 const resolveListActionParamValue = (
   instance: ListItemActionRenderContext['parent'],
@@ -647,6 +672,85 @@ const resolvedHttpUrl = (
   }
   return url;
 };
+const executeListHttpActionRequest = (
+  instance: ListItemActionRenderContext['parent'],
+  action: KokuDto.ListViewCallHttpListItemActionDto,
+) => {
+  if (action.userConfirmation) {
+    openListHttpActionConfirmation(instance, action);
+    return;
+  }
+  callListHttpAction(instance, action).subscribe({
+    next: (rawValue) => executeHttpActionEvents(instance, action.successEvents || [], rawValue),
+    error: () => executeHttpActionEvents(instance, action.failEvents || []),
+  });
+};
+const openListHttpActionConfirmation = (
+  instance: ListItemActionRenderContext['parent'],
+  action: KokuDto.ListViewCallHttpListItemActionDto,
+) => {
+  const confirmationText = resolveUserConfirmationText(instance, action.userConfirmation!);
+  const confirmationModal: RenderedModalType = instance.modalService.add({
+    headline: confirmationText.headline,
+    content: confirmationText.content,
+    buttons: [
+      {
+        text: 'Abbrechen',
+        styles: ['OUTLINE'],
+        onClick: () => confirmationModal.close(),
+      },
+      createListHttpConfirmationButton(instance, action, () => confirmationModal),
+    ],
+    clickOutside: () => confirmationModal.close(),
+  });
+};
+const resolveUserConfirmationText = (
+  instance: ListItemActionRenderContext['parent'],
+  userConfirmation: NonNullable<KokuDto.ListViewCallHttpListItemActionDto['userConfirmation']>,
+) => {
+  let headline = userConfirmation.headline || '';
+  let content = userConfirmation.content || '';
+  for (const currentParam of userConfirmation.params || []) {
+    if (!currentParam.param) {
+      throw new Error(`Missing param`);
+    }
+    const value = resolveListActionParamValue(instance, currentParam as any);
+    headline = headline.replaceAll(currentParam.param, value);
+    content = content.replaceAll(currentParam.param, value);
+  }
+  return { headline, content };
+};
+const createListHttpConfirmationButton = (
+  instance: ListItemActionRenderContext['parent'],
+  action: KokuDto.ListViewCallHttpListItemActionDto,
+  confirmationModal: () => RenderedModalType,
+): ModalButtonType => ({
+  text: 'Bestätigen',
+  onClick: (_event, modal, button) => {
+    button.loading = true;
+    button.disabled = true;
+    callListHttpAction(instance, action).subscribe({
+      next: (rawValue) => {
+        executeHttpActionEvents(instance, action.successEvents || [], rawValue);
+        resetListHttpConfirmationButton(button);
+        confirmationModal().close();
+      },
+      error: () => {
+        executeHttpActionEvents(instance, action.failEvents || []);
+        resetListHttpConfirmationButton(button);
+        confirmationModal().update(modal);
+      },
+    });
+  },
+});
+const resetListHttpConfirmationButton = (button: ModalButtonType) => {
+  button.loading = false;
+  button.disabled = false;
+};
+const callListHttpAction = (
+  instance: ListItemActionRenderContext['parent'],
+  action: KokuDto.ListViewCallHttpListItemActionDto,
+) => instance.httpClient.request<Record<string, any>>(action.method!, resolvedHttpUrl(instance, action));
 const ACTION_REGISTRY: Partial<Record<string, ActionRegistryItem>> = {
   'http-call': (context: ListItemActionRenderContext) => ({
     loadComponent: () =>
@@ -660,60 +764,7 @@ const ACTION_REGISTRY: Partial<Record<string, ActionRegistryItem>> = {
     outputs: {
       clicked: (event: MouseEvent) => {
         event.stopPropagation();
-        const instance = context.parent;
-        const action = context.action() as KokuDto.ListViewCallHttpListItemActionDto;
-        const callAction = () =>
-          instance.httpClient.request<Record<string, any>>(action.method!, resolvedHttpUrl(instance, action));
-        if (action.userConfirmation) {
-          let headline = action.userConfirmation.headline || '';
-          let content = action.userConfirmation.content || '';
-          for (const currentParam of action.userConfirmation.params || []) {
-            if (!currentParam.param) {
-              throw new Error(`Missing param`);
-            }
-            const value = resolveListActionParamValue(instance, currentParam as any);
-            headline = headline.replaceAll(currentParam.param, value);
-            content = content.replaceAll(currentParam.param, value);
-          }
-          const confirmationModal = instance.modalService.add({
-            headline,
-            content,
-            buttons: [
-              {
-                text: 'Abbrechen',
-                styles: ['OUTLINE'],
-                onClick: () => confirmationModal.close(),
-              },
-              {
-                text: 'Bestätigen',
-                onClick: (_event, modal, button) => {
-                  button.loading = true;
-                  button.disabled = true;
-                  callAction().subscribe({
-                    next: (rawValue) => {
-                      executeHttpActionEvents(instance, action.successEvents || [], rawValue);
-                      button.loading = false;
-                      button.disabled = false;
-                      confirmationModal.close();
-                    },
-                    error: () => {
-                      executeHttpActionEvents(instance, action.failEvents || []);
-                      button.loading = false;
-                      button.disabled = false;
-                      confirmationModal.update(modal);
-                    },
-                  });
-                },
-              },
-            ],
-            clickOutside: () => confirmationModal.close(),
-          });
-        } else {
-          callAction().subscribe({
-            next: (rawValue) => executeHttpActionEvents(instance, action.successEvents || [], rawValue),
-            error: () => executeHttpActionEvents(instance, action.failEvents || []),
-          });
-        }
+        executeListHttpActionRequest(context.parent, context.action() as KokuDto.ListViewCallHttpListItemActionDto);
       },
     },
   }),

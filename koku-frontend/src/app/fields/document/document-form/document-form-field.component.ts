@@ -166,7 +166,10 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
     }
 
     const form = this.form;
-    if (!form) {
+    if (form) {
+      form.updateTemplate(parsedTemplate);
+      form.setInputs(inputs);
+    } else {
       this.form = new Form({
         domContainer: this.formRoot().nativeElement,
         template: parsedTemplate,
@@ -208,9 +211,6 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
         }, 50),
       );
       this.form.resizeObserver.observe(this.formRoot().nativeElement);
-    } else {
-      form.updateTemplate(parsedTemplate);
-      form.setInputs(inputs);
     }
   }
 
@@ -236,55 +236,55 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
           }
         }),
       );
-      if (!missingFieldValueFound) {
-        generate({
-          template: formSnapshot.getTemplate(),
-          inputs: formSnapshot.getInputs(),
-          plugins: getPlugins(),
-          options: {
-            title: this.document?.name,
-            author: 'KoKu',
-            lang: 'de',
-            creator: 'KoKu',
-          },
-        })
-          .then((pdf) => {
-            if (!this.document || !this.document.name) {
-              throw new Error('Missing name in document');
-            }
-            const formData = new FormData();
-            formData.append(
-              'file',
-              new Blob([new Uint8Array(pdf.buffer)], { type: 'application/pdf' }),
-              this.document.name + '.pdf',
-            );
-            this.httpClient
-              .request(
-                this.submitMethod() || 'POST',
-                `${submitUrlSnapshot}${submitUrlSnapshot.includes('?') ? '&' : '?'}id=${this.documentMeta?.document.id}`,
-                {
-                  body: formData,
-                },
-              )
-              .subscribe(
-                (payload) => {
-                  this.submitting.set(false);
-                  this.submitted.emit(payload);
-                  this.toastService.add('Dokument erstellt');
-                },
-                () => {
-                  this.submitting.set(false);
-                  this.toastService.add('Fehler beim Speichern', 'error');
-                },
-              );
-          })
-          .catch(() => {
-            this.toastService.add('Fehler beim Erstellen der PDF', 'error');
-            this.submitting.set(false);
-          });
-      } else {
+      if (missingFieldValueFound) {
         this.submitting.set(false);
+        return;
       }
+      generate({
+        template: formSnapshot.getTemplate(),
+        inputs: formSnapshot.getInputs(),
+        plugins: getPlugins(),
+        options: {
+          title: this.document?.name,
+          author: 'KoKu',
+          lang: 'de',
+          creator: 'KoKu',
+        },
+      })
+        .then((pdf) => {
+          if (!this.document || !this.document.name) {
+            throw new Error('Missing name in document');
+          }
+          const formData = new FormData();
+          formData.append(
+            'file',
+            new Blob([new Uint8Array(pdf.buffer)], { type: 'application/pdf' }),
+            this.document.name + '.pdf',
+          );
+          this.httpClient
+            .request(
+              this.submitMethod() || 'POST',
+              `${submitUrlSnapshot}${submitUrlSnapshot.includes('?') ? '&' : '?'}id=${this.documentMeta?.document.id}`,
+              {
+                body: formData,
+              },
+            )
+            .subscribe({
+              next: (payload) => {
+                this.submitting.set(false);
+                this.submitted.emit(payload);
+                this.toastService.add('Dokument erstellt');
+              },
+              error: () => {
+                this.submitting.set(false);
+                this.toastService.add('Fehler beim Speichern', 'error');
+              },
+            });
+        })
+        .catch(() => {
+          this.toastService.add('Fehler beim Erstellen der PDF', 'error');
+          this.submitting.set(false);
+        });
     }
   }
 

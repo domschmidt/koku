@@ -7,10 +7,11 @@ type Signature = Schema;
 const getEffectiveScale = (element: HTMLElement | null) => {
   let scale = 1;
   while (element && element !== document.body) {
-    const style = window.getComputedStyle(element);
+    const style = globalThis.getComputedStyle(element);
     const transform = style.transform;
     if (transform && transform !== 'none') {
-      const localScale = Number.parseFloat(transform.match(/matrix\((.+)\)/)?.[1].split(', ')[3] || '1');
+      const matrixMatch = /matrix\((.+)\)/.exec(transform);
+      const localScale = Number.parseFloat(matrixMatch?.[1].split(', ')[3] || '1');
       scale *= localScale;
     }
     element = element.parentElement;

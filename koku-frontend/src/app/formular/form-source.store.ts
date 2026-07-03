@@ -13,7 +13,7 @@ export class FormSourceStore {
     }
     let selector = this.selectors.get(path);
     if (!selector) {
-      selector = computed(() => get(this.source(), path, undefined));
+      selector = computed(() => get(this.source(), path));
       this.selectors.set(path, selector);
     }
     const value = selector();
@@ -46,7 +46,7 @@ export class FormSourceStore {
     let changed = false;
     update({
       set: (path, value) => {
-        if (!path || Object.is(get(snapshot, path, undefined), value)) {
+        if (!path || Object.is(get(snapshot, path), value)) {
           return;
         }
         snapshot = this.setIn(snapshot, this.pathParts(path), value);
@@ -70,14 +70,21 @@ export class FormSourceStore {
     }
     const key = path[index];
     const currentValue = current?.[key];
-    const clone = Array.isArray(current)
-      ? [...current]
-      : current && typeof current === 'object'
-        ? { ...current }
-        : /^\d+$/.test(key)
-          ? []
-          : {};
+    const clone = this.cloneForPathPart(current, key);
     clone[key] = this.setIn(currentValue, path, value, index + 1);
     return clone;
+  }
+
+  private cloneForPathPart(current: any, key: string): any {
+    if (Array.isArray(current)) {
+      return [...current];
+    }
+    if (current && typeof current === 'object') {
+      return { ...current };
+    }
+    if (/^\d+$/.test(key)) {
+      return [];
+    }
+    return {};
   }
 }

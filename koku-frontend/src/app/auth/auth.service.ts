@@ -86,7 +86,7 @@ export class AuthService {
   private async initKeycloak(): Promise<void> {
     const authenticated = await this.keycloak.init({
       onLoad: 'check-sso',
-      silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+      silentCheckSsoRedirectUri: globalThis.location.origin + '/silent-check-sso.html',
     });
     if (authenticated) {
       this.publishToken();
@@ -104,7 +104,7 @@ export class AuthService {
   }
 
   destroySession() {
-    return this.keycloak.logout({ redirectUri: window.location.origin });
+    return this.keycloak.logout({ redirectUri: globalThis.location.origin });
   }
 
   refreshSession() {

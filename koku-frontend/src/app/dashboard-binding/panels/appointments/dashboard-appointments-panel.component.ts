@@ -3,7 +3,7 @@ import { forkJoin, map, mergeMap, Observable } from 'rxjs';
 import { get } from '../../../utils/get';
 import { HttpClient } from '@angular/common/http';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { finalize, tap } from 'rxjs/operators';
+import { finalize } from 'rxjs/operators';
 import { MyUserDetailsService } from '../../../user/my-user-details.service';
 import { ToastService } from '../../../toast/toast.service';
 import dayjs from 'dayjs';
@@ -19,6 +19,11 @@ interface AppointmentItem {
   past: boolean;
   borderColorClass?: string;
   allDay?: boolean;
+}
+
+interface LoadedAppointmentListSource {
+  listSource: KokuDto.DashboardAppointmentsPanelListSourceDto;
+  listPage: KokuDto.ListPage;
 }
 
 @Component({
@@ -37,180 +42,237 @@ export class DashboardAppointmentsPanelComponent {
 
   constructor() {
     toObservable(this.content).subscribe((content) => {
-      const listObservables: Observable<[KokuDto.DashboardAppointmentsPanelListSourceDto, KokuDto.ListPage]>[] = [];
-
-      for (const currentListSource of content.listSources || []) {
-        const fieldSelection: Set<string> = new Set<string>();
-        const fieldPredicates: Record<string, KokuDto.ListFieldQuery> = {};
-        if (currentListSource.startDateFieldSelectionPath && content.start) {
-          fieldSelection.add(currentListSource.startDateFieldSelectionPath);
-          fieldPredicates[currentListSource.startDateFieldSelectionPath] = {
-            predicates: [
-              {
-                searchExpression: dayjs(content.start).format('YYYY-MM-DD'),
-                searchOperator: 'GREATER_OR_EQ',
-                searchOperatorHint: currentListSource.searchOperatorHint,
-              },
-              ...((fieldPredicates[currentListSource.startDateFieldSelectionPath] || {}).predicates || []),
-            ],
-          };
-        }
-        if (currentListSource.endDateFieldSelectionPath && content.end) {
-          fieldSelection.add(currentListSource.endDateFieldSelectionPath);
-          fieldPredicates[currentListSource.endDateFieldSelectionPath] = {
-            predicates: [
-              {
-                searchExpression: dayjs(content.end).format('YYYY-MM-DD'),
-                searchOperator: 'LESS_OR_EQ',
-                searchOperatorHint: currentListSource.searchOperatorHint,
-              },
-              ...((fieldPredicates[currentListSource.endDateFieldSelectionPath] || {}).predicates || []),
-            ],
-          };
-        }
-        if (currentListSource.startTimeFieldSelectionPath) {
-          fieldSelection.add(currentListSource.startTimeFieldSelectionPath);
-        }
-        if (currentListSource.endTimeFieldSelectionPath) {
-          fieldSelection.add(currentListSource.endTimeFieldSelectionPath);
-        }
-        if (currentListSource.textFieldSelectionPath) {
-          fieldSelection.add(currentListSource.textFieldSelectionPath);
-        }
-        if (currentListSource.notesTextFieldSelectionPath) {
-          fieldSelection.add(currentListSource.notesTextFieldSelectionPath);
-        }
-        if (currentListSource.deletedFieldSelectionPath) {
-          fieldSelection.add(currentListSource.deletedFieldSelectionPath);
-          fieldPredicates[currentListSource.deletedFieldSelectionPath] = {
-            predicates: [
-              {
-                searchExpression: 'TRUE',
-                searchOperator: 'EQ',
-                negate: true,
-              },
-              ...((fieldPredicates[currentListSource.deletedFieldSelectionPath] || {}).predicates || []),
-            ],
-          };
-        }
-        if (currentListSource.sourceUrl) {
-          const currentListSourceUrl = currentListSource.sourceUrl;
-
-          const userIdFieldSelectionPath = currentListSource.userIdFieldSelectionPath;
-          if (userIdFieldSelectionPath) {
-            listObservables.push(
-              this.myUserDetailsService.getCurrentUserDetailsCached().pipe(
-                mergeMap((userDetails) => {
-                  fieldSelection.add(userIdFieldSelectionPath);
-                  fieldPredicates[userIdFieldSelectionPath] = {
-                    predicates: [
-                      {
-                        searchExpression: String(userDetails.id),
-                        searchOperator: 'EQ',
-                      },
-                      ...((fieldPredicates[userIdFieldSelectionPath] || {}).predicates || []),
-                    ],
-                  };
-
-                  return this.httpClient
-                    .post<KokuDto.ListPage>(currentListSourceUrl, {
-                      fieldSelection: [...fieldSelection],
-                      limit: 100,
-                      page: 0,
-                      fieldPredicates: fieldPredicates,
-                    })
-                    .pipe(
-                      map<KokuDto.ListPage, [KokuDto.DashboardAppointmentsPanelListSourceDto, KokuDto.ListPage]>(
-                        (value) => [currentListSource, value],
-                      ),
-                    );
-                }),
-              ),
-            );
-          } else {
-            listObservables.push(
-              this.httpClient
-                .post<KokuDto.ListPage>(currentListSourceUrl, {
-                  fieldSelection: [...fieldSelection],
-                  limit: 100,
-                  page: 0,
-                  fieldPredicates: fieldPredicates,
-                })
-                .pipe(
-                  map<KokuDto.ListPage, [KokuDto.DashboardAppointmentsPanelListSourceDto, KokuDto.ListPage]>(
-                    (value) => [currentListSource, value],
-                  ),
-                ),
-            );
-          }
-        }
-      }
-
-      forkJoin(listObservables)
-        .pipe(
-          tap(() => {
-            this.loading.set(true);
-          }),
-          finalize(() => {
-            this.loading.set(false);
-          }),
-        )
-        .subscribe(
-          (data: [KokuDto.DashboardAppointmentsPanelListSourceDto, KokuDto.ListPage][]) => {
-            const appointments: AppointmentItem[] = [];
-            for (const currentResultData of data || []) {
-              const listSource = currentResultData[0];
-              const listPage = currentResultData[1];
-              for (const currentListPageItem of listPage.results || []) {
-                if (!currentListPageItem.id) {
-                  throw new Error(`Missing id for item ${currentListPageItem})`);
-                }
-                if (!listSource.startDateFieldSelectionPath) {
-                  throw new Error(`Missing startDateFieldSelectionPath for item ${currentListPageItem})`);
-                }
-                if (!listSource.textFieldSelectionPath) {
-                  throw new Error(`Missing textFieldSelectionPath for item ${currentListPageItem})`);
-                }
-
-                let date = dayjs(get(currentListPageItem.values, listSource.startDateFieldSelectionPath));
-                if (listSource.startTimeFieldSelectionPath) {
-                  date = dayjs(
-                    get(currentListPageItem.values, listSource.startDateFieldSelectionPath) +
-                      'T' +
-                      get(currentListPageItem.values, listSource.startTimeFieldSelectionPath),
-                  );
-                }
-
-                appointments.push({
-                  id: currentListPageItem.id,
-                  start: date.toDate(),
-                  time: date.format('HH:mm'),
-                  past: date.isBefore(Date.now()),
-                  topHeadline: listSource.sourceItemText,
-                  headline: get(currentListPageItem.values, listSource.textFieldSelectionPath),
-                  subHeadline:
-                    listSource.notesTextFieldSelectionPath !== undefined
-                      ? get(currentListPageItem.values, listSource.notesTextFieldSelectionPath, '')
-                      : undefined,
-                  borderColorClass: colorBorderClass(listSource.sourceItemColor),
-                  allDay: listSource.allDay,
-                });
-              }
-            }
-            if (appointments && appointments.length > 0) {
-              this.appointments.set(
-                appointments.sort((a, b) => {
-                  return a.start.getTime() - b.start.getTime();
-                }),
-              );
-            } else {
-              this.appointments.set(null);
-            }
-          },
-          () => {
-            this.toastService.add('Fehler beim Laden der Daten', 'error', undefined, Number.POSITIVE_INFINITY);
-          },
-        );
+      this.loadAppointments(content);
     });
+  }
+
+  private loadAppointments(content: KokuDto.DashboardAppointmentsPanelDto): void {
+    const listObservables = this.createListObservables(content);
+    if (listObservables.length === 0) {
+      this.appointments.set(null);
+      return;
+    }
+
+    this.loading.set(true);
+    forkJoin(listObservables)
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: (data) => {
+          this.updateAppointments(data);
+        },
+        error: () => {
+          this.toastService.add('Fehler beim Laden der Daten', 'error', undefined, Number.POSITIVE_INFINITY);
+        },
+      });
+  }
+
+  private createListObservables(
+    content: KokuDto.DashboardAppointmentsPanelDto,
+  ): Observable<LoadedAppointmentListSource>[] {
+    const listObservables: Observable<LoadedAppointmentListSource>[] = [];
+    for (const currentListSource of content.listSources || []) {
+      const listObservable = this.createListObservable(content, currentListSource);
+      if (listObservable) {
+        listObservables.push(listObservable);
+      }
+    }
+    return listObservables;
+  }
+
+  private createListObservable(
+    content: KokuDto.DashboardAppointmentsPanelDto,
+    currentListSource: KokuDto.DashboardAppointmentsPanelListSourceDto,
+  ): Observable<LoadedAppointmentListSource> | undefined {
+    const sourceUrl = currentListSource.sourceUrl;
+    if (!sourceUrl) {
+      return undefined;
+    }
+
+    const listQuery = this.createListQuery(content, currentListSource);
+    const userIdFieldSelectionPath = currentListSource.userIdFieldSelectionPath;
+    if (userIdFieldSelectionPath) {
+      return this.myUserDetailsService.getCurrentUserDetailsCached().pipe(
+        mergeMap((userDetails) => {
+          this.addFieldSelection(listQuery, userIdFieldSelectionPath);
+          this.addFieldPredicate(listQuery, userIdFieldSelectionPath, {
+            searchExpression: String(userDetails.id),
+            searchOperator: 'EQ',
+          });
+          return this.fetchList(currentListSource, sourceUrl, listQuery);
+        }),
+      );
+    }
+
+    return this.fetchList(currentListSource, sourceUrl, listQuery);
+  }
+
+  private createListQuery(
+    content: KokuDto.DashboardAppointmentsPanelDto,
+    currentListSource: KokuDto.DashboardAppointmentsPanelListSourceDto,
+  ): KokuDto.ListQuery {
+    const listQuery: KokuDto.ListQuery = {
+      fieldSelection: [],
+      limit: 100,
+      page: 0,
+      fieldPredicates: {},
+    };
+
+    this.addDatePredicates(listQuery, content, currentListSource);
+    this.addFieldSelection(listQuery, currentListSource.startTimeFieldSelectionPath);
+    this.addFieldSelection(listQuery, currentListSource.endTimeFieldSelectionPath);
+    this.addFieldSelection(listQuery, currentListSource.textFieldSelectionPath);
+    this.addFieldSelection(listQuery, currentListSource.notesTextFieldSelectionPath);
+    this.addDeletedPredicate(listQuery, currentListSource);
+    return listQuery;
+  }
+
+  private addDatePredicates(
+    listQuery: KokuDto.ListQuery,
+    content: KokuDto.DashboardAppointmentsPanelDto,
+    currentListSource: KokuDto.DashboardAppointmentsPanelListSourceDto,
+  ): void {
+    if (currentListSource.startDateFieldSelectionPath && content.start) {
+      this.addFieldSelection(listQuery, currentListSource.startDateFieldSelectionPath);
+      this.addFieldPredicate(listQuery, currentListSource.startDateFieldSelectionPath, {
+        searchExpression: dayjs(content.start).format('YYYY-MM-DD'),
+        searchOperator: 'GREATER_OR_EQ',
+        searchOperatorHint: currentListSource.searchOperatorHint,
+      });
+    }
+    if (currentListSource.endDateFieldSelectionPath && content.end) {
+      this.addFieldSelection(listQuery, currentListSource.endDateFieldSelectionPath);
+      this.addFieldPredicate(listQuery, currentListSource.endDateFieldSelectionPath, {
+        searchExpression: dayjs(content.end).format('YYYY-MM-DD'),
+        searchOperator: 'LESS_OR_EQ',
+        searchOperatorHint: currentListSource.searchOperatorHint,
+      });
+    }
+  }
+
+  private addDeletedPredicate(
+    listQuery: KokuDto.ListQuery,
+    currentListSource: KokuDto.DashboardAppointmentsPanelListSourceDto,
+  ): void {
+    if (currentListSource.deletedFieldSelectionPath) {
+      this.addFieldSelection(listQuery, currentListSource.deletedFieldSelectionPath);
+      this.addFieldPredicate(listQuery, currentListSource.deletedFieldSelectionPath, {
+        searchExpression: 'TRUE',
+        searchOperator: 'EQ',
+        negate: true,
+      });
+    }
+  }
+
+  private addFieldSelection(listQuery: KokuDto.ListQuery, fieldSelectionPath: string | undefined): void {
+    if (fieldSelectionPath && !listQuery.fieldSelection?.includes(fieldSelectionPath)) {
+      listQuery.fieldSelection?.push(fieldSelectionPath);
+    }
+  }
+
+  private addFieldPredicate(
+    listQuery: KokuDto.ListQuery,
+    fieldSelectionPath: string,
+    predicate: KokuDto.QueryPredicate,
+  ): void {
+    const fieldPredicates = listQuery.fieldPredicates || {};
+    fieldPredicates[fieldSelectionPath] = {
+      predicates: [predicate, ...(fieldPredicates[fieldSelectionPath]?.predicates || [])],
+    };
+    listQuery.fieldPredicates = fieldPredicates;
+  }
+
+  private fetchList(
+    currentListSource: KokuDto.DashboardAppointmentsPanelListSourceDto,
+    sourceUrl: string,
+    listQuery: KokuDto.ListQuery,
+  ): Observable<LoadedAppointmentListSource> {
+    return this.httpClient.post<KokuDto.ListPage>(sourceUrl, listQuery).pipe(
+      map((listPage) => ({
+        listSource: currentListSource,
+        listPage,
+      })),
+    );
+  }
+
+  private updateAppointments(data: LoadedAppointmentListSource[]): void {
+    const appointments = data.flatMap(({ listSource, listPage }) => this.createAppointmentItems(listSource, listPage));
+    if (appointments.length === 0) {
+      this.appointments.set(null);
+      return;
+    }
+
+    appointments.sort((a, b) => a.start.getTime() - b.start.getTime());
+    this.appointments.set(appointments);
+  }
+
+  private createAppointmentItems(
+    listSource: KokuDto.DashboardAppointmentsPanelListSourceDto,
+    listPage: KokuDto.ListPage,
+  ): AppointmentItem[] {
+    return (listPage.results || []).map((currentListPageItem) =>
+      this.createAppointmentItem(listSource, currentListPageItem),
+    );
+  }
+
+  private createAppointmentItem(
+    listSource: KokuDto.DashboardAppointmentsPanelListSourceDto,
+    currentListPageItem: KokuDto.ListItem,
+  ): AppointmentItem {
+    this.assertListItemCanBecomeAppointment(listSource, currentListPageItem);
+    const date = this.createAppointmentDate(listSource, currentListPageItem);
+
+    return {
+      id: currentListPageItem.id!,
+      start: date.toDate(),
+      time: date.format('HH:mm'),
+      past: date.isBefore(Date.now()),
+      topHeadline: listSource.sourceItemText,
+      headline: get(currentListPageItem.values, listSource.textFieldSelectionPath!),
+      subHeadline: this.createSubHeadline(listSource, currentListPageItem),
+      borderColorClass: colorBorderClass(listSource.sourceItemColor),
+      allDay: listSource.allDay,
+    };
+  }
+
+  private assertListItemCanBecomeAppointment(
+    listSource: KokuDto.DashboardAppointmentsPanelListSourceDto,
+    currentListPageItem: KokuDto.ListItem,
+  ): void {
+    const itemDescription = this.describeListItem(currentListPageItem);
+    if (!currentListPageItem.id) {
+      throw new Error(`Missing id for item ${itemDescription}`);
+    }
+    if (!listSource.startDateFieldSelectionPath) {
+      throw new Error(`Missing startDateFieldSelectionPath for item ${itemDescription}`);
+    }
+    if (!listSource.textFieldSelectionPath) {
+      throw new Error(`Missing textFieldSelectionPath for item ${itemDescription}`);
+    }
+  }
+
+  private createAppointmentDate(
+    listSource: KokuDto.DashboardAppointmentsPanelListSourceDto,
+    currentListPageItem: KokuDto.ListItem,
+  ): dayjs.Dayjs {
+    const startDate = get(currentListPageItem.values, listSource.startDateFieldSelectionPath!);
+    if (listSource.startTimeFieldSelectionPath) {
+      const startTime = get(currentListPageItem.values, listSource.startTimeFieldSelectionPath);
+      return dayjs(`${startDate}T${startTime}`);
+    }
+    return dayjs(startDate);
+  }
+
+  private createSubHeadline(
+    listSource: KokuDto.DashboardAppointmentsPanelListSourceDto,
+    currentListPageItem: KokuDto.ListItem,
+  ): string | undefined {
+    if (listSource.notesTextFieldSelectionPath === undefined) {
+      return undefined;
+    }
+    return get(currentListPageItem.values, listSource.notesTextFieldSelectionPath, '');
+  }
+
+  private describeListItem(currentListPageItem: KokuDto.ListItem): string {
+    return JSON.stringify(currentListPageItem);
   }
 }

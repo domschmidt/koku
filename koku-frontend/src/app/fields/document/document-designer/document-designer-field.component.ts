@@ -89,10 +89,11 @@ export class DocumentDesignerFieldComponent implements OnDestroy {
           this.changed.emit(JSON.stringify(onChangeTemplate));
         }
       });
-    } else {
-      if (!deepEqual(template, this.designer.getTemplate())) {
-        this.designer.updateTemplate(template);
-      }
+      return;
+    }
+
+    if (!deepEqual(template, this.designer.getTemplate())) {
+      this.designer.updateTemplate(template);
     }
   }
 

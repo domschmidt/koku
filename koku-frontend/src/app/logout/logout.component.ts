@@ -17,14 +17,14 @@ export class LogoutComponent implements OnInit {
     const authService = this.authService;
 
     this.loading.set(true);
-    from(authService.destroySession()).subscribe(
-      () => {
+    from(authService.destroySession()).subscribe({
+      next: () => {
         this.loading.set(false);
         this.toastService.add(`Erfolgreich abgemeldet`, 'success');
       },
-      () => {
+      error: () => {
         this.loading.set(false);
       },
-    );
+    });
   }
 }

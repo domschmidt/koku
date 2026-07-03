@@ -129,14 +129,17 @@ export class DateInputFieldComponent {
 
   validate(): boolean {
     const valueSnapshot = this.value() ?? '';
-    if (!valueSnapshot?.length && this.required()) {
-      return false;
+    if (valueSnapshot.length === 0) {
+      return this.required() === false;
     }
-    return !valueSnapshot || this.isDateInputValueValid(valueSnapshot);
+    return this.isDateInputValueValid(valueSnapshot);
   }
 
   private rawValue(): string {
-    return (!this.loading() ? this.value() : this.defaultValue()) ?? '';
+    if (this.loading()) {
+      return this.defaultValue() ?? '';
+    }
+    return this.value() ?? '';
   }
 
   private maskDateInput(value: string): string {
@@ -274,7 +277,7 @@ export class DateInputFieldComponent {
   private readNumericDatePartsWithShortTokens(digits: string, shortTokens: DateFormatToken[]): DateInputParts | null {
     let offset = 0;
     const rawParts = this.formatDefinition.tokens.map((token) => {
-      const length = token === 'Y' ? 2 : shortTokens.includes(token) ? 1 : 2;
+      const length = this.numericDatePartLength(token, shortTokens);
       const part = digits.slice(offset, offset + length);
       offset += length;
       return part;
@@ -293,6 +296,13 @@ export class DateInputFieldComponent {
       }
       return result;
     }, {});
+  }
+
+  private numericDatePartLength(token: DateFormatToken, shortTokens: DateFormatToken[]): number {
+    if (token === 'Y') {
+      return 2;
+    }
+    return shortTokens.includes(token) ? 1 : 2;
   }
 
   private partsCreateValidDate(parts: DateInputParts): boolean {
@@ -360,9 +370,19 @@ export class DateInputFieldComponent {
     const separator = parts.find((part) => part.type === 'literal')?.value || '.';
     return {
       dayjsFormat: tokens.map((token) => (token === 'Y' ? 'YYYY' : token.repeat(2))).join(separator),
-      placeholder: tokens.map((token) => (token === 'D' ? 'TT' : token === 'M' ? 'MM' : 'JJJJ')).join(separator),
+      placeholder: tokens.map((token) => this.placeholderForToken(token)).join(separator),
       separator,
       tokens,
     };
+  }
+
+  private placeholderForToken(token: DateFormatToken): string {
+    if (token === 'D') {
+      return 'TT';
+    }
+    if (token === 'M') {
+      return 'MM';
+    }
+    return 'JJJJ';
   }
 }

@@ -62,13 +62,14 @@ export class FullscreenService {
   }
 
   private fixIOSViewport() {
-    if (!window.visualViewport) return;
+    const visualViewport = globalThis.visualViewport;
+    if (!visualViewport) return;
 
     const update = () => {
-      document.documentElement.style.setProperty('--vhvv', `${window.visualViewport!.height}px`);
+      document.documentElement.style.setProperty('--vhvv', `${visualViewport.height}px`);
     };
 
-    window.visualViewport.addEventListener('resize', update);
+    visualViewport.addEventListener('resize', update);
     update();
   }
 }

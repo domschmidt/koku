@@ -10,7 +10,7 @@ export class ThemingService {
   readonly theme = new BehaviorSubject<'koku-light' | 'koku-dark'>('koku-light');
 
   constructor() {
-    const darkModeQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
+    const darkModeQuery = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
 
     if (darkModeQuery?.matches) {
       this.theme.next('koku-dark');

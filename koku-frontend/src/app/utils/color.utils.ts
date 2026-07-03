@@ -45,7 +45,11 @@ export function colorValue(color: string | undefined, shade: ColorShade = 600): 
 
 export function colorTextClass(color: string | undefined, fallback = 'PRIMARY'): string {
   const resolved = resolveColor(color ?? fallback);
-  return resolved ? `text-${resolved.name}${resolved.semantic ? '' : '-600'}` : '';
+  if (!resolved) {
+    return '';
+  }
+  const shadeSuffix = resolved.semantic ? '' : '-600';
+  return `text-${resolved.name}${shadeSuffix}`;
 }
 
 export function colorBadgeClass(color: string | undefined, fallback = 'PRIMARY'): string {
@@ -71,7 +75,8 @@ export function colorBorderClass(color: string | undefined, shade: 400 | 600 = 6
   if (!resolved) {
     return '';
   }
-  return `border-${resolved.name}${resolved.semantic ? '' : `-${shade}`}`;
+  const shadeSuffix = resolved.semantic ? '' : `-${shade}`;
+  return `border-${resolved.name}${shadeSuffix}`;
 }
 
 function resolveColor(color: string | undefined): { name: string; semantic: boolean } | undefined {
