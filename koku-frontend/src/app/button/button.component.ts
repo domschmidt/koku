@@ -52,7 +52,7 @@ export class ButtonComponent {
     const hrefSnapshot = this.href();
     const hrefTargetSnapshot = this.hrefTarget();
     if (hrefSnapshot) {
-      window.open(hrefSnapshot, this.getLinkTarget(hrefTargetSnapshot));
+      globalThis.open(hrefSnapshot, this.getLinkTarget(hrefTargetSnapshot));
     }
   }
 

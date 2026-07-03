@@ -150,7 +150,7 @@ export class MultiSelectFieldComponent {
     const currentPossibleValuesSnapshot = this.possibleValues() || [];
     if (this.uniqueValues()) {
       return currentPossibleValuesSnapshot.filter((currentPossibleValue) => {
-        return currentPossibleValue.id === undefined || selectionIds.indexOf(currentPossibleValue.id) < 0;
+        return currentPossibleValue.id === undefined || !selectionIds.includes(currentPossibleValue.id);
       });
     } else {
       return currentPossibleValuesSnapshot;
@@ -160,11 +160,11 @@ export class MultiSelectFieldComponent {
   selectItemKeyDownRaw(event: KeyboardEvent, currentSelectionId: string) {
     const selectionIdsSnapshot = this.selectionIds();
     const oldIdx = selectionIdsSnapshot.indexOf(currentSelectionId);
-    if (['ArrowDown', 'ArrowRight'].indexOf(event.key) >= 0) {
+    if (['ArrowDown', 'ArrowRight'].includes(event.key)) {
       event.preventDefault();
       moveItemInArray(selectionIdsSnapshot, oldIdx, Math.min(selectionIdsSnapshot.length, oldIdx + 1));
       this.selectionIds.set(selectionIdsSnapshot);
-    } else if (['ArrowUp', 'ArrowLeft'].indexOf(event.key) >= 0) {
+    } else if (['ArrowUp', 'ArrowLeft'].includes(event.key)) {
       event.preventDefault();
       const newIdx = Math.max(0, oldIdx - 1);
       moveItemInArray(selectionIdsSnapshot, oldIdx, Math.max(0, newIdx));
@@ -177,7 +177,7 @@ export class MultiSelectFieldComponent {
           }
         }
       });
-    } else if (['Backspace', 'Delete'].indexOf(event.key) >= 0) {
+    } else if (['Backspace', 'Delete'].includes(event.key)) {
       event.preventDefault();
       const newIdx = Math.max(0, oldIdx - 1);
       this.requestSelectionDelete(event, oldIdx);

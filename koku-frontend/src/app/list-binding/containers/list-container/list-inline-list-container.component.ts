@@ -31,47 +31,71 @@ export class ListInlineListContainerComponent {
     toObservable(this.contextMapping)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => {
-        const resolvedContext: Record<string, any> = {};
-        if (value) {
-          const observables: Observable<any>[] = [];
-          for (const [currentKey, currentValue] of Object.entries(value || {})) {
-            if (currentValue['@type'] !== 'endpoint') {
-              throw new Error(`Unknown context type ${currentValue['@type']}`);
-            }
-            const castedValue = currentValue as KokuDto.EndpointListViewListContentContextDto;
-            if (!castedValue.endpointMethod) {
-              throw new Error('Missing endpoint method');
-            }
-            if (!castedValue.endpointUrl) {
-              throw new Error('Missing endpoint url');
-            }
-
-            let endpointUrl = castedValue.endpointUrl;
-            for (const [segment, value] of Object.entries(this.urlSegments() || {})) {
-              endpointUrl = endpointUrl.replace(segment, value);
-            }
-
-            observables.push(
-              this.httpClient.request(castedValue.endpointMethod, endpointUrl).pipe(
-                map((response) => {
-                  resolvedContext[currentKey] = response;
-                }),
-              ),
-            );
-          }
-          if (observables.length > 0) {
-            forkJoin(observables).subscribe({
-              next: () => {
-                this.mappedContext.set(resolvedContext);
-              },
-            });
-          } else {
-            this.mappedContext.set(null);
-          }
-        } else {
-          this.mappedContext.set(null);
-        }
+        this.resolveContextMapping(value);
       });
+  }
+
+  private resolveContextMapping(
+    contextMapping: Record<string, KokuDto.AbstractListViewListContentContextDto> | undefined,
+  ): void {
+    if (!contextMapping) {
+      this.mappedContext.set(null);
+      return;
+    }
+
+    const resolvedContext: Record<string, any> = {};
+    const observables = this.createContextRequests(contextMapping, resolvedContext);
+    if (observables.length === 0) {
+      this.mappedContext.set(null);
+      return;
+    }
+
+    forkJoin(observables).subscribe({
+      next: () => {
+        this.mappedContext.set(resolvedContext);
+      },
+    });
+  }
+
+  private createContextRequests(
+    contextMapping: Record<string, KokuDto.AbstractListViewListContentContextDto>,
+    resolvedContext: Record<string, any>,
+  ): Observable<any>[] {
+    return Object.entries(contextMapping).map(([currentKey, currentValue]) =>
+      this.createContextRequest(currentKey, currentValue, resolvedContext),
+    );
+  }
+
+  private createContextRequest(
+    currentKey: string,
+    currentValue: KokuDto.AbstractListViewListContentContextDto,
+    resolvedContext: Record<string, any>,
+  ): Observable<any> {
+    if (currentValue['@type'] !== 'endpoint') {
+      throw new Error(`Unknown context type ${currentValue['@type']}`);
+    }
+
+    const castedValue = currentValue as KokuDto.EndpointListViewListContentContextDto;
+    if (!castedValue.endpointMethod) {
+      throw new Error('Missing endpoint method');
+    }
+    if (!castedValue.endpointUrl) {
+      throw new Error('Missing endpoint url');
+    }
+
+    return this.httpClient.request(castedValue.endpointMethod, this.resolveEndpointUrl(castedValue.endpointUrl)).pipe(
+      map((response) => {
+        resolvedContext[currentKey] = response;
+      }),
+    );
+  }
+
+  private resolveEndpointUrl(endpointUrl: string): string {
+    let resolvedEndpointUrl = endpointUrl;
+    for (const [segment, value] of Object.entries(this.urlSegments() || {})) {
+      resolvedEndpointUrl = resolvedEndpointUrl.replace(segment, value);
+    }
+    return resolvedEndpointUrl;
   }
 
   closeInlineContent() {

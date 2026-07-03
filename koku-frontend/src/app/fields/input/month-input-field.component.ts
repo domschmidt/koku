@@ -117,14 +117,17 @@ export class MonthInputFieldComponent {
 
   validate(): boolean {
     const valueSnapshot = this.value() ?? '';
-    if (!valueSnapshot?.length && this.required()) {
-      return false;
+    if (valueSnapshot.length === 0) {
+      return this.required() === false;
     }
-    return !valueSnapshot || this.parseValue(valueSnapshot).isValid();
+    return this.parseValue(valueSnapshot).isValid();
   }
 
   private rawValue(): string {
-    return (!this.loading() ? this.value() : this.defaultValue()) ?? '';
+    if (this.loading()) {
+      return this.defaultValue() ?? '';
+    }
+    return this.value() ?? '';
   }
 
   private formatValue(value: string): string {

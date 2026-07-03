@@ -30,20 +30,20 @@ export class DashboardAsyncTextPanelComponent implements OnChanges {
       throw new Error('Missing sourceUrl');
     }
     this.loadedContent.set(null);
-    if (this.lastContentSubscription && !this.lastContentSubscription.closed) {
+    if (this.lastContentSubscription?.closed === false) {
       this.lastContentSubscription.unsubscribe();
     }
 
     this.lastContentSubscription = this.httpClient
       .get<KokuDto.DashboardTextPanelDto>(contentSnapshot.sourceUrl)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(
-        (loadedContent) => {
+      .subscribe({
+        next: (loadedContent) => {
           this.loadedContent.set(loadedContent);
         },
-        () => {
+        error: () => {
           this.toastService.add('Fehler beim Laden des Panels.', 'error');
         },
-      );
+      });
   }
 }

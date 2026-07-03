@@ -300,7 +300,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['formularUrl']) {
       this.formularData.set(null);
-      if (this.lastFormularSubscription && !this.lastFormularSubscription.closed) {
+      if (this.lastFormularSubscription?.closed === false) {
         this.lastFormularSubscription.unsubscribe();
       }
       this.lastFormularSubscription = this.loadFormular().subscribe({
@@ -391,7 +391,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
     const sourceUrlSnapshot = this.sourceUrl();
     if (sourceUrlSnapshot) {
       this.sourceLoading.set(true);
-      if (this.lastSourceSubscription && !this.lastSourceSubscription.closed) {
+      if (this.lastSourceSubscription?.closed === false) {
         this.lastSourceSubscription.unsubscribe();
       }
       this.lastSourceSubscription = this.httpClient.get(sourceUrlSnapshot).subscribe({

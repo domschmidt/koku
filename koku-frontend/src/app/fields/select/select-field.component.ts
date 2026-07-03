@@ -56,10 +56,7 @@ export class SelectFieldComponent {
   selectedId = signal<string | null>(null);
   searchTerm = signal('');
   filteredPossibleValues = computed(() => {
-    const terms = this.searchTerm()
-      .toLowerCase()
-      .split(/\s+/)
-      .filter((t) => t);
+    const terms = this.searchTerm().toLowerCase().split(/\s+/).filter(Boolean);
     return this.possibleValues().filter((option) => {
       if (option.disabled) {
         return false;
@@ -158,10 +155,7 @@ export class SelectFieldComponent {
 
   validate(): boolean {
     const valueSnapshot = this.value();
-    if (!valueSnapshot?.length && this.required()) {
-      return false;
-    }
-    return true;
+    return Boolean(valueSnapshot?.length) || this.required() === false;
   }
 
   selectOption(option: KokuDto.SelectFormularFieldPossibleValue) {
@@ -188,7 +182,7 @@ export class SelectFieldComponent {
 
   private displayDropdown() {
     let direction: 'bottom' | 'top' = 'bottom';
-    if (window.innerHeight - this.elementRef.nativeElement.getBoundingClientRect().bottom < 400) {
+    if (globalThis.innerHeight - this.elementRef.nativeElement.getBoundingClientRect().bottom < 400) {
       direction = 'top';
     }
 

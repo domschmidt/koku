@@ -38,6 +38,7 @@ import { DynamicRenderRecipe } from '../dynamic-host/dynamic-host.directive';
 import { OutletDirective } from '../portal/outlet.directive';
 import { CalendarActionRendererComponent } from './action-renderer/calendar-action-renderer.component';
 import { colorBorderClass, colorValue } from '../utils/color.utils';
+import { childRouteSegments, matchRouteSegments, replaceRouteSegments, resolvedRoutePath } from '../utils/route.utils';
 
 dayjs.extend(isoWeek);
 dayjs.extend(advancedFormat);
@@ -211,14 +212,13 @@ export class CalendarComponent implements OnDestroy {
             revert: args.revert,
             item: args.event.extendedProps['item'],
             setLoading: (loading: boolean) => {
-              const classnameSnapshot = [...args.event.classNames];
-              if (loading) {
-                classnameSnapshot.push('calendar-item--loading');
-                args.event.setProp('classNames', classnameSnapshot);
-              } else {
-                classnameSnapshot.splice(classnameSnapshot.indexOf('calendar-item--loading'), 1);
-                args.event.setProp('classNames', classnameSnapshot);
-              }
+              const classnameSnapshot = args.event.classNames.filter(
+                (className) => className !== 'calendar-item--loading',
+              );
+              args.event.setProp(
+                'classNames',
+                loading ? [...classnameSnapshot, 'calendar-item--loading'] : classnameSnapshot,
+              );
             },
           });
         }
@@ -244,16 +244,13 @@ export class CalendarComponent implements OnDestroy {
             revert: args.revert,
             item: args.event.extendedProps['item'],
             setLoading: (loading: boolean) => {
-              const classnameSnapshot = [...args.event.classNames];
-              if (loading) {
-                classnameSnapshot.push('calendar-item--loading');
-                args.event.setProp('classNames', classnameSnapshot);
-              } else {
-                if (classnameSnapshot.indexOf('calendar-item--loading') >= 0) {
-                  classnameSnapshot.splice(classnameSnapshot.indexOf('calendar-item--loading'), 1);
-                  args.event.setProp('classNames', classnameSnapshot);
-                }
-              }
+              const classnameSnapshot = args.event.classNames.filter(
+                (className) => className !== 'calendar-item--loading',
+              );
+              args.event.setProp(
+                'classNames',
+                loading ? [...classnameSnapshot, 'calendar-item--loading'] : classnameSnapshot,
+              );
             },
           });
         }
@@ -290,198 +287,228 @@ export class CalendarComponent implements OnDestroy {
 
   registeredEventSourceFactories: Record<string, CalendarPluginEventSourceFactory> = {};
   constructor() {
+    this.pluginInstances = this.createPluginInstances();
+
     toObservable(this.config).subscribe((config) => {
-      let persistedCalendarSettings: CalendarPersistedSettings;
-      try {
-        persistedCalendarSettings = JSON.parse(
-          localStorage.getItem(`calendar-settings-${this.config().id}`) || '{}',
-        ) as CalendarPersistedSettings;
-      } catch {
-        persistedCalendarSettings = {};
-      }
-      this.hiddenSources.set(new Set(persistedCalendarSettings.hiddenSources || []));
-      this.viewMode.set(persistedCalendarSettings.viewMode || 'MONTH');
-
-      const eventSources: EventSourceInput[] = [];
-      for (const currentSource of config.listSources || []) {
-        for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
-          const eventSourceFactory: CalendarPluginEventSourceFactory | void =
-            currentPluginInstance.instance.provideEventSourceFactory?.(currentSource);
-          if (eventSourceFactory && currentSource.id) {
-            this.registeredEventSourceFactories[currentSource.id] = eventSourceFactory;
-            if (!this.hiddenSources().has(currentSource.id)) {
-              eventSources.push(eventSourceFactory.generateEventSource());
-            }
-          }
-        }
-      }
-      this.fullCalendarOptions.set({
-        ...this.fullCalendarOptions(),
-        eventSources: eventSources,
-        initialView: this.getView(this.viewMode()),
-        dateClick: (dateClickInfo) => {
-          for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
-            currentPluginInstance.instance.onDateSelect?.({
-              selectionStart: dateClickInfo.date,
-              selectionEnd: dateClickInfo.date,
-              allDay: dateClickInfo.allDay,
-            });
-          }
-        },
-        select: (dateSelectInfo) => {
-          for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
-            currentPluginInstance.instance.onDateSelect?.({
-              selectionStart: dateSelectInfo.start,
-              selectionEnd: dateSelectInfo.end,
-              allDay: dateSelectInfo.allDay,
-            });
-          }
-        },
-      });
-
-      for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
-        currentPluginInstance.instance.afterConfigLoaded?.(config);
-      }
-
-      const calendarActions: Record<string, KokuDto.AbstractCalendarActionDto> = {};
-      for (const currentCalendarAction of config.calendarActions || []) {
-        const currentCalendarActionId = currentCalendarAction.id;
-        if (currentCalendarActionId) {
-          if (calendarActions[currentCalendarActionId]) {
-            throw new Error(`Duplicated calendar action id ${currentCalendarActionId}`);
-          }
-          calendarActions[currentCalendarActionId] = currentCalendarAction;
-        } else {
-          throw new Error('Missing calendar action id');
-        }
-      }
-      this.calendarActions.set(calendarActions);
-      for (const currentCalendarAction of config.calendarActions || []) {
-        const currentCalendarActionId = currentCalendarAction.id;
-        if (currentCalendarActionId) {
-          for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
-            currentPluginInstance.instance.initCalendarAction?.(
-              currentCalendarAction,
-              (updatedAction: KokuDto.AbstractCalendarActionDto) => {
-                this.calendarActions.set({
-                  ...this.calendarActions(),
-                  [currentCalendarActionId]: updatedAction,
-                });
-              },
-            );
-          }
-        }
-      }
-
-      if (this.routerUrlSubscription) {
-        this.routerUrlSubscription.unsubscribe();
-      }
-
-      const afterNavigationUrlChange = () => {
-        const segments = this.router.url
-          .split('/')
-          .filter((value) => value !== '')
-          .slice(
-            this.parentRoutePath()
-              .split('/')
-              .filter((value) => value !== '').length,
-          );
-        let routedContentFound = false;
-        for (const currentRoutedContent of config.routedContents || []) {
-          if (currentRoutedContent.route) {
-            let failedLookup = false;
-            let segmentIdx = 0;
-            const segmentMapping: Record<string, string> = {};
-            for (const currentRoutePathToMatch of currentRoutedContent.route.split('/')) {
-              const currentSegment = segments[segmentIdx++];
-              if (!currentSegment) {
-                failedLookup = true;
-                break;
-              }
-              const currentSegmentPath = currentSegment;
-              if (currentRoutePathToMatch.indexOf(':') === 0) {
-                segmentMapping[currentRoutePathToMatch] = currentSegmentPath;
-              } else if (currentRoutePathToMatch !== currentSegmentPath) {
-                failedLookup = true;
-                break;
-              }
-            }
-            if (!failedLookup) {
-              routedContentFound = true;
-              if (currentRoutedContent['@type'] === 'routed-inline-content') {
-                const castedRouteContent = currentRoutedContent as KokuDto.CalendarRoutedContentDto;
-                if (castedRouteContent.inlineContent) {
-                  let itemId = castedRouteContent.itemId;
-                  if (itemId) {
-                    for (const [segment, value] of Object.entries(segmentMapping || {})) {
-                      itemId = itemId.replace(segment, value);
-                    }
-                  }
-
-                  if (
-                    (itemId !== undefined && this.activeContent()?.id !== itemId) ||
-                    this.activeContent()?.content !== castedRouteContent.inlineContent ||
-                    !deepEqual(this.activeContent()?.urlSegments, segmentMapping)
-                  ) {
-                    this.openInlineContent({
-                      content: castedRouteContent.inlineContent,
-                      id: itemId || null,
-                      parentRoutePath: [
-                        ...(this.parentRoutePath() + '/' + castedRouteContent.route).split('/').map(
-                          (value) =>
-                            ({
-                              ...segmentMapping,
-                              ...this.urlSegments(),
-                            })[value] || value,
-                        ),
-                      ]
-                        .filter((value) => value !== '')
-                        .join('/'),
-                      urlSegments: segmentMapping,
-                    });
-
-                    for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
-                      currentPluginInstance.instance.onRoutedInlineContentOpened?.(castedRouteContent);
-                    }
-                  }
-                }
-                break;
-              }
-            }
-          }
-        }
-        if (!routedContentFound) {
-          this.closeInlineContent(true).subscribe();
-        }
-      };
-
-      this.routerUrlSubscription = this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evnt) => {
-        if (evnt instanceof NavigationEnd) {
-          afterNavigationUrlChange();
-        }
-      });
-      afterNavigationUrlChange();
+      this.applyConfig(config);
     });
+  }
 
-    const pluginInstances: Record<string, { instance: CalendarPlugin; api: any }> = {};
-    let pluginsConfig = this.calendarPluginsConfig;
-    if (pluginsConfig) {
-      if (!Array.isArray(pluginsConfig)) {
-        pluginsConfig = [pluginsConfig];
-      }
-      for (const currentPlugin of pluginsConfig || []) {
-        const newPluginInstance = currentPlugin(this);
-        const pluginInstanceDetails = newPluginInstance.init();
-        if (pluginInstances[pluginInstanceDetails.id]) {
-          throw new Error(`Duplicated calendar plugin id ${pluginInstanceDetails.id}`);
+  private applyConfig(config: KokuDto.CalendarConfigDto): void {
+    this.restorePersistedSettings();
+    this.configureEventSources(config);
+    this.notifyPluginsAfterConfigLoaded(config);
+    this.calendarActions.set(this.createCalendarActionIndex(config.calendarActions));
+    this.initCalendarActions(config.calendarActions);
+    this.bindRoutedContent(config);
+  }
+
+  private restorePersistedSettings(): void {
+    let persistedCalendarSettings: CalendarPersistedSettings;
+    try {
+      persistedCalendarSettings = JSON.parse(
+        localStorage.getItem(`calendar-settings-${this.config().id}`) || '{}',
+      ) as CalendarPersistedSettings;
+    } catch {
+      persistedCalendarSettings = {};
+    }
+    this.hiddenSources.set(new Set(persistedCalendarSettings.hiddenSources || []));
+    this.viewMode.set(persistedCalendarSettings.viewMode || 'MONTH');
+  }
+
+  private configureEventSources(config: KokuDto.CalendarConfigDto): void {
+    this.fullCalendarOptions.set({
+      ...this.fullCalendarOptions(),
+      eventSources: this.createEventSources(config),
+      initialView: this.getView(this.viewMode()),
+      dateClick: (dateClickInfo) => {
+        this.notifyPluginsAboutDateSelection(dateClickInfo.date, dateClickInfo.date, dateClickInfo.allDay);
+      },
+      select: (dateSelectInfo) => {
+        this.notifyPluginsAboutDateSelection(dateSelectInfo.start, dateSelectInfo.end, dateSelectInfo.allDay);
+      },
+    });
+  }
+
+  private createEventSources(config: KokuDto.CalendarConfigDto): EventSourceInput[] {
+    const eventSources: EventSourceInput[] = [];
+    for (const currentSource of config.listSources || []) {
+      this.addEventSourceFactories(currentSource, eventSources);
+    }
+    return eventSources;
+  }
+
+  private addEventSourceFactories(
+    currentSource: KokuDto.AbstractCalendarListSourceConfigDto,
+    eventSources: EventSourceInput[],
+  ): void {
+    for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+      const eventSourceFactory = currentPluginInstance.instance.provideEventSourceFactory?.(currentSource);
+      if (eventSourceFactory && currentSource.id) {
+        this.registeredEventSourceFactories[currentSource.id] = eventSourceFactory;
+        if (!this.hiddenSources().has(currentSource.id)) {
+          eventSources.push(eventSourceFactory.generateEventSource());
         }
-        pluginInstances[pluginInstanceDetails.id] = {
-          instance: newPluginInstance,
-          api: pluginInstanceDetails.api,
-        };
       }
     }
-    this.pluginInstances = pluginInstances;
+  }
+
+  private notifyPluginsAboutDateSelection(selectionStart: Date, selectionEnd: Date, allDay: boolean): void {
+    for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+      currentPluginInstance.instance.onDateSelect?.({
+        selectionStart,
+        selectionEnd,
+        allDay,
+      });
+    }
+  }
+
+  private notifyPluginsAfterConfigLoaded(config: KokuDto.CalendarConfigDto): void {
+    for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+      currentPluginInstance.instance.afterConfigLoaded?.(config);
+    }
+  }
+
+  private createCalendarActionIndex(
+    calendarActions: KokuDto.AbstractCalendarActionDto[] | undefined,
+  ): Record<string, KokuDto.AbstractCalendarActionDto> {
+    const calendarActionIndex: Record<string, KokuDto.AbstractCalendarActionDto> = {};
+    for (const currentCalendarAction of calendarActions || []) {
+      const currentCalendarActionId = currentCalendarAction.id;
+      if (!currentCalendarActionId) {
+        throw new Error('Missing calendar action id');
+      }
+      if (calendarActionIndex[currentCalendarActionId]) {
+        throw new Error(`Duplicated calendar action id ${currentCalendarActionId}`);
+      }
+      calendarActionIndex[currentCalendarActionId] = currentCalendarAction;
+    }
+    return calendarActionIndex;
+  }
+
+  private initCalendarActions(calendarActions: KokuDto.AbstractCalendarActionDto[] | undefined): void {
+    for (const currentCalendarAction of calendarActions || []) {
+      const currentCalendarActionId = currentCalendarAction.id;
+      if (currentCalendarActionId) {
+        this.initCalendarAction(currentCalendarAction, currentCalendarActionId);
+      }
+    }
+  }
+
+  private initCalendarAction(currentCalendarAction: KokuDto.AbstractCalendarActionDto, actionId: string): void {
+    for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+      currentPluginInstance.instance.initCalendarAction?.(currentCalendarAction, (updatedAction) => {
+        this.calendarActions.set({
+          ...this.calendarActions(),
+          [actionId]: updatedAction,
+        });
+      });
+    }
+  }
+
+  private bindRoutedContent(config: KokuDto.CalendarConfigDto): void {
+    this.routerUrlSubscription?.unsubscribe();
+    this.routerUrlSubscription = this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evnt) => {
+      if (evnt instanceof NavigationEnd) {
+        this.applyRoutedContent(config);
+      }
+    });
+    this.applyRoutedContent(config);
+  }
+
+  private applyRoutedContent(config: KokuDto.CalendarConfigDto): void {
+    const routedContentMatch = this.findRoutedContent(config.routedContents);
+    if (!routedContentMatch) {
+      this.closeInlineContentWithoutRouteChange().subscribe();
+      return;
+    }
+
+    this.openMatchedRoutedContent(routedContentMatch.content, routedContentMatch.segmentMapping);
+  }
+
+  private findRoutedContent(routedContents: KokuDto.AbstractCalendarRoutedContentDto[] | undefined): {
+    content: KokuDto.AbstractCalendarRoutedContentDto;
+    segmentMapping: Record<string, string>;
+  } | null {
+    const segments = childRouteSegments(this.router.url, this.parentRoutePath());
+    for (const currentRoutedContent of routedContents || []) {
+      const segmentMapping = matchRouteSegments(currentRoutedContent.route, segments);
+      if (segmentMapping) {
+        return { content: currentRoutedContent, segmentMapping };
+      }
+    }
+    return null;
+  }
+
+  private openMatchedRoutedContent(
+    currentRoutedContent: KokuDto.AbstractCalendarRoutedContentDto,
+    segmentMapping: Record<string, string>,
+  ): void {
+    if (currentRoutedContent['@type'] !== 'routed-inline-content') {
+      return;
+    }
+
+    const castedRouteContent = currentRoutedContent as KokuDto.CalendarRoutedContentDto;
+    if (!castedRouteContent.inlineContent) {
+      return;
+    }
+
+    const itemId = castedRouteContent.itemId
+      ? replaceRouteSegments(castedRouteContent.itemId, segmentMapping)
+      : undefined;
+    if (!this.shouldOpenRoutedInlineContent(castedRouteContent, itemId, segmentMapping)) {
+      return;
+    }
+
+    this.openInlineContent({
+      content: castedRouteContent.inlineContent,
+      id: itemId || null,
+      parentRoutePath: resolvedRoutePath(this.parentRoutePath(), castedRouteContent.route, {
+        ...segmentMapping,
+        ...(this.urlSegments() || {}),
+      }),
+      urlSegments: segmentMapping,
+    });
+    this.notifyPluginsAboutRoutedInlineContent(castedRouteContent);
+  }
+
+  private shouldOpenRoutedInlineContent(
+    castedRouteContent: KokuDto.CalendarRoutedContentDto,
+    itemId: string | undefined,
+    segmentMapping: Record<string, string>,
+  ): boolean {
+    return (
+      (itemId !== undefined && this.activeContent()?.id !== itemId) ||
+      this.activeContent()?.content !== castedRouteContent.inlineContent ||
+      !deepEqual(this.activeContent()?.urlSegments, segmentMapping)
+    );
+  }
+
+  private notifyPluginsAboutRoutedInlineContent(castedRouteContent: KokuDto.CalendarRoutedContentDto): void {
+    for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+      currentPluginInstance.instance.onRoutedInlineContentOpened?.(castedRouteContent);
+    }
+  }
+
+  private createPluginInstances(): Record<string, { instance: CalendarPlugin; api: any }> {
+    const pluginInstances: Record<string, { instance: CalendarPlugin; api: any }> = {};
+    const pluginsConfig = Array.isArray(this.calendarPluginsConfig)
+      ? this.calendarPluginsConfig
+      : this.calendarPluginsConfig
+        ? [this.calendarPluginsConfig]
+        : [];
+    for (const currentPlugin of pluginsConfig) {
+      const newPluginInstance = currentPlugin(this);
+      const pluginInstanceDetails = newPluginInstance.init();
+      if (pluginInstances[pluginInstanceDetails.id]) {
+        throw new Error(`Duplicated calendar plugin id ${pluginInstanceDetails.id}`);
+      }
+      pluginInstances[pluginInstanceDetails.id] = {
+        instance: newPluginInstance,
+        api: pluginInstanceDetails.api,
+      };
+    }
+    return pluginInstances;
   }
 
   dateChanged(value: string | null) {
@@ -530,27 +557,17 @@ export class CalendarComponent implements OnDestroy {
 
   openInlineContent(item: CalendarInlineItem) {
     const activeContentSnapshot = this.activeContent();
-    if (activeContentSnapshot && activeContentSnapshot.modalRef) {
-      this.modalService.update(activeContentSnapshot.modalRef, {
+    const activeModalRef = activeContentSnapshot?.modalRef;
+    if (activeModalRef) {
+      const closeModal = this.createInlineModalCloseHandler(activeModalRef);
+      this.modalService.update(activeModalRef, {
         dynamicContent: item.content,
         urlSegments: item.urlSegments,
         dynamicContentSetup: this.contentSetup().modalContentRegistry,
         fullscreen: true,
         parentRoutePath: item.parentRoutePath,
-        clickOutside: () => {
-          this.closeInlineContent().subscribe((success) => {
-            if (success) {
-              activeContentSnapshot.modalRef.close();
-            }
-          });
-        },
-        onCloseRequested: () => {
-          this.closeInlineContent().subscribe((success) => {
-            if (success) {
-              activeContentSnapshot.modalRef.close();
-            }
-          });
-        },
+        clickOutside: closeModal,
+        onCloseRequested: closeModal,
       });
     } else {
       const newModal = this.modalService.add({
@@ -559,26 +576,26 @@ export class CalendarComponent implements OnDestroy {
         dynamicContentSetup: this.contentSetup().modalContentRegistry,
         fullscreen: true,
         parentRoutePath: item.parentRoutePath,
-        clickOutside: () => {
-          this.closeInlineContent().subscribe((success) => {
-            if (success) {
-              newModal.close();
-            }
-          });
-        },
-        onCloseRequested: () => {
-          this.closeInlineContent().subscribe((success) => {
-            if (success) {
-              newModal.close();
-            }
-          });
-        },
+        clickOutside: () => this.closeInlineModal(newModal),
+        onCloseRequested: () => this.closeInlineModal(newModal),
       });
       this.activeContent.set({
         ...item,
         modalRef: newModal,
       });
     }
+  }
+
+  private createInlineModalCloseHandler(modalRef: RenderedModalType): () => void {
+    return () => this.closeInlineModal(modalRef);
+  }
+
+  private closeInlineModal(modalRef: RenderedModalType): void {
+    this.closeInlineContent().subscribe((success) => {
+      if (success) {
+        modalRef.close();
+      }
+    });
   }
 
   openRoutedContent(routes: string[], context?: CalendarContext) {
@@ -590,39 +607,42 @@ export class CalendarComponent implements OnDestroy {
     );
   }
 
-  closeInlineContent(skipRouteChange = false) {
+  closeInlineContent() {
     return new Observable<boolean>((observer) => {
-      if (!skipRouteChange) {
-        this.router
-          .navigate([
-            ...this.parentRoutePath()
-              .split('/')
-              .map((value) => (this.urlSegments() || {})[value] || value),
-          ])
-          .then((success) => {
-            if (success) {
-              const activeContentSnapshot = this.activeContent();
-              for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
-                currentPluginInstance.instance.onRoutedInlineContentClose?.(activeContentSnapshot);
-              }
-              if (activeContentSnapshot?.modalRef) {
-                this.modalService.close(activeContentSnapshot?.modalRef);
-              }
-              this.activeContent.set(null);
-            }
-            observer.next(success);
-            observer.complete();
-          });
-      } else {
-        const activeContentSnapshot = this.activeContent();
-        if (activeContentSnapshot?.modalRef) {
-          this.modalService.close(activeContentSnapshot?.modalRef);
-        }
-        this.activeContent.set(null);
-        observer.next(true);
-        observer.complete();
-      }
+      this.router
+        .navigateByUrl(`/${resolvedRoutePath(this.parentRoutePath(), undefined, this.urlSegments())}`)
+        .then((success) => {
+          if (success) {
+            this.closeActiveInlineContentWithPluginNotification();
+          }
+          observer.next(success);
+          observer.complete();
+        });
     });
+  }
+
+  private closeInlineContentWithoutRouteChange() {
+    return new Observable<boolean>((observer) => {
+      this.closeActiveInlineContentSilently();
+      observer.next(true);
+      observer.complete();
+    });
+  }
+
+  private closeActiveInlineContentWithPluginNotification(): void {
+    const activeContentSnapshot = this.activeContent();
+    for (const currentPluginInstance of Object.values(this.pluginInstances || {})) {
+      currentPluginInstance.instance.onRoutedInlineContentClose?.(activeContentSnapshot);
+    }
+    this.closeActiveInlineContentSilently();
+  }
+
+  private closeActiveInlineContentSilently(): void {
+    const activeContentSnapshot = this.activeContent();
+    if (activeContentSnapshot?.modalRef) {
+      this.modalService.close(activeContentSnapshot.modalRef);
+    }
+    this.activeContent.set(null);
   }
 
   ngOnDestroy(): void {

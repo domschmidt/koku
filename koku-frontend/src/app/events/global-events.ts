@@ -19,7 +19,7 @@ export class GlobalEvents {
   public propagateGlobalEvent(eventName: string, payload: any) {
     const errors: unknown[] = [];
     for (const ownerListeners of this.listeners.values()) {
-      for (const listener of [...(ownerListeners.get(eventName) ?? [])]) {
+      for (const listener of ownerListeners.get(eventName) ?? []) {
         try {
           listener(payload);
         } catch (error) {

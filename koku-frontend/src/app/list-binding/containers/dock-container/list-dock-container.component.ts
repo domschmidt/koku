@@ -8,6 +8,12 @@ import { OutletDirective } from '../../../portal/outlet.directive';
 import { HttpClient } from '@angular/common/http';
 import { get } from '../../../utils/get';
 import { Subscription } from 'rxjs';
+import {
+  childRouteSegments,
+  matchRouteSegments,
+  resolvedRouteParts,
+  resolvedRoutePath,
+} from '../../../utils/route.utils';
 
 interface ExtendedDockContentItem extends DockContentItem {
   content: KokuDto.AbstractListViewContentDto;
@@ -49,131 +55,128 @@ export class ListDockContainerComponent {
   private routerUrlSubscription: Subscription | undefined;
 
   constructor() {
+    this.observeTitleSource();
+    toObservable(this.content).subscribe((content) => {
+      this.configureDockContent(content);
+    });
+  }
+
+  private observeTitleSource(): void {
     toObservable(this.sourceUrl).subscribe((sourceUrl) => {
       if (sourceUrl) {
         this.httpClient.get(sourceUrl).subscribe((detailSource) => {
-          const titlePath = this.titlePath();
-          if (titlePath) {
-            this.title.set(get(detailSource, titlePath));
-          } else {
-            this.title.set(null);
-          }
+          this.updateTitle(detailSource);
         });
       } else {
         this.title.set(null);
       }
     });
-    toObservable(this.content).subscribe((content) => {
-      const newTransformedContent: ExtendedDockContentItem[] = [];
-      const newDockContentIndex: Record<string, ExtendedDockContentItem> = {};
-      for (const currentContent of content || []) {
-        if (currentContent.id !== undefined && currentContent.content !== undefined) {
-          const newDockContent: ExtendedDockContentItem = {
-            active: false,
-            id: currentContent.id,
-            content: currentContent.content,
-            icon: currentContent.icon,
-            title: currentContent.title,
-            route: currentContent.route,
-          };
-          newTransformedContent.push(newDockContent);
-          newDockContentIndex[currentContent.id] = newDockContent;
-        }
+  }
+
+  private updateTitle(detailSource: any): void {
+    const titlePath = this.titlePath();
+    this.title.set(titlePath ? get(detailSource, titlePath) : null);
+  }
+
+  private configureDockContent(content: KokuDto.ListViewItemInlineDockContentItemDto[]): void {
+    const transformedContent = this.transformDockContent(content);
+    this.dockContentIndex = this.indexDockContent(transformedContent);
+    this.dockConfig.set(transformedContent);
+    this.routerUrlSubscription?.unsubscribe();
+    this.routerUrlSubscription = this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evnt) => {
+      if (evnt instanceof NavigationEnd) {
+        this.applyNavigationState(content);
       }
-      this.dockContentIndex = newDockContentIndex;
-      this.dockConfig.set(newTransformedContent);
-
-      if (this.routerUrlSubscription) {
-        this.routerUrlSubscription.unsubscribe();
-      }
-
-      const afterNavigationUrlChange = () => {
-        const segments = this.router.url
-          .split('/')
-          .filter((value) => value !== '')
-          .slice(
-            this.parentRoutePath()
-              .split('/')
-              .filter((value) => value !== '').length,
-          );
-        let newActiveContentFound = false;
-        for (const currentRoutedContent of content || []) {
-          if (currentRoutedContent.route) {
-            let segmentIdx = 0;
-            const segmentMapping: Record<string, string> = {};
-            let failedLookup = false;
-            for (const currentRoutePathToMatch of currentRoutedContent.route.split('/')) {
-              const currentSegment = segments[segmentIdx++];
-              if (!currentSegment) {
-                failedLookup = true;
-                break;
-              }
-              const currentSegmentPath = currentSegment;
-              if (currentRoutePathToMatch.indexOf(':') === 0) {
-                if (!segmentMapping[currentRoutePathToMatch]) {
-                  segmentMapping[currentRoutePathToMatch] = currentSegmentPath;
-                }
-              } else if (currentRoutePathToMatch !== currentSegmentPath) {
-                failedLookup = true;
-                break;
-              }
-            }
-            if (!failedLookup) {
-              if (currentRoutedContent.id) {
-                const dockConfigSnapshot = this.dockConfig();
-                for (const currentDockConfig of dockConfigSnapshot) {
-                  currentDockConfig.active = currentRoutedContent.id == currentDockConfig.id;
-                }
-                this.dockConfig.set(dockConfigSnapshot);
-              }
-              this.activeContent.set({
-                ...currentRoutedContent,
-                parentRoutePath: [
-                  ...(this.parentRoutePath() + '/' + currentRoutedContent.route).split('/').map(
-                    (value) =>
-                      ({
-                        ...segmentMapping,
-                        ...this.urlSegments(),
-                      })[value] || value,
-                  ),
-                ]
-                  .filter((value) => value !== '')
-                  .join('/'),
-              });
-              newActiveContentFound = true;
-              break;
-            }
-          }
-        }
-        if (!newActiveContentFound) {
-          let firstEntry: ExtendedCalendarInlineDockContentItemDto | null = null;
-          const firstEntryRaw = (content || [])[0];
-          if (firstEntryRaw) {
-            firstEntry = {
-              ...firstEntryRaw,
-              parentRoutePath: [
-                ...(this.parentRoutePath() + '/' + firstEntryRaw.route).split('/').map(
-                  (value) =>
-                    ({
-                      ...this.urlSegments(),
-                    })[value] || value,
-                ),
-              ]
-                .filter((value) => value !== '')
-                .join('/'),
-            };
-          }
-          this.activeContent.set(firstEntry);
-        }
-      };
-
-      this.routerUrlSubscription = this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evnt) => {
-        if (evnt instanceof NavigationEnd) {
-          afterNavigationUrlChange();
-        }
-      });
-      afterNavigationUrlChange();
     });
+    this.applyNavigationState(content);
+  }
+
+  private transformDockContent(content: KokuDto.ListViewItemInlineDockContentItemDto[]): ExtendedDockContentItem[] {
+    const items: ExtendedDockContentItem[] = [];
+    for (const currentContent of content || []) {
+      if (currentContent.id !== undefined && currentContent.content !== undefined) {
+        items.push({
+          active: false,
+          id: currentContent.id,
+          content: currentContent.content,
+          icon: currentContent.icon,
+          title: currentContent.title,
+          route: currentContent.route,
+        });
+      }
+    }
+    return items;
+  }
+
+  private indexDockContent(items: ExtendedDockContentItem[]): Record<string, ExtendedDockContentItem> {
+    const index: Record<string, ExtendedDockContentItem> = {};
+    for (const item of items) {
+      index[item.id] = item;
+    }
+    return index;
+  }
+
+  private applyNavigationState(content: KokuDto.ListViewItemInlineDockContentItemDto[]): void {
+    const activeRoutedContent = this.findActiveRoutedContent(content);
+    if (activeRoutedContent) {
+      this.activateRoutedContent(activeRoutedContent.content, activeRoutedContent.segmentMapping);
+      return;
+    }
+    this.activateFirstContent(content);
+  }
+
+  private findActiveRoutedContent(content: KokuDto.ListViewItemInlineDockContentItemDto[]): {
+    content: KokuDto.ListViewItemInlineDockContentItemDto;
+    segmentMapping: Record<string, string>;
+  } | null {
+    const segments = childRouteSegments(this.router.url, this.parentRoutePath());
+    for (const currentRoutedContent of content || []) {
+      const segmentMapping = matchRouteSegments(currentRoutedContent.route, segments);
+      if (segmentMapping) {
+        return { content: currentRoutedContent, segmentMapping };
+      }
+    }
+    return null;
+  }
+
+  private activateRoutedContent(
+    currentRoutedContent: KokuDto.ListViewItemInlineDockContentItemDto,
+    segmentMapping: Record<string, string>,
+  ): void {
+    this.activateDockContent(currentRoutedContent.id);
+    this.activeContent.set({
+      ...currentRoutedContent,
+      parentRoutePath: this.createParentRoutePath(currentRoutedContent.route, segmentMapping),
+    });
+  }
+
+  private activateFirstContent(content: KokuDto.ListViewItemInlineDockContentItemDto[]): void {
+    const firstEntryRaw = (content || [])[0];
+    if (!firstEntryRaw) {
+      this.activeContent.set(null);
+      this.activateDockContent(undefined);
+      return;
+    }
+    this.activeContent.set({
+      ...firstEntryRaw,
+      parentRoutePath: this.createParentRoutePath(firstEntryRaw.route, {}),
+    });
+    this.activateDockContent(firstEntryRaw.id);
+  }
+
+  private createParentRoutePath(route: string | undefined, segmentMapping: Record<string, string>): string {
+    return resolvedRoutePath(this.parentRoutePath(), route, {
+      ...segmentMapping,
+      ...(this.urlSegments() || {}),
+    });
+  }
+
+  private activateDockContent(contentId: string | undefined): void {
+    const dockConfigSnapshot = this.dockConfig();
+    for (const currentDockConfig of dockConfigSnapshot) {
+      currentDockConfig.active = contentId !== undefined && contentId == currentDockConfig.id;
+    }
+    this.dockConfig.set(dockConfigSnapshot);
   }
 
   closeInlineContent() {
@@ -185,34 +188,24 @@ export class ListDockContainerComponent {
   }
 
   onDockContentActivationRequested(requestedDockContent: DockContentItem) {
-    const afterContentActivation = () => {
-      const dockConfigSnapshot = this.dockConfig();
-      for (const currentDockConfig of dockConfigSnapshot) {
-        currentDockConfig.active = requestedDockContent.id == currentDockConfig.id;
-      }
-      this.dockConfig.set(dockConfigSnapshot);
-    };
-
     const contentLookup = this.dockContentIndex[requestedDockContent.id];
-    if (contentLookup) {
-      if (contentLookup.route !== undefined) {
-        const routeParts: string[] = [];
-        for (const currentRoutePart of contentLookup.route.split('/')) {
-          let replacedRoutePart = currentRoutePart;
-          for (const [segment, value] of Object.entries(this.urlSegments() || {})) {
-            replacedRoutePart = replacedRoutePart.replace(segment, value);
-          }
-          routeParts.push(replacedRoutePart);
-        }
-        this.router.navigate([...this.parentRoutePath().split('/'), ...routeParts]).then((success) => {
-          if (success) {
-            afterContentActivation();
-          }
-        });
-      } else {
-        this.activeContent.set(contentLookup);
-        afterContentActivation();
-      }
+    if (!contentLookup) {
+      return;
     }
+    if (contentLookup.route !== undefined) {
+      this.navigateToRoutedContent(contentLookup);
+    } else {
+      this.activeContent.set(contentLookup);
+      this.activateDockContent(contentLookup.id);
+    }
+  }
+
+  private navigateToRoutedContent(contentLookup: ExtendedDockContentItem): void {
+    const routeParts = resolvedRouteParts(contentLookup.route, this.urlSegments());
+    this.router.navigate([...this.parentRoutePath().split('/'), ...routeParts]).then((success) => {
+      if (success) {
+        this.activateDockContent(contentLookup.id);
+      }
+    });
   }
 }

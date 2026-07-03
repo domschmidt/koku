@@ -30,9 +30,7 @@ export class PictureUploadComponent implements OnDestroy {
   onFileSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
-      if (PictureUploadComponent.SUPPORTED_MIME_TYPES.indexOf(file.type) < 0) {
-        this.toastService.add('Bildformat wird nicht unterstützt.', 'error');
-      } else {
+      if (PictureUploadComponent.SUPPORTED_MIME_TYPES.includes(file.type)) {
         this.currentCompressor?.abort();
         this.currentCompressor = new Compressor(file, {
           quality: 0.6,
@@ -52,6 +50,8 @@ export class PictureUploadComponent implements OnDestroy {
             this.toastService.add('Fehler bei der Bildbearbeitung', 'error');
           },
         });
+      } else {
+        this.toastService.add('Bildformat wird nicht unterstützt.', 'error');
       }
     }
   }

@@ -32,6 +32,13 @@ import { ModalContentSetup, RenderedModalType } from '../modal/modal.type';
 import { ListFilterComponent } from './list-filter/list-filter.component';
 import { DynamicRenderRecipe } from '../dynamic-host/dynamic-host.directive';
 import { OutletDirective } from '../portal/outlet.directive';
+import {
+  childRouteSegments,
+  matchRouteSegments,
+  replaceRouteSegments,
+  resolvedRoutePath,
+  routePathSegments,
+} from '../utils/route.utils';
 
 export interface ListFieldRegistrationType {
   value: WritableSignal<any>;
@@ -48,6 +55,8 @@ export interface ListItemSetup {
   id: string | null;
   source: WritableSignal<Record<string, any>>;
 }
+
+type ListViewFieldSelection = NonNullable<KokuDto.ListViewDto['fields']>[number];
 
 export interface ListTempItem {
   text: string;
@@ -132,6 +141,9 @@ interface ExtendedAbstractListViewItemActionDto extends KokuDto.AbstractListView
   loading: boolean;
 }
 
+type ListGlobalEventListener = NonNullable<KokuDto.ListViewDto['globalEventListeners']>[number];
+type ListGlobalEventRegistry = Record<string, ((eventPayload: any) => void)[]>;
+
 export interface ListInlineItem {
   content: KokuDto.AbstractListViewContentDto | null;
   id: string | null;
@@ -208,487 +220,527 @@ export class ListComponent implements OnDestroy, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['listUrl']) {
-      this.loadList().subscribe(() => {
-        this.loadListSource();
+      this.loadList().subscribe({
+        next: () => {
+          this.loadListSource();
+        },
       });
     } else if (changes['sourceUrl']) {
       this.loadListSource();
     }
   }
 
-  private loadList() {
+  private loadList(): Observable<KokuDto.ListViewDto | void> {
     const listUrlSnapshot = this.listUrl();
-    if (listUrlSnapshot) {
-      if (this.lastListSubscription && !this.lastListSubscription.closed) {
-        this.lastListSubscription.unsubscribe();
-      }
-      return new Observable((subscriber) => {
-        this.lastListSubscription = this.httpClient.get<KokuDto.ListViewDto>(listUrlSnapshot).subscribe({
-          next: (listData) => {
-            this.clearGlobalEventListeners();
-
-            const registeredEventListeners: Record<string, ((eventPayload: any) => void)[]> = {};
-            for (const currentEventListener of listData.globalEventListeners || []) {
-              if (!currentEventListener.eventName) {
-                throw new Error('Missing eventName in Global Listener Configuration');
-              }
-              if (!registeredEventListeners[currentEventListener.eventName]) {
-                registeredEventListeners[currentEventListener.eventName] = [];
-              }
-              registeredEventListeners[currentEventListener.eventName].push((eventPayload: any) => {
-                switch (currentEventListener['@type']) {
-                  case 'event-payload-search-term': {
-                    const castedEventListener =
-                      currentEventListener as KokuDto.ListViewEventPayloadSearchTermGlobalEventListenerDto;
-
-                    let newSearchTerm;
-                    if (castedEventListener.valuePath !== undefined) {
-                      newSearchTerm = get(eventPayload, castedEventListener.valuePath);
-                    } else if (typeof eventPayload === 'string') {
-                      newSearchTerm = eventPayload;
-                    }
-
-                    this.globalSearchTermSubject.next(newSearchTerm);
-
-                    break;
-                  }
-                  case 'item-add': {
-                    const castedEventListener =
-                      currentEventListener as KokuDto.ListViewEventPayloadAddItemGlobalEventListenerDto;
-
-                    const itemId = get(eventPayload, castedEventListener.idPath || '', null);
-                    if (!itemId) {
-                      throw new Error('Missing itemId');
-                    }
-
-                    const newItemInstance = this.addItem({
-                      id: String(itemId),
-                      values: {},
-                    });
-
-                    for (const [currentMappingPath, listViewReference] of Object.entries(
-                      castedEventListener.valueMapping || {},
-                    )) {
-                      const mappablePayloadValue = get(eventPayload, currentMappingPath);
-                      if (mappablePayloadValue !== undefined) {
-                        switch (listViewReference['@type']) {
-                          case 'field-reference': {
-                            const castedReference = listViewReference as KokuDto.ListViewFieldReference;
-                            if (!castedReference.fieldId) {
-                              throw new Error('Missing fieldId in FieldReference');
-                            }
-                            const field = newItemInstance.fields[castedReference.fieldId];
-                            if (!field) {
-                              throw new Error('FieldReference not resolvable');
-                            }
-                            field.value.set(mappablePayloadValue);
-                            break;
-                          }
-                          case 'source-path-reference': {
-                            const castedReference = listViewReference as KokuDto.ListViewSourcePathReference;
-                            if (!castedReference.valuePath) {
-                              throw new Error('Missing valuePath in FieldReference');
-                            }
-                            const itemSourceSnapshot = {
-                              ...newItemInstance.source(),
-                            };
-                            set(itemSourceSnapshot, castedReference.valuePath, mappablePayloadValue);
-                            newItemInstance.source.set(itemSourceSnapshot);
-                            break;
-                          }
-                          default: {
-                            throw new Error(`Unknown Reference ${listViewReference['@type']}`);
-                          }
-                        }
-                      }
-                    }
-                    break;
-                  }
-                  case 'item-update-via-event-payload': {
-                    const castedEventListener =
-                      currentEventListener as KokuDto.ListViewEventPayloadItemUpdateGlobalEventListenerDto;
-
-                    if (!castedEventListener.idPath) {
-                      throw new Error('Missing idPath configuration in EventListener');
-                    }
-
-                    const listRegisterIdx: Record<string, ListItemSetup> = {};
-                    for (const currentEntry of this.listRegister()) {
-                      if (currentEntry.id !== undefined && currentEntry.id !== null) {
-                        listRegisterIdx[currentEntry.id] = currentEntry;
-                      }
-                    }
-                    const item = listRegisterIdx[String(get(eventPayload, castedEventListener.idPath, ''))];
-                    // it might be possible that the item is (currently) not shown. in this case, we cannot update the list.
-                    if (item !== undefined) {
-                      for (const [currentMappingPath, listViewReference] of Object.entries(
-                        castedEventListener.valueMapping || {},
-                      )) {
-                        const mappablePayloadValue = get(eventPayload, currentMappingPath);
-                        if (mappablePayloadValue !== undefined) {
-                          switch (listViewReference['@type']) {
-                            case 'field-reference': {
-                              const castedReference = listViewReference as KokuDto.ListViewFieldReference;
-                              if (!castedReference.fieldId) {
-                                throw new Error('Missing fieldId in FieldReference');
-                              }
-                              const field = item.fields[castedReference.fieldId];
-                              if (!field) {
-                                throw new Error('FieldReference not resolvable');
-                              }
-                              field.value.set(mappablePayloadValue);
-                              break;
-                            }
-                            case 'source-path-reference': {
-                              const castedReference = listViewReference as KokuDto.ListViewSourcePathReference;
-                              if (!castedReference.valuePath) {
-                                throw new Error('Missing valuePath in FieldReference');
-                              }
-                              const itemSourceSnapshot = {
-                                ...item.source(),
-                              };
-                              set(itemSourceSnapshot, castedReference.valuePath, mappablePayloadValue);
-                              item.source.set(itemSourceSnapshot);
-                              break;
-                            }
-                            default: {
-                              throw new Error(`Unknown Reference ${listViewReference['@type']}`);
-                            }
-                          }
-                        }
-                      }
-                    }
-
-                    break;
-                  }
-                  case 'open-routed-content': {
-                    const castedEventListener =
-                      currentEventListener as KokuDto.ListViewEventPayloadOpenRoutedContentGlobalEventListenerDto;
-
-                    if (!castedEventListener.route) {
-                      throw new Error('Missing route configuration in EventListener');
-                    }
-
-                    let route = castedEventListener.route;
-                    for (const currentParam of castedEventListener.params || []) {
-                      switch (currentParam['@type']) {
-                        case 'event-payload': {
-                          const castedParam =
-                            currentParam as KokuDto.ListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto;
-                          if (!castedParam.param) {
-                            throw new Error('Missing param configuration in EventListener');
-                          }
-                          if (!castedParam.valuePath) {
-                            throw new Error('Missing valuePath configuration in EventListener');
-                          }
-                          route = route.replace(castedParam.param, get(eventPayload, castedParam.valuePath));
-                        }
-                      }
-                    }
-                    this.openRoutedContent(route.split('/'));
-                    break;
-                  }
-                  default: {
-                    throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
-                  }
-                }
-              });
-            }
-
-            for (const currentEventListenerName of new Set(Object.keys(registeredEventListeners))) {
-              GLOBAL_EVENT_BUS.addGlobalEventListener(
-                String(this.componentRef),
-                currentEventListenerName,
-                (eventPayload) => {
-                  for (const currentEventListener of registeredEventListeners[currentEventListenerName] || []) {
-                    currentEventListener(eventPayload);
-                  }
-                },
-              );
-            }
-
-            this.filters = {};
-            for (const currentFilter of listData.filters || []) {
-              if (currentFilter.filterDefinition) {
-                const filterDefinition = this.contentSetup().filterRegistry[currentFilter.filterDefinition['@type']];
-                if (filterDefinition) {
-                  const filterQueryPredicates = filterDefinition.initialPredicates(currentFilter.filterDefinition);
-                  if (filterQueryPredicates && currentFilter.id && currentFilter.valuePath) {
-                    this.filters[currentFilter.id] = {
-                      valuePath: currentFilter.valuePath,
-                      predicates: filterQueryPredicates,
-                    };
-                  }
-                }
-              }
-            }
-
-            if (this.globalSearchTermSubscription) {
-              this.globalSearchTermSubscription.unsubscribe();
-            }
-            this.globalSearchTermSubscription = this.globalSearchTermSubject
-              .pipe(debounceTime(300), distinctUntilChanged())
-              .subscribe((term) => {
-                this.currentPage.set(0);
-                this.globalSearchTerm.set(term);
-
-                this.loadListSource({
-                  globalSearchTerm: term,
-                  page: this.currentPage(),
-                });
-              });
-
-            this.listData.set(listData);
-            subscriber.next(listData);
-            subscriber.complete();
-          },
-          error: (error) => {
-            this.listData.set(null);
-            subscriber.error(error);
-          },
-        });
-      });
-    } else {
+    if (!listUrlSnapshot) {
       return of();
     }
+
+    this.cancelLastListRequest();
+    return new Observable((subscriber) => {
+      this.lastListSubscription = this.httpClient.get<KokuDto.ListViewDto>(listUrlSnapshot).subscribe({
+        next: (listData) => {
+          this.handleListLoaded(listData);
+          subscriber.next(listData);
+          subscriber.complete();
+        },
+        error: (error) => {
+          this.listData.set(null);
+          subscriber.error(error);
+        },
+      });
+    });
   }
 
   loadListSource(query?: Partial<KokuDto.ListQuery>) {
     const sourceUrlSnapshot = this.sourceUrl();
     const listDataSnapshot = this.listData();
-    if (sourceUrlSnapshot && listDataSnapshot !== undefined) {
-      this.sourceLoading.set(true);
-      if (this.lastSourceQuerySubscription && !this.lastSourceQuerySubscription.closed) {
-        this.lastSourceQuerySubscription.unsubscribe();
-      }
-      if (this.routerUrlSubscription && !this.routerUrlSubscription.closed) {
-        this.routerUrlSubscription.unsubscribe();
-      }
-
-      const fieldPredicates: Record<string, KokuDto.ListFieldQuery> = {};
-
-      for (const currentFilter of Object.values(this.filters)) {
-        if (!fieldPredicates[currentFilter.valuePath]) {
-          fieldPredicates[currentFilter.valuePath] = {
-            predicates: currentFilter.predicates,
-          };
-        } else {
-          fieldPredicates[currentFilter.valuePath] = {
-            predicates: [
-              ...(fieldPredicates[currentFilter.valuePath].predicates || []),
-              ...(currentFilter.predicates || []),
-            ],
-          };
-        }
-      }
-
-      const newQueryParams = {
-        ...this.lastSourceQuery,
-        ...query,
-      };
-      const newQuery = this.httpClient
-        .post<KokuDto.ListPage>(sourceUrlSnapshot, {
-          ...newQueryParams,
-          fieldSelection: (this.listData() || {}).fieldFetchPaths || [],
-          fieldPredicates,
-        } as KokuDto.ListQuery)
-        .pipe(
-          tap(() => {
-            this.lastSourceQuery = newQueryParams || {};
-          }),
-        );
-
-      this.lastSourceQuerySubscription = newQuery.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (listData) => {
-          const newFieldRegister: ListItemSetup[] = [];
-          for (const currentResult of listData.results || []) {
-            const currentItemId = currentResult.id;
-            if (currentItemId === undefined) {
-              throw new Error('Unexpected item id');
-            }
-            newFieldRegister.push(this.prepareListItem(listData, currentResult));
-          }
-          this.listRegister.set(newFieldRegister);
-          this.sourceData.set(listData);
-
-          const afterNavigationUrlChange = () => {
-            const segments = this.router.url
-              .split('/')
-              .filter((value) => value !== '')
-              .slice(
-                this.parentRoutePath()
-                  .split('/')
-                  .filter((value) => value !== '').length,
-              );
-            let routedContentFound = false;
-            for (const currentRoutedContent of (this.listData() || {}).routedContents || []) {
-              if (currentRoutedContent.route) {
-                let failedLookup = false;
-                let segmentIdx = 0;
-                const segmentMapping: Record<string, string> = {};
-                for (const currentRoutePathToMatch of currentRoutedContent.route.split('/')) {
-                  const currentSegment = segments[segmentIdx++];
-                  if (!currentSegment) {
-                    failedLookup = true;
-                    break;
-                  }
-                  const currentSegmentPath = currentSegment;
-                  if (currentRoutePathToMatch.indexOf(':') === 0) {
-                    segmentMapping[currentRoutePathToMatch] = currentSegmentPath;
-                  } else if (currentRoutePathToMatch !== currentSegmentPath) {
-                    failedLookup = true;
-                    break;
-                  }
-                }
-
-                const newUrlSegments = {
-                  ...this.urlSegments(),
-                  ...segmentMapping,
-                };
-                if (!failedLookup) {
-                  routedContentFound = true;
-                  if (currentRoutedContent['@type'] === 'routed-inline-content') {
-                    const castedRouteContent = currentRoutedContent as KokuDto.ListViewRoutedContentDto;
-                    if (castedRouteContent.inlineContent) {
-                      let itemId = castedRouteContent.itemId;
-                      if (itemId) {
-                        for (const [segment, value] of Object.entries(segmentMapping || {})) {
-                          itemId = itemId.replace(segment, value);
-                        }
-                      }
-
-                      if (
-                        this.inlineContent()?.id !== itemId ||
-                        this.inlineContent()?.content !== castedRouteContent.inlineContent ||
-                        !deepEqual(this.inlineContent()?.urlSegments, segmentMapping)
-                      ) {
-                        this.openInlineContent({
-                          content: castedRouteContent.inlineContent,
-                          id: itemId || null,
-                          parentRoutePath: [
-                            ...(this.parentRoutePath() + '/' + castedRouteContent.route)
-                              .split('/')
-                              .map((value) => newUrlSegments[value] || value),
-                          ]
-                            .filter((value) => value !== '')
-                            .join('/'),
-                          urlSegments: newUrlSegments,
-                        });
-                      }
-                    } else if (castedRouteContent.modalContent) {
-                      let itemId = castedRouteContent.itemId;
-                      if (itemId) {
-                        for (const [segment, value] of Object.entries(newUrlSegments || {})) {
-                          itemId = itemId.replace(segment, value);
-                        }
-                      }
-
-                      if (
-                        this.modalContent()?.id !== itemId ||
-                        this.modalContent()?.content !== castedRouteContent.modalContent ||
-                        !deepEqual(this.modalContent()?.urlSegments, newUrlSegments)
-                      ) {
-                        const oldRoutePath = [
-                          ...this.parentRoutePath()
-                            .split('/')
-                            .map((value) => newUrlSegments[value] || value),
-                        ].filter((value) => value !== '');
-                        const newParentRoutePath = [
-                          ...(this.parentRoutePath() + '/' + castedRouteContent.route)
-                            .split('/')
-                            .map((value) => newUrlSegments[value] || value),
-                        ]
-                          .filter((value) => value !== '')
-                          .join('/');
-                        const newModal = this.modalService.add({
-                          dynamicContent: castedRouteContent.modalContent,
-                          urlSegments: newUrlSegments,
-                          dynamicContentSetup: this.contentSetup().modalRegistry,
-                          fullscreen: true,
-                          parentRoutePath: newParentRoutePath,
-                          clickOutside: () => {
-                            this.closeModalContent(oldRoutePath).subscribe();
-                          },
-                          onCloseRequested: () => {
-                            this.closeModalContent(oldRoutePath).subscribe();
-                          },
-                        });
-
-                        this.modalContent.set({
-                          modal: newModal,
-                          content: castedRouteContent.modalContent,
-                          id: itemId || '',
-                          urlSegments: newUrlSegments,
-                          parentRoutePath: newParentRoutePath,
-                        });
-                      }
-                    }
-                    break;
-                  }
-                }
-              }
-            }
-            if (!routedContentFound) {
-              this.closeInlineContent(true).subscribe();
-            }
-
-            let routedItemFound = false;
-            for (const currentRoutedItem of (this.listData() || {}).routedItems || []) {
-              if (currentRoutedItem.route) {
-                let failedLookup = false;
-                let segmentIdx = 0;
-                const segmentMapping: Record<string, string> = {};
-                for (const currentRoutePathToMatch of currentRoutedItem.route.split('/')) {
-                  const currentSegment = segments[segmentIdx++];
-                  if (!currentSegment) {
-                    failedLookup = true;
-                    break;
-                  }
-                  const currentSegmentPath = currentSegment;
-                  if (currentRoutePathToMatch.indexOf(':') === 0) {
-                    segmentMapping[currentRoutePathToMatch] = currentSegmentPath;
-                  } else if (currentRoutePathToMatch !== currentSegmentPath) {
-                    failedLookup = true;
-                    break;
-                  }
-                }
-                if (!failedLookup) {
-                  routedItemFound = true;
-                  if (currentRoutedItem['@type'] === 'routed-item') {
-                    const castedRouteContent = currentRoutedItem as KokuDto.ListViewRoutedDummyItemDto;
-                    if (!castedRouteContent.text) {
-                      throw new Error('Missing text property in RoutedItem Configuration');
-                    }
-
-                    this.showTempItem(castedRouteContent.text);
-                    break;
-                  }
-                }
-              }
-            }
-            if (!routedItemFound) {
-              this.hideTempItem();
-            }
-          };
-          this.routerUrlSubscription = this.router.events
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe((evnt) => {
-              if (evnt instanceof NavigationEnd) {
-                afterNavigationUrlChange();
-              }
-            });
-          afterNavigationUrlChange();
-
-          this.sourceLoading.set(false);
-        },
-        error: () => {
-          this.sourceLoading.set(false);
-        },
-      });
-      return newQuery;
-    } else {
+    if (!sourceUrlSnapshot || listDataSnapshot === undefined) {
       throw new Error('Missing listSource');
     }
+
+    this.sourceLoading.set(true);
+    this.cancelLastSourceRequest();
+
+    const newQueryParams = {
+      ...this.lastSourceQuery,
+      ...query,
+    };
+    const newQuery = this.createSourceQuery(sourceUrlSnapshot, newQueryParams);
+
+    this.lastSourceQuerySubscription = newQuery.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (listData) => this.handleSourcePageLoaded(listData),
+      error: () => {
+        this.sourceLoading.set(false);
+      },
+    });
+    return newQuery;
+  }
+
+  private cancelLastListRequest(): void {
+    if (this.lastListSubscription?.closed === false) {
+      this.lastListSubscription.unsubscribe();
+    }
+  }
+
+  private handleListLoaded(listData: KokuDto.ListViewDto): void {
+    this.clearGlobalEventListeners();
+    this.registerListGlobalEventListeners(listData);
+    this.initializeFilters(listData);
+    this.registerGlobalSearchSubscription();
+    this.listData.set(listData);
+  }
+
+  private registerListGlobalEventListeners(listData: KokuDto.ListViewDto): void {
+    const registeredEventListeners = this.groupGlobalEventListeners(listData.globalEventListeners);
+    for (const currentEventListenerName of Object.keys(registeredEventListeners)) {
+      GLOBAL_EVENT_BUS.addGlobalEventListener(String(this.componentRef), currentEventListenerName, (eventPayload) =>
+        this.runRegisteredGlobalEventListeners(registeredEventListeners, currentEventListenerName, eventPayload),
+      );
+    }
+  }
+
+  private groupGlobalEventListeners(listeners: ListGlobalEventListener[] | undefined): ListGlobalEventRegistry {
+    const registeredEventListeners: ListGlobalEventRegistry = {};
+    for (const currentEventListener of listeners || []) {
+      if (!currentEventListener.eventName) {
+        throw new Error('Missing eventName in Global Listener Configuration');
+      }
+      registeredEventListeners[currentEventListener.eventName] ??= [];
+      registeredEventListeners[currentEventListener.eventName].push((eventPayload: any) =>
+        this.handleListGlobalEvent(currentEventListener, eventPayload),
+      );
+    }
+    return registeredEventListeners;
+  }
+
+  private runRegisteredGlobalEventListeners(
+    registeredEventListeners: ListGlobalEventRegistry,
+    eventName: string,
+    eventPayload: any,
+  ): void {
+    for (const currentEventListener of registeredEventListeners[eventName] || []) {
+      currentEventListener(eventPayload);
+    }
+  }
+
+  private handleListGlobalEvent(currentEventListener: ListGlobalEventListener, eventPayload: any): void {
+    if (currentEventListener['@type'] === 'event-payload-search-term') {
+      this.applySearchTermEvent(
+        currentEventListener as KokuDto.ListViewEventPayloadSearchTermGlobalEventListenerDto,
+        eventPayload,
+      );
+      return;
+    }
+    if (currentEventListener['@type'] === 'item-add') {
+      this.addItemFromGlobalEvent(
+        currentEventListener as KokuDto.ListViewEventPayloadAddItemGlobalEventListenerDto,
+        eventPayload,
+      );
+      return;
+    }
+    if (currentEventListener['@type'] === 'item-update-via-event-payload') {
+      this.updateItemFromGlobalEvent(
+        currentEventListener as KokuDto.ListViewEventPayloadItemUpdateGlobalEventListenerDto,
+        eventPayload,
+      );
+      return;
+    }
+    if (currentEventListener['@type'] === 'open-routed-content') {
+      this.openRoutedContentFromGlobalEvent(
+        currentEventListener as KokuDto.ListViewEventPayloadOpenRoutedContentGlobalEventListenerDto,
+        eventPayload,
+      );
+      return;
+    }
+    throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
+  }
+
+  private applySearchTermEvent(
+    eventListener: KokuDto.ListViewEventPayloadSearchTermGlobalEventListenerDto,
+    eventPayload: any,
+  ): void {
+    if (eventListener.valuePath !== undefined) {
+      this.globalSearchTermSubject.next(get(eventPayload, eventListener.valuePath));
+      return;
+    }
+    if (typeof eventPayload === 'string') {
+      this.globalSearchTermSubject.next(eventPayload);
+    }
+  }
+
+  private addItemFromGlobalEvent(
+    eventListener: KokuDto.ListViewEventPayloadAddItemGlobalEventListenerDto,
+    eventPayload: any,
+  ): void {
+    const itemId = get(eventPayload, eventListener.idPath || '', null);
+    if (!itemId) {
+      throw new Error('Missing itemId');
+    }
+    const newItemInstance = this.addItem({
+      id: String(itemId),
+      values: {},
+    });
+    this.applyListValueMappings(newItemInstance, eventListener.valueMapping, eventPayload);
+  }
+
+  private updateItemFromGlobalEvent(
+    eventListener: KokuDto.ListViewEventPayloadItemUpdateGlobalEventListenerDto,
+    eventPayload: any,
+  ): void {
+    if (!eventListener.idPath) {
+      throw new Error('Missing idPath configuration in EventListener');
+    }
+    const item = this.indexListRegister()[String(get(eventPayload, eventListener.idPath, ''))];
+    if (item === undefined) {
+      return;
+    }
+    this.applyListValueMappings(item, eventListener.valueMapping, eventPayload);
+  }
+
+  private indexListRegister(): Record<string, ListItemSetup> {
+    const listRegisterIdx: Record<string, ListItemSetup> = {};
+    for (const currentEntry of this.listRegister()) {
+      if (currentEntry.id != null) {
+        listRegisterIdx[currentEntry.id] = currentEntry;
+      }
+    }
+    return listRegisterIdx;
+  }
+
+  private applyListValueMappings(
+    item: ListItemSetup,
+    valueMapping: Record<string, KokuDto.ListViewReference> | undefined,
+    eventPayload: any,
+  ): void {
+    for (const [currentMappingPath, listViewReference] of Object.entries(valueMapping || {})) {
+      const mappablePayloadValue = get(eventPayload, currentMappingPath);
+      if (mappablePayloadValue !== undefined) {
+        this.applyListValueMapping(item, listViewReference, mappablePayloadValue);
+      }
+    }
+  }
+
+  private applyListValueMapping(
+    item: ListItemSetup,
+    listViewReference: KokuDto.ListViewReference,
+    mappablePayloadValue: any,
+  ): void {
+    if (listViewReference['@type'] === 'field-reference') {
+      this.updateFieldReferenceValue(item, listViewReference as KokuDto.ListViewFieldReference, mappablePayloadValue);
+      return;
+    }
+    if (listViewReference['@type'] === 'source-path-reference') {
+      this.updateSourcePathReferenceValue(
+        item,
+        listViewReference as KokuDto.ListViewSourcePathReference,
+        mappablePayloadValue,
+      );
+      return;
+    }
+    throw new Error(`Unknown Reference ${listViewReference['@type']}`);
+  }
+
+  private updateFieldReferenceValue(
+    item: ListItemSetup,
+    reference: KokuDto.ListViewFieldReference,
+    mappablePayloadValue: any,
+  ): void {
+    if (!reference.fieldId) {
+      throw new Error('Missing fieldId in FieldReference');
+    }
+    const field = item.fields[reference.fieldId];
+    if (!field) {
+      throw new Error('FieldReference not resolvable');
+    }
+    field.value.set(mappablePayloadValue);
+  }
+
+  private updateSourcePathReferenceValue(
+    item: ListItemSetup,
+    reference: KokuDto.ListViewSourcePathReference,
+    mappablePayloadValue: any,
+  ): void {
+    if (!reference.valuePath) {
+      throw new Error('Missing valuePath in FieldReference');
+    }
+    const itemSourceSnapshot = { ...item.source() };
+    set(itemSourceSnapshot, reference.valuePath, mappablePayloadValue);
+    item.source.set(itemSourceSnapshot);
+  }
+
+  private openRoutedContentFromGlobalEvent(
+    eventListener: KokuDto.ListViewEventPayloadOpenRoutedContentGlobalEventListenerDto,
+    eventPayload: any,
+  ): void {
+    if (!eventListener.route) {
+      throw new Error('Missing route configuration in EventListener');
+    }
+    this.openRoutedContent(this.resolveGlobalEventRoute(eventListener, eventPayload).split('/'));
+  }
+
+  private resolveGlobalEventRoute(
+    eventListener: KokuDto.ListViewEventPayloadOpenRoutedContentGlobalEventListenerDto,
+    eventPayload: any,
+  ): string {
+    let route = eventListener.route || '';
+    for (const currentParam of eventListener.params || []) {
+      if (currentParam['@type'] !== 'event-payload') {
+        continue;
+      }
+      const castedParam = currentParam as KokuDto.ListViewEventPayloadOpenRoutedContentGlobalEventListenerParamDto;
+      if (!castedParam.param) {
+        throw new Error('Missing param configuration in EventListener');
+      }
+      if (!castedParam.valuePath) {
+        throw new Error('Missing valuePath configuration in EventListener');
+      }
+      route = route.replace(castedParam.param, get(eventPayload, castedParam.valuePath));
+    }
+    return route;
+  }
+
+  private initializeFilters(listData: KokuDto.ListViewDto): void {
+    this.filters = {};
+    for (const currentFilter of listData.filters || []) {
+      this.initializeFilter(currentFilter);
+    }
+  }
+
+  private initializeFilter(currentFilter: KokuDto.ListViewFilterContentDto): void {
+    const filterDefinitionConfig = currentFilter.filterDefinition;
+    if (!filterDefinitionConfig || !currentFilter.id || !currentFilter.valuePath) {
+      return;
+    }
+    const filterDefinition = this.contentSetup().filterRegistry[filterDefinitionConfig['@type']];
+    const filterQueryPredicates = filterDefinition?.initialPredicates(filterDefinitionConfig);
+    if (!filterQueryPredicates) {
+      return;
+    }
+    this.filters[currentFilter.id] = {
+      valuePath: currentFilter.valuePath,
+      predicates: filterQueryPredicates,
+    };
+  }
+
+  private registerGlobalSearchSubscription(): void {
+    this.globalSearchTermSubscription?.unsubscribe();
+    this.globalSearchTermSubscription = this.globalSearchTermSubject
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe({
+        next: (term) => {
+          this.currentPage.set(0);
+          this.globalSearchTerm.set(term);
+          this.loadListSource({
+            globalSearchTerm: term,
+            page: this.currentPage(),
+          });
+        },
+      });
+  }
+
+  private cancelLastSourceRequest(): void {
+    if (this.lastSourceQuerySubscription?.closed === false) {
+      this.lastSourceQuerySubscription.unsubscribe();
+    }
+    if (this.routerUrlSubscription?.closed === false) {
+      this.routerUrlSubscription.unsubscribe();
+    }
+  }
+
+  private createSourceQuery(sourceUrlSnapshot: string, newQueryParams: Partial<KokuDto.ListQuery>) {
+    return this.httpClient
+      .post<KokuDto.ListPage>(sourceUrlSnapshot, {
+        ...newQueryParams,
+        fieldSelection: this.listData()?.fieldFetchPaths || [],
+        fieldPredicates: this.buildFieldPredicates(),
+      } as KokuDto.ListQuery)
+      .pipe(
+        tap(() => {
+          this.lastSourceQuery = newQueryParams;
+        }),
+      );
+  }
+
+  private buildFieldPredicates(): Record<string, KokuDto.ListFieldQuery> {
+    const fieldPredicates: Record<string, KokuDto.ListFieldQuery> = {};
+    for (const currentFilter of Object.values(this.filters)) {
+      this.addFilterPredicates(fieldPredicates, currentFilter);
+    }
+    return fieldPredicates;
+  }
+
+  private addFilterPredicates(
+    fieldPredicates: Record<string, KokuDto.ListFieldQuery>,
+    currentFilter: { valuePath: string; predicates: KokuDto.QueryPredicate[] },
+  ): void {
+    fieldPredicates[currentFilter.valuePath] = {
+      predicates: [...(fieldPredicates[currentFilter.valuePath]?.predicates || []), ...currentFilter.predicates],
+    };
+  }
+
+  private handleSourcePageLoaded(listData: KokuDto.ListPage): void {
+    this.listRegister.set(this.createListRegister(listData));
+    this.sourceData.set(listData);
+    this.subscribeToRouteChanges();
+    this.applyNavigationState();
+    this.sourceLoading.set(false);
+  }
+
+  private createListRegister(listData: KokuDto.ListPage): ListItemSetup[] {
+    const newFieldRegister: ListItemSetup[] = [];
+    for (const currentResult of listData.results || []) {
+      if (currentResult.id === undefined) {
+        throw new Error('Unexpected item id');
+      }
+      newFieldRegister.push(this.prepareListItem(currentResult));
+    }
+    return newFieldRegister;
+  }
+
+  private subscribeToRouteChanges(): void {
+    this.routerUrlSubscription = this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (evnt) => {
+        if (evnt instanceof NavigationEnd) {
+          this.applyNavigationState();
+        }
+      },
+    });
+  }
+
+  private applyNavigationState(): void {
+    const segments = childRouteSegments(this.router.url, this.parentRoutePath());
+    if (!this.applyRoutedContentState(segments)) {
+      this.closeInlineContentWithoutRouteChange().subscribe();
+    }
+    if (!this.applyRoutedItemState(segments)) {
+      this.hideTempItem();
+    }
+  }
+
+  private applyRoutedContentState(segments: string[]): boolean {
+    const routedContentMatch = this.findRouteMatch((this.listData() || {}).routedContents, segments);
+    if (!routedContentMatch) {
+      return false;
+    }
+
+    if (routedContentMatch.item['@type'] === 'routed-inline-content') {
+      this.openMatchedRoutedContent(routedContentMatch.item, routedContentMatch.segmentMapping);
+    }
+    return true;
+  }
+
+  private findRouteMatch<TItem extends { route?: string }>(
+    items: TItem[] | undefined,
+    segments: string[],
+  ): { item: TItem; segmentMapping: Record<string, string> } | null {
+    for (const item of items || []) {
+      const segmentMapping = matchRouteSegments(item.route, segments);
+      if (segmentMapping) {
+        return { item, segmentMapping };
+      }
+    }
+    return null;
+  }
+
+  private openMatchedRoutedContent(
+    currentRoutedContent: KokuDto.AbstractListViewRoutedContentDto,
+    segmentMapping: Record<string, string>,
+  ): void {
+    const castedRouteContent = currentRoutedContent as KokuDto.ListViewRoutedContentDto;
+    const newUrlSegments = {
+      ...(this.urlSegments() || {}),
+      ...segmentMapping,
+    };
+    if (castedRouteContent.inlineContent) {
+      this.openMatchedInlineContent(castedRouteContent, newUrlSegments);
+    } else if (castedRouteContent.modalContent) {
+      this.openMatchedModalContent(castedRouteContent, newUrlSegments);
+    }
+  }
+
+  private openMatchedInlineContent(
+    castedRouteContent: KokuDto.ListViewRoutedContentDto,
+    newUrlSegments: Record<string, string>,
+  ): void {
+    const itemId = this.resolveRouteItemId(castedRouteContent.itemId, newUrlSegments);
+    if (
+      this.inlineContent()?.id !== itemId ||
+      this.inlineContent()?.content !== castedRouteContent.inlineContent ||
+      !deepEqual(this.inlineContent()?.urlSegments, newUrlSegments)
+    ) {
+      this.openInlineContent({
+        content: castedRouteContent.inlineContent!,
+        id: itemId || null,
+        parentRoutePath: resolvedRoutePath(this.parentRoutePath(), castedRouteContent.route, newUrlSegments),
+        urlSegments: newUrlSegments,
+      });
+    }
+  }
+
+  private openMatchedModalContent(
+    castedRouteContent: KokuDto.ListViewRoutedContentDto,
+    newUrlSegments: Record<string, string>,
+  ): void {
+    const itemId = this.resolveRouteItemId(castedRouteContent.itemId, newUrlSegments);
+    if (
+      this.modalContent()?.id === itemId &&
+      this.modalContent()?.content === castedRouteContent.modalContent &&
+      deepEqual(this.modalContent()?.urlSegments, newUrlSegments)
+    ) {
+      return;
+    }
+
+    const oldRoutePath = this.createParentRouteParts(newUrlSegments);
+    const newParentRoutePath = resolvedRoutePath(this.parentRoutePath(), castedRouteContent.route, newUrlSegments);
+    const closeModal = this.createModalCloseHandler(oldRoutePath);
+    const newModal = this.modalService.add({
+      dynamicContent: castedRouteContent.modalContent!,
+      urlSegments: newUrlSegments,
+      dynamicContentSetup: this.contentSetup().modalRegistry,
+      fullscreen: true,
+      parentRoutePath: newParentRoutePath,
+      clickOutside: closeModal,
+      onCloseRequested: closeModal,
+    });
+
+    this.modalContent.set({
+      modal: newModal,
+      content: castedRouteContent.modalContent!,
+      id: itemId || '',
+      urlSegments: newUrlSegments,
+      parentRoutePath: newParentRoutePath,
+    });
+  }
+
+  private createParentRouteParts(newUrlSegments: Record<string, string>): string[] {
+    return ['/', ...routePathSegments(resolvedRoutePath(this.parentRoutePath(), undefined, newUrlSegments))];
+  }
+
+  private createModalCloseHandler(oldRoutePath: string[]): () => void {
+    return () => {
+      this.closeModalContent(oldRoutePath).subscribe();
+    };
+  }
+
+  private resolveRouteItemId(itemId: string | undefined, routeSegments: Record<string, string>): string | undefined {
+    return itemId ? replaceRouteSegments(itemId, routeSegments) : undefined;
+  }
+
+  private applyRoutedItemState(segments: string[]): boolean {
+    const routedItemMatch = this.findRouteMatch((this.listData() || {}).routedItems, segments);
+    if (!routedItemMatch) {
+      return false;
+    }
+
+    if (routedItemMatch.item['@type'] === 'routed-item') {
+      const castedRouteContent = routedItemMatch.item as KokuDto.ListViewRoutedDummyItemDto;
+      if (!castedRouteContent.text) {
+        throw new Error('Missing text property in RoutedItem Configuration');
+      }
+      this.showTempItem(castedRouteContent.text);
+    }
+    return true;
   }
 
   itemAction(event: Event, result: ListItemSetup, action: ExtendedAbstractListViewItemActionDto) {
@@ -706,127 +758,154 @@ export class ListComponent implements OnDestroy, OnChanges {
   }
 
   itemClickAction(event: Event, item: ListItemSetup, action: KokuDto.AbstractListViewItemClickActionDto | undefined) {
-    if (!this.sourceLoading()) {
-      if (action) {
-        switch (action['@type']) {
-          case 'propagate-global-event': {
-            const castedActionType = action as KokuDto.ListViewItemClickPropagateGlobalEventActionDto;
-            if (!castedActionType.eventName) {
-              throw new Error('Missing eventName');
-            }
-            GLOBAL_EVENT_BUS.propagateGlobalEvent(castedActionType.eventName, item.source());
-            break;
-          }
-          case 'open-routed-content': {
-            const castedActionType = action as KokuDto.ListViewItemClickOpenRoutedContentActionDto;
-            let replacedRoute = castedActionType.route || '';
-            for (const currentParam of castedActionType.params || []) {
-              if (currentParam.param) {
-                if (currentParam['@type'] !== 'value') {
-                  throw new Error(`Unknown param Type: ${currentParam['@type']}`);
-                }
-                const castedParamType =
-                  currentParam as KokuDto.ListViewItemClickOpenRoutedContentActionItemValueParamDto;
-                if (castedParamType.valueReference) {
-                  switch (castedParamType.valueReference['@type']) {
-                    case 'field-reference': {
-                      const castedReference = castedParamType.valueReference as KokuDto.ListViewFieldReference;
-                      if (!castedReference.fieldId) {
-                        throw new Error('Missing fieldId in FieldReference');
-                      }
-                      const field = item.fields[castedReference.fieldId];
-                      if (!field) {
-                        throw new Error('FieldReference not resolvable');
-                      }
-                      replacedRoute = replacedRoute.replaceAll(currentParam.param, field.value());
-                      break;
-                    }
-                    case 'source-path-reference': {
-                      const castedReference = castedParamType.valueReference as KokuDto.ListViewSourcePathReference;
-                      if (!castedReference.valuePath) {
-                        throw new Error('Missing valuePath in FieldReference');
-                      }
-                      replacedRoute = replacedRoute.replaceAll(
-                        currentParam.param,
-                        get(item.source(), castedReference.valuePath),
-                      );
-                      break;
-                    }
-                    default: {
-                      throw new Error(`Unknown value reference type: ${castedParamType.valueReference['@type']}`);
-                    }
-                  }
-                } else {
-                  throw new Error(`Missing valuePath for param: ${currentParam.param}`);
-                }
-              }
-            }
-            this.openRoutedContent(replacedRoute.split('/'));
-            break;
-          }
-          case 'open-inline-content': {
-            const castedActionType = action as KokuDto.ListViewItemOpenInlineContentClickActionDto;
-            if (castedActionType.inlineContent) {
-              this.openInlineContent({
-                content: castedActionType.inlineContent,
-                id: item.id,
-                urlSegments: null,
-              });
-            }
-            break;
-          }
-        }
-      }
+    if (this.sourceLoading() || !action) {
+      return;
+    }
+
+    if (action['@type'] === 'propagate-global-event') {
+      this.propagateItemClickEvent(action as KokuDto.ListViewItemClickPropagateGlobalEventActionDto, item);
+      return;
+    }
+    if (action['@type'] === 'open-routed-content') {
+      this.openItemClickRoutedContent(action as KokuDto.ListViewItemClickOpenRoutedContentActionDto, item);
+      return;
+    }
+    if (action['@type'] === 'open-inline-content') {
+      this.openItemClickInlineContent(action as KokuDto.ListViewItemOpenInlineContentClickActionDto, item);
     }
   }
 
   listAction($event: Event, action: KokuDto.AbstractListViewActionDto) {
-    if (!this.sourceLoading()) {
-      if (action) {
-        if (action['@type'] === 'open-inline-content') {
-          const castedActionType = action as KokuDto.ListViewOpenInlineContentActionDto;
-          if (castedActionType.inlineContent) {
-            this.openInlineContent({
-              content: castedActionType.inlineContent,
-              id: null,
-              urlSegments: null,
-            });
-          }
-        } else if (action['@type'] === 'open-routed-content') {
-          const castedActionType = action as KokuDto.ListViewOpenRoutedContentActionDto;
-          if (castedActionType.route) {
-            let replacedRoute = castedActionType.route;
-            for (const [segment, value] of Object.entries(this.urlSegments() || {})) {
-              replacedRoute = replacedRoute.replace(segment, value);
-            }
-            this.openRoutedContent(replacedRoute.split('/'));
-          }
-        }
-      }
+    if (this.sourceLoading() || !action) {
+      return;
+    }
+
+    if (action['@type'] === 'open-inline-content') {
+      this.openListInlineContent(action as KokuDto.ListViewOpenInlineContentActionDto);
+    } else if (action['@type'] === 'open-routed-content') {
+      this.openListRoutedContent(action as KokuDto.ListViewOpenRoutedContentActionDto);
     }
   }
 
-  closeInlineContent(skipRouteChange = false) {
-    return new Observable<boolean>((observer) => {
-      if (!skipRouteChange) {
-        this.router
-          .navigate([
-            ...this.parentRoutePath()
-              .split('/')
-              .map((value) => (this.urlSegments() || {})[value] || value),
-          ])
-          .then((success) => {
-            if (success) {
-              this.inlineContent.set(null);
-            }
-            observer.next(success);
-            observer.complete();
-          });
-      } else {
-        this.inlineContent.set(null);
-        observer.next(true);
-        observer.complete();
+  private propagateItemClickEvent(
+    action: KokuDto.ListViewItemClickPropagateGlobalEventActionDto,
+    item: ListItemSetup,
+  ): void {
+    if (!action.eventName) {
+      throw new Error('Missing eventName');
+    }
+    GLOBAL_EVENT_BUS.propagateGlobalEvent(action.eventName, item.source());
+  }
+
+  private openItemClickRoutedContent(
+    action: KokuDto.ListViewItemClickOpenRoutedContentActionDto,
+    item: ListItemSetup,
+  ): void {
+    this.openRoutedContent(this.resolveItemClickRoute(action, item).split('/'));
+  }
+
+  private resolveItemClickRoute(
+    action: KokuDto.ListViewItemClickOpenRoutedContentActionDto,
+    item: ListItemSetup,
+  ): string {
+    let replacedRoute = action.route || '';
+    for (const currentParam of action.params || []) {
+      if (currentParam.param) {
+        replacedRoute = replacedRoute.replaceAll(
+          currentParam.param,
+          this.resolveItemClickRouteParam(currentParam, item),
+        );
       }
+    }
+    return replacedRoute;
+  }
+
+  private resolveItemClickRouteParam(
+    currentParam: KokuDto.AbstractListViewItemClickOpenRoutedContentActionParamDto,
+    item: ListItemSetup,
+  ): string {
+    if (currentParam['@type'] !== 'value') {
+      throw new Error(`Unknown param Type: ${currentParam['@type']}`);
+    }
+
+    const castedParamType = currentParam as KokuDto.ListViewItemClickOpenRoutedContentActionItemValueParamDto;
+    if (!castedParamType.valueReference) {
+      throw new Error(`Missing valuePath for param: ${currentParam.param}`);
+    }
+
+    return this.resolveItemClickValueReference(castedParamType.valueReference, item);
+  }
+
+  private resolveItemClickValueReference(valueReference: KokuDto.ListViewReference, item: ListItemSetup): string {
+    if (valueReference['@type'] === 'field-reference') {
+      const castedReference = valueReference as KokuDto.ListViewFieldReference;
+      if (!castedReference.fieldId) {
+        throw new Error('Missing fieldId in FieldReference');
+      }
+      const field = item.fields[castedReference.fieldId];
+      if (!field) {
+        throw new Error('FieldReference not resolvable');
+      }
+      return field.value();
+    }
+    if (valueReference['@type'] === 'source-path-reference') {
+      const castedReference = valueReference as KokuDto.ListViewSourcePathReference;
+      if (!castedReference.valuePath) {
+        throw new Error('Missing valuePath in FieldReference');
+      }
+      return get(item.source(), castedReference.valuePath);
+    }
+    throw new Error(`Unknown value reference type: ${valueReference['@type']}`);
+  }
+
+  private openItemClickInlineContent(
+    action: KokuDto.ListViewItemOpenInlineContentClickActionDto,
+    item: ListItemSetup,
+  ): void {
+    if (action.inlineContent) {
+      this.openInlineContent({
+        content: action.inlineContent,
+        id: item.id,
+        urlSegments: null,
+      });
+    }
+  }
+
+  private openListInlineContent(action: KokuDto.ListViewOpenInlineContentActionDto): void {
+    if (action.inlineContent) {
+      this.openInlineContent({
+        content: action.inlineContent,
+        id: null,
+        urlSegments: null,
+      });
+    }
+  }
+
+  private openListRoutedContent(action: KokuDto.ListViewOpenRoutedContentActionDto): void {
+    if (action.route) {
+      this.openRoutedContent(routePathSegments(replaceRouteSegments(action.route, this.urlSegments())));
+    }
+  }
+
+  closeInlineContent() {
+    return new Observable<boolean>((observer) => {
+      this.router
+        .navigateByUrl(`/${resolvedRoutePath(this.parentRoutePath(), undefined, this.urlSegments())}`)
+        .then((success) => {
+          if (success) {
+            this.inlineContent.set(null);
+          }
+          observer.next(success);
+          observer.complete();
+        });
+    });
+  }
+
+  private closeInlineContentWithoutRouteChange() {
+    return new Observable<boolean>((observer) => {
+      this.inlineContent.set(null);
+      observer.next(true);
+      observer.complete();
     });
   }
 
@@ -847,7 +926,7 @@ export class ListComponent implements OnDestroy, OnChanges {
     if (!sourceDataSnapshot) {
       throw new Error('Missing source data');
     }
-    const newItemInstance = this.prepareListItem(sourceDataSnapshot, item);
+    const newItemInstance = this.prepareListItem(item);
     listRegisterSnapshot.unshift(newItemInstance);
     this.listRegister.set(listRegisterSnapshot);
     return newItemInstance;
@@ -867,15 +946,29 @@ export class ListComponent implements OnDestroy, OnChanges {
     this.activeTempItem.set(null);
   }
 
-  private prepareListItem(listData: KokuDto.ListPage, listItem: KokuDto.ListItem) {
+  private prepareListItem(listItem: KokuDto.ListItem) {
+    const currentItemId = this.requireListItemId(listItem);
+    const listDataSnapshot = this.listData();
+    const currentResultListContentStates = this.createListItemSetup(listItem, currentItemId, listDataSnapshot);
+    this.registerListItemFields(currentResultListContentStates, listItem, listDataSnapshot);
+    return currentResultListContentStates;
+  }
+
+  private requireListItemId(listItem: KokuDto.ListItem): string {
     const currentItemId = listItem.id;
     if (currentItemId === undefined) {
       throw new Error('Unexpected item id');
     }
-    const contentSetupSnapshot = this.contentSetup();
-    const listDataSnapshot = this.listData();
+    return currentItemId;
+  }
+
+  private createListItemSetup(
+    listItem: KokuDto.ListItem,
+    currentItemId: string,
+    listDataSnapshot: KokuDto.ListViewDto | null,
+  ): ListItemSetup {
     const itemIdPath = (listDataSnapshot || {}).itemIdPath;
-    const currentResultListContentStates: ListItemSetup = {
+    return {
       fieldSelection: [],
       fields: {},
       actions: ((listDataSnapshot || {}).itemActions || []).map((value) => {
@@ -892,31 +985,52 @@ export class ListComponent implements OnDestroy, OnChanges {
         ...(itemIdPath ? { [itemIdPath]: currentItemId } : {}),
       }),
     };
+  }
+
+  private registerListItemFields(
+    currentResultListContentStates: ListItemSetup,
+    listItem: KokuDto.ListItem,
+    listDataSnapshot: KokuDto.ListViewDto | null,
+  ): void {
     for (const currentFieldSelection of (listDataSnapshot || {}).fields || []) {
-      if (currentFieldSelection.fieldDefinition) {
-        const currentFieldTypeSetup =
-          contentSetupSnapshot.fieldRegistry[currentFieldSelection.fieldDefinition['@type']];
-        if (currentFieldTypeSetup && currentFieldSelection.id) {
-          const defaultValue = currentFieldSelection.fieldDefinition?.defaultValue ?? null;
-          let currentFieldValue = defaultValue;
-          if (currentFieldSelection.valuePath) {
-            currentFieldValue = get(
-              {
-                ...listItem.values,
-              },
-              currentFieldSelection.valuePath,
-              defaultValue,
-            );
-          }
-          currentResultListContentStates.fields[currentFieldSelection.id] = this.createFieldState(
-            currentFieldSelection.fieldDefinition,
-            currentFieldValue,
-          );
-          currentResultListContentStates.fieldSelection.push(currentFieldSelection.id);
-        }
-      }
+      this.registerListItemField(currentResultListContentStates, listItem, currentFieldSelection);
     }
-    return currentResultListContentStates;
+  }
+
+  private registerListItemField(
+    currentResultListContentStates: ListItemSetup,
+    listItem: KokuDto.ListItem,
+    currentFieldSelection: ListViewFieldSelection,
+  ): void {
+    const fieldDefinition = currentFieldSelection.fieldDefinition;
+    if (!fieldDefinition || !currentFieldSelection.id || !this.hasFieldTypeSetup(fieldDefinition)) {
+      return;
+    }
+
+    currentResultListContentStates.fields[currentFieldSelection.id] = this.createFieldState(
+      fieldDefinition,
+      this.resolveListFieldValue(listItem, currentFieldSelection),
+    );
+    currentResultListContentStates.fieldSelection.push(currentFieldSelection.id);
+  }
+
+  private hasFieldTypeSetup(fieldDefinition: KokuDto.AbstractListViewFieldDto<any>): boolean {
+    return this.contentSetup().fieldRegistry[fieldDefinition['@type']] !== undefined;
+  }
+
+  private resolveListFieldValue(listItem: KokuDto.ListItem, currentFieldSelection: ListViewFieldSelection): any {
+    const defaultValue = currentFieldSelection.fieldDefinition?.defaultValue ?? null;
+    if (!currentFieldSelection.valuePath) {
+      return defaultValue;
+    }
+
+    return get(
+      {
+        ...listItem.values,
+      },
+      currentFieldSelection.valuePath,
+      defaultValue,
+    );
   }
 
   private createFieldState(listContent: KokuDto.AbstractListViewFieldDto<any>, value: any): ListFieldRegistrationType {
@@ -970,7 +1084,7 @@ export class ListComponent implements OnDestroy, OnChanges {
     let result: string[] = [];
     for (const currentItemStyling of globalItemStyling || []) {
       const iconStylingRegister = this.contentSetup().itemStylingRegistry[currentItemStyling['@type']];
-      if (iconStylingRegister && iconStylingRegister.itemClasses) {
+      if (iconStylingRegister?.itemClasses) {
         result = [...result, ...iconStylingRegister.itemClasses(currentItemStyling, source)];
       }
     }
