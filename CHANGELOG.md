@@ -1,3 +1,10 @@
+## [2.8.7](https://github.com/domschmidt/koku/compare/v2.8.6...v2.8.7) (2026-07-03)
+
+
+### Bug Fixes
+
+* minor code issues ([6f74efa](https://github.com/domschmidt/koku/commit/6f74efad7a9b775fb70da3deab19cebb958fe43d))
+
 ## [2.8.6](https://github.com/domschmidt/koku/compare/v2.8.5...v2.8.6) (2026-07-02)
 
 
