@@ -2,8 +2,8 @@ import { booleanAttribute, Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'checkbox-field',
+  host: { class: 'flex w-full' },
   templateUrl: './checkbox-field.component.html',
-  styleUrl: './checkbox-field.component.css',
   imports: [],
   standalone: true,
 })

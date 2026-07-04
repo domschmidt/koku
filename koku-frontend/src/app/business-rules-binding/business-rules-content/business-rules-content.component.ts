@@ -6,9 +6,9 @@ import { createStableRecipe, requireRecipeFactory } from '../../dynamic-host/rec
 
 @Component({
   selector: '[business-rules-content],business-rules-content',
+  host: { class: 'h-full' },
   imports: [KokuDynamicHostDirective],
   templateUrl: './business-rules-content.component.html',
-  styleUrl: './business-rules-content.component.css',
 })
 export class BusinessRulesContentComponent {
   content = input.required<KokuDto.AbstractKokuBusinessRuleContentDto>();

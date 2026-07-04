@@ -130,6 +130,8 @@ export type CalendarPluginFactory = (instance: CalendarComponent) => CalendarPlu
 
 export const CALENDAR_PLUGIN = new InjectionToken<CalendarPluginFactory | CalendarPluginFactory[]>('Calendar Plugins');
 
+export type CalendarViewMode = 'WEEK' | 'DAY' | 'MONTH';
+
 export interface CalendarPluginEventSourceFactory {
   generateEventSource(): EventSourceInput;
 
@@ -140,7 +142,7 @@ export interface CalendarPluginEventSourceFactory {
 
 interface CalendarPersistedSettings {
   hiddenSources?: string[];
-  viewMode?: 'WEEK' | 'DAY' | 'MONTH';
+  viewMode?: CalendarViewMode;
 }
 
 @Component({
@@ -156,7 +158,6 @@ interface CalendarPersistedSettings {
     CalendarActionRendererComponent,
   ],
   templateUrl: './calendar.component.html',
-  styleUrl: './calendar.component.css',
   standalone: true,
 })
 export class CalendarComponent implements OnDestroy {
@@ -179,7 +180,7 @@ export class CalendarComponent implements OnDestroy {
   parentRoutePath = input<string>('');
 
   activeContent = signal<RenderedCalendarInlineItem | null>(null);
-  viewMode = signal<'WEEK' | 'DAY' | 'MONTH'>('MONTH');
+  viewMode = signal<CalendarViewMode>('MONTH');
   currentStartDate = signal<Date>(new Date());
   loading = signal(false);
   hiddenSources = signal<Set<string>>(new Set<string>());
@@ -465,7 +466,7 @@ export class CalendarComponent implements OnDestroy {
       id: itemId || null,
       parentRoutePath: resolvedRoutePath(this.parentRoutePath(), castedRouteContent.route, {
         ...segmentMapping,
-        ...(this.urlSegments() || {}),
+        ...this.routeSegmentsSnapshot(),
       }),
       urlSegments: segmentMapping,
     });
@@ -492,12 +493,7 @@ export class CalendarComponent implements OnDestroy {
 
   private createPluginInstances(): Record<string, { instance: CalendarPlugin; api: any }> {
     const pluginInstances: Record<string, { instance: CalendarPlugin; api: any }> = {};
-    const pluginsConfig = Array.isArray(this.calendarPluginsConfig)
-      ? this.calendarPluginsConfig
-      : this.calendarPluginsConfig
-        ? [this.calendarPluginsConfig]
-        : [];
-    for (const currentPlugin of pluginsConfig) {
+    for (const currentPlugin of this.resolvePluginFactories()) {
       const newPluginInstance = currentPlugin(this);
       const pluginInstanceDetails = newPluginInstance.init();
       if (pluginInstances[pluginInstanceDetails.id]) {
@@ -511,6 +507,20 @@ export class CalendarComponent implements OnDestroy {
     return pluginInstances;
   }
 
+  private resolvePluginFactories(): CalendarPluginFactory[] {
+    if (Array.isArray(this.calendarPluginsConfig)) {
+      return this.calendarPluginsConfig;
+    }
+    if (this.calendarPluginsConfig) {
+      return [this.calendarPluginsConfig];
+    }
+    return [];
+  }
+
+  private routeSegmentsSnapshot(): Record<string, string> {
+    return this.urlSegments() ?? {};
+  }
+
   dateChanged(value: string | null) {
     if (!value) {
       return;
@@ -519,7 +529,7 @@ export class CalendarComponent implements OnDestroy {
     this.calendarComponent()?.getApi().gotoDate(parsedDate.toDate());
   }
 
-  formatDate(date: Date, viewMode: 'WEEK' | 'DAY' | 'MONTH') {
+  formatDate(date: Date, viewMode: CalendarViewMode) {
     const d = dayjs(date);
     switch (viewMode) {
       case 'WEEK': {
@@ -536,12 +546,12 @@ export class CalendarComponent implements OnDestroy {
     return '';
   }
 
-  changeViewMode(mode: 'WEEK' | 'DAY' | 'MONTH') {
+  changeViewMode(mode: CalendarViewMode) {
     this.calendarComponent()?.getApi().changeView(this.getView(mode));
     this.persistCalendarSettings();
   }
 
-  getView(mode: 'WEEK' | 'DAY' | 'MONTH') {
+  getView(mode: CalendarViewMode) {
     switch (mode) {
       case 'DAY': {
         return 'timeGridDay';

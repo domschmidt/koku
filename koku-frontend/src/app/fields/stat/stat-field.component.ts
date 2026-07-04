@@ -3,8 +3,8 @@ import { IconComponent } from '../../icon/icon.component';
 
 @Component({
   selector: 'stat-field',
+  host: { class: 'flex w-full' },
   templateUrl: './stat-field.component.html',
-  styleUrl: './stat-field.component.css',
   imports: [IconComponent],
   standalone: true,
 })

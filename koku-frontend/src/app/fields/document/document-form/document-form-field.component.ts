@@ -31,6 +31,7 @@ import { debounce } from '../../../utils/debounce';
 
 @Component({
   selector: 'document-form-field',
+  host: { class: 'flex w-full' },
   templateUrl: './document-form-field.component.html',
   styleUrl: './document-form-field.component.css',
   imports: [PortalDirective, IconComponent],
@@ -85,7 +86,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
         'today+1y': dayjs(now).add(1, 'year').format('YYYY-MM-DDTHH:mm:ss'),
       },
     };
-    if (!this.document || !this.document.template) {
+    if (!this.document?.template) {
       throw new Error('Missing template in document');
     }
     const inputs: Record<string, any>[] = [];
@@ -95,10 +96,11 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
       for (const currentTemplateSchemaContent of currentTemplateSchema) {
         const contextSnapshot = this.context();
         switch (currentTemplateSchemaContent['type']) {
-          case 'text': {
+          case 'text':
+          case 'qrcode': {
             currentSchemaContents[currentTemplateSchemaContent.name] = (
               currentTemplateSchemaContent.content || ''
-            ).replace(/\{([\w.\s]+)\}/g, (_, key) => {
+            ).replaceAll(/\{([\w.\s]+)\}/g, (_, key) => {
               return get(
                 {
                   ...contextSnapshot,
@@ -114,7 +116,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
           case 'date': {
             currentSchemaContents[currentTemplateSchemaContent.name] = (
               currentTemplateSchemaContent.name || ''
-            ).replace(/\{([\w.\s+]+)\}/g, (_, key) => {
+            ).replaceAll(/\{([\w.\s+]+)\}/g, (_, key) => {
               return get(
                 {
                   ...contextSnapshot,
@@ -142,22 +144,6 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
             }
 
             currentSchemaContents[currentTemplateSchemaContent.name] = JSON.stringify(values);
-            break;
-          }
-          case 'qrcode': {
-            currentSchemaContents[currentTemplateSchemaContent.name] = (
-              currentTemplateSchemaContent.content || ''
-            ).replace(/\{([\w.\s]+)\}/g, (_, key) => {
-              return get(
-                {
-                  ...contextSnapshot,
-                  ...utils,
-                  ...this.documentMeta,
-                },
-                (key || '').trim(),
-                `{${key}}`,
-              );
-            });
             break;
           }
         }
@@ -252,7 +238,7 @@ export class DocumentFormFieldComponent implements OnDestroy, OnChanges, AfterVi
         },
       })
         .then((pdf) => {
-          if (!this.document || !this.document.name) {
+          if (!this.document?.name) {
             throw new Error('Missing name in document');
           }
           const formData = new FormData();

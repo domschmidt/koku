@@ -4,9 +4,9 @@ import { ListInlineContentComponent } from '../../../list/list-inline-content/li
 
 @Component({
   selector: '[list-inline-grid-container],list-inline-grid-container',
+  host: { class: 'flex w-full flex-col overflow-auto' },
   imports: [ListInlineContentComponent],
   templateUrl: './list-grid-container.component.html',
-  styleUrl: './list-grid-container.component.css',
 })
 export class ListGridContainerComponent {
   content = input.required<KokuDto.ListViewGridContentDto>();

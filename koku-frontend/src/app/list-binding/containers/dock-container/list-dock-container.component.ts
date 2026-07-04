@@ -26,9 +26,9 @@ interface ExtendedCalendarInlineDockContentItemDto extends KokuDto.ListViewItemI
 
 @Component({
   selector: '[list-inline-dock-container],list-inline-dock-container',
+  host: { class: 'flex h-full w-full flex-col overflow-auto' },
   imports: [DockComponent, ListInlineContentComponent],
   templateUrl: './list-dock-container.component.html',
-  styleUrl: './list-dock-container.component.css',
 })
 export class ListDockContainerComponent {
   content = input.required<KokuDto.ListViewItemInlineDockContentItemDto[]>();
@@ -165,10 +165,9 @@ export class ListDockContainerComponent {
   }
 
   private createParentRoutePath(route: string | undefined, segmentMapping: Record<string, string>): string {
-    return resolvedRoutePath(this.parentRoutePath(), route, {
-      ...segmentMapping,
-      ...(this.urlSegments() || {}),
-    });
+    const urlSegmentsSnapshot = this.urlSegments();
+    const routeSegments = urlSegmentsSnapshot ? { ...segmentMapping, ...urlSegmentsSnapshot } : segmentMapping;
+    return resolvedRoutePath(this.parentRoutePath(), route, routeSegments);
   }
 
   private activateDockContent(contentId: string | undefined): void {
@@ -192,11 +191,11 @@ export class ListDockContainerComponent {
     if (!contentLookup) {
       return;
     }
-    if (contentLookup.route !== undefined) {
-      this.navigateToRoutedContent(contentLookup);
-    } else {
+    if (contentLookup.route === undefined) {
       this.activeContent.set(contentLookup);
       this.activateDockContent(contentLookup.id);
+    } else {
+      this.navigateToRoutedContent(contentLookup);
     }
   }
 

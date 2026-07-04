@@ -21,8 +21,8 @@ import { colorBadgeClass } from '../../utils/color.utils';
 
 @Component({
   selector: 'multi-select-field',
+  host: { class: 'flex w-full' },
   templateUrl: './multi-select-field.component.html',
-  styleUrl: './multi-select-field.component.css',
   imports: [SelectFieldComponent, CdkDropList, CdkDrag, NgTemplateOutlet],
   standalone: true,
 })

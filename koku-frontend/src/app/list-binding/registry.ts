@@ -23,6 +23,7 @@ import {
   resolveRouteBasedContentOverrides as routeBasedContentOverrides,
 } from '../utils/route.utils';
 import { colorBackgroundClasses } from '../utils/color.utils';
+import { cssPixelValue } from '../utils/style.utils';
 type FieldRegistryItem = NonNullable<ListContentSetup['fieldRegistry'][string]>;
 type PreviewRegistryItem = NonNullable<ListContentSetup['previewRegistry'][string]>;
 type InlineContentRegistryItem = NonNullable<ListContentSetup['inlineContentRegistry'][string]>;
@@ -223,7 +224,7 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<string, InlineContentRegistryItem>
         sourceUrl: sourceUrl(),
         urlSegments: context.urlSegments(),
         submitUrl: content().submitUrl || sourceUrl(),
-        maxWidth: content().maxWidthInPx !== undefined ? content().maxWidthInPx + 'px' : undefined,
+        maxWidth: cssPixelValue(content().maxWidthInPx),
         submitMethod: content().submitMethod,
         onSaveEvents: content().onSaveEvents,
         contentRegistry: FORMULAR_CONTENT_REGISTRY,
@@ -406,7 +407,7 @@ const MODAL_REGISTRY: ModalContentSetup = {
         sourceUrl,
         urlSegments: context.modal.urlSegments,
         submitUrl: context.content().submitUrl || sourceUrl,
-        maxWidth: context.content().maxWidthInPx !== undefined ? context.content().maxWidthInPx + 'px' : undefined,
+        maxWidth: cssPixelValue(context.content().maxWidthInPx),
         submitMethod: context.content().submitMethod,
         onSaveEvents: context.content().onSaveEvents,
         contentRegistry: FORMULAR_CONTENT_REGISTRY,

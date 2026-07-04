@@ -5,8 +5,8 @@ export type ToggleFilterTriState = 'checked' | 'unchecked' | 'indeterminate';
 
 @Component({
   selector: '[toggle-filter],toggle-filter',
+  host: { class: 'flex h-full w-full flex-col overflow-auto' },
   templateUrl: './toggle-filter.component.html',
-  styleUrl: './toggle-filter.component.css',
 })
 export class ToggleFilterComponent {
   readonly id = UNIQUE_REF_GENERATOR.generate();

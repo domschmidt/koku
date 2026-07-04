@@ -3,8 +3,8 @@ import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode';
 
 @Component({
   selector: 'barcode-capture',
+  host: { class: 'flex w-full flex-col overflow-auto' },
   templateUrl: './barcode-capture.component.html',
-  styleUrl: './barcode-capture.component.css',
   imports: [],
   standalone: true,
 })

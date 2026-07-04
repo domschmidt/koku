@@ -16,6 +16,7 @@ import {
   resolveRouteBasedContentOverrides as routeBasedContentOverrides,
   resolveRoutePath as mapSourceUrl,
 } from '../utils/route.utils';
+import { cssPixelValue } from '../utils/style.utils';
 dayjs.extend(customParseFormat);
 type InlineContentRegistryItem = NonNullable<CalendarContentSetup['inlineContentRegistry'][string]>;
 type ActionRegistryItem = NonNullable<CalendarContentSetup['actionRegistry'][string]>;
@@ -129,7 +130,7 @@ const MODAL_CONTENT_REGISTRY: Partial<Record<string, ModalContentRegistryItem>> 
         formularUrl: replaceSegments(content().formularUrl, context.modal.urlSegments),
         sourceUrl: sourceUrl(),
         submitUrl: content().submitUrl || sourceUrl(),
-        maxWidth: content().maxWidthInPx !== undefined ? content().maxWidthInPx + 'px' : undefined,
+        maxWidth: cssPixelValue(content().maxWidthInPx),
         submitMethod: content().submitMethod,
         onSaveEvents: content().onSaveEvents,
         contentOverrides: routeBasedContentOverrides(content().contentOverrides, context.modal.urlSegments),
@@ -204,7 +205,7 @@ const INLINE_CONTENT_REGISTRY: Partial<Record<string, InlineContentRegistryItem>
         formularUrl: replaceSegments(content().formularUrl, context.urlSegments()),
         sourceUrl: sourceUrl(),
         submitUrl: content().submitUrl || sourceUrl(),
-        maxWidth: content().maxWidthInPx !== undefined ? content().maxWidthInPx + 'px' : undefined,
+        maxWidth: cssPixelValue(content().maxWidthInPx),
         submitMethod: content().submitMethod,
         onSaveEvents: content().onSaveEvents,
         contentOverrides: routeBasedContentOverrides(content().contentOverrides, context.urlSegments()),

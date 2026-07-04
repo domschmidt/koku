@@ -5,8 +5,8 @@ let uniqueId = 0;
 
 @Component({
   selector: 'input-field',
+  host: { class: 'flex w-full flex-col' },
   templateUrl: './input-field.component.html',
-  styleUrl: './input-field.component.css',
   imports: [DatePipe],
   standalone: true,
 })

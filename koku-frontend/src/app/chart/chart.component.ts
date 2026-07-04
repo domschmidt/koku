@@ -22,8 +22,10 @@ import { colorValue } from '../utils/color.utils';
 export interface ChartFilterRenderContext {
   content: Signal<KokuDto.AbstractChartFilterDto>;
   loading: Signal<boolean>;
-  emit(value: string | number | boolean): void;
+  emit(value: ChartFilterValue): void;
 }
+
+export type ChartFilterValue = string | number | boolean;
 
 export type ChartFilterRecipeFactory = (context: ChartFilterRenderContext) => DynamicRenderRecipe;
 
@@ -31,8 +33,8 @@ export type ChartFilterRegistry = Partial<Record<string, ChartFilterRecipeFactor
 
 @Component({
   selector: 'koku-chart',
+  host: { class: 'flex w-full flex-col overflow-hidden p-[10px]' },
   templateUrl: './chart.component.html',
-  styleUrls: ['./chart.component.css'],
   imports: [ChartFilterRendererComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -47,7 +49,7 @@ export class ChartComponent implements OnDestroy {
   loading = signal(false);
   chartData = signal<KokuDto.AbstractChartDto | null>(null);
 
-  activeFilters = signal<Record<string, string | number | boolean>>({});
+  activeFilters = signal<Record<string, ChartFilterValue>>({});
 
   private lastChartSubscription: Subscription | undefined;
   private currentChartInstance: ApexCharts | undefined;

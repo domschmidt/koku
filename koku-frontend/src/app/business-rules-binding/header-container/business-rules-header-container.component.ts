@@ -11,9 +11,9 @@ import { BusinessRulesContentComponent } from '../business-rules-content/busines
 
 @Component({
   selector: '[business-rules-header-container],business-rules-header-container',
+  host: { class: 'flex h-full w-full flex-col overflow-auto' },
   imports: [IconComponent, OutletDirective, BusinessRulesContentComponent],
   templateUrl: './business-rules-header-container.component.html',
-  styleUrl: './business-rules-header-container.component.css',
 })
 export class BusinessRulesHeaderContainerComponent implements OnDestroy {
   content = input.required<KokuDto.KokuBusinessRuleHeaderContentDto>();

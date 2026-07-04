@@ -9,9 +9,9 @@ import { executeInlineFormularSaveEvents } from '../../../formular/inline-formul
 
 @Component({
   selector: '[list-inline-formular-container],list-inline-formular-container',
+  host: { class: 'flex w-full flex-col overflow-auto' },
   imports: [FormularComponent],
   templateUrl: './list-formular-container.component.html',
-  styleUrl: './list-formular-container.component.css',
 })
 export class ListFormularContainerComponent {
   formularUrl = input.required<string>();

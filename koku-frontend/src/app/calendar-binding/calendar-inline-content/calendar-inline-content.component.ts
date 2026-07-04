@@ -8,9 +8,9 @@ import { createStableRecipe, requireRecipeFactory } from '../../dynamic-host/rec
 
 @Component({
   selector: '[calendar-inline-content],calendar-inline-content',
+  host: { class: 'h-full' },
   imports: [KokuDynamicHostDirective],
   templateUrl: './calendar-inline-content.component.html',
-  styleUrl: './calendar-inline-content.component.css',
 })
 export class CalendarInlineContentComponent {
   activatedRoute = inject(ActivatedRoute);

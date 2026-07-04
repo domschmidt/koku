@@ -151,7 +151,7 @@ export class GlobalEventListenerPlugin implements FormularPlugin {
       if (!registeredContent) {
         throw new Error(`Content state not found: ${fieldRef}`);
       }
-      if ((currentMappingDefinition.valueMapping || {})['@type'] === 'append-list') {
+      if (currentMappingDefinition.valueMapping?.['@type'] === 'append-list') {
         this.appendContentConfigListItem(fieldRef, registeredContent, currentMappingDefinition, eventPayload);
       }
     }
@@ -355,16 +355,13 @@ export class GlobalEventListenerPlugin implements FormularPlugin {
     reference: KokuDto.FormViewFieldReferenceMultiSelectValueMapping,
     eventPayload: any,
   ): Record<string, any> {
-    let newValueItem: Record<string, any> = {};
+    const newValueItem: Record<string, any> = {};
     for (const [currentMappingTarget, currentMappingSource] of Object.entries(reference.targetPathMapping || {})) {
       const currentValue = this.resolvePayloadValueSource(currentMappingSource, eventPayload);
-      if (currentValue !== undefined) {
-        if (currentMappingTarget !== undefined) {
-          newValueItem[currentMappingTarget] = currentValue;
-        } else {
-          newValueItem = currentValue;
-        }
+      if (currentValue === undefined) {
+        continue;
       }
+      newValueItem[currentMappingTarget] = currentValue;
     }
     return newValueItem;
   }

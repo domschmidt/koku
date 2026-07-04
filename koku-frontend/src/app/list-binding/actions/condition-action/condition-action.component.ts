@@ -6,9 +6,9 @@ import { KokuDynamicHostDirective } from '../../../dynamic-host/dynamic-host.dir
 import { createStableRecipe, requireRecipeFactory } from '../../../dynamic-host/recipe.utils';
 @Component({
   selector: '[http-call-action],http-call-action',
+  host: { class: 'flex h-full w-full flex-col overflow-auto' },
   imports: [KokuDynamicHostDirective],
   templateUrl: './condition-action.component.html',
-  styleUrl: './condition-action.component.css',
 })
 export class ConditionActionComponent {
   value = input.required<KokuDto.ListViewConditionalItemValueActionDto>();
