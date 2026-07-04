@@ -6,9 +6,9 @@ import { ModalContentRendererComponent } from './modal-content-renderer.componen
 
 @Component({
   selector: 'koku-modal',
+  host: { class: 'relative z-[999]' },
   imports: [ButtonComponent, ModalContentRendererComponent],
   templateUrl: './modal.component.html',
-  styles: ':host { position: relative; z-index: 999; }',
 })
 export class ModalComponent {
   readonly modalService = inject(ModalService);

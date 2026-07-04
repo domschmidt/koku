@@ -11,9 +11,9 @@ import { UNIQUE_REF_GENERATOR } from '../../utils/uniqueRef';
 
 @Component({
   selector: '[calendar-inline-header-container],calendar-inline-header-container',
+  host: { class: 'flex h-full w-full flex-col overflow-auto' },
   imports: [CalendarInlineContentComponent, IconComponent, OutletDirective],
   templateUrl: './calendar-inline-header-container.component.html',
-  styleUrl: './calendar-inline-header-container.component.css',
 })
 export class CalendarInlineHeaderContainerComponent implements OnDestroy {
   content = input.required<KokuDto.CalendarHeaderInlineContentDto>();

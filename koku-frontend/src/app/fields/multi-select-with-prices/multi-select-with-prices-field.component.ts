@@ -8,8 +8,8 @@ import { moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'multi-select-with-prices-field',
+  host: { class: 'flex w-full' },
   templateUrl: './multi-select-with-prices-field.component.html',
-  styleUrl: './multi-select-with-prices-field.component.css',
   imports: [MultiSelectFieldComponent, InputFieldComponent, IconComponent],
   standalone: true,
 })

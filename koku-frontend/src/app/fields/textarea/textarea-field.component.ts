@@ -4,8 +4,8 @@ let uniqueId = 0;
 
 @Component({
   selector: 'textarea-field',
+  host: { class: 'flex w-full flex-col' },
   templateUrl: './textarea-field.component.html',
-  styleUrl: './textarea-field.component.css',
   imports: [],
   standalone: true,
 })

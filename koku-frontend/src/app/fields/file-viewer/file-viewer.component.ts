@@ -21,8 +21,8 @@ import { IconComponent } from '../../icon/icon.component';
 
 @Component({
   selector: 'file-viewer',
+  host: { class: 'flex w-full flex-col overflow-auto' },
   templateUrl: './file-viewer.component.html',
-  styleUrl: './file-viewer.component.css',
   imports: [PortalDirective, IconComponent],
   standalone: true,
 })

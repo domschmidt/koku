@@ -6,9 +6,9 @@ import { forkJoin, map, Observable } from 'rxjs';
 
 @Component({
   selector: '[list-inline-list-container],list-inline-list-container',
+  host: { class: 'flex h-full w-full flex-col overflow-auto' },
   imports: [ListComponent],
   templateUrl: './list-inline-list-container.component.html',
-  styleUrl: './list-inline-list-container.component.css',
 })
 export class ListInlineListContainerComponent {
   title = input<string>();

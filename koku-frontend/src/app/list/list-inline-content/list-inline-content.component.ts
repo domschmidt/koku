@@ -6,9 +6,9 @@ import { createStableRecipe, requireRecipeFactory } from '../../dynamic-host/rec
 
 @Component({
   selector: '[list-inline-content],list-inline-content',
+  host: { class: 'h-full' },
   imports: [KokuDynamicHostDirective],
   templateUrl: './list-inline-content.component.html',
-  styleUrl: './list-inline-content.component.css',
 })
 export class ListInlineContentComponent {
   content = input.required<KokuDto.AbstractListViewContentDto>();

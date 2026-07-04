@@ -11,9 +11,9 @@ import { UNIQUE_REF_GENERATOR } from '../../../utils/uniqueRef';
 
 @Component({
   selector: '[list-inline-header-container],list-inline-header-container',
+  host: { class: 'flex h-full w-full flex-col overflow-auto' },
   imports: [ListInlineContentComponent, IconComponent, OutletDirective],
   templateUrl: './list-header-container.component.html',
-  styleUrl: './list-header-container.component.css',
 })
 export class ListHeaderContainerComponent implements OnDestroy {
   content = input.required<KokuDto.ListViewHeaderContentDto>();

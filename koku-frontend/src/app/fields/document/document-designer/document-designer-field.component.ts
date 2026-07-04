@@ -19,8 +19,8 @@ import { deepEqual } from '../../../utils/deepEqual';
 
 @Component({
   selector: 'document-designer-field',
+  host: { class: 'flex w-full flex-col overflow-auto' },
   templateUrl: './document-designer-field.component.html',
-  styleUrl: './document-designer-field.component.css',
   imports: [],
   standalone: true,
 })

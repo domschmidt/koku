@@ -237,9 +237,9 @@ export class FormularRuntime {
 
 @Component({
   selector: 'formular',
+  host: { class: 'flex h-full w-full flex-col overflow-auto' },
   imports: [FormularContentRendererComponent],
   templateUrl: './formular.component.html',
-  styleUrl: './formular.component.css',
 })
 export class FormularComponent implements OnDestroy, OnChanges {
   readonly httpClient = inject(HttpClient);
@@ -429,7 +429,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
 
             this.requestSubmit(this.submitMethod() || 'POST', submitUrl, {
               ...this.source(),
-              ...(submitPayload ? submitPayload : {}),
+              ...submitPayload,
             }).subscribe({
               next: (response: any) => {
                 this.runtime.replaceSource(response);

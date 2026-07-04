@@ -169,8 +169,8 @@ export interface ListModalItem {
     ListItemActionComponent,
     ListFilterComponent,
   ],
+  host: { class: 'overflow-auto' },
   templateUrl: './list.component.html',
-  styleUrl: './list.component.css',
 })
 export class ListComponent implements OnDestroy, OnChanges {
   httpClient = inject(HttpClient);
@@ -619,7 +619,7 @@ export class ListComponent implements OnDestroy, OnChanges {
   }
 
   private applyRoutedContentState(segments: string[]): boolean {
-    const routedContentMatch = this.findRouteMatch((this.listData() || {}).routedContents, segments);
+    const routedContentMatch = this.findRouteMatch(this.listData()?.routedContents, segments);
     if (!routedContentMatch) {
       return false;
     }
@@ -648,10 +648,8 @@ export class ListComponent implements OnDestroy, OnChanges {
     segmentMapping: Record<string, string>,
   ): void {
     const castedRouteContent = currentRoutedContent as KokuDto.ListViewRoutedContentDto;
-    const newUrlSegments = {
-      ...(this.urlSegments() || {}),
-      ...segmentMapping,
-    };
+    const urlSegmentsSnapshot = this.urlSegments();
+    const newUrlSegments = urlSegmentsSnapshot ? { ...urlSegmentsSnapshot, ...segmentMapping } : segmentMapping;
     if (castedRouteContent.inlineContent) {
       this.openMatchedInlineContent(castedRouteContent, newUrlSegments);
     } else if (castedRouteContent.modalContent) {
@@ -728,7 +726,7 @@ export class ListComponent implements OnDestroy, OnChanges {
   }
 
   private applyRoutedItemState(segments: string[]): boolean {
-    const routedItemMatch = this.findRouteMatch((this.listData() || {}).routedItems, segments);
+    const routedItemMatch = this.findRouteMatch(this.listData()?.routedItems, segments);
     if (!routedItemMatch) {
       return false;
     }
@@ -967,18 +965,18 @@ export class ListComponent implements OnDestroy, OnChanges {
     currentItemId: string,
     listDataSnapshot: KokuDto.ListViewDto | null,
   ): ListItemSetup {
-    const itemIdPath = (listDataSnapshot || {}).itemIdPath;
+    const itemIdPath = listDataSnapshot?.itemIdPath;
     return {
       fieldSelection: [],
       fields: {},
-      actions: ((listDataSnapshot || {}).itemActions || []).map((value) => {
+      actions: (listDataSnapshot?.itemActions || []).map((value) => {
         return {
           ...value,
           loading: false,
         };
       }),
-      clickAction: (listDataSnapshot || {}).itemClickAction,
-      preview: (listDataSnapshot || {}).itemPreview,
+      clickAction: listDataSnapshot?.itemClickAction,
+      preview: listDataSnapshot?.itemPreview,
       id: currentItemId,
       source: signal({
         ...listItem.values,
@@ -992,7 +990,7 @@ export class ListComponent implements OnDestroy, OnChanges {
     listItem: KokuDto.ListItem,
     listDataSnapshot: KokuDto.ListViewDto | null,
   ): void {
-    for (const currentFieldSelection of (listDataSnapshot || {}).fields || []) {
+    for (const currentFieldSelection of listDataSnapshot?.fields || []) {
       this.registerListItemField(currentResultListContentStates, listItem, currentFieldSelection);
     }
   }
@@ -1035,7 +1033,7 @@ export class ListComponent implements OnDestroy, OnChanges {
 
   private createFieldState(listContent: KokuDto.AbstractListViewFieldDto<any>, value: any): ListFieldRegistrationType {
     return {
-      value: signal(value !== undefined ? value : listContent.defaultValue),
+      value: signal(value === undefined ? listContent.defaultValue : value),
       config: listContent,
     };
   }

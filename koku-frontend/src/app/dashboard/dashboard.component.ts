@@ -41,7 +41,6 @@ export const DASHBOARD_PLUGIN = new InjectionToken<DashboardPluginFactory | Dash
 @Component({
   selector: 'koku-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css'],
   imports: [DashboardContentRendererComponent],
 })
 export class DashboardComponent implements OnDestroy, OnChanges {

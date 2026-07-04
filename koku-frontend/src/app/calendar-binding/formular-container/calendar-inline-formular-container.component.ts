@@ -6,9 +6,9 @@ import { executeInlineFormularSaveEvents } from '../../formular/inline-formular-
 
 @Component({
   selector: '[formular-container],formular-container',
+  host: { class: 'flex w-full flex-col overflow-auto' },
   imports: [FormularComponent],
   templateUrl: './calendar-inline-formular-container.component.html',
-  styleUrl: './calendar-inline-formular-container.component.css',
 })
 export class CalendarInlineFormularContainerComponent {
   formularUrl = input.required<string>();

@@ -62,6 +62,8 @@ interface CalendarListQuerySetup {
   fieldPredicates: Record<string, KokuDto.ListFieldQuery>;
 }
 
+type CalendarHttpMethod = 'POST' | 'PUT' | 'GET' | 'DELETE';
+
 type CalendarDropHttpAction = KokuDto.CalendarCallHttpItemDropAction &
   Pick<KokuDto.CalendarCallHttpItemClickAction, 'endDatePath' | 'endTimePath'>;
 
@@ -416,7 +418,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
     }
   }
 
-  private callHttpEndpoint(method: 'POST' | 'PUT' | 'GET' | 'DELETE', url: string, requestBody: any) {
+  private callHttpEndpoint(method: CalendarHttpMethod, url: string, requestBody: any) {
     return this.httpClient
       .request(method, url, {
         body: requestBody,
@@ -426,7 +428,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
 
   private handleBusinessError(
     error: any,
-    method: 'POST' | 'PUT' | 'GET' | 'DELETE',
+    method: CalendarHttpMethod,
     url: string,
     requestBody: any,
   ): Observable<unknown> {
@@ -449,7 +451,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
   private openBusinessErrorModal(
     businessError: KokuDto.KokuBusinessErrorWithConfirmationMessageDto,
     subscriber: Subscriber<unknown>,
-    method: 'POST' | 'PUT' | 'GET' | 'DELETE',
+    method: CalendarHttpMethod,
     url: string,
     requestBody: any,
     originalError: any,
@@ -478,7 +480,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
   private createBusinessErrorButtons(
     businessError: KokuDto.KokuBusinessErrorWithConfirmationMessageDto,
     subscriber: Subscriber<unknown>,
-    method: 'POST' | 'PUT' | 'GET' | 'DELETE',
+    method: CalendarHttpMethod,
     url: string,
     requestBody: any,
     originalError: any,
@@ -492,7 +494,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
   private createBusinessErrorButton(
     buttonCfg: KokuDto.KokuBusinessExceptionButtonDto,
     subscriber: Subscriber<unknown>,
-    method: 'POST' | 'PUT' | 'GET' | 'DELETE',
+    method: CalendarHttpMethod,
     url: string,
     requestBody: any,
     originalError: any,
@@ -544,7 +546,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
   private createEndpointBusinessErrorButton(
     buttonCfg: KokuDto.KokuBusinessExceptionSendToDifferentEndpointButtonDto,
     subscriber: Subscriber<unknown>,
-    method: 'POST' | 'PUT' | 'GET' | 'DELETE',
+    method: CalendarHttpMethod,
     url: string,
     requestBody: any,
     confirmationModal: () => RenderedModalType,
@@ -565,7 +567,6 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
           method,
           url,
           requestBody,
-          modal,
           button,
           confirmationModal,
         );
@@ -576,10 +577,9 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
   private executeBusinessErrorEndpointAction(
     buttonCfg: KokuDto.KokuBusinessExceptionSendToDifferentEndpointButtonDto,
     subscriber: Subscriber<unknown>,
-    method: 'POST' | 'PUT' | 'GET' | 'DELETE',
+    method: CalendarHttpMethod,
     url: string,
     requestBody: any,
-    modal: ModalType,
     button: ModalButtonType,
     confirmationModal: () => RenderedModalType,
   ): void {
@@ -848,7 +848,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
           searchOperatorHint: castedSource.searchOperatorHint,
           orGroupIdentifier,
         },
-        ...((fieldPredicates[castedSource.startDateFieldSelectionPath] || {}).predicates || []),
+        ...(fieldPredicates[castedSource.startDateFieldSelectionPath]?.predicates || []),
       ],
     };
   }
@@ -872,7 +872,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
           searchOperatorHint: castedSource.searchOperatorHint,
           orGroupIdentifier,
         },
-        ...((fieldPredicates[castedSource.endDateFieldSelectionPath] || {}).predicates || []),
+        ...(fieldPredicates[castedSource.endDateFieldSelectionPath]?.predicates || []),
       ],
     };
   }
@@ -909,7 +909,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
           searchOperator: 'EQ',
           negate: true,
         },
-        ...((fieldPredicates[castedSource.deletedFieldSelectionPath] || {}).predicates || []),
+        ...(fieldPredicates[castedSource.deletedFieldSelectionPath]?.predicates || []),
       ],
     };
   }
@@ -974,7 +974,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
           searchExpression: String(userDetails.id),
           searchOperator: 'EQ',
         },
-        ...((fieldPredicates[userIdFieldSelectionPath] || {}).predicates || []),
+        ...(fieldPredicates[userIdFieldSelectionPath]?.predicates || []),
       ],
     };
   }
@@ -1018,7 +1018,7 @@ export class CalendarListSourcePlugin implements CalendarPlugin {
   provideEventSourceFactory(
     currentSource: KokuDto.AbstractCalendarListSourceConfigDto,
   ): CalendarPluginEventSourceFactory | void {
-    if (!currentSource || currentSource['@type'] !== 'list') {
+    if (currentSource?.['@type'] !== 'list') {
       return;
     }
 
@@ -1142,7 +1142,7 @@ export class CalendarHolidaySourcePlugin implements CalendarPlugin {
   provideEventSourceFactory(
     currentSource: KokuDto.AbstractCalendarListSourceConfigDto,
   ): CalendarPluginEventSourceFactory | void {
-    if (!currentSource || currentSource['@type'] !== 'holiday') {
+    if (currentSource?.['@type'] !== 'holiday') {
       return;
     }
 

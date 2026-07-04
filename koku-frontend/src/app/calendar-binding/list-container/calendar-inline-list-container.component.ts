@@ -3,9 +3,9 @@ import { ListComponent, ListContentSetup } from '../../list/list.component';
 
 @Component({
   selector: '[calendar-inline-list-container],calendar-inline-list-container',
+  host: { class: 'flex h-full w-full flex-col overflow-auto' },
   imports: [ListComponent],
   templateUrl: './calendar-inline-list-container.component.html',
-  styleUrl: './calendar-inline-list-container.component.css',
 })
 export class CalendarInlineListContainerComponent {
   title = input<string>();

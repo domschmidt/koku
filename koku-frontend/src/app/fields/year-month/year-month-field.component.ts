@@ -4,8 +4,8 @@ import { UNIQUE_REF_GENERATOR } from '../../utils/uniqueRef';
 
 @Component({
   selector: 'year-month-field',
+  host: { class: 'flex w-full' },
   templateUrl: './year-month-field.component.html',
-  styleUrl: './year-month-field.component.css',
   imports: [],
   standalone: true,
 })

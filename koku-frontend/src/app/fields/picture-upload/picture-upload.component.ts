@@ -4,9 +4,9 @@ import Compressor from 'compressorjs';
 
 @Component({
   selector: 'picture-upload-field',
+  host: { class: 'flex w-full' },
   imports: [],
   templateUrl: './picture-upload.component.html',
-  styleUrl: './picture-upload.component.css',
 })
 export class PictureUploadComponent implements OnDestroy {
   private static readonly SUPPORTED_MIME_TYPES: string[] = ['image/png', 'image/jpeg', 'image/gif'];

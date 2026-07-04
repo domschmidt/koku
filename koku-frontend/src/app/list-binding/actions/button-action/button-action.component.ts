@@ -4,9 +4,9 @@ import { IconComponent } from '../../../icon/icon.component';
 
 @Component({
   selector: '[http-call-action],http-call-action',
+  host: { class: 'flex h-full w-full flex-col overflow-hidden' },
   imports: [IconComponent],
   templateUrl: './button-action.component.html',
-  styleUrl: './button-action.component.css',
 })
 export class ButtonActionComponent {
   value = input.required<KokuDto.ListViewCallHttpListItemActionDto>();

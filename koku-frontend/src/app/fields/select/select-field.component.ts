@@ -18,8 +18,8 @@ let uniqueId = 0;
 
 @Component({
   selector: 'select-field',
+  host: { class: 'flex w-full flex-col' },
   templateUrl: './select-field.component.html',
-  styleUrl: './select-field.component.css',
   imports: [KeyValuePipe],
   standalone: true,
 })
@@ -159,20 +159,21 @@ export class SelectFieldComponent {
   }
 
   selectOption(option: KokuDto.SelectFormularFieldPossibleValue) {
-    if (option.disabled !== true) {
-      this.changed.emit(option.id || null);
-      if (this.clearOnSelect()) {
-        this.searchTerm.set('');
-      } else {
-        this.searchTerm.set(option.text || '');
-      }
-      if (this.keepOpenOnSelect()) {
-        this.searchInput.nativeElement.focus();
-      } else {
-        this.showDropdown.set(null);
-      }
-    } else {
+    if (option.disabled === true) {
       this.toastService.add('Option deaktiviert! Bitte wähle eine andere Option aus. ', 'error');
+      return;
+    }
+
+    this.changed.emit(option.id || null);
+    if (this.clearOnSelect()) {
+      this.searchTerm.set('');
+    } else {
+      this.searchTerm.set(option.text || '');
+    }
+    if (this.keepOpenOnSelect()) {
+      this.searchInput.nativeElement.focus();
+    } else {
+      this.showDropdown.set(null);
     }
   }
 

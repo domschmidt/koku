@@ -3,9 +3,9 @@ import { ChartComponent, ChartFilterRegistry } from '../../../chart/chart.compon
 
 @Component({
   selector: '[list-inline-chart-container],list-inline-chart-container',
+  host: { class: 'flex w-full flex-col overflow-auto' },
   imports: [ChartComponent],
   templateUrl: './list-chart-container.component.html',
-  styleUrl: './list-chart-container.component.css',
 })
 export class ListChartContainerComponent {
   chartUrl = input.required<string>();

@@ -9,6 +9,7 @@ import {
   resolveRouteBasedContentOverrides as routeBasedContentOverrides,
   resolveRoutePath as mapSourceUrl,
 } from '../utils/route.utils';
+import { cssPixelValue } from '../utils/style.utils';
 export interface BusinessRulesContentRenderContext {
   content: Signal<KokuDto.AbstractKokuBusinessRuleContentDto>;
   loading: Signal<boolean>;
@@ -45,7 +46,7 @@ const MODAL_CONTENT_REGISTRY: Partial<Record<string, ModalContentRegistryItem>> 
         formularUrl: replaceSegments(content().formularUrl, context.modal.urlSegments),
         sourceUrl: sourceUrl(),
         submitUrl: content().submitUrl || sourceUrl(),
-        maxWidth: content().maxWidthInPx !== undefined ? content().maxWidthInPx + 'px' : undefined,
+        maxWidth: cssPixelValue(content().maxWidthInPx),
         submitMethod: content().submitMethod,
         contentRegistry: FORMULAR_CONTENT_REGISTRY,
         contentOverrides: routeBasedContentOverrides(content().contentOverrides, context.modal.urlSegments),
@@ -104,7 +105,7 @@ const BUSINESS_RULES_CONTENT_REGISTRY: Partial<Record<string, ContentRegistryIte
         formularUrl: replaceSegments(content().formularUrl, context.urlSegments()),
         sourceUrl: sourceUrl(),
         submitUrl: content().submitUrl || sourceUrl(),
-        maxWidth: content().maxWidthInPx !== undefined ? content().maxWidthInPx + 'px' : undefined,
+        maxWidth: cssPixelValue(content().maxWidthInPx),
         submitMethod: content().submitMethod,
         contentRegistry: FORMULAR_CONTENT_REGISTRY,
         contentOverrides: routeBasedContentOverrides(content().contentOverrides, context.urlSegments()),
