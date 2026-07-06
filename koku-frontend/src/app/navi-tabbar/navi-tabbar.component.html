@@ -2,7 +2,7 @@
   @if (activatedRoute.routeConfig?.children) {
     <div class="navbar bg-base-200 p-0 min-h-0">
       <div role="tablist" class="tabs tabs-sm tabs-border w-full overflow-x-auto overflow-y-clip flex-nowrap px-3">
-        @for (currentRouteChildren of activatedRoute.routeConfig?.children; track $index) {
+        @for (currentRouteChildren of activatedRoute.routeConfig.children; track $index) {
           @if (currentRouteChildren.path) {
             <a
               #rla="routerLinkActive"

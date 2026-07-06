@@ -47,6 +47,10 @@ Der `koku-frontend`-Container hostet die Angular-SPA und proxyt `/services/...` 
 
 Die TLS-Dateien werden über `FRONTEND_SSL_CERT` und `FRONTEND_SSL_KEY` nach `/etc/ssl/certs/koku.cert.pem` und `/etc/ssl/certs/koku.key.pem` gemountet. Da Nginx nicht als Root läuft, müssen die gemounteten Zertifikats- und Key-Dateien für den Container-User lesbar sein. Das Frontend erzeugt `authconfig.json` beim Containerstart aus `authconfig.template.json`; das HTML-Verzeichnis ist dafür im Image dem `nginx`-User zugeordnet.
 
+## PostgreSQL Major Upgrade
+
+`docker-compose.yml` pinnt PostgreSQL auf `18.4`. Der Wechsel von PostgreSQL 17 auf 18 ist ein Major Upgrade und braucht einen kontrollierten Dump/Restore- oder `pg_upgrade`-Pfad. Das konkrete lokale Runbook liegt in [`postgresql-18-upgrade.md`](postgresql-18-upgrade.md).
+
 ## Enterprise-Hinweise
 
 - Für Produktivbetrieb sollten Umgebungsprofile, Secret-Management und Image-Versionierung dokumentiert werden.

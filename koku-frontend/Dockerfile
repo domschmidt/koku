@@ -1,13 +1,13 @@
 # ---- Build Angular App ----
-FROM node:22 AS build
+FROM node:24 AS build
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --ignore-scripts
+RUN npm ci --ignore-scripts --legacy-peer-deps
 
 COPY . .
-RUN npm run build --production
+RUN npm run build -- --configuration production
 
 # ---- Run with NGINX ----
 FROM nginx:stable-alpine
