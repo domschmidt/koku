@@ -1,3 +1,10 @@
+## [2.8.10](https://github.com/domschmidt/koku/compare/v2.8.9...v2.8.10) (2026-07-06)
+
+
+### Bug Fixes
+
+* fix npe ([8b8a6f2](https://github.com/domschmidt/koku/commit/8b8a6f2ab18a5a7bf8b2a1cca8ca02d6748a8feb))
+
 ## [2.8.9](https://github.com/domschmidt/koku/compare/v2.8.8...v2.8.9) (2026-07-06)
 
 
