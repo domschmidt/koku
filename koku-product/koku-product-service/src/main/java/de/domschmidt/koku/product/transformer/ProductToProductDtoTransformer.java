@@ -6,13 +6,15 @@ import de.domschmidt.koku.product.persistence.Product;
 import de.domschmidt.koku.product.persistence.ProductManufacturer;
 import de.domschmidt.koku.product.persistence.ProductPriceHistoryEntry;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProductToProductDtoTransformer {
-    private static final NumberFormat GERMAN_CURRENCY_FORMATTER = NumberFormat.getCurrencyInstance(Locale.GERMANY);
+    private static final Locale CURRENCY_LOCALE = Locale.GERMANY;
 
     private final EntityManager entityManager;
 
@@ -22,6 +24,7 @@ public class ProductToProductDtoTransformer {
 
     public KokuProductDto transformToDto(final Product model) {
         final ProductManufacturer manufacturer = model.getManufacturer();
+        final BigDecimal price = currentPrice(model);
         return KokuProductDto.builder()
                 .id(model.getId())
                 .deleted(model.isDeleted())
@@ -29,18 +32,22 @@ public class ProductToProductDtoTransformer {
                 .name(model.getName())
                 .manufacturerId(manufacturer != null ? manufacturer.getId() : null)
                 .manufacturerName(manufacturer != null ? manufacturer.getName() : null)
-                .price(
-                        !model.getPriceHistory().isEmpty()
-                                ? model.getPriceHistory().getLast().getPrice()
-                                : null)
-                .formattedPrice(
-                        !model.getPriceHistory().isEmpty()
-                                ? GERMAN_CURRENCY_FORMATTER.format(
-                                        model.getPriceHistory().getLast().getPrice())
-                                : null)
+                .price(price)
+                .formattedPrice(formatPrice(price))
                 .updated(model.getUpdated())
                 .recorded(model.getRecorded())
                 .build();
+    }
+
+    private static BigDecimal currentPrice(final Product model) {
+        final List<ProductPriceHistoryEntry> priceHistory = model.getPriceHistory();
+        return priceHistory != null && !priceHistory.isEmpty()
+                ? priceHistory.getLast().getPrice()
+                : null;
+    }
+
+    private static String formatPrice(final BigDecimal price) {
+        return price != null ? NumberFormat.getCurrencyInstance(CURRENCY_LOCALE).format(price) : null;
     }
 
     public Product transformToEntity(final Product model, final KokuProductDto updatedDto)
