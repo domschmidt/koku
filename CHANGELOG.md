@@ -1,3 +1,10 @@
+## [2.8.9](https://github.com/domschmidt/koku/compare/v2.8.8...v2.8.9) (2026-07-06)
+
+
+### Bug Fixes
+
+* update deps ([6d294c5](https://github.com/domschmidt/koku/commit/6d294c54aaf4f6b64ef9d637bf56ac70119f7e02))
+
 ## [2.8.8](https://github.com/domschmidt/koku/compare/v2.8.7...v2.8.8) (2026-07-04)
 
 
