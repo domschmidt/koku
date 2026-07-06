@@ -32,7 +32,7 @@ services:
       - "${FRONTEND_SSL_KEY}:/etc/ssl/certs/koku.key.pem"
 
   koku-db:
-    image: postgres:17.6
+    image: postgres:18.4
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -41,7 +41,7 @@ services:
       - "${DB_PORT}:${DB_PORT}"
 
   db-init:
-    image: postgres:17.6
+    image: postgres:18.4
     depends_on:
       koku-db:
         condition: service_started
@@ -55,7 +55,12 @@ services:
       done
 
       for db in users promotions activities customers products documents files keycloak; do
-        psql -h ${DB_HOST} -U ${DB_USER} -d postgres -c \"CREATE DATABASE $$db\"
+        db_exists=$$(psql -h ${DB_HOST} -U ${DB_USER} -d postgres -tAc \"SELECT 1 FROM pg_database WHERE datname = '$$db'\")
+        if [ \"$$db_exists\" = \"1\" ]; then
+          echo \"Database $$db already exists\"
+        else
+          psql -h ${DB_HOST} -U ${DB_USER} -d postgres -c \"CREATE DATABASE \\\"$$db\\\"\"
+        fi
       done
       "
 
@@ -248,7 +253,7 @@ services:
     <<: *jib_service_keycloak_cacert_import_template
 
   kafka:
-    image: docker.io/bitnamilegacy/kafka:4.0.0
+    image: docker.io/bitnamilegacy/kafka:4.0.0-debian-12-r10
     restart: unless-stopped
     ports:
       - "9094:9094"
@@ -272,7 +277,7 @@ services:
       retries: 10
 
   init-kafka:
-    image: docker.io/bitnamilegacy/kafka:4.0.0
+    image: docker.io/bitnamilegacy/kafka:4.0.0-debian-12-r10
     depends_on:
       kafka:
         condition: service_healthy
@@ -297,7 +302,7 @@ services:
       "
 
   idm:
-    image: quay.io/keycloak/keycloak:26.4
+    image: quay.io/keycloak/keycloak:26.6.4-1
     restart: unless-stopped
     command: >
       start
@@ -320,7 +325,7 @@ services:
 
   kafka-ui:
     container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
+    image: provectuslabs/kafka-ui:v0.7.2
     ports:
       - 8181:8080
     environment:
