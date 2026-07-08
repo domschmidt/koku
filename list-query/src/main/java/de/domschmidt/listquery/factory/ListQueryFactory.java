@@ -295,7 +295,7 @@ public class ListQueryFactory<T> {
             final String currentSearchTerm, final List<String> requestedSelection) {
         BooleanExpression currentSearchTermGlobalFilter = null;
         for (final String currentSelection : requestedSelection) {
-            currentSearchTermGlobalFilter = combineFilters(
+            currentSearchTermGlobalFilter = combineOrFilters(
                     currentSearchTermGlobalFilter, buildGlobalFilter(currentSearchTerm, currentSelection));
         }
         return currentSearchTermGlobalFilter;
@@ -316,6 +316,13 @@ public class ListQueryFactory<T> {
             return existing;
         }
         return existing == null ? next : existing.and(next);
+    }
+
+    private BooleanExpression combineOrFilters(final BooleanExpression existing, final BooleanExpression next) {
+        if (next == null) {
+            return existing;
+        }
+        return existing == null ? next : existing.or(next);
     }
 
     public void addDefaultFilter(final BooleanExpression filter) {

@@ -5,7 +5,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: "https://192.168.178.36:8443/realms/master"
+          issuer-uri: "https://192.168.178.36:8443/realms/koku"
   kafka:
     bootstrap-servers: ${kafka.bootstrap-servers}
     consumer:

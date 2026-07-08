@@ -8,15 +8,14 @@
   </label>
   <div class="join w-full flex">
     <ng-content select="prepend-outer"></ng-content>
-    <div class="flex w-full textarea join-item">
+    <div class="flex w-full textarea join-item" [class.skeleton]="loading()">
       <ng-content select="prepend-inner"></ng-content>
       <textarea
         [name]="name()"
         [attr.disabled]="disabled() ? '' : null"
         [attr.placeholder]="placeholder() || null"
         [attr.readonly]="readonly() || null"
-        class="resize-none w-full field-sizing-content join-item rounded-none"
-        [class.skeleton]="loading()"
+        class="resize-none w-full field-sizing-content"
         [attr.required]="required() ? true : null"
         [value]="!loading() ? value() : defaultValue()"
         (change)="changeRaw($event)"
