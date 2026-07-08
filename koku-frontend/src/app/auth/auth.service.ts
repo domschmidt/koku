@@ -12,7 +12,7 @@ export interface AuthConfig {
 
 const DEFAULT_DEV_AUTH_CONFIG: AuthConfig = {
   url: 'https://192.168.178.36:8443',
-  realm: 'master',
+  realm: 'koku',
   clientId: 'koku',
 };
 

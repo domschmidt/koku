@@ -117,7 +117,9 @@
             "development": {
               "buildTarget": "koku:build:development",
               "proxyConfig": "proxy.conf.json",
-              "host": "0.0.0.0"
+              "host": "0.0.0.0",
+              "ssl": true,
+              "port": 443
             }
           },
           "defaultConfiguration": "development"
