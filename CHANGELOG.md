@@ -1,3 +1,10 @@
+## [2.8.11](https://github.com/domschmidt/koku/compare/v2.8.10...v2.8.11) (2026-07-08)
+
+
+### Bug Fixes
+
+* fix minors (sql, ui) ([00c388b](https://github.com/domschmidt/koku/commit/00c388b6b78e5f605327bc064ec3e9ca47e0d872))
+
 ## [2.8.10](https://github.com/domschmidt/koku/compare/v2.8.9...v2.8.10) (2026-07-06)
 
 
