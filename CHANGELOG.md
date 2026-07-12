@@ -1,3 +1,10 @@
+## [2.8.12](https://github.com/domschmidt/koku/compare/v2.8.11...v2.8.12) (2026-07-12)
+
+
+### Bug Fixes
+
+* dav update ([67409f6](https://github.com/domschmidt/koku/commit/67409f6f2d753deaf24ff5daa22d96f38e3c1038))
+
 ## [2.8.11](https://github.com/domschmidt/koku/compare/v2.8.10...v2.8.11) (2026-07-08)
 
 
