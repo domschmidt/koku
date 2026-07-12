@@ -35,11 +35,14 @@ public class CalendarEventFactory {
     public String toICalendar(
             final CustomerAppointmentKafkaDto appointment, final Optional<CustomerKafkaDto> customer) {
         final ZonedDateTime startsAt = toZonedDateTime(appointment.getStart());
+        final ZonedDateTime endsAt = appointment.getEnd() == null
+                ? startsAt.plus(DEFAULT_APPOINTMENT_DURATION)
+                : toZonedDateTime(appointment.getEnd());
         return toICalendar(
                 "customer-appointment-" + appointment.getId() + "@koku",
                 summary(appointment, customer),
                 startsAt,
-                startsAt.plus(DEFAULT_APPOINTMENT_DURATION));
+                endsAt);
     }
 
     public String toICalendar(
@@ -50,7 +53,7 @@ public class CalendarEventFactory {
         calendar.setPropertyList(
                 new PropertyList().add(new ProdId(PROD_ID)).add(version).add(new CalScale(CalScale.VALUE_GREGORIAN)));
 
-        final VEvent event = new VEvent(startsAt, endsAt, summary);
+        final VEvent event = new VEvent(startsAt.toInstant(), endsAt.toInstant(), summary);
         event.setPropertyList(event.getPropertyList().add(new Uid(uid)));
         calendar.setComponentList(new ComponentList<>(java.util.List.of(event)));
 
