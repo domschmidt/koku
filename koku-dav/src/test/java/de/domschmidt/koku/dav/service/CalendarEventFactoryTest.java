@@ -53,6 +53,27 @@ class CalendarEventFactoryTest {
     }
 
     @Test
+    void usesCalculatedCustomerAppointmentEnd() {
+        final String calendar = factory.toICalendar(CustomerAppointmentKafkaDto.builder()
+                .id(42L)
+                .start(LocalDateTime.of(2026, Month.JULY, 15, 10, 0))
+                .end(LocalDateTime.of(2026, Month.JULY, 15, 12, 30))
+                .build());
+
+        assertThat(calendar).contains("DTSTART:20260715T080000Z", "DTEND:20260715T103000Z");
+    }
+
+    @Test
+    void defaultsCustomerAppointmentWithoutCalculatedEndToOneHour() {
+        final String calendar = factory.toICalendar(CustomerAppointmentKafkaDto.builder()
+                .id(42L)
+                .start(LocalDateTime.of(2026, Month.JULY, 15, 10, 0))
+                .build());
+
+        assertThat(calendar).contains("DTSTART:20260715T080000Z", "DTEND:20260715T090000Z");
+    }
+
+    @Test
     void createsPrivateAppointmentSummaryFromLabelAndDescription() {
         final String calendar = factory.toICalendar(UserAppointmentKafkaDto.builder()
                 .id(43L)
@@ -61,5 +82,27 @@ class CalendarEventFactoryTest {
                 .build());
 
         assertThat(calendar).contains("SUMMARY:Privater Termin - Arzt");
+    }
+
+    @Test
+    void serializesSummerAppointmentAsUnambiguousUtcInstantsForIos() {
+        final String calendar = factory.toICalendar(
+                "summer-appointment@koku",
+                "Summer appointment",
+                ZonedDateTime.of(LocalDateTime.of(2026, Month.JULY, 15, 10, 0), ZoneId.of("Europe/Berlin")),
+                ZonedDateTime.of(LocalDateTime.of(2026, Month.JULY, 15, 11, 0), ZoneId.of("Europe/Berlin")));
+
+        assertThat(calendar).contains("DTSTART:20260715T080000Z", "DTEND:20260715T090000Z");
+    }
+
+    @Test
+    void serializesWinterAppointmentAsUnambiguousUtcInstantsForIos() {
+        final String calendar = factory.toICalendar(
+                "winter-appointment@koku",
+                "Winter appointment",
+                ZonedDateTime.of(LocalDateTime.of(2026, Month.JANUARY, 15, 10, 0), ZoneId.of("Europe/Berlin")),
+                ZonedDateTime.of(LocalDateTime.of(2026, Month.JANUARY, 15, 11, 0), ZoneId.of("Europe/Berlin")));
+
+        assertThat(calendar).contains("DTSTART:20260115T090000Z", "DTEND:20260115T100000Z");
     }
 }

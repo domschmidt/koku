@@ -100,6 +100,25 @@ class DavXmlWriterTest {
     }
 
     @Test
+    void writesDeletedCalDavResourceWithNewSyncToken() throws IOException {
+        final DavMultiStatus multistatus = new DavMultiStatus(
+                List.of(DavResponse.notFound("/services/caldav/calendars/current-user/private/42.ics")),
+                "urn:koku:caldav:private:sync:2");
+
+        final String xml = writer.write(multistatus);
+
+        assertXmlSimilar("""
+                <d:multistatus xmlns:d="DAV:">
+                  <d:response>
+                    <d:href>/services/caldav/calendars/current-user/private/42.ics</d:href>
+                    <d:status>HTTP/1.1 404 Not Found</d:status>
+                  </d:response>
+                  <d:sync-token>urn:koku:caldav:private:sync:2</d:sync-token>
+                </d:multistatus>
+                """, xml);
+    }
+
+    @Test
     void writesCardDavCompatibilityCapabilities() throws IOException {
         final DavMultiStatus multistatus = new DavMultiStatus(List.of(new DavResponse(
                 "/services/carddav/addressbook/koku/",

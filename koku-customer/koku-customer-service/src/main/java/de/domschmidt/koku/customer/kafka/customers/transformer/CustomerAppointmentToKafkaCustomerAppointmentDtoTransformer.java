@@ -14,6 +14,7 @@ public class CustomerAppointmentToKafkaCustomerAppointmentDtoTransformer {
                 .id(model.getId())
                 .deleted(model.isDeleted())
                 .start(model.getStart())
+                .end(model.getCalculatedEndSnapshot())
                 .description(model.getDescription())
                 .additionalInfo(model.getAdditionalInfo())
                 .customerId(model.getCustomer().getId())
