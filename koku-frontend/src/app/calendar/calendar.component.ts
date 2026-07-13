@@ -147,6 +147,7 @@ interface CalendarPersistedSettings {
 
 @Component({
   selector: 'calendar',
+  host: { '[attr.data-testid]': "'calendar'" },
   imports: [
     FullCalendarModule,
     IconComponent,
@@ -198,6 +199,7 @@ export class CalendarComponent implements OnDestroy {
     locale: deLocale,
     headerToolbar: false,
     eventDidMount: ({ el, event }) => {
+      el.dataset['testid'] = `calendar-event-${event.id.replace(/[^a-zA-Z0-9]+/g, '-')}`;
       const configuredColor = event.extendedProps['kokuColor'];
       const color = typeof configuredColor === 'string' ? configuredColor : undefined;
       el.style.setProperty('--koku-event-color', colorValue(color));

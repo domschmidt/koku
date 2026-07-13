@@ -9,6 +9,9 @@
         @if (((listData() || {}).filters || []).length) {
           <button
             class="btn btn-neutral btn-square"
+            type="button"
+            aria-label="Erweiterte Filter"
+            [attr.aria-expanded]="showFilters()"
             (click)="showFilters.set(!showFilters())"
             [class.btn-primary]="showFilters()"
           >
@@ -37,7 +40,7 @@
       </div>
       @if (showFilters()) {
         <hr class="border-neutral-content/20" />
-        <div class="px-4 py-2 flex gap-3">
+        <div class="px-4 py-2 flex gap-3" data-testid="list-advanced-filters">
           @for (currentFilter of (listData() || {}).filters || []; track currentFilter.id) {
             @if (currentFilter.id && currentFilter.valuePath) {
               <div
@@ -66,7 +69,7 @@
         }
 
         @if (!sourceLoading() && listRegister().length === 0) {
-          <div class="flex flex-col items-center justify-center text-center p-6">
+          <div class="flex flex-col items-center justify-center text-center p-6" data-testid="list-empty-state">
             <div class="animate-bounce">
               <div class="relative">
                 <koku-icon name="MAGNIFYING_GLASS" class="h-16 w-16"></koku-icon>
@@ -98,6 +101,7 @@
           @for (result of listRegister(); track result.id) {
             <li class="items-center m-1">
               <button
+                data-testid="list-item-trigger"
                 class="w-full min-h-13 content-center"
                 [class.menu-active]="!sourceLoading() && result.id !== null && result.id === inlineContent()?.id"
                 [class.menu-disabled]="sourceLoading()"
@@ -154,6 +158,7 @@
     @if (activeContent.content; as activeContentPayload) {
       <div class="flex flex-col w-full overflow-auto bg-base-100">
         <div
+          data-testid="list-inline-content"
           list-inline-content
           [content]="activeContentPayload"
           [urlSegments]="activeContent.urlSegments"

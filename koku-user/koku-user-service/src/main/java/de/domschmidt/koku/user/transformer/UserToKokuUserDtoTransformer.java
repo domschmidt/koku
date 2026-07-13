@@ -7,7 +7,6 @@ import jakarta.persistence.EntityManager;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 @Component
 @RequiredArgsConstructor
@@ -22,8 +21,7 @@ public class UserToKokuUserDtoTransformer {
                 .version(model.getVersion())
                 .firstname(model.getFirstname())
                 .lastname(model.getLastname())
-                .initials((model.getFirstname() != null ? StringUtils.truncate(model.getFirstname(), 1) : "")
-                        + (model.getLastname() != null ? StringUtils.truncate(model.getLastname(), 1) : ""))
+                .initials(firstCharacter(model.getFirstname()) + firstCharacter(model.getLastname()))
                 .fullname(String.join(
                         " ",
                         Stream.of(model.getFirstname(), model.getLastname())
@@ -55,5 +53,9 @@ public class UserToKokuUserDtoTransformer {
             model.setDeleted(updatedDto.getDeleted());
         }
         return model;
+    }
+
+    private static String firstCharacter(final String value) {
+        return value == null || value.isEmpty() ? "" : value.substring(0, 1);
     }
 }

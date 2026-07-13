@@ -44,5 +44,11 @@ class DavResponseBuilderTest {
         assertThat(response.propStats().get(1).properties())
                 .extracting(DavProperty::name)
                 .containsExactly(unsupported);
+
+        assertThat(new DavResponseBuilder("/default")
+                        .property(DavPropertyNames.DISPLAYNAME, new TextValue("Default"))
+                        .build((List<DavPropertyName>) null)
+                        .propStats())
+                .singleElement();
     }
 }

@@ -1,0 +1,9 @@
+.angular
+coverage
+dist
+node_modules
+playwright-report
+test-results
+*.iml
+debug.log
+npm-debug.log

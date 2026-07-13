@@ -30,8 +30,7 @@ export class ConditionActionComponent {
         factory: requireRecipeFactory(parent.contentSetup().actionRegistry, action['@type'], 'list action'),
       };
     },
-    equal: (previous, current) =>
-      previous.action === current.action && previous.parent === current.parent && previous.factory === current.factory,
+    equal: (previous, current) => this.sameActionIdentity(previous, current),
     create: ({ action, parent, factory }) =>
       factory({
         action: computed(() => action),
@@ -42,6 +41,16 @@ export class ConditionActionComponent {
         parent,
       }),
   });
+
+  private sameActionIdentity(
+    previous: { action: KokuDto.AbstractListViewItemActionDto; parent: ListItemActionComponent; factory: unknown },
+    current: { action: KokuDto.AbstractListViewItemActionDto; parent: ListItemActionComponent; factory: unknown },
+  ): boolean {
+    return (
+      previous.action === current.action && previous.parent === current.parent && previous.factory === current.factory
+    );
+  }
+
   matchesPositively(value: KokuDto.ListViewConditionalItemValueActionDto, listItemSetup: ListItemSetup) {
     let result = false;
     const currentValue = get(listItemSetup.source(), value.compareValuePath || '', null);

@@ -505,7 +505,7 @@ const executeHttpActionEvents = (
     executeHttpActionEvent(instance, currentEvent, eventPayload);
   }
 };
-const executeHttpActionEvent = (
+export const executeHttpActionEvent = (
   instance: ListItemActionRenderContext['parent'],
   currentEvent: KokuDto.AbstractListViewActionEventDto,
   eventPayload: Record<string, any>,

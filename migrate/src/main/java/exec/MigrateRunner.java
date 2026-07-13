@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
 public class MigrateRunner {
@@ -13,17 +14,19 @@ public class MigrateRunner {
 
     public static void main(String[] args) throws SQLException {
 
-        try (Connection source = DriverManager.getConnection(System.getenv("db_source"));
-                Connection products = DriverManager.getConnection(System.getenv("db_target_products"));
-                Connection promotions = DriverManager.getConnection(System.getenv("db_target_promotions"));
-                Connection activities = DriverManager.getConnection(System.getenv("db_target_activities"));
-                Connection users = DriverManager.getConnection(System.getenv("db_target_users"));
-                Connection customers = DriverManager.getConnection(System.getenv("db_target_customers"));
-                Connection files = DriverManager.getConnection(System.getenv("db_target_files")); ) {
-            String uploadsDir = System.getenv("dir_source_uploads");
+        String[] configuration = configuration(args, System::getenv);
+
+        try (Connection source = DriverManager.getConnection(configuration[0]);
+                Connection products = DriverManager.getConnection(configuration[1]);
+                Connection promotions = DriverManager.getConnection(configuration[2]);
+                Connection activities = DriverManager.getConnection(configuration[3]);
+                Connection users = DriverManager.getConnection(configuration[4]);
+                Connection customers = DriverManager.getConnection(configuration[5]);
+                Connection files = DriverManager.getConnection(configuration[6]); ) {
+            String uploadsDir = configuration[7];
 
             Map<String, String> userMapping = new HashMap<>();
-            for (String currentUserMapping : System.getenv("usermapping").split(",")) {
+            for (String currentUserMapping : configuration[8].split(",")) {
                 String[] currentUserMappingSplitted = currentUserMapping.split(":");
                 userMapping.put(currentUserMappingSplitted[0], currentUserMappingSplitted[1]);
             }
@@ -50,5 +53,21 @@ public class MigrateRunner {
 
             LOGGER.info("Migration finished successfully.");
         }
+    }
+
+    static String[] configuration(final String[] args, final UnaryOperator<String> environment) {
+        return args.length == 9
+                ? args
+                : new String[] {
+                    environment.apply("db_source"),
+                    environment.apply("db_target_products"),
+                    environment.apply("db_target_promotions"),
+                    environment.apply("db_target_activities"),
+                    environment.apply("db_target_users"),
+                    environment.apply("db_target_customers"),
+                    environment.apply("db_target_files"),
+                    environment.apply("dir_source_uploads"),
+                    environment.apply("usermapping")
+                };
     }
 }

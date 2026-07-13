@@ -67,8 +67,8 @@ public class DateFilter implements IListFilter {
                 switch (operator) {
                     case LIKE, EQ, LESS, LESS_OR_EQ -> castedExpr.month().lt(searchExpression.getMonthValue());
                     case GREATER, GREATER_OR_EQ -> castedExpr.month().gt(searchExpression.getMonthValue());
-                    default ->
-                        throw new IllegalArgumentException("Unsupported yearly recurring date operator: " + operator);
+                    case STARTS_WITH, ENDS_WITH ->
+                        throw new IllegalStateException("Text operators are handled earlier");
                 };
         final BooleanExpression dayComparison =
                 switch (operator) {
@@ -77,8 +77,8 @@ public class DateFilter implements IListFilter {
                     case GREATER -> castedExpr.dayOfMonth().gt(searchExpression.getDayOfMonth());
                     case LESS_OR_EQ -> castedExpr.dayOfMonth().loe(searchExpression.getDayOfMonth());
                     case GREATER_OR_EQ -> castedExpr.dayOfMonth().goe(searchExpression.getDayOfMonth());
-                    default ->
-                        throw new IllegalArgumentException("Unsupported yearly recurring date operator: " + operator);
+                    case STARTS_WITH, ENDS_WITH ->
+                        throw new IllegalStateException("Text operators are handled earlier");
                 };
 
         return castedExpr

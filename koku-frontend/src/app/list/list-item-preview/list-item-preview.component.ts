@@ -21,7 +21,7 @@ export class ListItemPreviewComponent {
           : undefined,
       };
     },
-    equal: (previous, current) => previous.preview === current.preview && previous.factory === current.factory,
+    equal: (previous, current) => this.samePreviewIdentity(previous, current),
     create: ({ preview, factory }) =>
       preview && factory
         ? factory({
@@ -31,4 +31,11 @@ export class ListItemPreviewComponent {
           })
         : null,
   });
+
+  private samePreviewIdentity(
+    previous: { preview: KokuDto.AbstractListViewItemPreviewDto | undefined; factory: unknown },
+    current: { preview: KokuDto.AbstractListViewItemPreviewDto | undefined; factory: unknown },
+  ): boolean {
+    return previous.preview === current.preview && previous.factory === current.factory;
+  }
 }

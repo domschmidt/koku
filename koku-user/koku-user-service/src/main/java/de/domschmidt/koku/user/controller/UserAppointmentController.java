@@ -138,7 +138,7 @@ public class UserAppointmentController {
 
     @GetMapping("/users/appointments/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory();
+        final FormViewFactory formFactory = new FormViewFactory("user-appointment");
         final String rootId =
                 formFactory.addContent(GridContainer.builder().cols(1).build());
         final QUser qUser = QUser.user;

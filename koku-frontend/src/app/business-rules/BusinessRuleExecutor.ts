@@ -67,16 +67,23 @@ class BusinessRuleExecutor {
       if (listenerEvents.size > 0) {
         this.contentEventSubscriptions.push(
           referencedContent.events.subscribe((eventDetails) => {
-            if (!eventDetails.eventName) {
-              throw new Error('Event name is required');
-            }
-            if (listenerEvents.has(eventDetails.eventName)) {
+            const eventName = this.requireEventName(eventDetails.eventName);
+            if (listenerEvents.has(eventName)) {
               this.triggerContentEvent();
             }
           }),
         );
       }
     }
+  }
+
+  private requireEventName(
+    eventName: KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum | undefined,
+  ): KokuDto.KokuBusinessRuleFieldReferenceListenerEventEnum {
+    if (!eventName) {
+      throw new Error('Event name is required');
+    }
+    return eventName;
   }
 
   destroy() {

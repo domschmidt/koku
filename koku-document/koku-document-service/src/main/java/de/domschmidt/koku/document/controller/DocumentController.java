@@ -101,7 +101,7 @@ public class DocumentController {
 
     @GetMapping("/documents/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory();
+        final FormViewFactory formFactory = new FormViewFactory("document");
         final String rootId =
                 formFactory.addContent(GridContainer.builder().cols(1).build());
 

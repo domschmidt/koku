@@ -87,7 +87,7 @@ public class FileController {
 
     @GetMapping("/files/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory();
+        final FormViewFactory formFactory = new FormViewFactory("file");
         final String rootId =
                 formFactory.addContent(GridContainer.builder().cols(1).build());
 

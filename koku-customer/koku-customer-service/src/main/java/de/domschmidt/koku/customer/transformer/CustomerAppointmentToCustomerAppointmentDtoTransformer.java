@@ -600,8 +600,10 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                 this.activityKTableProcessor.getActivities().get(activityId);
         BigDecimal result = null;
         if (kafkaActivity.getPriceHistory() != null) {
-            kafkaActivity.getPriceHistory().sort(Comparator.comparing(ActivityPriceHistoryKafkaDto::getRecorded));
-            for (final ActivityPriceHistoryKafkaDto activityPriceHistoryKafkaDto : kafkaActivity.getPriceHistory()) {
+            final List<ActivityPriceHistoryKafkaDto> sortedPriceHistory = kafkaActivity.getPriceHistory().stream()
+                    .sorted(Comparator.comparing(ActivityPriceHistoryKafkaDto::getRecorded))
+                    .toList();
+            for (final ActivityPriceHistoryKafkaDto activityPriceHistoryKafkaDto : sortedPriceHistory) {
                 if (date.isAfter(activityPriceHistoryKafkaDto.getRecorded())) {
                     result = activityPriceHistoryKafkaDto.getPrice();
                 } else {
@@ -612,7 +614,10 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         if (result == null
                 && kafkaActivity.getPriceHistory() != null
                 && !kafkaActivity.getPriceHistory().isEmpty()) {
-            result = kafkaActivity.getPriceHistory().getFirst().getPrice();
+            result = kafkaActivity.getPriceHistory().stream()
+                    .min(Comparator.comparing(ActivityPriceHistoryKafkaDto::getRecorded))
+                    .orElseThrow()
+                    .getPrice();
         }
         if (result == null) {
             result = BigDecimal.ZERO;
@@ -623,8 +628,10 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
     private BigDecimal getProductHistoryDefaultPrice(final LocalDateTime date, final ProductKafkaDto product) {
         BigDecimal result = null;
         if (product.getPriceHistory() != null) {
-            product.getPriceHistory().sort(Comparator.comparing(ProductPriceHistoryKafkaDto::getRecorded));
-            for (final ProductPriceHistoryKafkaDto productPriceHistoryKafkaDto : product.getPriceHistory()) {
+            final List<ProductPriceHistoryKafkaDto> sortedPriceHistory = product.getPriceHistory().stream()
+                    .sorted(Comparator.comparing(ProductPriceHistoryKafkaDto::getRecorded))
+                    .toList();
+            for (final ProductPriceHistoryKafkaDto productPriceHistoryKafkaDto : sortedPriceHistory) {
                 if (date.isAfter(productPriceHistoryKafkaDto.getRecorded())) {
                     result = productPriceHistoryKafkaDto.getPrice();
                 } else {
@@ -635,7 +642,10 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         if (result == null
                 && product.getPriceHistory() != null
                 && !product.getPriceHistory().isEmpty()) {
-            result = product.getPriceHistory().getFirst().getPrice();
+            result = product.getPriceHistory().stream()
+                    .min(Comparator.comparing(ProductPriceHistoryKafkaDto::getRecorded))
+                    .orElseThrow()
+                    .getPrice();
         }
         if (result == null) {
             result = BigDecimal.ZERO;

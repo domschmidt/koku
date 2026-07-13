@@ -377,13 +377,11 @@ public class CalDavService {
             return true;
         }
         final Instant startsAt = toInstant(appointment.getStart());
-        final Instant endsAt = appointment.getEnd() == null
-                ? startsAt.plus(CalendarEventFactory.DEFAULT_APPOINTMENT_DURATION)
-                : toInstant(appointment.getEnd());
+        final Instant endsAt = startsAt.plus(CalendarEventFactory.DEFAULT_APPOINTMENT_DURATION);
         return timeRange.overlaps(startsAt, endsAt);
     }
 
-    private boolean matchesTimeRange(final UserAppointmentKafkaDto appointment, final DavTimeRange timeRange) {
+    boolean matchesTimeRange(final UserAppointmentKafkaDto appointment, final DavTimeRange timeRange) {
         if (timeRange == null || appointment.getStart() == null) {
             return true;
         }
@@ -417,7 +415,6 @@ public class CalDavService {
                 .map(appointment -> Objects.hash(
                         appointment.getId(),
                         appointment.getUpdated(),
-                        appointment.getEnd(),
                         appointment.getDeleted(),
                         customer(appointment).map(CustomerKafkaDto::getUpdated).orElse(null),
                         customer(appointment).map(CustomerKafkaDto::getDeleted).orElse(null)))
@@ -440,7 +437,6 @@ public class CalDavService {
         return DavResourceMetadata.etag(
                 appointment.getId(),
                 appointment.getUpdated(),
-                appointment.getEnd(),
                 customer.map(CustomerKafkaDto::getUpdated).orElse(null),
                 customer.map(CustomerKafkaDto::getDeleted).orElse(null));
     }

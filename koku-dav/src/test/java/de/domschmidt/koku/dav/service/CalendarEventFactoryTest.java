@@ -1,6 +1,9 @@
 package de.domschmidt.koku.dav.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
 import de.domschmidt.koku.customer.kafka.dto.CustomerAppointmentKafkaDto;
 import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
@@ -10,6 +13,8 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.validate.ValidationException;
 import org.junit.jupiter.api.Test;
 
 class CalendarEventFactoryTest {
@@ -53,24 +58,32 @@ class CalendarEventFactoryTest {
     }
 
     @Test
-    void usesCalculatedCustomerAppointmentEnd() {
-        final String calendar = factory.toICalendar(CustomerAppointmentKafkaDto.builder()
-                .id(42L)
-                .start(LocalDateTime.of(2026, Month.JULY, 15, 10, 0))
-                .end(LocalDateTime.of(2026, Month.JULY, 15, 12, 30))
-                .build());
+    void createsCustomerAppointmentWithFallbackNameAndDefaultStart() {
+        final String calendar = factory.toICalendar(
+                CustomerAppointmentKafkaDto.builder().id(44L).build(),
+                Optional.of(CustomerKafkaDto.builder()
+                        .fullname(" ")
+                        .firstname(" Ada ")
+                        .lastname("Lovelace")
+                        .build()));
 
-        assertThat(calendar).contains("DTSTART:20260715T080000Z", "DTEND:20260715T103000Z");
+        assertThat(calendar).contains("UID:customer-appointment-44@koku", "SUMMARY:Kundentermin - Ada  Lovelace");
     }
 
     @Test
-    void defaultsCustomerAppointmentWithoutCalculatedEndToOneHour() {
-        final String calendar = factory.toICalendar(CustomerAppointmentKafkaDto.builder()
-                .id(42L)
-                .start(LocalDateTime.of(2026, Month.JULY, 15, 10, 0))
+    void createsCustomerAppointmentWithoutCustomerAndPrivateAppointmentWithDefaultEnd() {
+        final String customerCalendar = factory.toICalendar(CustomerAppointmentKafkaDto.builder()
+                .id(45L)
+                .start(LocalDateTime.of(2026, Month.JUNE, 11, 10, 0))
+                .build());
+        final String privateCalendar = factory.toICalendar(UserAppointmentKafkaDto.builder()
+                .id(46L)
+                .start(LocalDateTime.of(2026, Month.JUNE, 11, 10, 0))
                 .build());
 
-        assertThat(calendar).contains("DTSTART:20260715T080000Z", "DTEND:20260715T090000Z");
+        assertThat(customerCalendar).contains("SUMMARY:Kundentermin");
+        assertThat(privateCalendar)
+                .contains("SUMMARY:Privater Termin", "DTSTART:20260611T080000Z", "DTEND:20260611T090000Z");
     }
 
     @Test
@@ -104,5 +117,13 @@ class CalendarEventFactoryTest {
                 ZonedDateTime.of(LocalDateTime.of(2026, Month.JANUARY, 15, 11, 0), ZoneId.of("Europe/Berlin")));
 
         assertThat(calendar).contains("DTSTART:20260115T090000Z", "DTEND:20260115T100000Z");
+    }
+
+    @Test
+    void invalidGeneratedCalendarIsRejected() throws Exception {
+        final Calendar calendar = mock(Calendar.class);
+        doThrow(new ValidationException("invalid")).when(calendar).validate();
+
+        assertThatThrownBy(() -> factory.validate(calendar)).isInstanceOf(IllegalArgumentException.class);
     }
 }

@@ -80,7 +80,7 @@ public class DavXmlReader {
         return reader;
     }
 
-    private void setFeature(final SAXReader reader, final String feature, final boolean value) {
+    void setFeature(final SAXReader reader, final String feature, final boolean value) {
         try {
             reader.setFeature(feature, value);
         } catch (final SAXException e) {

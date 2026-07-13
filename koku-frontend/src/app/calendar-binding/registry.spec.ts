@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { vi } from 'vitest';
 import { CALENDAR_CONTENT_SETUP } from './registry';
 
 describe('calendar content recipes', () => {
@@ -31,6 +32,12 @@ describe('calendar content recipes', () => {
             sourcePath: 'startTime',
             value: 'SELECTION_START_TIME',
           },
+          ...(['SECOND', 'MINUTE', 'HOUR', 'WEEK', 'MONTH', 'YEAR'] as const).map((offsetUnit) => ({
+            sourcePath: offsetUnit.toLowerCase(),
+            value: 'SELECTION_START_DATE' as const,
+            offsetUnit,
+            offsetValue: 1,
+          })),
         ],
       } as unknown as KokuDto.CalendarFormularInlineContentDto),
       loading: signal(false),
@@ -53,10 +60,10 @@ describe('calendar content recipes', () => {
         submitUrl: '/appointments/99',
         maxWidth: '640px',
         contentOverrides: [{ alias: 'appointmentId', disabled: true, value: '99' }],
-        sourceOverrides: [
+        sourceOverrides: expect.arrayContaining([
           { path: 'startDate', value: '2026-07-04' },
           { path: 'startTime', value: '09:30' },
-        ],
+        ]),
       }),
     );
 
@@ -91,5 +98,15 @@ describe('calendar content recipes', () => {
     recipe.outputs?.['clicked'](undefined);
 
     expect(openedRoutes).toEqual([['appointments', ':appointmentId']]);
+
+    const selectUser = vi.fn();
+    const selectRecipe = CALENDAR_CONTENT_SETUP.actionRegistry['select-user']!({
+      action: signal({ '@type': 'select-user', title: 'User' } as any),
+      contentSetup: signal(CALENDAR_CONTENT_SETUP),
+      openRoutedContent: vi.fn(),
+      getPluginApi: <T>() => ({ selectUser }) as T,
+    });
+    selectRecipe.outputs?.['clicked'](undefined);
+    expect(selectUser).toHaveBeenCalled();
   });
 });

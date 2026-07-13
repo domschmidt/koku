@@ -16,12 +16,8 @@ public class UUIDFilter implements IListFilter {
             return null;
         }
 
-        try {
-            final StringTemplate castedExpr = Expressions.stringTemplate("CAST({0} AS text)", expr);
-            return castedExpr.likeIgnoreCase("%" + query + "%");
-        } catch (final Exception e) {
-            return null;
-        }
+        final StringTemplate castedExpr = Expressions.stringTemplate("CAST({0} AS text)", expr);
+        return castedExpr.likeIgnoreCase("%" + query + "%");
     }
 
     @Override

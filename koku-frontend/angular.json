@@ -132,7 +132,11 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "runner": "vitest",
-            "buildTarget": "koku:build"
+            "buildTarget": "koku:build",
+            "isolate": true,
+            "coverageThresholds": {
+              "lines": 100
+            }
           }
         },
         "lint": {

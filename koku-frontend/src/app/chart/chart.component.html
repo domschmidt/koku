@@ -1,4 +1,4 @@
-<div class="flex gap-4">
+<div class="flex gap-4" data-testid="chart-filters">
   @for (filter of chartData()?.filters; track $index) {
     <div
       chart-filter-renderer
@@ -9,4 +9,4 @@
     ></div>
   }
 </div>
-<div #chartRoot></div>
+<div #chartRoot data-testid="chart"></div>

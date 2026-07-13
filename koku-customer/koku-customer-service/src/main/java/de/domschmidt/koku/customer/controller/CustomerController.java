@@ -113,7 +113,7 @@ public class CustomerController {
 
     @GetMapping("/customers/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory();
+        final FormViewFactory formFactory = new FormViewFactory("customer");
         final String rootId =
                 formFactory.addContent(GridContainer.builder().cols(1).build());
 

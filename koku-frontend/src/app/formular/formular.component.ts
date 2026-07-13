@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   inject,
   InjectionToken,
   input,
@@ -25,6 +26,7 @@ import { FormSourceStore } from './form-source.store';
 import { FormContentStore } from './form-content.store';
 import { assertFormularRecipeCoverage } from './formular-recipe-registry';
 import type { FormOutlet } from './form-outlet';
+import { formularAliasTestId } from './formular-alias';
 
 export interface FormularContentOverride {
   alias: string;
@@ -237,7 +239,10 @@ export class FormularRuntime {
 
 @Component({
   selector: 'formular',
-  host: { class: 'flex h-full w-full flex-col overflow-auto' },
+  host: {
+    class: 'flex h-full w-full flex-col overflow-auto',
+    '[attr.data-testid]': 'testId()',
+  },
   imports: [FormularContentRendererComponent],
   templateUrl: './formular.component.html',
 })
@@ -249,6 +254,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
   });
 
   formularUrl = input.required<string>();
+  testId = computed(() => formularAliasTestId(this.formularData()?.alias));
   contentRegistry = input.required<FormularContentRegistry>();
 
   sourceUrl = input<string>();
@@ -338,16 +344,7 @@ export class FormularComponent implements OnDestroy, OnChanges {
             }
             void this.runtime
               .whenInitialized()
-              .then(() => {
-                if (subscriber.closed) {
-                  return;
-                }
-                for (const currentPluginInstance of this.pluginInstances || []) {
-                  currentPluginInstance.onFormularLoaded?.(formularData);
-                }
-                subscriber.next(formularData);
-                subscriber.complete();
-              })
+              .then(() => this.completeFormularLoad(subscriber, formularData))
               .catch((error) => {
                 if (!subscriber.closed) {
                   this.toastService.add('Fehler bei der Formularinitialisierung', 'error');
@@ -365,6 +362,17 @@ export class FormularComponent implements OnDestroy, OnChanges {
         subscriber.error('missing formularurl');
       }
     });
+  }
+
+  private completeFormularLoad(subscriber: Subscriber<KokuDto.FormViewDto>, formularData: KokuDto.FormViewDto): void {
+    if (subscriber.closed) {
+      return;
+    }
+    for (const currentPluginInstance of this.pluginInstances || []) {
+      currentPluginInstance.onFormularLoaded?.(formularData);
+    }
+    subscriber.next(formularData);
+    subscriber.complete();
   }
 
   private afterSourceLoaded(source: any) {

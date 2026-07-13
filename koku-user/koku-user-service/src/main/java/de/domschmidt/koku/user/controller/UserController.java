@@ -88,7 +88,7 @@ public class UserController {
 
     @GetMapping("/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory();
+        final FormViewFactory formFactory = new FormViewFactory("user");
         final String rootId =
                 formFactory.addContent(GridContainer.builder().cols(1).build());
 

@@ -1,6 +1,7 @@
 <div class="drawer">
   <input
     id="koku-drawer"
+    data-testid="navigation-drawer-toggle"
     type="checkbox"
     class="drawer-toggle"
     [checked]="naviService.openState()"
@@ -8,7 +9,7 @@
   />
   <div class="drawer-content">
     <div class="flex h-full flex-col" style="min-height: var(--vh); max-height: var(--vh)">
-      <div class="navbar bg-base-200 min-h-0 p-1">
+      <div class="navbar bg-base-200 min-h-0 p-1" data-testid="page-title-bar">
         <div class="flex-none">
           <label for="koku-drawer" class="btn drawer-button btn-square btn-ghost" aria-label="Navigation oeffnen">
             <svg

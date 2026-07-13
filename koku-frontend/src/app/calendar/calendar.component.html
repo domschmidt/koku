@@ -11,10 +11,14 @@
             (changed)="dateChanged($event)"
           >
             <ng-container ngProjectAs="prepend-outer">
-              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.prev()">«</button>
+              <button class="btn join-item" aria-label="Zurück" (click)="calendarComponent()?.getApi()?.prev()">
+                «
+              </button>
             </ng-container>
             <ng-container ngProjectAs="append-outer">
-              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.next()">»</button>
+              <button class="btn join-item" aria-label="Weiter" (click)="calendarComponent()?.getApi()?.next()">
+                »
+              </button>
             </ng-container>
           </date-input-field>
         }
@@ -25,10 +29,14 @@
             (changed)="dateChanged($event)"
           >
             <ng-container ngProjectAs="prepend-outer">
-              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.prev()">«</button>
+              <button class="btn join-item" aria-label="Zurück" (click)="calendarComponent()?.getApi()?.prev()">
+                «
+              </button>
             </ng-container>
             <ng-container ngProjectAs="append-outer">
-              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.next()">»</button>
+              <button class="btn join-item" aria-label="Weiter" (click)="calendarComponent()?.getApi()?.next()">
+                »
+              </button>
             </ng-container>
           </week-input-field>
         }
@@ -39,10 +47,14 @@
             (changed)="dateChanged($event)"
           >
             <ng-container ngProjectAs="prepend-outer">
-              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.prev()">«</button>
+              <button class="btn join-item" aria-label="Zurück" (click)="calendarComponent()?.getApi()?.prev()">
+                «
+              </button>
             </ng-container>
             <ng-container ngProjectAs="append-outer">
-              <button class="btn join-item" (click)="calendarComponent()?.getApi()?.next()">»</button>
+              <button class="btn join-item" aria-label="Weiter" (click)="calendarComponent()?.getApi()?.next()">
+                »
+              </button>
             </ng-container>
           </month-input-field>
         }
@@ -52,6 +64,8 @@
     <div class="flex gap-2 items-center">
       <div class="join">
         <button
+          aria-label="Tag"
+          [attr.aria-pressed]="viewMode() === 'DAY'"
           class="join-item btn"
           (click)="changeViewMode('DAY')"
           [class.btn-active]="viewMode() === 'DAY'"
@@ -60,6 +74,8 @@
           <koku-icon name="CALENDAR_DAY"></koku-icon>
         </button>
         <button
+          aria-label="Woche"
+          [attr.aria-pressed]="viewMode() === 'WEEK'"
           class="join-item btn"
           (click)="changeViewMode('WEEK')"
           [class.btn-active]="viewMode() === 'WEEK'"
@@ -68,6 +84,8 @@
           <koku-icon name="CALENDAR_WEEK"></koku-icon>
         </button>
         <button
+          aria-label="Monat"
+          [attr.aria-pressed]="viewMode() === 'MONTH'"
           class="join-item btn"
           (click)="changeViewMode('MONTH')"
           [class.btn-active]="viewMode() === 'MONTH'"

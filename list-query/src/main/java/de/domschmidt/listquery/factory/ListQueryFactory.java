@@ -29,7 +29,7 @@ public class ListQueryFactory<T> {
 
     private BooleanExpression defaultFilter;
 
-    private final Map<String, Expression<?>> expressionQuery = new HashMap<>();
+    private final Map<String, Expression<?>> expressionQuery = new LinkedHashMap<>();
     private final Set<Path<?>> joins = new HashSet<>();
 
     private final List<String> defaultListSelection = new ArrayList<>();

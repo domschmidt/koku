@@ -51,30 +51,31 @@ export class BusinessRulesHeaderContainerComponent implements OnDestroy {
     toObservable(this.content).subscribe((content) => {
       this.clearGlobalEventListeners();
       for (const currentEventListener of content.globalEventListeners || []) {
-        if (!currentEventListener.eventName) {
-          throw new Error('Missing eventName in Global Listener Configuration');
-        }
-        GLOBAL_EVENT_BUS.addGlobalEventListener(
-          String(this.componentRef),
-          currentEventListener.eventName,
-          (eventPayload) => {
-            if (currentEventListener['@type'] !== 'event-payload') {
-              throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
-            }
-            const castedEventListener =
-              currentEventListener as KokuDto.ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto;
+        const eventName = this.requireEventName(currentEventListener.eventName);
+        GLOBAL_EVENT_BUS.addGlobalEventListener(String(this.componentRef), eventName, (eventPayload) => {
+          if (currentEventListener['@type'] !== 'event-payload') {
+            throw new Error(`Unknown EventListenerType ${currentEventListener['@type']}`);
+          }
+          const castedEventListener =
+            currentEventListener as KokuDto.ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto;
 
-            if (!castedEventListener.idPath) {
-              throw new Error('Missing idPath configuration in EventListener');
-            }
+          if (!castedEventListener.idPath) {
+            throw new Error('Missing idPath configuration in EventListener');
+          }
 
-            if (castedEventListener.titleValuePath) {
-              this.loadedTitle.set(String(get(eventPayload, castedEventListener.titleValuePath, '')));
-            }
-          },
-        );
+          if (castedEventListener.titleValuePath) {
+            this.loadedTitle.set(String(get(eventPayload, castedEventListener.titleValuePath, '')));
+          }
+        });
       }
     });
+  }
+
+  private requireEventName(eventName: string | undefined): string {
+    if (!eventName) {
+      throw new Error('Missing eventName in Global Listener Configuration');
+    }
+    return eventName;
   }
 
   ngOnDestroy(): void {

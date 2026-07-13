@@ -16,7 +16,6 @@ public class CustomerAppointmentKafkaDto {
     Boolean deleted;
 
     LocalDateTime start;
-    LocalDateTime end;
     String description;
     String additionalInfo;
     Long customerId;
