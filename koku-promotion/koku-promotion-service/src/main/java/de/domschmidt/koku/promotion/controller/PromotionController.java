@@ -89,7 +89,7 @@ public class PromotionController {
 
     @GetMapping("/promotions/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory();
+        final FormViewFactory formFactory = new FormViewFactory("promotion");
         final String rootId =
                 formFactory.addContent(GridContainer.builder().cols(1).build());
 

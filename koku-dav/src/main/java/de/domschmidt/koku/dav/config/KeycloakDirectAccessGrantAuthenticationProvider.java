@@ -2,6 +2,7 @@ package de.domschmidt.koku.dav.config;
 
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,10 +27,18 @@ public class KeycloakDirectAccessGrantAuthenticationProvider implements Authenti
     private final RestClient restClient;
     private final JwtDecoder jwtDecoder;
 
+    @Autowired
     public KeycloakDirectAccessGrantAuthenticationProvider(
             final KeycloakDirectAccessGrantProperties properties, final JwtDecoder jwtDecoder) {
+        this(properties, RestClient.create(), jwtDecoder);
+    }
+
+    KeycloakDirectAccessGrantAuthenticationProvider(
+            final KeycloakDirectAccessGrantProperties properties,
+            final RestClient restClient,
+            final JwtDecoder jwtDecoder) {
         this.properties = properties;
-        this.restClient = RestClient.create();
+        this.restClient = restClient;
         this.jwtDecoder = jwtDecoder;
     }
 

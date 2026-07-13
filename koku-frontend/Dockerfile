@@ -19,7 +19,8 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY --from=build /app/dist/koku/browser /usr/share/nginx/html/
 
 # Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+ARG NGINX_CONFIG=nginx.conf
+COPY ${NGINX_CONFIG} /etc/nginx/conf.d/default.conf
 
 # Copy template for dynamic authconfig
 COPY authconfig.template.json /usr/share/nginx/html/authconfig.template.json

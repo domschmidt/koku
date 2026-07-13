@@ -1,5 +1,6 @@
 @if (contentWithColors(); as content) {
   <div
+    data-testid="dashboard-text-panel"
     class="h-full card shadow-md p-4 rounded-2xl flex flex-col items-center justify-center gap-1 koku-color-surface"
     [style.--koku-color]="content._color || null"
   >

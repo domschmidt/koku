@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ModalComponent } from './modal.component';
 import { ModalService } from './modal.service';
+import { vi } from 'vitest';
 
 describe('ModalComponent', () => {
   it('keeps insertion order and raises each new modal above the previous one', () => {
@@ -32,5 +33,20 @@ describe('ModalComponent', () => {
 
     expect(modalService.renderedModals().map((modal) => modal.uid)).toEqual([second.uid, third.uid]);
     expect(modalService.renderedModals().map((modal) => modal.headline)).toEqual(['Updated', 'Third']);
+  });
+
+  it('delegates backdrop clicks only when the modal configured a handler', () => {
+    const fixture = TestBed.createComponent(ModalComponent);
+    const event = { target: fixture.nativeElement, currentTarget: fixture.nativeElement } as unknown as Event;
+    const clickOutside = vi.fn();
+
+    fixture.componentInstance.handleBackdropClick(event, { clickOutside } as any);
+    fixture.componentInstance.handleBackdropClick(event, {} as any);
+    fixture.componentInstance.handleBackdropClick(
+      { target: {}, currentTarget: fixture.nativeElement } as unknown as Event,
+      { clickOutside } as any,
+    );
+
+    expect(clickOutside).toHaveBeenCalledOnce();
   });
 });

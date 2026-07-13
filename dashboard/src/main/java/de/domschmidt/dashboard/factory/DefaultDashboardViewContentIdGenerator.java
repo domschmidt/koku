@@ -18,11 +18,7 @@ public class DefaultDashboardViewContentIdGenerator implements IDashboardViewCon
                     proposal));
         }
 
-        final StringBuilder result = new StringBuilder(proposal);
-        while (knownNames.contains(result.toString())) {
-            result.append('1');
-        }
-        knownNames.add(result.toString());
-        return result.toString();
+        knownNames.add(proposal);
+        return proposal;
     }
 }

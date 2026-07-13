@@ -2,6 +2,8 @@ package de.domschmidt.koku.dav.xml;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
 import de.domschmidt.koku.dav.DAVConstants;
 import de.domschmidt.koku.dav.http.DavHrefResolver;
@@ -9,9 +11,12 @@ import de.domschmidt.koku.dav.model.DavMethod;
 import de.domschmidt.koku.dav.model.DavPropertyRequestType;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import org.dom4j.io.SAXReader;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
+import org.xml.sax.SAXException;
 
 class DavXmlReaderTest {
 
@@ -127,5 +132,37 @@ class DavXmlReaderTest {
         assertThat(davRequest.reportName().name()).isEqualTo("sync-collection");
         assertThat(davRequest.syncToken()).isEqualTo("urn:koku:carddav:sync:123");
         assertThat(davRequest.requestedProperties()).extracting("name").containsExactly("getetag");
+    }
+
+    @Test
+    void readsAllPropAndRejectsInvalidTimeRange() throws Exception {
+        final MockHttpServletRequest allProp = new MockHttpServletRequest("PROPFIND", "/");
+        allProp.setContent("<d:propfind xmlns:d=\"DAV:\"><d:allprop/></d:propfind>".getBytes(StandardCharsets.UTF_8));
+        assertThat(reader.read(allProp).propertyRequestType()).isEqualTo(DavPropertyRequestType.ALL);
+
+        final MockHttpServletRequest invalid = new MockHttpServletRequest("REPORT", "/");
+        invalid.setContent(("<cal:calendar-query xmlns:cal=\"urn:ietf:params:xml:ns:caldav\">"
+                        + "<cal:time-range start=\"invalid\"/></cal:calendar-query>")
+                .getBytes(StandardCharsets.UTF_8));
+        assertThatThrownBy(() -> reader.read(invalid)).isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void parserFeatureConfigurationFailureIsReported() throws Exception {
+        final SAXReader saxReader = mock(SAXReader.class);
+        doThrow(new SAXException("unsupported")).when(saxReader).setFeature("feature", true);
+
+        assertThatThrownBy(() -> reader.setFeature(saxReader, "feature", true))
+                .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void parserHelpersHandleBlankInstantsAndExternalEntities() throws Exception {
+        assertThat((Object) ReflectionTestUtils.invokeMethod(reader, "parseUtcInstant", " "))
+                .isNull();
+
+        final SAXReader saxReader = ReflectionTestUtils.invokeMethod(reader, "secureReader");
+        assertThat(saxReader.getEntityResolver().resolveEntity("public", "system"))
+                .isNotNull();
     }
 }

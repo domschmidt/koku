@@ -122,7 +122,7 @@ public class ProductController {
 
     @GetMapping("/products/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory();
+        final FormViewFactory formFactory = new FormViewFactory("product");
         final String rootId =
                 formFactory.addContent(GridContainer.builder().cols(1).build());
 

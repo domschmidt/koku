@@ -91,9 +91,7 @@ export class MultiSelectFieldComponent {
           }
           return isMatch(value.valueMapping, currentValue);
         });
-        if (matchingValue === undefined || matchingValue === null) {
-          throw new Error(`Unknown value to match`);
-        }
+        this.requireMatchingValue(matchingValue);
         let key = matchingValue.id;
         if (typeof key !== 'string') {
           key = String(key);
@@ -106,6 +104,14 @@ export class MultiSelectFieldComponent {
     toObservable(this.possibleValues).subscribe(() => {
       this.filteredPossibleValues.set(this.filterPossibleValues(this.selectionIds()));
     });
+  }
+
+  private requireMatchingValue(
+    matchingValue: KokuDto.MultiSelectFormularFieldPossibleValue | null | undefined,
+  ): asserts matchingValue is KokuDto.MultiSelectFormularFieldPossibleValue {
+    if (matchingValue === undefined || matchingValue === null) {
+      throw new Error(`Unknown value to match`);
+    }
   }
 
   selectById($event: string | null) {

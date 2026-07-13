@@ -35,14 +35,11 @@ public class CalendarEventFactory {
     public String toICalendar(
             final CustomerAppointmentKafkaDto appointment, final Optional<CustomerKafkaDto> customer) {
         final ZonedDateTime startsAt = toZonedDateTime(appointment.getStart());
-        final ZonedDateTime endsAt = appointment.getEnd() == null
-                ? startsAt.plus(DEFAULT_APPOINTMENT_DURATION)
-                : toZonedDateTime(appointment.getEnd());
         return toICalendar(
                 "customer-appointment-" + appointment.getId() + "@koku",
                 summary(appointment, customer),
                 startsAt,
-                endsAt);
+                startsAt.plus(DEFAULT_APPOINTMENT_DURATION));
     }
 
     public String toICalendar(
@@ -69,7 +66,7 @@ public class CalendarEventFactory {
         return toICalendar("user-appointment-" + appointment.getId() + "@koku", summary(appointment), startsAt, endsAt);
     }
 
-    private void validate(final Calendar calendar) {
+    void validate(final Calendar calendar) {
         try {
             calendar.validate();
         } catch (final ValidationException e) {

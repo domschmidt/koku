@@ -1,10 +1,12 @@
 package de.domschmidt.koku.dav.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.domschmidt.koku.customer.kafka.dto.CustomerAppointmentKafkaDto;
+import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
 import de.domschmidt.koku.dav.model.DavMethod;
 import de.domschmidt.koku.dav.model.DavMultiStatus;
 import de.domschmidt.koku.dav.model.DavPropertyNames;
@@ -19,6 +21,7 @@ import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.server.ResponseStatusException;
 
 class CalDavServiceTest {
 
@@ -121,57 +124,130 @@ class CalDavServiceTest {
     }
 
     @Test
-    void includesCustomerAppointmentWhenCalculatedEndOverlapsTimeRange() {
-        final CustomerAppointmentKafkaDto appointment =
-                customerAppointment(LocalDateTime.of(2026, Month.JULY, 15, 12, 30));
-        when(customerAppointmentRepository.findAllAppointments()).thenReturn(List.of(appointment));
+    void calendarHomeAndEmptyCollectionsExposeStablePropfindResources() {
+        when(customerAppointmentRepository.findAllAppointments()).thenReturn(List.of());
+        when(userAppointmentRepository.findAllAppointments()).thenReturn(List.of());
+        final DavRequest propfind = new DavRequest(
+                DavMethod.PROPFIND,
+                "/calendars/current-user/",
+                "/services/caldav",
+                1,
+                DavPropertyRequestType.ALL,
+                List.of(),
+                List.of(),
+                null,
+                null,
+                null);
 
-        final DavMultiStatus result = calDavService.handleAppointmentCalendar(
-                customerQueryRequest(
-                        new DavTimeRange(Instant.parse("2026-07-15T10:00:00Z"), Instant.parse("2026-07-15T11:00:00Z"))),
-                USERNAME);
-
-        assertThat(result.responses())
-                .extracting(DavResponse::href)
-                .containsExactly("/services/caldav/calendars/current-user/appointments/42.ics");
+        assertThat(calDavService.handleCalendarHome(propfind, USERNAME).responses())
+                .hasSize(3);
+        assertThat(calDavService.handleAppointmentCalendar(propfind, USERNAME).responses())
+                .hasSize(1);
+        assertThat(calDavService.handlePrivateCalendar(propfind, USERNAME).responses())
+                .hasSize(1);
     }
 
     @Test
-    void excludesCustomerAppointmentWithoutCalculatedEndAfterDefaultDuration() {
-        final CustomerAppointmentKafkaDto appointment = customerAppointment(null);
-        when(customerAppointmentRepository.findAllAppointments()).thenReturn(List.of(appointment));
-
-        final DavMultiStatus result = calDavService.handleAppointmentCalendar(
-                customerQueryRequest(
-                        new DavTimeRange(Instant.parse("2026-07-15T09:30:00Z"), Instant.parse("2026-07-15T10:30:00Z"))),
-                USERNAME);
-
-        assertThat(result.responses()).isEmpty();
-    }
-
-    private CustomerAppointmentKafkaDto customerAppointment(final LocalDateTime end) {
-        return CustomerAppointmentKafkaDto.builder()
-                .id(42L)
-                .userId(USERNAME)
-                .start(LocalDateTime.of(2026, Month.JULY, 15, 10, 0))
-                .end(end)
-                .updated(LocalDateTime.of(2026, Month.JULY, 1, 12, 0))
-                .deleted(false)
-                .build();
-    }
-
-    private DavRequest customerQueryRequest(final DavTimeRange timeRange) {
-        return new DavRequest(
+    void unsupportedReportsAndForeignDirectReadsAreRejected() {
+        when(customerAppointmentRepository.findAllAppointments()).thenReturn(List.of());
+        when(userAppointmentRepository.findAllAppointments()).thenReturn(List.of());
+        final DavRequest unsupported = new DavRequest(
                 DavMethod.REPORT,
                 "/calendars/current-user/appointments/",
                 "/services/caldav",
                 1,
                 DavPropertyRequestType.NAMED,
-                List.of(DavPropertyNames.GETETAG),
                 List.of(),
-                DavPropertyNames.CALENDAR_QUERY,
-                timeRange,
+                List.of(),
+                DavPropertyNames.ADDRESSBOOK_QUERY,
+                null,
                 null);
+
+        assertThatThrownBy(() -> calDavService.handleAppointmentCalendar(unsupported, USERNAME))
+                .isInstanceOf(ResponseStatusException.class);
+        assertThatThrownBy(() -> calDavService.handlePrivateCalendar(unsupported, USERNAME))
+                .isInstanceOf(ResponseStatusException.class);
+        assertThatThrownBy(() -> calDavService.getICalendar(USERNAME, 99L)).isInstanceOf(ResponseStatusException.class);
+        assertThatThrownBy(() -> calDavService.getAppointmentEtag(USERNAME, 99L))
+                .isInstanceOf(ResponseStatusException.class);
+        assertThatThrownBy(() -> calDavService.getPrivateICalendar(USERNAME, 99L))
+                .isInstanceOf(ResponseStatusException.class);
+        assertThatThrownBy(() -> calDavService.getPrivateAppointmentEtag(USERNAME, 99L))
+                .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void activeCalendarsSupportPropfindQueriesMultigetAndDirectReads() {
+        final CustomerAppointmentKafkaDto customerAppointment = CustomerAppointmentKafkaDto.builder()
+                .id(42L)
+                .customerId(7L)
+                .userId(USERNAME)
+                .start(LocalDateTime.of(2026, Month.JULY, 15, 10, 0))
+                .updated(LocalDateTime.of(2026, Month.JULY, 14, 10, 0))
+                .build();
+        final CustomerKafkaDto customer = CustomerKafkaDto.builder()
+                .id(7L)
+                .fullname("Ada Lovelace")
+                .updated(LocalDateTime.of(2026, Month.JULY, 14, 11, 0))
+                .build();
+        final UserAppointmentKafkaDto privateAppointment = privateAppointment(false, 14);
+        when(customerAppointmentRepository.findAllAppointments()).thenReturn(List.of(customerAppointment));
+        when(customerAppointmentRepository.findActiveAppointment(42L)).thenReturn(Optional.of(customerAppointment));
+        when(customerContactRepository.findActiveContact(7L)).thenReturn(Optional.of(customer));
+        when(userAppointmentRepository.findAllAppointments()).thenReturn(List.of(privateAppointment));
+        when(userAppointmentRepository.findActiveAppointment(42L)).thenReturn(Optional.of(privateAppointment));
+
+        final DavRequest propfind = new DavRequest(
+                DavMethod.PROPFIND,
+                "/calendars/current-user/appointments/",
+                "/services/caldav",
+                1,
+                DavPropertyRequestType.ALL,
+                List.of(),
+                List.of(),
+                null,
+                null,
+                null);
+        final DavRequest query = new DavRequest(
+                DavMethod.REPORT,
+                "/calendars/current-user/appointments/",
+                "/services/caldav",
+                1,
+                DavPropertyRequestType.NAMED,
+                List.of(DavPropertyNames.GETETAG, DavPropertyNames.CALENDAR_DATA),
+                List.of("/services/caldav/calendars/current-user/appointments/42.ics"),
+                DavPropertyNames.CALENDAR_QUERY,
+                new DavTimeRange(Instant.parse("2026-07-15T00:00:00Z"), Instant.parse("2026-07-16T00:00:00Z")),
+                null);
+
+        assertThat(calDavService.handleAppointmentCalendar(propfind, USERNAME).responses())
+                .hasSize(2);
+        assertThat(calDavService.handlePrivateCalendar(propfind, USERNAME).responses())
+                .hasSize(2);
+        assertThat(calDavService.handleAppointmentCalendar(query, USERNAME).responses())
+                .singleElement();
+        assertThat(calDavService.handlePrivateCalendar(query, USERNAME).responses())
+                .singleElement();
+        assertThat(calDavService
+                        .handleAppointmentCalendar(
+                                request("/services/caldav/calendars/current-user/appointments/99.ics"), USERNAME)
+                        .responses())
+                .singleElement()
+                .extracting(DavResponse::status)
+                .isEqualTo(404);
+        final UserAppointmentKafkaDto appointmentWithoutStart =
+                UserAppointmentKafkaDto.builder().build();
+        assertThat(calDavService.matchesTimeRange(appointmentWithoutStart, query.timeRange()))
+                .isTrue();
+        final UserAppointmentKafkaDto appointmentWithoutEnd = UserAppointmentKafkaDto.builder()
+                .start(LocalDateTime.of(2026, Month.JULY, 15, 10, 0))
+                .build();
+        assertThat(calDavService.matchesTimeRange(appointmentWithoutEnd, query.timeRange()))
+                .isTrue();
+        assertThat(calDavService.getICalendar(USERNAME, 42L)).contains("Ada Lovelace");
+        assertThat(calDavService.getAppointmentEtag(USERNAME, 42L)).isNotBlank();
+        assertThat(calDavService.getPrivateICalendar(USERNAME, 42L)).contains("BEGIN:VCALENDAR");
+        assertThat(calDavService.getPrivateAppointmentEtag(USERNAME, 42L)).isNotBlank();
     }
 
     private UserAppointmentKafkaDto privateAppointment(final boolean deleted, final int updatedDay) {

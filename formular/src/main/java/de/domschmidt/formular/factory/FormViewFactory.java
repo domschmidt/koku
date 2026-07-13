@@ -17,14 +17,23 @@ import java.util.UUID;
 
 public class FormViewFactory {
 
+    private final String alias;
     private final LinkedHashMap<String, AbstractFormularContent> contentById = new LinkedHashMap<>();
     private final List<FormPlacementDto> placements = new ArrayList<>();
     private final List<KokuBusinessRuleDto> businessRules = new ArrayList<>();
     private final List<AbstractFormViewGlobalEventListenerDto> globalEventListeners = new ArrayList<>();
 
+    public FormViewFactory() {
+        this(null);
+    }
+
+    public FormViewFactory(final String alias) {
+        this.alias = alias;
+    }
+
     public String addContent(final AbstractFormularContent content) {
         content.setId(generateUniqueId(this.contentById.keySet()));
-        registerContent(content);
+        this.contentById.put(content.getId(), content);
         return content.getId();
     }
 
@@ -36,13 +45,6 @@ public class FormViewFactory {
                 .forEach(knownIds::add);
         businessRule.setId(generateUniqueId(knownIds));
         this.businessRules.add(businessRule);
-    }
-
-    private void registerContent(final AbstractFormularContent content) {
-        if (content.getId() == null) {
-            throw new IllegalArgumentException("Content id must be assigned before registration");
-        }
-        this.contentById.put(content.getId(), content);
     }
 
     public PlacementParentStep place(final String childId) {
@@ -115,6 +117,7 @@ public class FormViewFactory {
         validateBusinessRuleReferences();
         final FormViewDto result = new FormViewDto();
 
+        result.setAlias(this.alias);
         result.setRootId(rootId);
         result.setContents(new LinkedHashMap<>(this.contentById));
         result.setPlacements(List.copyOf(this.placements));
@@ -155,7 +158,7 @@ public class FormViewFactory {
         }
 
         validateAllContentPlaced(rootId, parentByChildId);
-        assertAcyclic(rootId, parentByChildId);
+        assertAcyclic(parentByChildId);
     }
 
     private PlacementIds validatePlacement(final FormPlacementDto placement) {
@@ -216,7 +219,7 @@ public class FormViewFactory {
         }
     }
 
-    private void assertAcyclic(final String rootId, final Map<String, String> parentByChildId) {
+    private void assertAcyclic(final Map<String, String> parentByChildId) {
         for (final String contentId : this.contentById.keySet()) {
             final Set<String> visited = new HashSet<>();
             String currentId = contentId;
@@ -225,9 +228,6 @@ public class FormViewFactory {
                     throw new IllegalStateException("Placement cycle detected at content: " + contentId);
                 }
                 currentId = parentByChildId.get(currentId);
-            }
-            if (!currentId.equals(rootId)) {
-                throw new IllegalStateException("Content is not connected to root: " + contentId);
             }
         }
     }

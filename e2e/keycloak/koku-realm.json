@@ -1,0 +1,72 @@
+{
+  "realm": "koku",
+  "enabled": true,
+  "displayName": "Koku E2E",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "loginWithEmailAllowed": false,
+  "roles": {
+    "client": {
+      "koku": [
+        {
+          "name": "user"
+        },
+        {
+          "name": "calendar-admin"
+        }
+      ]
+    }
+  },
+  "clients": [
+    {
+      "clientId": "koku",
+      "name": "Koku E2E Frontend",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://127.0.0.1:4200/*"
+      ],
+      "webOrigins": [
+        "http://127.0.0.1:4200"
+      ],
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "koku-dav",
+      "name": "Koku DAV E2E",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "e2e-dav-client-secret",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect"
+    }
+  ],
+  "users": [
+    {
+      "username": "e2e-admin",
+      "enabled": true,
+      "email": "e2e-admin@example.test",
+      "emailVerified": true,
+      "firstName": "E2E",
+      "lastName": "Administrator",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "e2e-admin",
+          "temporary": false
+        }
+      ],
+      "clientRoles": {
+        "koku": [
+          "user",
+          "calendar-admin"
+        ]
+      }
+    }
+  ]
+}

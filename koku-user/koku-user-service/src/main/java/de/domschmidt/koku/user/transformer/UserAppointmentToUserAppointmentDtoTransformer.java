@@ -48,7 +48,11 @@ public class UserAppointmentToUserAppointmentDtoTransformer {
                                 model.getUser().getFirstname(), model.getUser().getLastname())
                         .filter(s -> s != null && !s.isEmpty())
                         .collect(Collectors.joining(" ")))
-                .summary(String.format("Privater Termin vom %s", DATE_FORMATTER.format(model.getStartTimestamp())))
+                .summary(
+                        model.getStartTimestamp() == null
+                                ? null
+                                : String.format(
+                                        "Privater Termin vom %s", DATE_FORMATTER.format(model.getStartTimestamp())))
                 .build();
     }
 

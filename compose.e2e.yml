@@ -1,0 +1,273 @@
+name: koku-e2e
+
+x-api-environment: &api-environment
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  KOKU_MAINTENANCE: "false"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://${KOKU_E2E_HOST:-host.docker.internal}:8081/realms/koku
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://idm:8080/realms/koku/protocol/openid-connect/certs
+
+x-api-dependencies: &api-dependencies
+  db-init:
+    condition: service_completed_successfully
+  idm:
+    condition: service_healthy
+  init-kafka:
+    condition: service_completed_successfully
+
+services:
+  koku-db:
+    image: postgres:18.4
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: koku-e2e
+      POSTGRES_USER: koku-e2e
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U koku-e2e -d postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  db-init:
+    image: postgres:18.4
+    depends_on:
+      koku-db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: koku-e2e
+    entrypoint: ["/bin/bash", "-ec"]
+    command:
+      - |
+        for database in users promotions activities customers products documents files keycloak; do
+          psql -h koku-db -U koku-e2e -d postgres -v ON_ERROR_STOP=1 \
+            -c "CREATE DATABASE \"$${database}\""
+        done
+
+  kafka:
+    image: docker.io/bitnamilegacy/kafka:4.0.0-debian-12-r10
+    environment:
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_NUM_PARTITIONS: 3
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list >/dev/null"]
+      start_period: 20s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  init-kafka:
+    image: docker.io/bitnamilegacy/kafka:4.0.0-debian-12-r10
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-ec"]
+    command:
+      - |
+        for topic in customers promotions products productmanufacturers customerappointments userappointments users activities activitysteps; do
+          /opt/bitnami/kafka/bin/kafka-topics.sh \
+            --bootstrap-server kafka:9092 \
+            --create \
+            --if-not-exists \
+            --topic "$${topic}" \
+            --config cleanup.policy=compact
+        done
+
+  idm:
+    image: quay.io/keycloak/keycloak:26.6.4-1
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    command:
+      - start-dev
+      - --health-enabled=true
+      - --hostname=http://${KOKU_E2E_HOST:-host.docker.internal}:8081
+      - --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_PASSWORD: e2e-admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: e2e-admin
+      KC_DB: postgres
+      KC_DB_PASSWORD: koku-e2e
+      KC_DB_URL: jdbc:postgresql://koku-db:5432/keycloak
+      KC_DB_USERNAME: koku-e2e
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -ec
+        - "exec 3<>/dev/tcp/127.0.0.1/9000; printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3; grep -q '200 OK' <&3"
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./e2e/keycloak/koku-realm.json:/opt/keycloak/data/import/koku-realm.json:ro
+
+  koku-users:
+    image: docker.io/domschmidt/koku-users:0.0.0
+    depends_on: *api-dependencies
+    environment:
+      <<: *api-environment
+      SPRING_DATASOURCE_PASSWORD: koku-e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://koku-db:5432/users
+      SPRING_DATASOURCE_USERNAME: koku-e2e
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8420/actuator/health | grep -q UP"]
+      start_period: 60s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  koku-customers:
+    image: docker.io/domschmidt/koku-customers:0.0.0
+    depends_on: *api-dependencies
+    environment:
+      <<: *api-environment
+      SPRING_DATASOURCE_PASSWORD: koku-e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://koku-db:5432/customers
+      SPRING_DATASOURCE_USERNAME: koku-e2e
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8320/actuator/health | grep -q UP"]
+      start_period: 60s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  koku-promotions:
+    image: docker.io/domschmidt/koku-promotions:0.0.0
+    depends_on: *api-dependencies
+    environment:
+      <<: *api-environment
+      SPRING_DATASOURCE_PASSWORD: koku-e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://koku-db:5432/promotions
+      SPRING_DATASOURCE_USERNAME: koku-e2e
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8520/actuator/health | grep -q UP"]
+      start_period: 60s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  koku-documents:
+    image: docker.io/domschmidt/koku-documents:0.0.0
+    depends_on: *api-dependencies
+    environment:
+      <<: *api-environment
+      SPRING_DATASOURCE_PASSWORD: koku-e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://koku-db:5432/documents
+      SPRING_DATASOURCE_USERNAME: koku-e2e
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8720/actuator/health | grep -q UP"]
+      start_period: 60s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  koku-activities:
+    image: docker.io/domschmidt/koku-activities:0.0.0
+    depends_on: *api-dependencies
+    environment:
+      <<: *api-environment
+      SPRING_DATASOURCE_PASSWORD: koku-e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://koku-db:5432/activities
+      SPRING_DATASOURCE_USERNAME: koku-e2e
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8620/actuator/health | grep -q UP"]
+      start_period: 60s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  koku-products:
+    image: docker.io/domschmidt/koku-products:0.0.0
+    depends_on: *api-dependencies
+    environment:
+      <<: *api-environment
+      SPRING_DATASOURCE_PASSWORD: koku-e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://koku-db:5432/products
+      SPRING_DATASOURCE_USERNAME: koku-e2e
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:9320/actuator/health | grep -q UP"]
+      start_period: 60s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  koku-files:
+    image: docker.io/domschmidt/koku-files:0.0.0
+    depends_on: *api-dependencies
+    environment:
+      <<: *api-environment
+      SPRING_DATASOURCE_PASSWORD: koku-e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://koku-db:5432/files
+      SPRING_DATASOURCE_USERNAME: koku-e2e
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8020/actuator/health | grep -q UP"]
+      start_period: 60s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  koku-dav:
+    image: docker.io/domschmidt/koku-dav:0.0.0
+    depends_on:
+      idm:
+        condition: service_healthy
+      init-kafka:
+        condition: service_completed_successfully
+    environment:
+      <<: *api-environment
+      DAV_KEYCLOAK_CLIENT_ID: koku-dav
+      DAV_KEYCLOAK_CLIENT_SECRET: e2e-dav-client-secret
+      DAV_KEYCLOAK_TOKEN_URI: http://idm:8080/realms/koku/protocol/openid-connect/token
+      DAV_LOGGING_BODIES: "false"
+    extra_hosts:
+      - "${KOKU_E2E_HOST:-host.docker.internal}:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8220/actuator/health | grep -q UP"]
+      start_period: 60s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  koku-frontend:
+    build:
+      context: ./koku-frontend
+      dockerfile: Dockerfile
+      args:
+        NGINX_CONFIG: nginx.e2e.conf
+    depends_on:
+      koku-activities:
+        condition: service_healthy
+      koku-customers:
+        condition: service_healthy
+      koku-dav:
+        condition: service_healthy
+      koku-documents:
+        condition: service_healthy
+      koku-files:
+        condition: service_healthy
+      koku-products:
+        condition: service_healthy
+      koku-promotions:
+        condition: service_healthy
+      koku-users:
+        condition: service_healthy
+    environment:
+      KEYCLOAK_CLIENT_ID: koku
+      KEYCLOAK_REALM: koku
+      KEYCLOAK_URL: http://${KOKU_E2E_HOST:-host.docker.internal}:8081
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/authconfig.json"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    ports:
+      - "4200:8080"

@@ -4,7 +4,6 @@ import de.domschmidt.koku.customer.persistence.Customer;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.springframework.util.StringUtils;
 
 final class CustomerNameFormatter {
     private static final String PART_SEPARATOR = " ";
@@ -28,7 +27,7 @@ final class CustomerNameFormatter {
         return Arrays.stream(new String[] {customer.getFirstname(), customer.getLastname()})
                 .filter(Objects::nonNull)
                 .filter(part -> !part.isEmpty())
-                .map(part -> StringUtils.truncate(part, 1))
+                .map(part -> part.substring(0, 1))
                 .collect(Collectors.joining());
     }
 

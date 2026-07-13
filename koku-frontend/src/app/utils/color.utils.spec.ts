@@ -17,5 +17,9 @@ describe('color utilities', () => {
   it('uses the configured fallback and rejects unknown colors', () => {
     expect(colorTextClass(undefined)).toBe('text-primary');
     expect(colorValue('UNKNOWN')).toBe('');
+    expect(colorTextClass('UNKNOWN')).toBe('');
+    expect(colorBadgeClass('UNKNOWN')).toBe('');
+    expect(colorBackgroundClasses('UNKNOWN')).toBe('');
+    expect(colorBorderClass('UNKNOWN')).toBe('');
   });
 });

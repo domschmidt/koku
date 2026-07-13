@@ -187,7 +187,7 @@ public class CustomerAppointmentController {
 
     @GetMapping("/customers/appointments/form")
     public FormViewDto getFormularView() {
-        final FormViewFactory formFactory = new FormViewFactory();
+        final FormViewFactory formFactory = new FormViewFactory("customer-appointment");
         final String rootId =
                 formFactory.addContent(GridContainer.builder().cols(1).build());
         final QCustomer qCustomer = customer;
@@ -2071,24 +2071,18 @@ public class CustomerAppointmentController {
                                 .name("Tätigkeiten (€)")
                                 .group("revenue")
                                 .data(statisticsPerCustomer.keySet().stream()
-                                        .map(customer -> {
-                                            final Tuple statisticsCurrentCustomer = statisticsPerCustomer.get(customer);
-                                            return statisticsCurrentCustomer != null
-                                                    ? statisticsCurrentCustomer.get(activitiesRevenueSnapshotSum)
-                                                    : BigDecimal.ZERO;
-                                        })
+                                        .map(customer -> statisticsPerCustomer
+                                                .get(customer)
+                                                .get(activitiesRevenueSnapshotSum))
                                         .toList())
                                 .build(),
                         NumericSeriesDto.builder()
                                 .name("Produkte (€)")
                                 .group("revenue")
                                 .data(statisticsPerCustomer.keySet().stream()
-                                        .map(customer -> {
-                                            final Tuple statisticsCurrentCustomer = statisticsPerCustomer.get(customer);
-                                            return statisticsCurrentCustomer != null
-                                                    ? statisticsCurrentCustomer.get(soldProductsRevenueSnapshotSum)
-                                                    : BigDecimal.ZERO;
-                                        })
+                                        .map(customer -> statisticsPerCustomer
+                                                .get(customer)
+                                                .get(soldProductsRevenueSnapshotSum))
                                         .toList())
                                 .build(),
                         NumericSeriesDto.builder()

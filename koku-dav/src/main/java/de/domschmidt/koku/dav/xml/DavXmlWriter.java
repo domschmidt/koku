@@ -210,13 +210,13 @@ public class DavXmlWriter {
         return namespaces;
     }
 
-    private String namespacePrefix(final String namespaceUri) {
+    String namespacePrefix(final String namespaceUri) {
+        if (namespaceUri == null || namespaceUri.isBlank()) {
+            return "x";
+        }
         final String standardPrefix = STANDARD_PREFIXES.get(namespaceUri);
         if (standardPrefix != null) {
             return standardPrefix;
-        }
-        if (namespaceUri == null || namespaceUri.isBlank()) {
-            return "x";
         }
         return "x" + Integer.toUnsignedString(namespaceUri.hashCode());
     }

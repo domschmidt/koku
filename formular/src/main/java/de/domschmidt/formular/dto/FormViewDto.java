@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 public class FormViewDto {
 
+    String alias;
     String rootId;
     Map<String, AbstractFormularContent> contents;
     List<FormPlacementDto> placements;

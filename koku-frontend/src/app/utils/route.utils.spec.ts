@@ -4,6 +4,7 @@ import {
   resolvedRouteParts,
   resolvedRoutePath,
   resolveRouteBasedContentOverrides,
+  resolveRoutePath,
   routePathSegments,
 } from './route.utils';
 
@@ -65,5 +66,9 @@ describe('route utilities', () => {
 
   it('resolves navigable route parts with route parameters', () => {
     expect(resolvedRouteParts(':customerId/information', { ':customerId': '42' })).toEqual(['42', 'information']);
+  });
+
+  it('keeps an absent route absent', () => {
+    expect(resolveRoutePath(undefined, { ':customerId': '42' })).toBeUndefined();
   });
 });

@@ -25,6 +25,17 @@ describe('FormularRuntime', () => {
     expect(valueFactoryCalls).toBe(1);
   });
 
+  it('exposes stable content signals and tracks loading causes through the runtime facade', () => {
+    const runtime = new FormularRuntime(() => undefined);
+    const content = runtime.contentSignal('field');
+    expect(content()).toBeUndefined();
+    const handle = runtime.resolveContent('field');
+    runtime.updateContentLoading('field', 'request', true);
+    expect(handle.loadingCauses().has('request')).toBe(true);
+    runtime.updateContentLoading('field', 'request', false);
+    expect(handle.loadingCauses().has('request')).toBe(false);
+  });
+
   it('rejects late control hydration for a stable content id', () => {
     const runtime = new FormularRuntime(() => undefined);
     runtime.resolveContent('field');
@@ -281,5 +292,46 @@ describe('FormularRuntime', () => {
     } as KokuDto.FormViewDto);
 
     expect(() => runtime.resolveContent('field')).toThrowError(/outside the active form definition/);
+  });
+
+  it('rejects every malformed form-tree invariant and protects stable content identity', () => {
+    const runtime = new FormularRuntime(() => undefined);
+    const view = (contents: Record<string, any>, placements: any[], rootId: string | undefined = 'root') =>
+      ({ rootId, contents, placements }) as KokuDto.FormViewDto;
+    const root = { id: 'root', '@type': 'grid' };
+    const child = { id: 'child', '@type': 'input' };
+
+    expect(() => runtime.setFormView(view({}, [], undefined))).toThrow(/root content is missing/);
+    expect(() => runtime.setFormView(view({ root: { '@type': 'grid' } }, []))).toThrow(/requires an id/);
+    expect(() => runtime.setFormView(view({ root, child }, [{}]))).toThrow(/requires parentId, outlet and childId/);
+    expect(() =>
+      runtime.setFormView(view({ root, child }, [{ parentId: 'missing', outlet: 'content', childId: 'child' }])),
+    ).toThrow(/parent content not found/);
+    expect(() =>
+      runtime.setFormView(view({ root, child }, [{ parentId: 'root', outlet: 'content', childId: 'missing' }])),
+    ).toThrow(/child content not found/);
+    expect(() =>
+      runtime.setFormView(view({ root, child }, [{ parentId: 'child', outlet: 'content', childId: 'root' }])),
+    ).toThrow(/root content cannot be placed/);
+    expect(() =>
+      runtime.setFormView(
+        view({ root, child }, [
+          { parentId: 'root', outlet: 'a', childId: 'child' },
+          { parentId: 'root', outlet: 'b', childId: 'child' },
+        ]),
+      ),
+    ).toThrow(/placed more than once/);
+
+    runtime.setFormView(view({ root }, []));
+    expect(runtime.childIds(undefined, 'content')()).toEqual([]);
+    expect(() => runtime.updateContentConfig('missing', (content) => content)).toThrow(/Content not found/);
+    expect(() => runtime.updateContentConfig('root', (content) => ({ ...content, id: 'changed' }))).toThrow(
+      /id cannot change/,
+    );
+    expect(() => runtime.updateContentConfig('root', (content) => ({ ...content, '@type': 'fieldset' }))).toThrow(
+      /type cannot change/,
+    );
+    runtime.reset();
+    expect(runtime.content('root')).toBeUndefined();
   });
 });

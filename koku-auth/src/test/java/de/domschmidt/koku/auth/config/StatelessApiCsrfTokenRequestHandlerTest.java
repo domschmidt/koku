@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.DefaultCsrfToken;
 
 class StatelessApiCsrfTokenRequestHandlerTest {
@@ -31,5 +33,15 @@ class StatelessApiCsrfTokenRequestHandlerTest {
                 request, new DefaultCsrfToken("X-XSRF-TOKEN", "_csrf", "cookie-token"));
 
         assertThat(resolvedToken).isEqualTo("submitted-token");
+    }
+
+    @Test
+    void delegatesRequestAttributeHandling() {
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        final DefaultCsrfToken token = new DefaultCsrfToken("X-XSRF-TOKEN", "_csrf", "cookie-token");
+
+        requestHandler.handle(request, new MockHttpServletResponse(), () -> token);
+
+        assertThat(request.getAttribute(CsrfToken.class.getName())).isNotNull();
     }
 }

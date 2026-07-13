@@ -267,6 +267,26 @@ END:VCALENDAR
                 """, xml);
     }
 
+    @Test
+    void writesRemainingPropertyKindsCustomNamespacesAndUnknownStatus() throws IOException {
+        final DavPropertyName custom = new DavPropertyName("urn:test:custom", "custom");
+        final DavMultiStatus status = new DavMultiStatus(List.of(new DavResponse(
+                "/custom",
+                List.of(new DavPropStat(
+                        500,
+                        List.of(
+                                new DavProperty(custom, new VCardValue("BEGIN:VCARD")),
+                                new DavProperty(DavPropertyNames.OWNER, new HrefValue("/owner")),
+                                new DavProperty(
+                                        DavPropertyNames.RESOURCETYPE,
+                                        new ResourceTypeValue(List.of(DavPropertyNames.COLLECTION)))))))));
+
+        assertThat(writer.write(status))
+                .contains("urn:test:custom", "BEGIN:VCARD", "<d:href>/owner</d:href>", "HTTP/1.1 500 ");
+        assertThat(writer.namespacePrefix(DAVConstants.DAV_NAMESPACE)).isEqualTo("d");
+        assertThat(writer.namespacePrefix(null)).isEqualTo("x");
+    }
+
     private void assertXmlSimilar(final String expected, final String actual) {
         final var diff = DiffBuilder.compare(expected)
                 .withTest(actual)

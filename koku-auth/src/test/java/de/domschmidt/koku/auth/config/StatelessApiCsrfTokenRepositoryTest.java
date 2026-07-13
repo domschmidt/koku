@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.DefaultCsrfToken;
 
 class StatelessApiCsrfTokenRepositoryTest {
 
@@ -47,5 +48,27 @@ class StatelessApiCsrfTokenRepositoryTest {
                 .singleElement()
                 .asString()
                 .contains("HttpOnly");
+    }
+
+    @Test
+    void regularRequestsDelegateLoadAndStatelessRequestsCanClearCookies() {
+        final MockHttpServletRequest regularRequest = new MockHttpServletRequest();
+        assertThat(repository.loadToken(regularRequest)).isNull();
+
+        final MockHttpServletRequest statelessRequest = new MockHttpServletRequest();
+        final MockHttpServletResponse response = new MockHttpServletResponse();
+        statelessRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer token");
+        repository.saveToken(
+                new DefaultCsrfToken("X-XSRF-TOKEN", "_csrf", "different-token"), statelessRequest, response);
+        assertThat(response.getHeaders(HttpHeaders.SET_COOKIE)).isNotEmpty();
+    }
+
+    @Test
+    void authorizationSchemeWithoutCredentialsIsRecognized() {
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer");
+
+        assertThat(StatelessApiCsrfTokenRepository.hasStatelessAuthorizationHeader(request))
+                .isTrue();
     }
 }

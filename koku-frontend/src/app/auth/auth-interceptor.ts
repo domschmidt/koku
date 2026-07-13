@@ -1,33 +1,12 @@
 import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest } from '@angular/common/http';
-import { EMPTY, from, Observable, skipWhile, Subject, take } from 'rxjs';
+import { EMPTY, from, Observable, take } from 'rxjs';
 import { inject } from '@angular/core';
 import { AuthService } from './auth.service';
-import { ToastService, ToastTypeUnion } from '../toast/toast.service';
-import { catchError, mergeMap, tap } from 'rxjs/operators';
+import { catchError, mergeMap } from 'rxjs/operators';
 
 class AuthInterceptor {
-  private static SUSPEND_ERROR_REPORTING = false;
-
   public interceptCalls(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
     const authService = inject(AuthService);
-    const toastService = inject(ToastService);
-
-    const errorSubject = new Subject<{ msg: string; type: ToastTypeUnion }>();
-    errorSubject
-      .pipe(
-        skipWhile(() => {
-          return AuthInterceptor.SUSPEND_ERROR_REPORTING;
-        }),
-        tap(() => {
-          AuthInterceptor.SUSPEND_ERROR_REPORTING = true;
-          setTimeout(() => {
-            AuthInterceptor.SUSPEND_ERROR_REPORTING = false;
-          }, 1000);
-        }),
-      )
-      .subscribe((details) => {
-        toastService.add(details.msg, details.type);
-      });
     const processRequest = (
       next: HttpHandlerFn,
       req: HttpRequest<any>,

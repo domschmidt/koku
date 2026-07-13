@@ -65,14 +65,17 @@ export class FormularContentRendererComponent {
       );
     });
     effect(() => {
-      const identity = this.recipeIdentity();
-      try {
-        this.dynamicRecipe.set(untracked(() => this.createDynamicRecipe(identity.id, identity.factory)));
-      } catch (error) {
-        identity.runtime.failInitialization(error);
-        throw error;
-      }
+      this.refreshDynamicRecipe(this.recipeIdentity());
     });
+  }
+
+  private refreshDynamicRecipe(identity: ReturnType<typeof this.recipeIdentity>): void {
+    try {
+      this.dynamicRecipe.set(untracked(() => this.createDynamicRecipe(identity.id, identity.factory)));
+    } catch (error) {
+      identity.runtime.failInitialization(error);
+      throw error;
+    }
   }
 
   captureInstance(instance: ComponentRef<unknown>) {
