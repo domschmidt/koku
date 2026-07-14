@@ -1,3 +1,10 @@
+## [2.8.13](https://github.com/domschmidt/koku/compare/v2.8.12...v2.8.13) (2026-07-14)
+
+
+### Bug Fixes
+
+* add coverage ([c921070](https://github.com/domschmidt/koku/commit/c921070d984ca331f1d49a323a7dc4510010238b))
+
 ## [2.8.12](https://github.com/domschmidt/koku/compare/v2.8.11...v2.8.12) (2026-07-12)
 
 
