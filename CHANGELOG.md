@@ -1,3 +1,10 @@
+## [2.8.14](https://github.com/domschmidt/koku/compare/v2.8.13...v2.8.14) (2026-07-27)
+
+
+### Bug Fixes
+
+* ci issue ([f931bcb](https://github.com/domschmidt/koku/commit/f931bcbb458c6c21ffb5a3f1c8bf521d2c737d32))
+
 ## [2.8.13](https://github.com/domschmidt/koku/compare/v2.8.12...v2.8.13) (2026-07-14)
 
 
