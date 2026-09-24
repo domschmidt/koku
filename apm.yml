@@ -1,0 +1,102 @@
+name: koku-agent-dependencies
+version: 0.1.0
+description: Upstream agent skill dependencies for the Koku repository
+targets:
+  - codex
+dependencies:
+  apm:
+    - git: https://github.com/github/awesome-copilot.git
+      path: skills/github-issues
+      ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+    - git: https://github.com/github/awesome-copilot.git
+      path: skills/github-release
+      ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+    - git: https://github.com/github/awesome-copilot.git
+      path: skills/security-review
+      ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+    - git: https://github.com/github/awesome-copilot.git
+      path: skills/github-actions-hardening
+      ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+    - git: https://github.com/github/awesome-copilot.git
+      path: skills/github-actions-efficiency
+      ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+    - git: https://github.com/github/awesome-copilot.git
+      path: skills/gdpr-compliant
+      ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+    - git: https://github.com/github/awesome-copilot.git
+      path: skills/playwright-generate-test
+      ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+    - git: https://github.com/anthropics/skills.git
+      path: skills/webapp-testing
+      ref: 33375500bcea98d610eb30ce10ac4e59b89c390d
+    - git: https://github.com/angular/skills.git
+      path: angular-developer
+      ref: 94a2db1317095ccfedcc024a4cca0a18fc259e72
+    - git: https://github.com/saadeghi/daisyui.git
+      path: skills/daisyui
+      ref: bc338bb2d5c8b69f6ede13cf6c403d75aed4ce78
+    - git: https://github.com/addyosmani/web-quality-skills.git
+      path: skills/accessibility
+      ref: afa8da942115f2961fdbfa80807ea0b232ff6c00
+    - git: https://github.com/addyosmani/web-quality-skills.git
+      path: skills/performance
+      ref: afa8da942115f2961fdbfa80807ea0b232ff6c00
+    - git: https://github.com/luckys/agent-skills.git
+      path: skills/ddd-best-practices
+      ref: c098bd422774912958421ae733938e8fff81dfde
+    - git: https://github.com/Jeffallan/claude-skills.git
+      path: skills/architecture-designer
+      ref: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+    - git: https://github.com/Jeffallan/claude-skills.git
+      path: skills/code-reviewer
+      ref: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+    - git: https://github.com/Jeffallan/claude-skills.git
+      path: skills/postgres-pro
+      ref: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+    - git: https://github.com/Jeffallan/claude-skills.git
+      path: skills/monitoring-expert
+      ref: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+    - git: https://github.com/github/awesome-copilot.git
+      path: skills/java-springboot
+      ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+    - git: https://github.com/github/awesome-copilot.git
+      path: skills/spring-boot-testing
+      ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+    - git: https://github.com/github/awesome-copilot.git
+      path: skills/multi-stage-dockerfile
+      ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+    - git: https://github.com/github/awesome-copilot.git
+      path: skills/create-architectural-decision-record
+      ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+    - git: https://github.com/SonarSource/sonarqube-agent-plugins.git
+      path: skills/sonar-fix-issue
+      ref: edd588642568932231c1517a1d6ef123c92fd281
+    - git: https://github.com/SonarSource/sonarqube-agent-plugins.git
+      path: skills/sonar-list-issues
+      ref: edd588642568932231c1517a1d6ef123c92fd281
+    - git: https://github.com/SonarSource/sonarqube-agent-plugins.git
+      path: skills/sonar-quality-gate
+      ref: edd588642568932231c1517a1d6ef123c92fd281
+    - git: https://github.com/lensesio/agentic-engineering-for-apache-kafka.git
+      path: skills/kafka-consumer-lag
+      ref: 8cee08b1681c38c1daef956ce8b3d9c515fde765
+    - git: https://github.com/jabrena/plinth.git
+      path: skills/110-java-maven-best-practices
+      ref: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+    - git: https://github.com/jabrena/plinth.git
+      path: skills/314-frameworks-spring-kafka
+      ref: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+    - git: https://github.com/jabrena/plinth.git
+      path: skills/130-java-testing-strategies
+      ref: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+    - git: https://github.com/jabrena/plinth.git
+      path: skills/121-java-object-oriented-design
+      ref: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+    - git: https://github.com/wshobson/agents.git
+      path: plugins/documentation-generation/skills/openapi-spec-generation
+      ref: 4236bb91f8395b0435f1d8b8baf9e8e4c69a8620
+    - git: https://github.com/Jeffallan/claude-skills.git
+      path: skills/devops-engineer
+      ref: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+  mcp: []
+scripts: {}
