@@ -1,0 +1,3510 @@
+lockfile_version: '1'
+apm_version: 0.31.0
+dependencies:
+- repo_url: addyosmani/web-quality-skills
+  name: accessibility
+  host: github.com
+  resolved_commit: afa8da942115f2961fdbfa80807ea0b232ff6c00
+  resolved_ref: afa8da942115f2961fdbfa80807ea0b232ff6c00
+  version: unknown
+  virtual_path: skills/accessibility
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/accessibility
+  - .agents/skills/accessibility/SKILL.md
+  - .agents/skills/accessibility/references/A11Y-PATTERNS.md
+  - .agents/skills/accessibility/references/WCAG.md
+  deployed_file_hashes:
+    .agents/skills/accessibility/SKILL.md: sha256:267fb2a0707d6142f2871f22688203a42ba21291a2aa200fb740936e41362b5d
+    .agents/skills/accessibility/references/A11Y-PATTERNS.md: sha256:f10e238dd4dd3c4f51134c2056bc02d3dd4f8fb6ccc9145c2c1ba7aab4d58140
+    .agents/skills/accessibility/references/WCAG.md: sha256:16683e025e3833d931c9d880645d98a448827f97e10189b6c8f12c832e7a2361
+  content_hash: sha256:48861fac56e62fd43f9c3a173cef9e35a1545637445c6bdb64c18f083af84a44
+- repo_url: addyosmani/web-quality-skills
+  name: performance
+  host: github.com
+  resolved_commit: afa8da942115f2961fdbfa80807ea0b232ff6c00
+  resolved_ref: afa8da942115f2961fdbfa80807ea0b232ff6c00
+  version: unknown
+  virtual_path: skills/performance
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/performance
+  - .agents/skills/performance/SKILL.md
+  - .agents/skills/performance/references/MEASUREMENT.md
+  - .agents/skills/performance/references/RUM.md
+  deployed_file_hashes:
+    .agents/skills/performance/SKILL.md: sha256:b0c220185d88c61f7770eb127d8facf86c86d2dd1fd82b86e15a4965a0137265
+    .agents/skills/performance/references/MEASUREMENT.md: sha256:128f6f20c6c8fb55fcccd8b259cf680811022cf262dc55b03e9d623bcb555a99
+    .agents/skills/performance/references/RUM.md: sha256:a2bdf660ecb23098afbadfb83254d39cef10c0da82938225f61271bad3f81b19
+  content_hash: sha256:0b39d050ba0d2abc7ae5ab31f5b52b80a4e9f250aa01a61357968819ca28de18
+- repo_url: angular/skills
+  name: angular-developer
+  host: github.com
+  resolved_commit: 94a2db1317095ccfedcc024a4cca0a18fc259e72
+  resolved_ref: 94a2db1317095ccfedcc024a4cca0a18fc259e72
+  version: unknown
+  virtual_path: angular-developer
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/angular-developer
+  - .agents/skills/angular-developer/SKILL.md
+  - .agents/skills/angular-developer/references/angular-animations.md
+  - .agents/skills/angular-developer/references/angular-aria.md
+  - .agents/skills/angular-developer/references/cli.md
+  - .agents/skills/angular-developer/references/component-harnesses.md
+  - .agents/skills/angular-developer/references/component-styling.md
+  - .agents/skills/angular-developer/references/components.md
+  - .agents/skills/angular-developer/references/creating-services.md
+  - .agents/skills/angular-developer/references/data-resolvers.md
+  - .agents/skills/angular-developer/references/define-routes.md
+  - .agents/skills/angular-developer/references/defining-providers.md
+  - .agents/skills/angular-developer/references/di-fundamentals.md
+  - .agents/skills/angular-developer/references/e2e-testing.md
+  - .agents/skills/angular-developer/references/effects.md
+  - .agents/skills/angular-developer/references/environment-configuration.md
+  - .agents/skills/angular-developer/references/hierarchical-injectors.md
+  - .agents/skills/angular-developer/references/host-elements.md
+  - .agents/skills/angular-developer/references/http-client.md
+  - .agents/skills/angular-developer/references/injection-context.md
+  - .agents/skills/angular-developer/references/inputs.md
+  - .agents/skills/angular-developer/references/linked-signal.md
+  - .agents/skills/angular-developer/references/loading-strategies.md
+  - .agents/skills/angular-developer/references/mcp.md
+  - .agents/skills/angular-developer/references/migrations.md
+  - .agents/skills/angular-developer/references/naming-conventions.md
+  - .agents/skills/angular-developer/references/navigate-to-routes.md
+  - .agents/skills/angular-developer/references/outputs.md
+  - .agents/skills/angular-developer/references/pipes.md
+  - .agents/skills/angular-developer/references/reactive-forms.md
+  - .agents/skills/angular-developer/references/rendering-strategies.md
+  - .agents/skills/angular-developer/references/resource.md
+  - .agents/skills/angular-developer/references/route-animations.md
+  - .agents/skills/angular-developer/references/route-guards.md
+  - .agents/skills/angular-developer/references/router-lifecycle.md
+  - .agents/skills/angular-developer/references/router-testing.md
+  - .agents/skills/angular-developer/references/show-routes-with-outlets.md
+  - .agents/skills/angular-developer/references/signal-forms.md
+  - .agents/skills/angular-developer/references/signals-overview.md
+  - .agents/skills/angular-developer/references/tailwind-css.md
+  - .agents/skills/angular-developer/references/template-driven-forms.md
+  - .agents/skills/angular-developer/references/testing-fundamentals.md
+  deployed_file_hashes:
+    .agents/skills/angular-developer/SKILL.md: sha256:ec5e3a0b1ef218c0d7d40e35c40e5255e7319d7d595c5a6036d8bdac2532c782
+    .agents/skills/angular-developer/references/angular-animations.md: sha256:f21b798ed93e27318527ef7e74e63ef8c71cb74ff2b010d70dbb429883f0dbd0
+    .agents/skills/angular-developer/references/angular-aria.md: sha256:fff4cbdf3558beacfeb03a243d874cacb16a24b0c78962c4f9c760fc2cbe5ad8
+    .agents/skills/angular-developer/references/cli.md: sha256:39468f1be907a1abff746e79cb9fabd9675956df00c87d9b8bd1517855b9fd7d
+    .agents/skills/angular-developer/references/component-harnesses.md: sha256:1761d33a65ecde690ca0c57081ff9d5871cafb8ff724738ccd711b5018e2d894
+    .agents/skills/angular-developer/references/component-styling.md: sha256:de3351fdb72174361c6eee150940193f20d148afaceab0f22107758a3cb2d787
+    .agents/skills/angular-developer/references/components.md: sha256:35ffb62475d54d7d4ed434b2190882440a77ef76b14260128e6d7e3111122e3b
+    .agents/skills/angular-developer/references/creating-services.md: sha256:1fc1d46bd26568d07d1500d0b9ba1a2556ca4a11f4a3dc11036ae5b16dea80cc
+    .agents/skills/angular-developer/references/data-resolvers.md: sha256:6525d6f9b90d4ac6bbd58489d6bc57ab024c407673ed0e1e46364a90d0b9b5da
+    .agents/skills/angular-developer/references/define-routes.md: sha256:4e80613931ecf4da957f9ff45343869b1651331ff4c8b955f2698b9ac0afc921
+    .agents/skills/angular-developer/references/defining-providers.md: sha256:e654c23a080c642cf7031b5cc5de1101b8c75030c15256f7e3b81b0336953c6d
+    .agents/skills/angular-developer/references/di-fundamentals.md: sha256:ed5e4004aed214429de091d2b041cfd818c77a0ebfa24c23f01ec9bac7118a78
+    .agents/skills/angular-developer/references/e2e-testing.md: sha256:fd11d930ed081ca934fe83df06c9d965257ec817ebef59b918d4d814a65feca6
+    .agents/skills/angular-developer/references/effects.md: sha256:5df4759be70248a1f282aff3060b04b694f05ae78093a5caa4eaff455e35a6a3
+    .agents/skills/angular-developer/references/environment-configuration.md: sha256:788b62bf5e04d56343f598437f7e3fd7fdfc6efa8ec6727288dc73514b1b5a76
+    .agents/skills/angular-developer/references/hierarchical-injectors.md: sha256:967e472a1208c6e1f4b95bf7ee9162165904eb78ac6dab64643c67a9d1dac264
+    .agents/skills/angular-developer/references/host-elements.md: sha256:5c2eb324e7b84bd81334b6d262a61b873de208640aabe4be48b73600438bdaed
+    .agents/skills/angular-developer/references/http-client.md: sha256:b6a6c92ae71dc98b6cd0e2b840227c7743b3edf288769da3db070fa1815c1adc
+    .agents/skills/angular-developer/references/injection-context.md: sha256:4435dfcec91bd9fb68d6c318802cac1b37424d4e76452e6f0f52ed0d2b6536fb
+    .agents/skills/angular-developer/references/inputs.md: sha256:f5dcdd2a69e7e5c0aad503b4deaea5cedb682130cc699c669128b8fadcc65ba8
+    .agents/skills/angular-developer/references/linked-signal.md: sha256:01f5395e4be4be7c642f4dacd5312d6cc82e641f3ff177f9283b26b79dd07e95
+    .agents/skills/angular-developer/references/loading-strategies.md: sha256:4eb2e243425443426d28c6f68c823d501c7b2bf64e4587c96c4c6013d57e7c93
+    .agents/skills/angular-developer/references/mcp.md: sha256:e112ece9672d042144bc1aeb1245bd0325bab172398d7129a258be81f9db61aa
+    .agents/skills/angular-developer/references/migrations.md: sha256:47983ed2683dc10f692d254cdca9c97fc13dec9ad099b759f5d31886f3cbaa7a
+    .agents/skills/angular-developer/references/naming-conventions.md: sha256:f0751d75d12a76ff0415124948ead5ae1a67d14a84360e64526aa8bac7d6c5d3
+    .agents/skills/angular-developer/references/navigate-to-routes.md: sha256:ea3c3d53b5db47b4f8d8b05124330e72bea92fc908d42c06aa7edb9e652b425e
+    .agents/skills/angular-developer/references/outputs.md: sha256:4d6900ff9ab90168969c3d05b67d88f69bb6a46aa4b74a8a8290ba0643c6d8dd
+    .agents/skills/angular-developer/references/pipes.md: sha256:76bd0f2f3ac9096ee511427df6ea73cab75f06a3566ab4595ba4f2ec8c0c6fc9
+    .agents/skills/angular-developer/references/reactive-forms.md: sha256:edfc57c191d29a1549e9aa9b4ba0d1111a9792caa65918d62967920647717121
+    .agents/skills/angular-developer/references/rendering-strategies.md: sha256:329aa9aa35c85dd2048c899f26025439d3b0244067dbb508e724d291fdad7c97
+    .agents/skills/angular-developer/references/resource.md: sha256:2fad5a0aaf85b0b3193a492b706595962e247bc99aec1dcc1755d90d9c303545
+    .agents/skills/angular-developer/references/route-animations.md: sha256:eda1452f85ce05f3f28753cc77cd8c31c7a52515d7ccebbb35de0ec1e3beb374
+    .agents/skills/angular-developer/references/route-guards.md: sha256:491a93cb49fbcba04f7e8ffcd0f784fce7319ca3e2fe393c553f3d683a68424c
+    .agents/skills/angular-developer/references/router-lifecycle.md: sha256:4abc8cb8dfeb2e9f57dc11c117d5f4a5b756b39dc076910d9ced9da640effc2d
+    .agents/skills/angular-developer/references/router-testing.md: sha256:4d144577927d3ea93ae498cac7ebd2724873a2de225b75d345abb24759bd62d3
+    .agents/skills/angular-developer/references/show-routes-with-outlets.md: sha256:43a2ed62ea2edafa8569bf7045f20928110f8f844d5890bfb6a2f2dde45e754b
+    .agents/skills/angular-developer/references/signal-forms.md: sha256:5251585cadf72ab95e31377904db21a597b5e9b982c8e839dc098b48f69ac6b7
+    .agents/skills/angular-developer/references/signals-overview.md: sha256:da07c58fdea2ab7d82a28faf9f3d117ccb98ccaf3eec06f103b898f557791146
+    .agents/skills/angular-developer/references/tailwind-css.md: sha256:bdb952d0dd2d415560a796ecaf843cacff5ac20d8ef961eaaf75656fef9b9263
+    .agents/skills/angular-developer/references/template-driven-forms.md: sha256:52e83e576b0c6dc05f854e903c4cfda1222bcd55c50ddee07344d1e53d02c1df
+    .agents/skills/angular-developer/references/testing-fundamentals.md: sha256:8f48c2392d99487934edf977c0d1b87a4e83ff9761db493bbcccc10f574bcb5a
+  content_hash: sha256:70dcf82240a74fd81ddb723954a8b26f0f60adf8a4f449caa9e5677d2f184b25
+- repo_url: anthropics/skills
+  name: webapp-testing
+  host: github.com
+  resolved_commit: 33375500bcea98d610eb30ce10ac4e59b89c390d
+  resolved_ref: 33375500bcea98d610eb30ce10ac4e59b89c390d
+  version: unknown
+  virtual_path: skills/webapp-testing
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/webapp-testing
+  - .agents/skills/webapp-testing/LICENSE.txt
+  - .agents/skills/webapp-testing/SKILL.md
+  - .agents/skills/webapp-testing/examples/console_logging.py
+  - .agents/skills/webapp-testing/examples/element_discovery.py
+  - .agents/skills/webapp-testing/examples/static_html_automation.py
+  - .agents/skills/webapp-testing/scripts/with_server.py
+  deployed_file_hashes:
+    .agents/skills/webapp-testing/LICENSE.txt: sha256:bc6b3af2f331cbc7fb0da1344efb2cbe5877a31498b4d70dbc7000f3405a1362
+    .agents/skills/webapp-testing/SKILL.md: sha256:51b7349e77ec63b7744a6f63647e7566a0b4d2e301121cc10e8c2113af6556a2
+    .agents/skills/webapp-testing/examples/console_logging.py: sha256:ea46877289acb82da7e7ce59d0bc37c8977cd57e2a006d0c88d7a1c625bf95da
+    .agents/skills/webapp-testing/examples/element_discovery.py: sha256:d63c89604a22f8845d724e95dda45db49b1bf57c25ce0a83afbb7b8da3d402f0
+    .agents/skills/webapp-testing/examples/static_html_automation.py: sha256:9d533aafb875ee3ab8b8ebf8f5b9003ac8d999da3d09b285cce252e623140064
+    .agents/skills/webapp-testing/scripts/with_server.py: sha256:b0dcf4918935b795f4eda9821579b9902119235ff4447f687a30286e7d0925fd
+  content_hash: sha256:8320d78c856340fa2f09a3ffb79b91de9427945abc18d36b6d7e9204120dad0a
+- repo_url: github/awesome-copilot
+  name: create-architectural-decision-record
+  host: github.com
+  resolved_commit: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  resolved_ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  version: unknown
+  virtual_path: skills/create-architectural-decision-record
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/create-architectural-decision-record
+  - .agents/skills/create-architectural-decision-record/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/create-architectural-decision-record/SKILL.md: sha256:c11af0c34fa034e36e622ad97f1194824c3cbbe675a8b17cdc0bedc91b188a72
+  content_hash: sha256:5c99e32293271aef0270c279c2af8b62301e29257bf85f2ebf7e810c740b4404
+- repo_url: github/awesome-copilot
+  name: gdpr-compliant
+  host: github.com
+  resolved_commit: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  resolved_ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  version: unknown
+  virtual_path: skills/gdpr-compliant
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/gdpr-compliant
+  - .agents/skills/gdpr-compliant/SKILL.md
+  - .agents/skills/gdpr-compliant/references/Security.md
+  - .agents/skills/gdpr-compliant/references/data-rights.md
+  deployed_file_hashes:
+    .agents/skills/gdpr-compliant/SKILL.md: sha256:e1f33a817a1d0f7165f4f6652cfeb52632ba124067c3f46c37f867cde730242e
+    .agents/skills/gdpr-compliant/references/Security.md: sha256:4fffe37e4c024043287807a07b47f0655dea89c30fc5c5b8308553cf7a7667ef
+    .agents/skills/gdpr-compliant/references/data-rights.md: sha256:8a17c938497e5988c70775b2431377204cb37c225613c92cc4176ca1d1d450f8
+  content_hash: sha256:9c88af335bc125c57ddecd6287a2e4d24fdc1c9536bdda41ef692eeccb142e11
+- repo_url: github/awesome-copilot
+  name: github-actions-efficiency
+  host: github.com
+  resolved_commit: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  resolved_ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  version: unknown
+  virtual_path: skills/github-actions-efficiency
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/github-actions-efficiency
+  - .agents/skills/github-actions-efficiency/SKILL.md
+  - .agents/skills/github-actions-efficiency/references/actions.md
+  - .agents/skills/github-actions-efficiency/references/patterns.md
+  - .agents/skills/github-actions-efficiency/references/reporting.md
+  - .agents/skills/github-actions-efficiency/references/review-rubric.md
+  deployed_file_hashes:
+    .agents/skills/github-actions-efficiency/SKILL.md: sha256:9c41e860468e5c88d83ab6eec70c585b0f122facec2632ea65497b3389139e43
+    .agents/skills/github-actions-efficiency/references/actions.md: sha256:9f24153e0b743a978ec84e08bc64047616d18504965708cc7507437203689fdb
+    .agents/skills/github-actions-efficiency/references/patterns.md: sha256:a9fb61ee95b5f2f4cb372064f5de9d04ca749da1b78d050e42e909e9e97228dd
+    .agents/skills/github-actions-efficiency/references/reporting.md: sha256:18eec5acd0d9e52b450f86b8232e9994c5c5b7760240bcb2e97417f8a847508c
+    .agents/skills/github-actions-efficiency/references/review-rubric.md: sha256:f2fd2bbd34f15f68664e30ea62468f8a5b19bc9b49929dcd082a4c87316b3ce2
+  content_hash: sha256:cb1a6b7a2d06465b26f1245a0f617317032d40f0e63f3237ac67f996ad5eeea3
+- repo_url: github/awesome-copilot
+  name: github-actions-hardening
+  host: github.com
+  resolved_commit: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  resolved_ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  version: unknown
+  virtual_path: skills/github-actions-hardening
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/github-actions-hardening
+  - .agents/skills/github-actions-hardening/SKILL.md
+  - .agents/skills/github-actions-hardening/references/injection.md
+  - .agents/skills/github-actions-hardening/references/permissions-and-tokens.md
+  - .agents/skills/github-actions-hardening/references/report-format.md
+  - .agents/skills/github-actions-hardening/references/supply-chain.md
+  - .agents/skills/github-actions-hardening/references/triggers-and-privilege.md
+  deployed_file_hashes:
+    .agents/skills/github-actions-hardening/SKILL.md: sha256:31a8e7483d978e6267941edefebbe42aaa946bb3d43c9095aa3db343d4a8ff06
+    .agents/skills/github-actions-hardening/references/injection.md: sha256:ebd6ef8d39ba6f1cd3dc13051e6ed4163d1d2ba36518cf0f7393836a211e58ff
+    .agents/skills/github-actions-hardening/references/permissions-and-tokens.md: sha256:7272d00b20cf99c6fcbf34346f76730907c00701aef44bb9cfb7ab3eecac336b
+    .agents/skills/github-actions-hardening/references/report-format.md: sha256:3ecd2442e173bc001f858747873349be7c6c77050470b87ae516647908b1e86e
+    .agents/skills/github-actions-hardening/references/supply-chain.md: sha256:f66f613dbd732ce87c1e76b88208efde8feae3ffe5a3ab405cde4ce3df66f605
+    .agents/skills/github-actions-hardening/references/triggers-and-privilege.md: sha256:465f3f76517e9f5374a73e30f46cb47e1fe62ce9fd81f782808a3abbb2df2756
+  content_hash: sha256:d826005e7e1f7792531836c747c78df9e9caac534dd027b8ad872725340e5df2
+- repo_url: github/awesome-copilot
+  name: github-issues
+  host: github.com
+  resolved_commit: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  resolved_ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  version: unknown
+  virtual_path: skills/github-issues
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/github-issues
+  - .agents/skills/github-issues/SKILL.md
+  - .agents/skills/github-issues/references/dependencies.md
+  - .agents/skills/github-issues/references/images.md
+  - .agents/skills/github-issues/references/issue-fields.md
+  - .agents/skills/github-issues/references/issue-types.md
+  - .agents/skills/github-issues/references/labels.md
+  - .agents/skills/github-issues/references/milestones.md
+  - .agents/skills/github-issues/references/projects.md
+  - .agents/skills/github-issues/references/search.md
+  - .agents/skills/github-issues/references/sub-issues.md
+  - .agents/skills/github-issues/references/templates.md
+  deployed_file_hashes:
+    .agents/skills/github-issues/SKILL.md: sha256:c7859f993a8c8cfbff117830be1532e82e8b8e913297a40f8e685a662eaf3183
+    .agents/skills/github-issues/references/dependencies.md: sha256:9503d23ba104de1aae51176e4f29d3cf6b85c83e3421252a4808140d60eba571
+    .agents/skills/github-issues/references/images.md: sha256:585c89a02e1b79e702b4b88f2771cb8dadca9fdf98798ca72a83deb76623b219
+    .agents/skills/github-issues/references/issue-fields.md: sha256:ebc49ce1c436213a2c2c9ffef770ff46bc8b4f4ef1ec84460f217b712d1df01c
+    .agents/skills/github-issues/references/issue-types.md: sha256:be0a33a4a4a15ce92c6b589f19943813b69c25cd1f20e9e30df567bab50e5e63
+    .agents/skills/github-issues/references/labels.md: sha256:d00f8f0414b3cb0b8f45d48956ee8d301aefea5338f5a45eccca04b68a26bb6c
+    .agents/skills/github-issues/references/milestones.md: sha256:974d492c055297df2efb6631c40ca8ceb821c52188b2719ecfeb69cc8df91c36
+    .agents/skills/github-issues/references/projects.md: sha256:358071bc9915a50e86956b21ba1c0077b489d8981eddc63ea09aa4cfe1043710
+    .agents/skills/github-issues/references/search.md: sha256:e73499b778efaaac7a90fd6a7c0359f30a89a7a62c25b27d994274e7f7ae172e
+    .agents/skills/github-issues/references/sub-issues.md: sha256:333339143e4a4ef0dfeb575cf0f18da2ca78d6388e2b9ba4b77daad7c1ce29a8
+    .agents/skills/github-issues/references/templates.md: sha256:8202c0277a34033acd44ed960a236f31a5b7a74d98769dffac497f2267279fed
+  content_hash: sha256:2e88a5d1a7acf845e450c42a07fad522c42a39ebda98c57fa08bb904d53710cc
+- repo_url: github/awesome-copilot
+  name: github-release
+  host: github.com
+  resolved_commit: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  resolved_ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  version: unknown
+  virtual_path: skills/github-release
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/github-release
+  - .agents/skills/github-release/SKILL.md
+  - .agents/skills/github-release/references/commit-classification.md
+  - .agents/skills/github-release/references/semver-rules.md
+  deployed_file_hashes:
+    .agents/skills/github-release/SKILL.md: sha256:7ef644b19c8f87b09be121efdb3fc946c3354bb48ce6ec841ebb56384ee4c431
+    .agents/skills/github-release/references/commit-classification.md: sha256:61c0d5145358aea2fa5984364513d880d757a0946432ee074ffbadc8d0e47626
+    .agents/skills/github-release/references/semver-rules.md: sha256:96b607e4189eea07c77728081e9c69f17898cdce5b91bd2e3c03c42ea4b2ba2c
+  content_hash: sha256:89dd98ca83f681dd7580c73c8d0dadcf8adffc6e9a9d5acc1b7acf6c66826467
+- repo_url: github/awesome-copilot
+  name: java-springboot
+  host: github.com
+  resolved_commit: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  resolved_ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  version: unknown
+  virtual_path: skills/java-springboot
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/java-springboot
+  - .agents/skills/java-springboot/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/java-springboot/SKILL.md: sha256:574898202ce298557226c49d35036a6e9e66a1cb205ea15c44db298e6d74e3bd
+  content_hash: sha256:f1b9c6b1277178fc33e5a612761c1cd1cf6ab5f946d05d69d52026d142c0a0c1
+- repo_url: github/awesome-copilot
+  name: multi-stage-dockerfile
+  host: github.com
+  resolved_commit: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  resolved_ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  version: unknown
+  virtual_path: skills/multi-stage-dockerfile
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/multi-stage-dockerfile
+  - .agents/skills/multi-stage-dockerfile/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/multi-stage-dockerfile/SKILL.md: sha256:7dfea7d31f3744930cb07869e15a79f90dbd47d2ddc56d165715fbd257db9ba7
+  content_hash: sha256:698bf93a84dae18fd7bd0b1d35c21427307fde78fbdf4624be9726f5f98189ca
+- repo_url: github/awesome-copilot
+  name: playwright-generate-test
+  host: github.com
+  resolved_commit: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  resolved_ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  version: unknown
+  virtual_path: skills/playwright-generate-test
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/playwright-generate-test
+  - .agents/skills/playwright-generate-test/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/playwright-generate-test/SKILL.md: sha256:79dbb1a49fc5a6502788ccba1a4bd30769a017a1cc31d9db329d1326ea3d898f
+  content_hash: sha256:8f963da3e25f705ff39755b8b990f20da0c0320cb86ac83fcc4d2d4eca91f6e4
+- repo_url: github/awesome-copilot
+  name: security-review
+  host: github.com
+  resolved_commit: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  resolved_ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  version: unknown
+  virtual_path: skills/security-review
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/security-review
+  - .agents/skills/security-review/SKILL.md
+  - .agents/skills/security-review/references/language-patterns.md
+  - .agents/skills/security-review/references/report-format.md
+  - .agents/skills/security-review/references/secret-patterns.md
+  - .agents/skills/security-review/references/vuln-categories.md
+  - .agents/skills/security-review/references/vulnerable-packages.md
+  deployed_file_hashes:
+    .agents/skills/security-review/SKILL.md: sha256:002392d88637b89e4cbc409a0531834970937f3b57c0b448a17e04b5ca6d356c
+    .agents/skills/security-review/references/language-patterns.md: sha256:ddfbcbb68b9d605789c85a168a274219f0ad86f5fc76b46b5332eb42f0c042b3
+    .agents/skills/security-review/references/report-format.md: sha256:688ef9f2862303527314eb17a090a72d512b907a685f5d1f122d6ebd5ae66db1
+    .agents/skills/security-review/references/secret-patterns.md: sha256:38f84f60021490d785f33fc70f2ce784888d2a751781a881372e6862e7e11288
+    .agents/skills/security-review/references/vuln-categories.md: sha256:d06159479bd92b9dcf3a2842e09f7712f1fd297c0bc9792fe20bc3cb69188df5
+    .agents/skills/security-review/references/vulnerable-packages.md: sha256:8693a6a258bad18a8a1d0925bc1eae9c744071ff37a36b8f1da83adca93608af
+  content_hash: sha256:a0fc25587c016178c9cf6238ac8702695fa761694965192472487f92093db571
+- repo_url: github/awesome-copilot
+  name: spring-boot-testing
+  host: github.com
+  resolved_commit: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  resolved_ref: 1f5644080a525d26a2e24f61a7609fb9b261c21a
+  version: unknown
+  virtual_path: skills/spring-boot-testing
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/spring-boot-testing
+  - .agents/skills/spring-boot-testing/SKILL.md
+  - .agents/skills/spring-boot-testing/references/assertj-basics.md
+  - .agents/skills/spring-boot-testing/references/assertj-collections.md
+  - .agents/skills/spring-boot-testing/references/context-caching.md
+  - .agents/skills/spring-boot-testing/references/datajpatest.md
+  - .agents/skills/spring-boot-testing/references/instancio.md
+  - .agents/skills/spring-boot-testing/references/mockitobean.md
+  - .agents/skills/spring-boot-testing/references/mockmvc-classic.md
+  - .agents/skills/spring-boot-testing/references/mockmvc-tester.md
+  - .agents/skills/spring-boot-testing/references/restclienttest.md
+  - .agents/skills/spring-boot-testing/references/resttestclient.md
+  - .agents/skills/spring-boot-testing/references/sb4-migration.md
+  - .agents/skills/spring-boot-testing/references/test-slices-overview.md
+  - .agents/skills/spring-boot-testing/references/testcontainers-jdbc.md
+  - .agents/skills/spring-boot-testing/references/webmvctest.md
+  deployed_file_hashes:
+    .agents/skills/spring-boot-testing/SKILL.md: sha256:8161940340dc52766242ab30589369623b31089b41ebd7baa19a27f411648550
+    .agents/skills/spring-boot-testing/references/assertj-basics.md: sha256:7aef2421cde448fa8cf66b2a2fa5cddd61b695b31ebef4b4490281f7ddb91201
+    .agents/skills/spring-boot-testing/references/assertj-collections.md: sha256:108c029ac107026a4f0454979fcca34fc04172e3ed2f673b68071a9fe36150e3
+    .agents/skills/spring-boot-testing/references/context-caching.md: sha256:dbc938e69c086be119a02e7572b144c2849f164bed0968a2b78828ae391dd1c3
+    .agents/skills/spring-boot-testing/references/datajpatest.md: sha256:723d5539c99a1264c20979ba152c6c85f9d3dccdd27649c9d0d8b2fa74f1631b
+    .agents/skills/spring-boot-testing/references/instancio.md: sha256:1608700c0ced1fcf68f66b57b2ee2e16e2e8c610d8bb47594f2560a50c659620
+    .agents/skills/spring-boot-testing/references/mockitobean.md: sha256:4c94eaab7e27274f96b13dffcbbb26ce44d06ea9e34d3d1aacf9ec6d1feed757
+    .agents/skills/spring-boot-testing/references/mockmvc-classic.md: sha256:eda16b3957bf881522a5670d464d017239c9b01426e10aff955a7033a32403e8
+    .agents/skills/spring-boot-testing/references/mockmvc-tester.md: sha256:db478252be94c79eb8af0e71a17f8993896c3efafd4a2b88f55877c2d8541891
+    .agents/skills/spring-boot-testing/references/restclienttest.md: sha256:a15252889125344f8cf2caf0cfc873c944a80577f73ceac00060a9108b457e88
+    .agents/skills/spring-boot-testing/references/resttestclient.md: sha256:e5276df7d4e6be4cf40240502612a8cd3e521aad5539d8ceb77ab0e367802d9d
+    .agents/skills/spring-boot-testing/references/sb4-migration.md: sha256:959d81d7ede3e141f78e4782e60460aaf113940d89614c3eac928c39f167a04c
+    .agents/skills/spring-boot-testing/references/test-slices-overview.md: sha256:1d4ec67ca92d6e84603f4cc2b5d3bf006c6ff932b1d28ee65f1c599f2a34060c
+    .agents/skills/spring-boot-testing/references/testcontainers-jdbc.md: sha256:a8a07d8063ae10db8cf237c159d199a9630830c5b9c6f97b789bea7a78eb11b5
+    .agents/skills/spring-boot-testing/references/webmvctest.md: sha256:0b33963499584253f5d8c7f9086d25fb852e173b0614683fe9073d63af444f2e
+  content_hash: sha256:eaad2dd0c8cc72d2e96872bec73eeec4015ddbc03364e65a1fbf3d9b7deeb697
+- repo_url: jabrena/plinth
+  name: 110-java-maven-best-practices
+  host: github.com
+  resolved_commit: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+  resolved_ref: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+  version: unknown
+  virtual_path: skills/110-java-maven-best-practices
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/110-java-maven-best-practices
+  - .agents/skills/110-java-maven-best-practices/SKILL.md
+  - .agents/skills/110-java-maven-best-practices/references/110-java-maven-best-practices.md
+  deployed_file_hashes:
+    .agents/skills/110-java-maven-best-practices/SKILL.md: sha256:2ff91aecb5d2d65696ae6d59a9c06ff909870ac76c0fa7c4d6ca28ef66429775
+    .agents/skills/110-java-maven-best-practices/references/110-java-maven-best-practices.md: sha256:68f4914876cc74827a41e9a0848db84a2a8b08b5f10336c6286543592a843f26
+  content_hash: sha256:bd305bf6ffbcd3d94fea48872f98ce7e8b472bc43e54b3c3bd391ff2937efcf1
+- repo_url: jabrena/plinth
+  name: 121-java-object-oriented-design
+  host: github.com
+  resolved_commit: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+  resolved_ref: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+  version: unknown
+  virtual_path: skills/121-java-object-oriented-design
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/121-java-object-oriented-design
+  - .agents/skills/121-java-object-oriented-design/SKILL.md
+  - .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-classes-interfaces.md
+  - .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-code-smells.md
+  - .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-enums-annotations.md
+  - .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-exceptions.md
+  - .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-methods.md
+  - .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-object-creation.md
+  - .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-oop-concepts.md
+  - .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-principles.md
+  deployed_file_hashes:
+    .agents/skills/121-java-object-oriented-design/SKILL.md: sha256:dc727522f1cbe38081b5af92b69c93e675f335f898caf9b5a8df91a96d86dbe7
+    .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-classes-interfaces.md: sha256:23da10957c603df917a7f70a028387dacc8d0ddefa1f8f62e4875c7e8bb9f558
+    .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-code-smells.md: sha256:6c0f4f584507a6136facb3aba6b58d615e4111ade1368925a1c2c79b571a8550
+    .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-enums-annotations.md: sha256:a23e2c9d28a3c0f91d239153e801293bc922a452658d391fed7ac8b5a629b07a
+    .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-exceptions.md: sha256:6a3adea08bfacc8fcd63756688d4bbf26abdf5116aaa32577d5eb049657a577f
+    .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-methods.md: sha256:6e892da0cc076a92a206457d85f8166837538e22e83583992bdb2bee7e8d91ed
+    .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-object-creation.md: sha256:b6485880e6805e6509172dd960359f2298d0ee5ca83178d84707fa27e438c3d7
+    .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-oop-concepts.md: sha256:b7d500519d9f6fbf8804236bc1b6fa1e55b112677b228a25340d4ba146790c46
+    .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-principles.md: sha256:a49726e52c27689f819b7d40fd19e55a5d5015fa671e636e21bf8439f6994e47
+  content_hash: sha256:a562d68bf899e6dacf0c52c0eca4e6a79f053d717b1b4739e74f5d64deba4e8f
+- repo_url: jabrena/plinth
+  name: 130-java-testing-strategies
+  host: github.com
+  resolved_commit: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+  resolved_ref: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+  version: unknown
+  virtual_path: skills/130-java-testing-strategies
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/130-java-testing-strategies
+  - .agents/skills/130-java-testing-strategies/SKILL.md
+  - .agents/skills/130-java-testing-strategies/references/130-java-testing-strategies-a-trip.md
+  - .agents/skills/130-java-testing-strategies/references/130-java-testing-strategies-correct.md
+  - .agents/skills/130-java-testing-strategies/references/130-java-testing-strategies-right-bicep.md
+  deployed_file_hashes:
+    .agents/skills/130-java-testing-strategies/SKILL.md: sha256:2d6797c4d70a6cd8fb118011a2dd25b3ad47774e98851b1d35a2f13539eca41f
+    .agents/skills/130-java-testing-strategies/references/130-java-testing-strategies-a-trip.md: sha256:7415a447cdddbd67043c0f90b4d1fd0e94f84e8a82335897c9b7c24928c76790
+    .agents/skills/130-java-testing-strategies/references/130-java-testing-strategies-correct.md: sha256:cd3a8a78de061f26dccfaccfdde6b6b1ac84b15fae864a0146980c4f5664aa58
+    .agents/skills/130-java-testing-strategies/references/130-java-testing-strategies-right-bicep.md: sha256:4c8fa00a374713b2539f3b060cc0f48cad3e34c1a31e9784e879441905c0dc43
+  content_hash: sha256:ab2006218efca585ea9bc5c6406d63e707f5eb55a1bc2f384312217a4ca652ba
+- repo_url: jabrena/plinth
+  name: 314-frameworks-spring-kafka
+  host: github.com
+  resolved_commit: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+  resolved_ref: 9a3dc2923f01af913fd0bb01b96879ba8f5bc4f6
+  version: unknown
+  virtual_path: skills/314-frameworks-spring-kafka
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/314-frameworks-spring-kafka
+  - .agents/skills/314-frameworks-spring-kafka/SKILL.md
+  - .agents/skills/314-frameworks-spring-kafka/references/314-frameworks-spring-kafka.md
+  deployed_file_hashes:
+    .agents/skills/314-frameworks-spring-kafka/SKILL.md: sha256:90f7aeb6d55d5ac34ee8420ce97e4634717b2fe44c3380baaef52b328aebba17
+    .agents/skills/314-frameworks-spring-kafka/references/314-frameworks-spring-kafka.md: sha256:cf84c8266e28100f86b69aa4a08df2a3988fcb09dd5c218e5de34588336198d2
+  content_hash: sha256:7f6bb0a968b08e47d3033107657a02a8aea7b4f361cdf623b6ed31dac837b4da
+- repo_url: jeffallan/claude-skills
+  materialization_repo_url: Jeffallan/claude-skills
+  name: architecture-designer
+  host: github.com
+  resolved_commit: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+  resolved_ref: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+  version: unknown
+  virtual_path: skills/architecture-designer
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/architecture-designer
+  - .agents/skills/architecture-designer/SKILL.md
+  - .agents/skills/architecture-designer/references/adr-template.md
+  - .agents/skills/architecture-designer/references/architecture-patterns.md
+  - .agents/skills/architecture-designer/references/database-selection.md
+  - .agents/skills/architecture-designer/references/nfr-checklist.md
+  - .agents/skills/architecture-designer/references/system-design.md
+  deployed_file_hashes:
+    .agents/skills/architecture-designer/SKILL.md: sha256:5235b031e8fadacf01f39ad9db7b8d5ec9d6f83460ebcef78da95d31c9f36276
+    .agents/skills/architecture-designer/references/adr-template.md: sha256:cada2aa2f8fa039ba63ab95499cbe653a28110f9f406040a06966552026fea4b
+    .agents/skills/architecture-designer/references/architecture-patterns.md: sha256:954bde741cffe6dec00acb63840bbb79654d2647ca8f7c9a8f99f5888b94c5f9
+    .agents/skills/architecture-designer/references/database-selection.md: sha256:6439a36138654947acb808eeff1fff5862894ef94a7210e8fd540bb2641c5a80
+    .agents/skills/architecture-designer/references/nfr-checklist.md: sha256:37b9b0f083bd224acccb04eec86edc09a494c693a4ad0ec32ea24f472c122d70
+    .agents/skills/architecture-designer/references/system-design.md: sha256:b33ff621c6461eb321d18fc9923c4bba689776e1cd0f0c00945584c2698319a1
+  content_hash: sha256:091bbb087421942995efb22bfc09e3f6c38cd762498e4c11ea728f0df89ee91b
+- repo_url: jeffallan/claude-skills
+  materialization_repo_url: Jeffallan/claude-skills
+  name: code-reviewer
+  host: github.com
+  resolved_commit: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+  resolved_ref: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+  version: unknown
+  virtual_path: skills/code-reviewer
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/code-reviewer
+  - .agents/skills/code-reviewer/SKILL.md
+  - .agents/skills/code-reviewer/references/common-issues.md
+  - .agents/skills/code-reviewer/references/feedback-examples.md
+  - .agents/skills/code-reviewer/references/receiving-feedback.md
+  - .agents/skills/code-reviewer/references/report-template.md
+  - .agents/skills/code-reviewer/references/review-checklist.md
+  - .agents/skills/code-reviewer/references/spec-compliance-review.md
+  deployed_file_hashes:
+    .agents/skills/code-reviewer/SKILL.md: sha256:8f0ddb7d90178b6986f8d597ab0bc93ec01adb044bd27b75e1682b06902dae93
+    .agents/skills/code-reviewer/references/common-issues.md: sha256:19de3ccd5611e82d1c94636aaf4b0a11a68a09799459285a3ab250a24c04265c
+    .agents/skills/code-reviewer/references/feedback-examples.md: sha256:e87d7a255efaa04a8ee6acfa53f642974c4b2919658671418e670d0db7d038f6
+    .agents/skills/code-reviewer/references/receiving-feedback.md: sha256:62f3958b0be7f3d03cde7bbf00d3f6051a6d98081be3e97d2e7cca5501749c04
+    .agents/skills/code-reviewer/references/report-template.md: sha256:2f2b63c8543b510d4dceffb9336627d02aa5f6f722a805d6fa93572d7673a885
+    .agents/skills/code-reviewer/references/review-checklist.md: sha256:c0e348f3896a274c407da7bf52570377dd9b7d0d3284d8f582559d890c3dfbcc
+    .agents/skills/code-reviewer/references/spec-compliance-review.md: sha256:a5fcb93e7058b4c089b871ae954d8ab5cf45702e91c54242b06cf7af455f57df
+  content_hash: sha256:85a9b05725e3796318a5a2ec49f3a25beddb88a2a8875c97c4c999d1defbbc8a
+- repo_url: jeffallan/claude-skills
+  materialization_repo_url: Jeffallan/claude-skills
+  name: devops-engineer
+  host: github.com
+  resolved_commit: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+  resolved_ref: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+  version: unknown
+  virtual_path: skills/devops-engineer
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/devops-engineer
+  - .agents/skills/devops-engineer/SKILL.md
+  - .agents/skills/devops-engineer/references/deployment-strategies.md
+  - .agents/skills/devops-engineer/references/docker-patterns.md
+  - .agents/skills/devops-engineer/references/github-actions.md
+  - .agents/skills/devops-engineer/references/gitlab-ci.md
+  - .agents/skills/devops-engineer/references/incident-response.md
+  - .agents/skills/devops-engineer/references/kubernetes.md
+  - .agents/skills/devops-engineer/references/platform-engineering.md
+  - .agents/skills/devops-engineer/references/release-automation.md
+  - .agents/skills/devops-engineer/references/terraform-iac.md
+  deployed_file_hashes:
+    .agents/skills/devops-engineer/SKILL.md: sha256:078f8e80c432f1cbaa7aaa70391a8d61c2b87cc71f2f64f361da61b13c19d9cf
+    .agents/skills/devops-engineer/references/deployment-strategies.md: sha256:d09fd909526bac88579c993b85294c210ca76959e38a0018f4d4181f48e2302b
+    .agents/skills/devops-engineer/references/docker-patterns.md: sha256:b6ccc98c44aa64e9c9aa837c793369914516ae874961de7eec38191c8cf61861
+    .agents/skills/devops-engineer/references/github-actions.md: sha256:04d2d1c339762948dd513c268482d3ffada30068bbea92f282bf753837cb5e4b
+    .agents/skills/devops-engineer/references/gitlab-ci.md: sha256:8b4e6492a96ff5b94c07dcddca3a093121845a13bc4f2699844c06f42f3043e2
+    .agents/skills/devops-engineer/references/incident-response.md: sha256:8410ae3e9c7295f4fda94d7fa85438292e675a4e10dc64a61aead4df162522a4
+    .agents/skills/devops-engineer/references/kubernetes.md: sha256:7da17b4e40c05d8c5c694ae532524072b1eed9d078f336c57970d6fc5473ce0b
+    .agents/skills/devops-engineer/references/platform-engineering.md: sha256:1256d7f015cb45c8e35ad708cf9a51ef429c95945d07705fb416bc89e3bc1bfd
+    .agents/skills/devops-engineer/references/release-automation.md: sha256:bf546d38622d8f9185939d5d3bafea8859f44a7c60e85957afc39347052abc45
+    .agents/skills/devops-engineer/references/terraform-iac.md: sha256:0d629d4b9826cbd97c1d5a6e826d701bacd3f057d4092cda0e5bb9da692e922b
+  content_hash: sha256:a0a0d98d6d69c8785ad15b599eb1df0023d2e5571117141a0d53efb8bef0cc40
+- repo_url: jeffallan/claude-skills
+  materialization_repo_url: Jeffallan/claude-skills
+  name: monitoring-expert
+  host: github.com
+  resolved_commit: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+  resolved_ref: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+  version: unknown
+  virtual_path: skills/monitoring-expert
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/monitoring-expert
+  - .agents/skills/monitoring-expert/SKILL.md
+  - .agents/skills/monitoring-expert/references/alerting-rules.md
+  - .agents/skills/monitoring-expert/references/application-profiling.md
+  - .agents/skills/monitoring-expert/references/capacity-planning.md
+  - .agents/skills/monitoring-expert/references/dashboards.md
+  - .agents/skills/monitoring-expert/references/opentelemetry.md
+  - .agents/skills/monitoring-expert/references/performance-testing.md
+  - .agents/skills/monitoring-expert/references/prometheus-metrics.md
+  - .agents/skills/monitoring-expert/references/structured-logging.md
+  deployed_file_hashes:
+    .agents/skills/monitoring-expert/SKILL.md: sha256:dc69392186b8cc9b3db6e66bb3b8c5fd11f2483e346b544e77dbb3cb09488d01
+    .agents/skills/monitoring-expert/references/alerting-rules.md: sha256:0b8d94c81c09ce121ad00e399f204db9d7603ea08277e7587cbf2965940bb8c1
+    .agents/skills/monitoring-expert/references/application-profiling.md: sha256:db873957f8268ca329e86bdc216de556be68ff231d8b4147b65168333af5a51f
+    .agents/skills/monitoring-expert/references/capacity-planning.md: sha256:8f9cdd499931ab20fffbc89f7325ba3b1336463fbfacaf6d7bb754fc40a9c716
+    .agents/skills/monitoring-expert/references/dashboards.md: sha256:283607d4b1b94c4abdb8d1ed09668442ea048620f741127367ae52c9cacbcc9c
+    .agents/skills/monitoring-expert/references/opentelemetry.md: sha256:2f2cf89ca63ed14f9db16a64865e31114134de10e5f9e45ea598a51acaf4623c
+    .agents/skills/monitoring-expert/references/performance-testing.md: sha256:35ba1c05287ccb5fe6b2f62704cd9b99a90a6882c6bc94b8873af54f9f86dc55
+    .agents/skills/monitoring-expert/references/prometheus-metrics.md: sha256:f1c5d9271a599d5e34ac5e06ee2efddd20d08fc327f08a44722da1e51563321e
+    .agents/skills/monitoring-expert/references/structured-logging.md: sha256:2d17ee1782d39cd07add6961dcba3ee24bd8a6fc0d88e7a8643941b433fdcf80
+  content_hash: sha256:7b8a28892573d7e4b351fcaa3db0c87773f534041639445a163e50183bddbb52
+- repo_url: jeffallan/claude-skills
+  materialization_repo_url: Jeffallan/claude-skills
+  name: postgres-pro
+  host: github.com
+  resolved_commit: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+  resolved_ref: 882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf
+  version: unknown
+  virtual_path: skills/postgres-pro
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/postgres-pro
+  - .agents/skills/postgres-pro/SKILL.md
+  - .agents/skills/postgres-pro/references/extensions.md
+  - .agents/skills/postgres-pro/references/jsonb.md
+  - .agents/skills/postgres-pro/references/maintenance.md
+  - .agents/skills/postgres-pro/references/performance.md
+  - .agents/skills/postgres-pro/references/replication.md
+  deployed_file_hashes:
+    .agents/skills/postgres-pro/SKILL.md: sha256:e2f32f2fb3b4e640bd58d3133f7bed38697c85e526860cacdc504c8ef456655f
+    .agents/skills/postgres-pro/references/extensions.md: sha256:24151c2645e07c139afa9b6ff4ef1f2972950b7e7f08195772256a6f7f216b10
+    .agents/skills/postgres-pro/references/jsonb.md: sha256:8ad7086e676f86f23305a5127714566898e4c500593e1a4679194a32c7f530f2
+    .agents/skills/postgres-pro/references/maintenance.md: sha256:a9915cf08759fb92ccfbcfd2b811f36ac7c02ad0bffff2dc7f59aca9e670203c
+    .agents/skills/postgres-pro/references/performance.md: sha256:b137e04782ab4c5387184862cb689d7657d5cbb13c3c41d61980a2edf7c2c8d4
+    .agents/skills/postgres-pro/references/replication.md: sha256:c4993a7c459f10f4dba0ce5a2c4a703e534e588439a5e94168087f3460f15412
+  content_hash: sha256:800009c2fad599e979c96ac843f2fbac76596e13b50c6d9b33a35f184c155ef1
+- repo_url: lensesio/agentic-engineering-for-apache-kafka
+  name: kafka-consumer-lag
+  host: github.com
+  resolved_commit: 8cee08b1681c38c1daef956ce8b3d9c515fde765
+  resolved_ref: 8cee08b1681c38c1daef956ce8b3d9c515fde765
+  version: unknown
+  virtual_path: skills/kafka-consumer-lag
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/kafka-consumer-lag
+  - .agents/skills/kafka-consumer-lag/SKILL.md
+  - .agents/skills/kafka-consumer-lag/references/test-cases.md
+  deployed_file_hashes:
+    .agents/skills/kafka-consumer-lag/SKILL.md: sha256:3fc789347ce8675bed9f8874dca1a4d034fc8ee103d7b1dd29f9253fa49cd433
+    .agents/skills/kafka-consumer-lag/references/test-cases.md: sha256:a2b24247c2df73c7af4e261b5218ced6168bd1f9623c9b8e128558d0594b3605
+  content_hash: sha256:bc0f8469427d36467925f5fdb719300917fce13aee3dfebcdd73c5bc708cc9d5
+- repo_url: luckys/agent-skills
+  name: ddd-best-practices
+  host: github.com
+  resolved_commit: c098bd422774912958421ae733938e8fff81dfde
+  resolved_ref: c098bd422774912958421ae733938e8fff81dfde
+  version: unknown
+  virtual_path: skills/ddd-best-practices
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/ddd-best-practices
+  - .agents/skills/ddd-best-practices/SKILL.md
+  - .agents/skills/ddd-best-practices/references/aggregates.md
+  - .agents/skills/ddd-best-practices/references/context-mapping.md
+  - .agents/skills/ddd-best-practices/references/cqrs-and-events.md
+  - .agents/skills/ddd-best-practices/references/ddd-in-practice.md
+  - .agents/skills/ddd-best-practices/references/domain-errors.md
+  - .agents/skills/ddd-best-practices/references/domain-events.md
+  - .agents/skills/ddd-best-practices/references/go-ddd-examples.md
+  - .agents/skills/ddd-best-practices/references/hexagonal-architecture.md
+  - .agents/skills/ddd-best-practices/references/read-models.md
+  - .agents/skills/ddd-best-practices/references/repositories.md
+  - .agents/skills/ddd-best-practices/references/strategic-design.md
+  - .agents/skills/ddd-best-practices/references/tactical-patterns.md
+  - .agents/skills/ddd-best-practices/references/typescript-ddd-examples.md
+  deployed_file_hashes:
+    .agents/skills/ddd-best-practices/SKILL.md: sha256:e59838a5d904cc70f616055452abfa8b1856826cef43a042bdfe1d95564058d7
+    .agents/skills/ddd-best-practices/references/aggregates.md: sha256:1659c215781c119a93ea4bd4ae66ad78e2f37ff9ffb7514d0a29b1e80e5ddc3b
+    .agents/skills/ddd-best-practices/references/context-mapping.md: sha256:ae752c54774b8059dabe5b11ff84b45b4dfe0e766fc34f60b8adabfb46317184
+    .agents/skills/ddd-best-practices/references/cqrs-and-events.md: sha256:19fe463f25a72f498b9e32fd4ef4ae7a4741e03249d42f06c822e37de2b16c13
+    .agents/skills/ddd-best-practices/references/ddd-in-practice.md: sha256:3119697b58039dfb83f513a0172b15382544c71742177ee2f3abc6d13ed08d2c
+    .agents/skills/ddd-best-practices/references/domain-errors.md: sha256:9b53d8fb23f164f4261d63b7d3305b246bfd84093dcfb0d6c27e581b0d1a2890
+    .agents/skills/ddd-best-practices/references/domain-events.md: sha256:1d920978518565eeff873285784607747db3e2497713c57bc4bb118a5efa59a8
+    .agents/skills/ddd-best-practices/references/go-ddd-examples.md: sha256:170f3cf15aacaa57d1d672ce8553cfd73988f8370b061a36ef61df9637c7c5b9
+    .agents/skills/ddd-best-practices/references/hexagonal-architecture.md: sha256:efd9117178ab804813aec945c9aee50dfcdeeb88bd291740ad3dff268a4e43f5
+    .agents/skills/ddd-best-practices/references/read-models.md: sha256:702a6be7240f21515781c731052869d120ac17540443352665ecea32171b6576
+    .agents/skills/ddd-best-practices/references/repositories.md: sha256:2693df41391ef778b885e837d646c090d3ba7d5ca16bfcd7b3f923123abab9cc
+    .agents/skills/ddd-best-practices/references/strategic-design.md: sha256:2b4c03481cf101e169ab851fdb97c29fcb34a99fd377fde4314359ffb6fc8297
+    .agents/skills/ddd-best-practices/references/tactical-patterns.md: sha256:9bb10388629695a4c5434d42b3ee06c0c7c9016baa7079d779c9229187502b5e
+    .agents/skills/ddd-best-practices/references/typescript-ddd-examples.md: sha256:0370ba36ecc37ffee33606ff6d7d604d08c3a5fb0428b032fb068985cbd1becf
+  content_hash: sha256:186bf1603f1f9dbbdb5c9b714fab31c30c2f3fd80fed227e4ed5a5f181e97176
+- repo_url: saadeghi/daisyui
+  name: daisyui
+  host: github.com
+  resolved_commit: bc338bb2d5c8b69f6ede13cf6c403d75aed4ce78
+  resolved_ref: bc338bb2d5c8b69f6ede13cf6c403d75aed4ce78
+  version: unknown
+  virtual_path: skills/daisyui
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/daisyui
+  - .agents/skills/daisyui/SKILL.md
+  - .agents/skills/daisyui/colors/SKILL.md
+  - .agents/skills/daisyui/components/accordion.md
+  - .agents/skills/daisyui/components/alert.md
+  - .agents/skills/daisyui/components/aura.md
+  - .agents/skills/daisyui/components/avatar.md
+  - .agents/skills/daisyui/components/badge.md
+  - .agents/skills/daisyui/components/breadcrumbs.md
+  - .agents/skills/daisyui/components/button.md
+  - .agents/skills/daisyui/components/calendar.md
+  - .agents/skills/daisyui/components/card.md
+  - .agents/skills/daisyui/components/carousel.md
+  - .agents/skills/daisyui/components/chat.md
+  - .agents/skills/daisyui/components/checkbox.md
+  - .agents/skills/daisyui/components/collapse.md
+  - .agents/skills/daisyui/components/countdown.md
+  - .agents/skills/daisyui/components/diff.md
+  - .agents/skills/daisyui/components/divider.md
+  - .agents/skills/daisyui/components/dock.md
+  - .agents/skills/daisyui/components/drawer.md
+  - .agents/skills/daisyui/components/dropdown.md
+  - .agents/skills/daisyui/components/fab.md
+  - .agents/skills/daisyui/components/fieldset.md
+  - .agents/skills/daisyui/components/file-input.md
+  - .agents/skills/daisyui/components/filter.md
+  - .agents/skills/daisyui/components/footer.md
+  - .agents/skills/daisyui/components/hero.md
+  - .agents/skills/daisyui/components/hover-3d.md
+  - .agents/skills/daisyui/components/hover-gallery.md
+  - .agents/skills/daisyui/components/indicator.md
+  - .agents/skills/daisyui/components/input.md
+  - .agents/skills/daisyui/components/join.md
+  - .agents/skills/daisyui/components/kbd.md
+  - .agents/skills/daisyui/components/label.md
+  - .agents/skills/daisyui/components/link.md
+  - .agents/skills/daisyui/components/list.md
+  - .agents/skills/daisyui/components/loading.md
+  - .agents/skills/daisyui/components/mask.md
+  - .agents/skills/daisyui/components/megamenu.md
+  - .agents/skills/daisyui/components/menu.md
+  - .agents/skills/daisyui/components/mockup-browser.md
+  - .agents/skills/daisyui/components/mockup-code.md
+  - .agents/skills/daisyui/components/mockup-phone.md
+  - .agents/skills/daisyui/components/mockup-window.md
+  - .agents/skills/daisyui/components/modal.md
+  - .agents/skills/daisyui/components/navbar.md
+  - .agents/skills/daisyui/components/otp.md
+  - .agents/skills/daisyui/components/pagination.md
+  - .agents/skills/daisyui/components/progress.md
+  - .agents/skills/daisyui/components/radial-progress.md
+  - .agents/skills/daisyui/components/radio.md
+  - .agents/skills/daisyui/components/range.md
+  - .agents/skills/daisyui/components/rating.md
+  - .agents/skills/daisyui/components/select.md
+  - .agents/skills/daisyui/components/skeleton.md
+  - .agents/skills/daisyui/components/stack.md
+  - .agents/skills/daisyui/components/stat.md
+  - .agents/skills/daisyui/components/status.md
+  - .agents/skills/daisyui/components/steps.md
+  - .agents/skills/daisyui/components/swap.md
+  - .agents/skills/daisyui/components/tab.md
+  - .agents/skills/daisyui/components/table.md
+  - .agents/skills/daisyui/components/text-rotate.md
+  - .agents/skills/daisyui/components/textarea.md
+  - .agents/skills/daisyui/components/theme-controller.md
+  - .agents/skills/daisyui/components/timeline.md
+  - .agents/skills/daisyui/components/toast.md
+  - .agents/skills/daisyui/components/toggle.md
+  - .agents/skills/daisyui/components/tooltip.md
+  - .agents/skills/daisyui/components/validator.md
+  - .agents/skills/daisyui/config/SKILL.md
+  - .agents/skills/daisyui/install/SKILL.md
+  - .agents/skills/daisyui/usage/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/daisyui/SKILL.md: sha256:b4f20b48d444b18c0ac3506cc063a22e996bf5b717a7b9cd1b2dabc1bc98a7c7
+    .agents/skills/daisyui/colors/SKILL.md: sha256:655e2eef74d8f1f6f517044d58fd7115c4384687148a99073ff179da7f1b482f
+    .agents/skills/daisyui/components/accordion.md: sha256:7b512112b3299a33ca3f00508f9ea710d013bebf53361696faf41770bf118e65
+    .agents/skills/daisyui/components/alert.md: sha256:eddce4ce0a6257a63936610a7f104e5c2b673f20658c68764120776bb1a9caa0
+    .agents/skills/daisyui/components/aura.md: sha256:e79f2604b216bcfd9892233736771d125adaa485ee8bee359299e56b8b017e6e
+    .agents/skills/daisyui/components/avatar.md: sha256:714bff5a0efd10fc5915321d8aa4d1f10f74422258fdf78072691a1d28de4f23
+    .agents/skills/daisyui/components/badge.md: sha256:e7d29bb07d4281af3eea7f15c504db82dbdedfe69c4934b96ce5abc4695f3953
+    .agents/skills/daisyui/components/breadcrumbs.md: sha256:e8f96e65b27fce5f5d1f0efe4f68c776492320ece58f6d8d4f2dcc6338cd146c
+    .agents/skills/daisyui/components/button.md: sha256:ab050f53e7533af7dc7e8a2d1acad48d9e856fcb6ac5ff0419a974bf21dae9ba
+    .agents/skills/daisyui/components/calendar.md: sha256:bf813442999d904cd2619fc70d509d9348addad72d9647a15337c3829a78e5d7
+    .agents/skills/daisyui/components/card.md: sha256:14a5e171efa7bb820e06be71e44fce3497ee3eda7afb1c49a30e6951f6cd7632
+    .agents/skills/daisyui/components/carousel.md: sha256:c3cf89802b5d975822edfe8e86b07ffa1a1133242dd7af11675c9d2e9b3ce409
+    .agents/skills/daisyui/components/chat.md: sha256:3f6bcd8cd40b415c19b69d17142010510e23e0d7a18c08d0fd64de5b42f340e2
+    .agents/skills/daisyui/components/checkbox.md: sha256:20f08a7f88c72224809ce3b979826c55719557a711a0e7d337848b186e2f02ca
+    .agents/skills/daisyui/components/collapse.md: sha256:54a00dd28cf47e318f71dde66f70d7338a7a3bdddc7e7e5a0e02beca90624b69
+    .agents/skills/daisyui/components/countdown.md: sha256:3a91617a6f0eab1e2f98ec5a1586793b053544da7cd23dd7a14e29c076eca370
+    .agents/skills/daisyui/components/diff.md: sha256:15e9d4d81f102c656f2e2712518fd39bf2e603ff67e34487909e6bd8b26ae5a4
+    .agents/skills/daisyui/components/divider.md: sha256:b1010020a7b6f7b53cd11685b441030c5af7febc07331db9376d0274620c8d1c
+    .agents/skills/daisyui/components/dock.md: sha256:f798d4874af9aa38adda77d142923f91d1fbc40994e025e5e0d08cc204dac3b9
+    .agents/skills/daisyui/components/drawer.md: sha256:6cc9a0c076f88947337171178805627eb3a6b5dc43d51b8c64b32515b60118bc
+    .agents/skills/daisyui/components/dropdown.md: sha256:f84c6432d30db95a15655d69e2b171cd9f222e9b4a29f768d35504656f02d1ee
+    .agents/skills/daisyui/components/fab.md: sha256:fb302f812dc66f4349e0469c14dcd6cc804a21f7288f47f1520bb4997a989502
+    .agents/skills/daisyui/components/fieldset.md: sha256:43a2a5c2fae535eb2e2bf80044f8252a2d950548fb4d1ca9fb8cbb53467f071f
+    .agents/skills/daisyui/components/file-input.md: sha256:2fb7ba8f64140d5dcce7cbe0ddc54b453cb5e5e1e538708b3e71f41cfa4f4cab
+    .agents/skills/daisyui/components/filter.md: sha256:e31214db92eb7de1fd53b8dd6e9e9eb91d89849fc65caa6df15965ee3675e9da
+    .agents/skills/daisyui/components/footer.md: sha256:a3a163465d9e5a8d758564b96df3f35dcd4d3b7b6f04c96c094f887969f368d3
+    .agents/skills/daisyui/components/hero.md: sha256:e3e8cfa1c576d1504b247eee08c5cada2cd0e5fe7b90234c3949abb973df87dc
+    .agents/skills/daisyui/components/hover-3d.md: sha256:b1c2e9e8235aefb212a029b6e573397a60684be9b5596b54b35bdcf2c1c3ebf1
+    .agents/skills/daisyui/components/hover-gallery.md: sha256:f3180f926131a4698f87a8a71197eec45a1d900e0fa5a7f7beca9be6b1ce1e39
+    .agents/skills/daisyui/components/indicator.md: sha256:a525d74667c92ca81628b1511d297528cfadac19a96dd5fefe614e6cb1ba573d
+    .agents/skills/daisyui/components/input.md: sha256:205bca4564b29128c437279e89889fd2c7415d80f9b5881a3bb927049504ca8a
+    .agents/skills/daisyui/components/join.md: sha256:fc91d78a391e08c55a9265eb63397c968deea4f6f0266cdd45b9969effb661b1
+    .agents/skills/daisyui/components/kbd.md: sha256:3a75366686aaa855d2925e0ea0c34265816dce0430c2b7b9a4e5a03842984a90
+    .agents/skills/daisyui/components/label.md: sha256:60d2dff32d7b57a2d8029bd2e94abf5c44ba01ced831696d50e926e2d5c0cf04
+    .agents/skills/daisyui/components/link.md: sha256:2058aa7a7cca8379ef85535bb576cb7035f718ed3ea4b08511909935eff542d1
+    .agents/skills/daisyui/components/list.md: sha256:80244aee4a1407081c972378b1922ce464b86305bad43b3f92eae7b7a59c3411
+    .agents/skills/daisyui/components/loading.md: sha256:ea70cf0f8b782c8f9bc02c50a06c5580ff2ab7f45aea35a3f08bece25e07df2b
+    .agents/skills/daisyui/components/mask.md: sha256:ccff2c01d1f7e4e803845d34ecefdc22e6eb86f233c76ac9f3accbb257ab9a5b
+    .agents/skills/daisyui/components/megamenu.md: sha256:fc0810622d641ac9ce77d1cc374455e841acc96fe463ca63709c9194e1272cef
+    .agents/skills/daisyui/components/menu.md: sha256:3b4284018892a4e0bec1c5c6bcd91f99067e5f6e8b8cc1484f60b4fba56081e5
+    .agents/skills/daisyui/components/mockup-browser.md: sha256:212e7c3f2dc49cec8ea6515273477fc5f9338a0c76941a0b84c8db5e957aa5cc
+    .agents/skills/daisyui/components/mockup-code.md: sha256:69bce3e7d784b6c87f48740d84b999b3acb358775bcfecfdf1a98147dea278af
+    .agents/skills/daisyui/components/mockup-phone.md: sha256:391dfaee279d7ec3f7b55801c7f6561cd3430ba62debc749f11c8511e0621181
+    .agents/skills/daisyui/components/mockup-window.md: sha256:36574440f0f6e9ab9f1af5d6e78216bf70bb8dc6410fea2c7192a0de336c586e
+    .agents/skills/daisyui/components/modal.md: sha256:c733f8cb6ed61536c946fb0d41c8f18c2d683a789928da768880b9dd3b17131b
+    .agents/skills/daisyui/components/navbar.md: sha256:a4f5de05a7dab05d5282504cd68412e1b5853e9e142ea0be6691109e7f2a0535
+    .agents/skills/daisyui/components/otp.md: sha256:62e8ba584283d67b0b929c8adfacadc3395bb41aa5793f086b6e443251b1e60b
+    .agents/skills/daisyui/components/pagination.md: sha256:8d238b0fd2a71518c1acc17bc938298c22b23d8e5365739a859890ee9ef2af8d
+    .agents/skills/daisyui/components/progress.md: sha256:fdce451838e29c6033bec164492a4269c96dd7ec95737cea19e15b57a4646d8b
+    .agents/skills/daisyui/components/radial-progress.md: sha256:16053d835468ede6635c4722d61d8434ea4f17670169cac5e9264075727e239e
+    .agents/skills/daisyui/components/radio.md: sha256:4f784839220f02f8c0c068ddec5570e35b9a85b6ca61bd8ee626ca1ede000233
+    .agents/skills/daisyui/components/range.md: sha256:5d439f2680e9d3952fc6fd14ac863896d01cb60fab2de8fe058f3fba249ad8d7
+    .agents/skills/daisyui/components/rating.md: sha256:393863e6a28e5750603fa0d8fe5697fb4e2aa11da9bc32bd6b021af035dbfb6c
+    .agents/skills/daisyui/components/select.md: sha256:b1954f2dcb2beccb7373196d593cad3c186c627063126779a535ade458571d7e
+    .agents/skills/daisyui/components/skeleton.md: sha256:8397e07a65d3c66a1ca03a682b8f8bf2705a89819cacccaab21309e019e1f562
+    .agents/skills/daisyui/components/stack.md: sha256:1b4801fedecfefd64fa559f30c77ddf949b9314ba1b17ad7d1224d187de807dc
+    .agents/skills/daisyui/components/stat.md: sha256:bdd8b345d32a973d3dff3d82e13866c1a2162493aa2af70da1d26b3ca688572f
+    .agents/skills/daisyui/components/status.md: sha256:76f8fd7d897bba168331e9619bd0b23de114b18c7a9ae72d9c6c6a0fe70692db
+    .agents/skills/daisyui/components/steps.md: sha256:a1787f1782625714e40b68fa5991dbf37667f5b09d7321c5fa3a2b1be5487ebe
+    .agents/skills/daisyui/components/swap.md: sha256:16e7d41d62a4f973f33402c13d87c84a60305d98c2a6fbf06fad54d6ebe88471
+    .agents/skills/daisyui/components/tab.md: sha256:e11691e2e0794f37aa7ae44139a8a7f53eab711ccdf27040cec9cc1194174bf0
+    .agents/skills/daisyui/components/table.md: sha256:ac01be952af86382fe3adee825ac0cdfcd9390ebd191d90241e4d3dfac4e52c8
+    .agents/skills/daisyui/components/text-rotate.md: sha256:5d6f45e2fe139a2b5558934f446ba1fca437b95eeb3f33558faaa96e59e96af2
+    .agents/skills/daisyui/components/textarea.md: sha256:e4a135603fd4b8ca5a95f8500e6c54ed1ea9d5c84c4937d9650799d4d6a58651
+    .agents/skills/daisyui/components/theme-controller.md: sha256:113c1dd8eacf3f871768e722444a67150da14181353ee49c17d5301f07e5f533
+    .agents/skills/daisyui/components/timeline.md: sha256:868d77e06948a3dfc2b65db7d3ff594fd7f2deba32b17dcf57d689d9c699f1ef
+    .agents/skills/daisyui/components/toast.md: sha256:e7a86e894678741a87dab5230bb4f7cc4ebac1ca8ca932f72b6e535ed94e74c5
+    .agents/skills/daisyui/components/toggle.md: sha256:361257c6e77a71030a1039242264db720525a81fa075472872b7dcad36d805d2
+    .agents/skills/daisyui/components/tooltip.md: sha256:7b886def19a734f73d5066644a8166f80cfe7f903aa77363c99fbba9d73e192e
+    .agents/skills/daisyui/components/validator.md: sha256:b0e213ae04eccb8131fdfdfeb80a1e59d923ec1671328ac2b54b6e9ed4c7758e
+    .agents/skills/daisyui/config/SKILL.md: sha256:1097716fa7385259ab53d2fb7f50e7c548d0362457fbd0b93d8a39050b91d0a5
+    .agents/skills/daisyui/install/SKILL.md: sha256:c5fc3f4e97a62eaca1e215bef6149b5fc1f0fbb875a755ed57865c145192ca5b
+    .agents/skills/daisyui/usage/SKILL.md: sha256:9a0cb9e36d263c67c0442cbd2bf3c2fcc36d327d9fac6bbf883615f402b7cca9
+  content_hash: sha256:3fa8d07d8aba4fe967b1554047b93852e3e630c6ddc2dafcd7cb461dab5b2555
+- repo_url: sonarsource/sonarqube-agent-plugins
+  materialization_repo_url: SonarSource/sonarqube-agent-plugins
+  name: sonar-fix-issue
+  host: github.com
+  resolved_commit: edd588642568932231c1517a1d6ef123c92fd281
+  resolved_ref: edd588642568932231c1517a1d6ef123c92fd281
+  version: unknown
+  virtual_path: skills/sonar-fix-issue
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/sonar-fix-issue
+  - .agents/skills/sonar-fix-issue/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/sonar-fix-issue/SKILL.md: sha256:6b57ea6a2b6348b53dc20c0bbe79e27e4fd8520d67c30f1139d919f285bced74
+  content_hash: sha256:a643a5d5fa70ac603633dcc1ccefe3280ddedc411696d4ba065886088c0060d7
+- repo_url: sonarsource/sonarqube-agent-plugins
+  materialization_repo_url: SonarSource/sonarqube-agent-plugins
+  name: sonar-list-issues
+  host: github.com
+  resolved_commit: edd588642568932231c1517a1d6ef123c92fd281
+  resolved_ref: edd588642568932231c1517a1d6ef123c92fd281
+  version: unknown
+  virtual_path: skills/sonar-list-issues
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/sonar-list-issues
+  - .agents/skills/sonar-list-issues/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/sonar-list-issues/SKILL.md: sha256:5dfc6cc08df66a4a0ca5f25c1f3b5a3e89266daca5acea33493341fedcd92a9e
+  content_hash: sha256:e321ff32157c9bfbf6297f3914b60ad6cf0eb27c223b308e3780c533b55cc80b
+- repo_url: sonarsource/sonarqube-agent-plugins
+  materialization_repo_url: SonarSource/sonarqube-agent-plugins
+  name: sonar-quality-gate
+  host: github.com
+  resolved_commit: edd588642568932231c1517a1d6ef123c92fd281
+  resolved_ref: edd588642568932231c1517a1d6ef123c92fd281
+  version: unknown
+  virtual_path: skills/sonar-quality-gate
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/sonar-quality-gate
+  - .agents/skills/sonar-quality-gate/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/sonar-quality-gate/SKILL.md: sha256:a10642dbea25b0c4fa724581af91bf80e7b84d61f8db470e8ef99bda03e418df
+  content_hash: sha256:62773e6cccbe45adc5f4340ef9360a4c3ea149fc3243fbc45e170c4c6998fbdf
+- repo_url: wshobson/agents
+  name: openapi-spec-generation
+  host: github.com
+  resolved_commit: 4236bb91f8395b0435f1d8b8baf9e8e4c69a8620
+  resolved_ref: 4236bb91f8395b0435f1d8b8baf9e8e4c69a8620
+  version: unknown
+  virtual_path: plugins/documentation-generation/skills/openapi-spec-generation
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/openapi-spec-generation
+  - .agents/skills/openapi-spec-generation/SKILL.md
+  - .agents/skills/openapi-spec-generation/references/code-first-and-tooling.md
+  - .agents/skills/openapi-spec-generation/references/details.md
+  deployed_file_hashes:
+    .agents/skills/openapi-spec-generation/SKILL.md: sha256:8071736973f8a99cbe8644e21f638493ac062c77d650d8fabc4a469285485d7e
+    .agents/skills/openapi-spec-generation/references/code-first-and-tooling.md: sha256:533398d65b933040d13e642414e6b9846adbe7d5c95947223beffdb3ebe1590f
+    .agents/skills/openapi-spec-generation/references/details.md: sha256:f653781def324ce13ba73879282ae5ae78c15d57b5f665f2c20b8d6332569e55
+  content_hash: sha256:2e27d8232eca70a551edf4697649129aa1b8f2dd7897500d4960284655144487
+deployments:
+- kind: project-relative
+  target: codex
+  value: .agents/skills/110-java-maven-best-practices
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/110-java-maven-best-practices
+  active_owner: jabrena/plinth/skills/110-java-maven-best-practices
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/110-java-maven-best-practices/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/110-java-maven-best-practices
+  active_owner: jabrena/plinth/skills/110-java-maven-best-practices
+  content_hash: sha256:2ff91aecb5d2d65696ae6d59a9c06ff909870ac76c0fa7c4d6ca28ef66429775
+- kind: project-relative
+  target: codex
+  value: .agents/skills/110-java-maven-best-practices/references/110-java-maven-best-practices.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/110-java-maven-best-practices
+  active_owner: jabrena/plinth/skills/110-java-maven-best-practices
+  content_hash: sha256:68f4914876cc74827a41e9a0848db84a2a8b08b5f10336c6286543592a843f26
+- kind: project-relative
+  target: codex
+  value: .agents/skills/121-java-object-oriented-design
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/121-java-object-oriented-design
+  active_owner: jabrena/plinth/skills/121-java-object-oriented-design
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/121-java-object-oriented-design/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/121-java-object-oriented-design
+  active_owner: jabrena/plinth/skills/121-java-object-oriented-design
+  content_hash: sha256:dc727522f1cbe38081b5af92b69c93e675f335f898caf9b5a8df91a96d86dbe7
+- kind: project-relative
+  target: codex
+  value: .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-classes-interfaces.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/121-java-object-oriented-design
+  active_owner: jabrena/plinth/skills/121-java-object-oriented-design
+  content_hash: sha256:23da10957c603df917a7f70a028387dacc8d0ddefa1f8f62e4875c7e8bb9f558
+- kind: project-relative
+  target: codex
+  value: .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-code-smells.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/121-java-object-oriented-design
+  active_owner: jabrena/plinth/skills/121-java-object-oriented-design
+  content_hash: sha256:6c0f4f584507a6136facb3aba6b58d615e4111ade1368925a1c2c79b571a8550
+- kind: project-relative
+  target: codex
+  value: .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-enums-annotations.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/121-java-object-oriented-design
+  active_owner: jabrena/plinth/skills/121-java-object-oriented-design
+  content_hash: sha256:a23e2c9d28a3c0f91d239153e801293bc922a452658d391fed7ac8b5a629b07a
+- kind: project-relative
+  target: codex
+  value: .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-exceptions.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/121-java-object-oriented-design
+  active_owner: jabrena/plinth/skills/121-java-object-oriented-design
+  content_hash: sha256:6a3adea08bfacc8fcd63756688d4bbf26abdf5116aaa32577d5eb049657a577f
+- kind: project-relative
+  target: codex
+  value: .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-methods.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/121-java-object-oriented-design
+  active_owner: jabrena/plinth/skills/121-java-object-oriented-design
+  content_hash: sha256:6e892da0cc076a92a206457d85f8166837538e22e83583992bdb2bee7e8d91ed
+- kind: project-relative
+  target: codex
+  value: .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-object-creation.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/121-java-object-oriented-design
+  active_owner: jabrena/plinth/skills/121-java-object-oriented-design
+  content_hash: sha256:b6485880e6805e6509172dd960359f2298d0ee5ca83178d84707fa27e438c3d7
+- kind: project-relative
+  target: codex
+  value: .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-oop-concepts.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/121-java-object-oriented-design
+  active_owner: jabrena/plinth/skills/121-java-object-oriented-design
+  content_hash: sha256:b7d500519d9f6fbf8804236bc1b6fa1e55b112677b228a25340d4ba146790c46
+- kind: project-relative
+  target: codex
+  value: .agents/skills/121-java-object-oriented-design/references/121-java-object-oriented-design-principles.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/121-java-object-oriented-design
+  active_owner: jabrena/plinth/skills/121-java-object-oriented-design
+  content_hash: sha256:a49726e52c27689f819b7d40fd19e55a5d5015fa671e636e21bf8439f6994e47
+- kind: project-relative
+  target: codex
+  value: .agents/skills/130-java-testing-strategies
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/130-java-testing-strategies
+  active_owner: jabrena/plinth/skills/130-java-testing-strategies
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/130-java-testing-strategies/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/130-java-testing-strategies
+  active_owner: jabrena/plinth/skills/130-java-testing-strategies
+  content_hash: sha256:2d6797c4d70a6cd8fb118011a2dd25b3ad47774e98851b1d35a2f13539eca41f
+- kind: project-relative
+  target: codex
+  value: .agents/skills/130-java-testing-strategies/references/130-java-testing-strategies-a-trip.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/130-java-testing-strategies
+  active_owner: jabrena/plinth/skills/130-java-testing-strategies
+  content_hash: sha256:7415a447cdddbd67043c0f90b4d1fd0e94f84e8a82335897c9b7c24928c76790
+- kind: project-relative
+  target: codex
+  value: .agents/skills/130-java-testing-strategies/references/130-java-testing-strategies-correct.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/130-java-testing-strategies
+  active_owner: jabrena/plinth/skills/130-java-testing-strategies
+  content_hash: sha256:cd3a8a78de061f26dccfaccfdde6b6b1ac84b15fae864a0146980c4f5664aa58
+- kind: project-relative
+  target: codex
+  value: .agents/skills/130-java-testing-strategies/references/130-java-testing-strategies-right-bicep.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/130-java-testing-strategies
+  active_owner: jabrena/plinth/skills/130-java-testing-strategies
+  content_hash: sha256:4c8fa00a374713b2539f3b060cc0f48cad3e34c1a31e9784e879441905c0dc43
+- kind: project-relative
+  target: codex
+  value: .agents/skills/314-frameworks-spring-kafka
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/314-frameworks-spring-kafka
+  active_owner: jabrena/plinth/skills/314-frameworks-spring-kafka
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/314-frameworks-spring-kafka/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/314-frameworks-spring-kafka
+  active_owner: jabrena/plinth/skills/314-frameworks-spring-kafka
+  content_hash: sha256:90f7aeb6d55d5ac34ee8420ce97e4634717b2fe44c3380baaef52b328aebba17
+- kind: project-relative
+  target: codex
+  value: .agents/skills/314-frameworks-spring-kafka/references/314-frameworks-spring-kafka.md
+  runtime: null
+  scope: project
+  owners:
+  - jabrena/plinth/skills/314-frameworks-spring-kafka
+  active_owner: jabrena/plinth/skills/314-frameworks-spring-kafka
+  content_hash: sha256:cf84c8266e28100f86b69aa4a08df2a3988fcb09dd5c218e5de34588336198d2
+- kind: project-relative
+  target: codex
+  value: .agents/skills/accessibility
+  runtime: null
+  scope: project
+  owners:
+  - addyosmani/web-quality-skills/skills/accessibility
+  active_owner: addyosmani/web-quality-skills/skills/accessibility
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/accessibility/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - addyosmani/web-quality-skills/skills/accessibility
+  active_owner: addyosmani/web-quality-skills/skills/accessibility
+  content_hash: sha256:267fb2a0707d6142f2871f22688203a42ba21291a2aa200fb740936e41362b5d
+- kind: project-relative
+  target: codex
+  value: .agents/skills/accessibility/references/A11Y-PATTERNS.md
+  runtime: null
+  scope: project
+  owners:
+  - addyosmani/web-quality-skills/skills/accessibility
+  active_owner: addyosmani/web-quality-skills/skills/accessibility
+  content_hash: sha256:f10e238dd4dd3c4f51134c2056bc02d3dd4f8fb6ccc9145c2c1ba7aab4d58140
+- kind: project-relative
+  target: codex
+  value: .agents/skills/accessibility/references/WCAG.md
+  runtime: null
+  scope: project
+  owners:
+  - addyosmani/web-quality-skills/skills/accessibility
+  active_owner: addyosmani/web-quality-skills/skills/accessibility
+  content_hash: sha256:16683e025e3833d931c9d880645d98a448827f97e10189b6c8f12c832e7a2361
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:ec5e3a0b1ef218c0d7d40e35c40e5255e7319d7d595c5a6036d8bdac2532c782
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/angular-animations.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:f21b798ed93e27318527ef7e74e63ef8c71cb74ff2b010d70dbb429883f0dbd0
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/angular-aria.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:fff4cbdf3558beacfeb03a243d874cacb16a24b0c78962c4f9c760fc2cbe5ad8
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/cli.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:39468f1be907a1abff746e79cb9fabd9675956df00c87d9b8bd1517855b9fd7d
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/component-harnesses.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:1761d33a65ecde690ca0c57081ff9d5871cafb8ff724738ccd711b5018e2d894
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/component-styling.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:de3351fdb72174361c6eee150940193f20d148afaceab0f22107758a3cb2d787
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/components.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:35ffb62475d54d7d4ed434b2190882440a77ef76b14260128e6d7e3111122e3b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/creating-services.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:1fc1d46bd26568d07d1500d0b9ba1a2556ca4a11f4a3dc11036ae5b16dea80cc
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/data-resolvers.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:6525d6f9b90d4ac6bbd58489d6bc57ab024c407673ed0e1e46364a90d0b9b5da
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/define-routes.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:4e80613931ecf4da957f9ff45343869b1651331ff4c8b955f2698b9ac0afc921
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/defining-providers.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:e654c23a080c642cf7031b5cc5de1101b8c75030c15256f7e3b81b0336953c6d
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/di-fundamentals.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:ed5e4004aed214429de091d2b041cfd818c77a0ebfa24c23f01ec9bac7118a78
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/e2e-testing.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:fd11d930ed081ca934fe83df06c9d965257ec817ebef59b918d4d814a65feca6
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/effects.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:5df4759be70248a1f282aff3060b04b694f05ae78093a5caa4eaff455e35a6a3
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/environment-configuration.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:788b62bf5e04d56343f598437f7e3fd7fdfc6efa8ec6727288dc73514b1b5a76
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/hierarchical-injectors.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:967e472a1208c6e1f4b95bf7ee9162165904eb78ac6dab64643c67a9d1dac264
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/host-elements.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:5c2eb324e7b84bd81334b6d262a61b873de208640aabe4be48b73600438bdaed
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/http-client.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:b6a6c92ae71dc98b6cd0e2b840227c7743b3edf288769da3db070fa1815c1adc
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/injection-context.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:4435dfcec91bd9fb68d6c318802cac1b37424d4e76452e6f0f52ed0d2b6536fb
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/inputs.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:f5dcdd2a69e7e5c0aad503b4deaea5cedb682130cc699c669128b8fadcc65ba8
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/linked-signal.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:01f5395e4be4be7c642f4dacd5312d6cc82e641f3ff177f9283b26b79dd07e95
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/loading-strategies.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:4eb2e243425443426d28c6f68c823d501c7b2bf64e4587c96c4c6013d57e7c93
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/mcp.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:e112ece9672d042144bc1aeb1245bd0325bab172398d7129a258be81f9db61aa
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/migrations.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:47983ed2683dc10f692d254cdca9c97fc13dec9ad099b759f5d31886f3cbaa7a
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/naming-conventions.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:f0751d75d12a76ff0415124948ead5ae1a67d14a84360e64526aa8bac7d6c5d3
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/navigate-to-routes.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:ea3c3d53b5db47b4f8d8b05124330e72bea92fc908d42c06aa7edb9e652b425e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/outputs.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:4d6900ff9ab90168969c3d05b67d88f69bb6a46aa4b74a8a8290ba0643c6d8dd
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/pipes.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:76bd0f2f3ac9096ee511427df6ea73cab75f06a3566ab4595ba4f2ec8c0c6fc9
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/reactive-forms.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:edfc57c191d29a1549e9aa9b4ba0d1111a9792caa65918d62967920647717121
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/rendering-strategies.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:329aa9aa35c85dd2048c899f26025439d3b0244067dbb508e724d291fdad7c97
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/resource.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:2fad5a0aaf85b0b3193a492b706595962e247bc99aec1dcc1755d90d9c303545
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/route-animations.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:eda1452f85ce05f3f28753cc77cd8c31c7a52515d7ccebbb35de0ec1e3beb374
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/route-guards.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:491a93cb49fbcba04f7e8ffcd0f784fce7319ca3e2fe393c553f3d683a68424c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/router-lifecycle.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:4abc8cb8dfeb2e9f57dc11c117d5f4a5b756b39dc076910d9ced9da640effc2d
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/router-testing.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:4d144577927d3ea93ae498cac7ebd2724873a2de225b75d345abb24759bd62d3
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/show-routes-with-outlets.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:43a2ed62ea2edafa8569bf7045f20928110f8f844d5890bfb6a2f2dde45e754b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/signal-forms.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:5251585cadf72ab95e31377904db21a597b5e9b982c8e839dc098b48f69ac6b7
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/signals-overview.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:da07c58fdea2ab7d82a28faf9f3d117ccb98ccaf3eec06f103b898f557791146
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/tailwind-css.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:bdb952d0dd2d415560a796ecaf843cacff5ac20d8ef961eaaf75656fef9b9263
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/template-driven-forms.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:52e83e576b0c6dc05f854e903c4cfda1222bcd55c50ddee07344d1e53d02c1df
+- kind: project-relative
+  target: codex
+  value: .agents/skills/angular-developer/references/testing-fundamentals.md
+  runtime: null
+  scope: project
+  owners:
+  - angular/skills/angular-developer
+  active_owner: angular/skills/angular-developer
+  content_hash: sha256:8f48c2392d99487934edf977c0d1b87a4e83ff9761db493bbcccc10f574bcb5a
+- kind: project-relative
+  target: codex
+  value: .agents/skills/architecture-designer
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/architecture-designer
+  active_owner: jeffallan/claude-skills/skills/architecture-designer
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/architecture-designer/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/architecture-designer
+  active_owner: jeffallan/claude-skills/skills/architecture-designer
+  content_hash: sha256:5235b031e8fadacf01f39ad9db7b8d5ec9d6f83460ebcef78da95d31c9f36276
+- kind: project-relative
+  target: codex
+  value: .agents/skills/architecture-designer/references/adr-template.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/architecture-designer
+  active_owner: jeffallan/claude-skills/skills/architecture-designer
+  content_hash: sha256:cada2aa2f8fa039ba63ab95499cbe653a28110f9f406040a06966552026fea4b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/architecture-designer/references/architecture-patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/architecture-designer
+  active_owner: jeffallan/claude-skills/skills/architecture-designer
+  content_hash: sha256:954bde741cffe6dec00acb63840bbb79654d2647ca8f7c9a8f99f5888b94c5f9
+- kind: project-relative
+  target: codex
+  value: .agents/skills/architecture-designer/references/database-selection.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/architecture-designer
+  active_owner: jeffallan/claude-skills/skills/architecture-designer
+  content_hash: sha256:6439a36138654947acb808eeff1fff5862894ef94a7210e8fd540bb2641c5a80
+- kind: project-relative
+  target: codex
+  value: .agents/skills/architecture-designer/references/nfr-checklist.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/architecture-designer
+  active_owner: jeffallan/claude-skills/skills/architecture-designer
+  content_hash: sha256:37b9b0f083bd224acccb04eec86edc09a494c693a4ad0ec32ea24f472c122d70
+- kind: project-relative
+  target: codex
+  value: .agents/skills/architecture-designer/references/system-design.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/architecture-designer
+  active_owner: jeffallan/claude-skills/skills/architecture-designer
+  content_hash: sha256:b33ff621c6461eb321d18fc9923c4bba689776e1cd0f0c00945584c2698319a1
+- kind: project-relative
+  target: codex
+  value: .agents/skills/code-reviewer
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/code-reviewer
+  active_owner: jeffallan/claude-skills/skills/code-reviewer
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/code-reviewer/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/code-reviewer
+  active_owner: jeffallan/claude-skills/skills/code-reviewer
+  content_hash: sha256:8f0ddb7d90178b6986f8d597ab0bc93ec01adb044bd27b75e1682b06902dae93
+- kind: project-relative
+  target: codex
+  value: .agents/skills/code-reviewer/references/common-issues.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/code-reviewer
+  active_owner: jeffallan/claude-skills/skills/code-reviewer
+  content_hash: sha256:19de3ccd5611e82d1c94636aaf4b0a11a68a09799459285a3ab250a24c04265c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/code-reviewer/references/feedback-examples.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/code-reviewer
+  active_owner: jeffallan/claude-skills/skills/code-reviewer
+  content_hash: sha256:e87d7a255efaa04a8ee6acfa53f642974c4b2919658671418e670d0db7d038f6
+- kind: project-relative
+  target: codex
+  value: .agents/skills/code-reviewer/references/receiving-feedback.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/code-reviewer
+  active_owner: jeffallan/claude-skills/skills/code-reviewer
+  content_hash: sha256:62f3958b0be7f3d03cde7bbf00d3f6051a6d98081be3e97d2e7cca5501749c04
+- kind: project-relative
+  target: codex
+  value: .agents/skills/code-reviewer/references/report-template.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/code-reviewer
+  active_owner: jeffallan/claude-skills/skills/code-reviewer
+  content_hash: sha256:2f2b63c8543b510d4dceffb9336627d02aa5f6f722a805d6fa93572d7673a885
+- kind: project-relative
+  target: codex
+  value: .agents/skills/code-reviewer/references/review-checklist.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/code-reviewer
+  active_owner: jeffallan/claude-skills/skills/code-reviewer
+  content_hash: sha256:c0e348f3896a274c407da7bf52570377dd9b7d0d3284d8f582559d890c3dfbcc
+- kind: project-relative
+  target: codex
+  value: .agents/skills/code-reviewer/references/spec-compliance-review.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/code-reviewer
+  active_owner: jeffallan/claude-skills/skills/code-reviewer
+  content_hash: sha256:a5fcb93e7058b4c089b871ae954d8ab5cf45702e91c54242b06cf7af455f57df
+- kind: project-relative
+  target: codex
+  value: .agents/skills/create-architectural-decision-record
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/create-architectural-decision-record
+  active_owner: github/awesome-copilot/skills/create-architectural-decision-record
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/create-architectural-decision-record/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/create-architectural-decision-record
+  active_owner: github/awesome-copilot/skills/create-architectural-decision-record
+  content_hash: sha256:c11af0c34fa034e36e622ad97f1194824c3cbbe675a8b17cdc0bedc91b188a72
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:b4f20b48d444b18c0ac3506cc063a22e996bf5b717a7b9cd1b2dabc1bc98a7c7
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/colors/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:655e2eef74d8f1f6f517044d58fd7115c4384687148a99073ff179da7f1b482f
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/accordion.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:7b512112b3299a33ca3f00508f9ea710d013bebf53361696faf41770bf118e65
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/alert.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:eddce4ce0a6257a63936610a7f104e5c2b673f20658c68764120776bb1a9caa0
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/aura.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:e79f2604b216bcfd9892233736771d125adaa485ee8bee359299e56b8b017e6e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/avatar.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:714bff5a0efd10fc5915321d8aa4d1f10f74422258fdf78072691a1d28de4f23
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/badge.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:e7d29bb07d4281af3eea7f15c504db82dbdedfe69c4934b96ce5abc4695f3953
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/breadcrumbs.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:e8f96e65b27fce5f5d1f0efe4f68c776492320ece58f6d8d4f2dcc6338cd146c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/button.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:ab050f53e7533af7dc7e8a2d1acad48d9e856fcb6ac5ff0419a974bf21dae9ba
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/calendar.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:bf813442999d904cd2619fc70d509d9348addad72d9647a15337c3829a78e5d7
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/card.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:14a5e171efa7bb820e06be71e44fce3497ee3eda7afb1c49a30e6951f6cd7632
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/carousel.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:c3cf89802b5d975822edfe8e86b07ffa1a1133242dd7af11675c9d2e9b3ce409
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/chat.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:3f6bcd8cd40b415c19b69d17142010510e23e0d7a18c08d0fd64de5b42f340e2
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/checkbox.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:20f08a7f88c72224809ce3b979826c55719557a711a0e7d337848b186e2f02ca
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/collapse.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:54a00dd28cf47e318f71dde66f70d7338a7a3bdddc7e7e5a0e02beca90624b69
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/countdown.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:3a91617a6f0eab1e2f98ec5a1586793b053544da7cd23dd7a14e29c076eca370
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/diff.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:15e9d4d81f102c656f2e2712518fd39bf2e603ff67e34487909e6bd8b26ae5a4
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/divider.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:b1010020a7b6f7b53cd11685b441030c5af7febc07331db9376d0274620c8d1c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/dock.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:f798d4874af9aa38adda77d142923f91d1fbc40994e025e5e0d08cc204dac3b9
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/drawer.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:6cc9a0c076f88947337171178805627eb3a6b5dc43d51b8c64b32515b60118bc
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/dropdown.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:f84c6432d30db95a15655d69e2b171cd9f222e9b4a29f768d35504656f02d1ee
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/fab.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:fb302f812dc66f4349e0469c14dcd6cc804a21f7288f47f1520bb4997a989502
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/fieldset.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:43a2a5c2fae535eb2e2bf80044f8252a2d950548fb4d1ca9fb8cbb53467f071f
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/file-input.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:2fb7ba8f64140d5dcce7cbe0ddc54b453cb5e5e1e538708b3e71f41cfa4f4cab
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/filter.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:e31214db92eb7de1fd53b8dd6e9e9eb91d89849fc65caa6df15965ee3675e9da
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/footer.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:a3a163465d9e5a8d758564b96df3f35dcd4d3b7b6f04c96c094f887969f368d3
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/hero.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:e3e8cfa1c576d1504b247eee08c5cada2cd0e5fe7b90234c3949abb973df87dc
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/hover-3d.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:b1c2e9e8235aefb212a029b6e573397a60684be9b5596b54b35bdcf2c1c3ebf1
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/hover-gallery.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:f3180f926131a4698f87a8a71197eec45a1d900e0fa5a7f7beca9be6b1ce1e39
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/indicator.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:a525d74667c92ca81628b1511d297528cfadac19a96dd5fefe614e6cb1ba573d
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/input.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:205bca4564b29128c437279e89889fd2c7415d80f9b5881a3bb927049504ca8a
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/join.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:fc91d78a391e08c55a9265eb63397c968deea4f6f0266cdd45b9969effb661b1
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/kbd.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:3a75366686aaa855d2925e0ea0c34265816dce0430c2b7b9a4e5a03842984a90
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/label.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:60d2dff32d7b57a2d8029bd2e94abf5c44ba01ced831696d50e926e2d5c0cf04
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/link.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:2058aa7a7cca8379ef85535bb576cb7035f718ed3ea4b08511909935eff542d1
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/list.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:80244aee4a1407081c972378b1922ce464b86305bad43b3f92eae7b7a59c3411
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/loading.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:ea70cf0f8b782c8f9bc02c50a06c5580ff2ab7f45aea35a3f08bece25e07df2b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/mask.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:ccff2c01d1f7e4e803845d34ecefdc22e6eb86f233c76ac9f3accbb257ab9a5b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/megamenu.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:fc0810622d641ac9ce77d1cc374455e841acc96fe463ca63709c9194e1272cef
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/menu.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:3b4284018892a4e0bec1c5c6bcd91f99067e5f6e8b8cc1484f60b4fba56081e5
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/mockup-browser.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:212e7c3f2dc49cec8ea6515273477fc5f9338a0c76941a0b84c8db5e957aa5cc
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/mockup-code.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:69bce3e7d784b6c87f48740d84b999b3acb358775bcfecfdf1a98147dea278af
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/mockup-phone.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:391dfaee279d7ec3f7b55801c7f6561cd3430ba62debc749f11c8511e0621181
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/mockup-window.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:36574440f0f6e9ab9f1af5d6e78216bf70bb8dc6410fea2c7192a0de336c586e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/modal.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:c733f8cb6ed61536c946fb0d41c8f18c2d683a789928da768880b9dd3b17131b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/navbar.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:a4f5de05a7dab05d5282504cd68412e1b5853e9e142ea0be6691109e7f2a0535
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/otp.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:62e8ba584283d67b0b929c8adfacadc3395bb41aa5793f086b6e443251b1e60b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/pagination.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:8d238b0fd2a71518c1acc17bc938298c22b23d8e5365739a859890ee9ef2af8d
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/progress.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:fdce451838e29c6033bec164492a4269c96dd7ec95737cea19e15b57a4646d8b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/radial-progress.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:16053d835468ede6635c4722d61d8434ea4f17670169cac5e9264075727e239e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/radio.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:4f784839220f02f8c0c068ddec5570e35b9a85b6ca61bd8ee626ca1ede000233
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/range.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:5d439f2680e9d3952fc6fd14ac863896d01cb60fab2de8fe058f3fba249ad8d7
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/rating.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:393863e6a28e5750603fa0d8fe5697fb4e2aa11da9bc32bd6b021af035dbfb6c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/select.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:b1954f2dcb2beccb7373196d593cad3c186c627063126779a535ade458571d7e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/skeleton.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:8397e07a65d3c66a1ca03a682b8f8bf2705a89819cacccaab21309e019e1f562
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/stack.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:1b4801fedecfefd64fa559f30c77ddf949b9314ba1b17ad7d1224d187de807dc
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/stat.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:bdd8b345d32a973d3dff3d82e13866c1a2162493aa2af70da1d26b3ca688572f
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/status.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:76f8fd7d897bba168331e9619bd0b23de114b18c7a9ae72d9c6c6a0fe70692db
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/steps.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:a1787f1782625714e40b68fa5991dbf37667f5b09d7321c5fa3a2b1be5487ebe
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/swap.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:16e7d41d62a4f973f33402c13d87c84a60305d98c2a6fbf06fad54d6ebe88471
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/tab.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:e11691e2e0794f37aa7ae44139a8a7f53eab711ccdf27040cec9cc1194174bf0
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/table.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:ac01be952af86382fe3adee825ac0cdfcd9390ebd191d90241e4d3dfac4e52c8
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/text-rotate.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:5d6f45e2fe139a2b5558934f446ba1fca437b95eeb3f33558faaa96e59e96af2
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/textarea.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:e4a135603fd4b8ca5a95f8500e6c54ed1ea9d5c84c4937d9650799d4d6a58651
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/theme-controller.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:113c1dd8eacf3f871768e722444a67150da14181353ee49c17d5301f07e5f533
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/timeline.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:868d77e06948a3dfc2b65db7d3ff594fd7f2deba32b17dcf57d689d9c699f1ef
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/toast.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:e7a86e894678741a87dab5230bb4f7cc4ebac1ca8ca932f72b6e535ed94e74c5
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/toggle.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:361257c6e77a71030a1039242264db720525a81fa075472872b7dcad36d805d2
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/tooltip.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:7b886def19a734f73d5066644a8166f80cfe7f903aa77363c99fbba9d73e192e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/components/validator.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:b0e213ae04eccb8131fdfdfeb80a1e59d923ec1671328ac2b54b6e9ed4c7758e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/config/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:1097716fa7385259ab53d2fb7f50e7c548d0362457fbd0b93d8a39050b91d0a5
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/install/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:c5fc3f4e97a62eaca1e215bef6149b5fc1f0fbb875a755ed57865c145192ca5b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/daisyui/usage/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - saadeghi/daisyui/skills/daisyui
+  active_owner: saadeghi/daisyui/skills/daisyui
+  content_hash: sha256:9a0cb9e36d263c67c0442cbd2bf3c2fcc36d327d9fac6bbf883615f402b7cca9
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:e59838a5d904cc70f616055452abfa8b1856826cef43a042bdfe1d95564058d7
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/aggregates.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:1659c215781c119a93ea4bd4ae66ad78e2f37ff9ffb7514d0a29b1e80e5ddc3b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/context-mapping.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:ae752c54774b8059dabe5b11ff84b45b4dfe0e766fc34f60b8adabfb46317184
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/cqrs-and-events.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:19fe463f25a72f498b9e32fd4ef4ae7a4741e03249d42f06c822e37de2b16c13
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/ddd-in-practice.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:3119697b58039dfb83f513a0172b15382544c71742177ee2f3abc6d13ed08d2c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/domain-errors.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:9b53d8fb23f164f4261d63b7d3305b246bfd84093dcfb0d6c27e581b0d1a2890
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/domain-events.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:1d920978518565eeff873285784607747db3e2497713c57bc4bb118a5efa59a8
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/go-ddd-examples.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:170f3cf15aacaa57d1d672ce8553cfd73988f8370b061a36ef61df9637c7c5b9
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/hexagonal-architecture.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:efd9117178ab804813aec945c9aee50dfcdeeb88bd291740ad3dff268a4e43f5
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/read-models.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:702a6be7240f21515781c731052869d120ac17540443352665ecea32171b6576
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/repositories.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:2693df41391ef778b885e837d646c090d3ba7d5ca16bfcd7b3f923123abab9cc
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/strategic-design.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:2b4c03481cf101e169ab851fdb97c29fcb34a99fd377fde4314359ffb6fc8297
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/tactical-patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:9bb10388629695a4c5434d42b3ee06c0c7c9016baa7079d779c9229187502b5e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/ddd-best-practices/references/typescript-ddd-examples.md
+  runtime: null
+  scope: project
+  owners:
+  - luckys/agent-skills/skills/ddd-best-practices
+  active_owner: luckys/agent-skills/skills/ddd-best-practices
+  content_hash: sha256:0370ba36ecc37ffee33606ff6d7d604d08c3a5fb0428b032fb068985cbd1becf
+- kind: project-relative
+  target: codex
+  value: .agents/skills/devops-engineer
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/devops-engineer
+  active_owner: jeffallan/claude-skills/skills/devops-engineer
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/devops-engineer/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/devops-engineer
+  active_owner: jeffallan/claude-skills/skills/devops-engineer
+  content_hash: sha256:078f8e80c432f1cbaa7aaa70391a8d61c2b87cc71f2f64f361da61b13c19d9cf
+- kind: project-relative
+  target: codex
+  value: .agents/skills/devops-engineer/references/deployment-strategies.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/devops-engineer
+  active_owner: jeffallan/claude-skills/skills/devops-engineer
+  content_hash: sha256:d09fd909526bac88579c993b85294c210ca76959e38a0018f4d4181f48e2302b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/devops-engineer/references/docker-patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/devops-engineer
+  active_owner: jeffallan/claude-skills/skills/devops-engineer
+  content_hash: sha256:b6ccc98c44aa64e9c9aa837c793369914516ae874961de7eec38191c8cf61861
+- kind: project-relative
+  target: codex
+  value: .agents/skills/devops-engineer/references/github-actions.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/devops-engineer
+  active_owner: jeffallan/claude-skills/skills/devops-engineer
+  content_hash: sha256:04d2d1c339762948dd513c268482d3ffada30068bbea92f282bf753837cb5e4b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/devops-engineer/references/gitlab-ci.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/devops-engineer
+  active_owner: jeffallan/claude-skills/skills/devops-engineer
+  content_hash: sha256:8b4e6492a96ff5b94c07dcddca3a093121845a13bc4f2699844c06f42f3043e2
+- kind: project-relative
+  target: codex
+  value: .agents/skills/devops-engineer/references/incident-response.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/devops-engineer
+  active_owner: jeffallan/claude-skills/skills/devops-engineer
+  content_hash: sha256:8410ae3e9c7295f4fda94d7fa85438292e675a4e10dc64a61aead4df162522a4
+- kind: project-relative
+  target: codex
+  value: .agents/skills/devops-engineer/references/kubernetes.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/devops-engineer
+  active_owner: jeffallan/claude-skills/skills/devops-engineer
+  content_hash: sha256:7da17b4e40c05d8c5c694ae532524072b1eed9d078f336c57970d6fc5473ce0b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/devops-engineer/references/platform-engineering.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/devops-engineer
+  active_owner: jeffallan/claude-skills/skills/devops-engineer
+  content_hash: sha256:1256d7f015cb45c8e35ad708cf9a51ef429c95945d07705fb416bc89e3bc1bfd
+- kind: project-relative
+  target: codex
+  value: .agents/skills/devops-engineer/references/release-automation.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/devops-engineer
+  active_owner: jeffallan/claude-skills/skills/devops-engineer
+  content_hash: sha256:bf546d38622d8f9185939d5d3bafea8859f44a7c60e85957afc39347052abc45
+- kind: project-relative
+  target: codex
+  value: .agents/skills/devops-engineer/references/terraform-iac.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/devops-engineer
+  active_owner: jeffallan/claude-skills/skills/devops-engineer
+  content_hash: sha256:0d629d4b9826cbd97c1d5a6e826d701bacd3f057d4092cda0e5bb9da692e922b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/gdpr-compliant
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/gdpr-compliant
+  active_owner: github/awesome-copilot/skills/gdpr-compliant
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/gdpr-compliant/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/gdpr-compliant
+  active_owner: github/awesome-copilot/skills/gdpr-compliant
+  content_hash: sha256:e1f33a817a1d0f7165f4f6652cfeb52632ba124067c3f46c37f867cde730242e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/gdpr-compliant/references/Security.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/gdpr-compliant
+  active_owner: github/awesome-copilot/skills/gdpr-compliant
+  content_hash: sha256:4fffe37e4c024043287807a07b47f0655dea89c30fc5c5b8308553cf7a7667ef
+- kind: project-relative
+  target: codex
+  value: .agents/skills/gdpr-compliant/references/data-rights.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/gdpr-compliant
+  active_owner: github/awesome-copilot/skills/gdpr-compliant
+  content_hash: sha256:8a17c938497e5988c70775b2431377204cb37c225613c92cc4176ca1d1d450f8
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-efficiency
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-efficiency
+  active_owner: github/awesome-copilot/skills/github-actions-efficiency
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-efficiency/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-efficiency
+  active_owner: github/awesome-copilot/skills/github-actions-efficiency
+  content_hash: sha256:9c41e860468e5c88d83ab6eec70c585b0f122facec2632ea65497b3389139e43
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-efficiency/references/actions.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-efficiency
+  active_owner: github/awesome-copilot/skills/github-actions-efficiency
+  content_hash: sha256:9f24153e0b743a978ec84e08bc64047616d18504965708cc7507437203689fdb
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-efficiency/references/patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-efficiency
+  active_owner: github/awesome-copilot/skills/github-actions-efficiency
+  content_hash: sha256:a9fb61ee95b5f2f4cb372064f5de9d04ca749da1b78d050e42e909e9e97228dd
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-efficiency/references/reporting.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-efficiency
+  active_owner: github/awesome-copilot/skills/github-actions-efficiency
+  content_hash: sha256:18eec5acd0d9e52b450f86b8232e9994c5c5b7760240bcb2e97417f8a847508c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-efficiency/references/review-rubric.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-efficiency
+  active_owner: github/awesome-copilot/skills/github-actions-efficiency
+  content_hash: sha256:f2fd2bbd34f15f68664e30ea62468f8a5b19bc9b49929dcd082a4c87316b3ce2
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-hardening
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-hardening
+  active_owner: github/awesome-copilot/skills/github-actions-hardening
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-hardening/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-hardening
+  active_owner: github/awesome-copilot/skills/github-actions-hardening
+  content_hash: sha256:31a8e7483d978e6267941edefebbe42aaa946bb3d43c9095aa3db343d4a8ff06
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-hardening/references/injection.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-hardening
+  active_owner: github/awesome-copilot/skills/github-actions-hardening
+  content_hash: sha256:ebd6ef8d39ba6f1cd3dc13051e6ed4163d1d2ba36518cf0f7393836a211e58ff
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-hardening/references/permissions-and-tokens.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-hardening
+  active_owner: github/awesome-copilot/skills/github-actions-hardening
+  content_hash: sha256:7272d00b20cf99c6fcbf34346f76730907c00701aef44bb9cfb7ab3eecac336b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-hardening/references/report-format.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-hardening
+  active_owner: github/awesome-copilot/skills/github-actions-hardening
+  content_hash: sha256:3ecd2442e173bc001f858747873349be7c6c77050470b87ae516647908b1e86e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-hardening/references/supply-chain.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-hardening
+  active_owner: github/awesome-copilot/skills/github-actions-hardening
+  content_hash: sha256:f66f613dbd732ce87c1e76b88208efde8feae3ffe5a3ab405cde4ce3df66f605
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-actions-hardening/references/triggers-and-privilege.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-actions-hardening
+  active_owner: github/awesome-copilot/skills/github-actions-hardening
+  content_hash: sha256:465f3f76517e9f5374a73e30f46cb47e1fe62ce9fd81f782808a3abbb2df2756
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: sha256:c7859f993a8c8cfbff117830be1532e82e8b8e913297a40f8e685a662eaf3183
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues/references/dependencies.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: sha256:9503d23ba104de1aae51176e4f29d3cf6b85c83e3421252a4808140d60eba571
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues/references/images.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: sha256:585c89a02e1b79e702b4b88f2771cb8dadca9fdf98798ca72a83deb76623b219
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues/references/issue-fields.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: sha256:ebc49ce1c436213a2c2c9ffef770ff46bc8b4f4ef1ec84460f217b712d1df01c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues/references/issue-types.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: sha256:be0a33a4a4a15ce92c6b589f19943813b69c25cd1f20e9e30df567bab50e5e63
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues/references/labels.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: sha256:d00f8f0414b3cb0b8f45d48956ee8d301aefea5338f5a45eccca04b68a26bb6c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues/references/milestones.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: sha256:974d492c055297df2efb6631c40ca8ceb821c52188b2719ecfeb69cc8df91c36
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues/references/projects.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: sha256:358071bc9915a50e86956b21ba1c0077b489d8981eddc63ea09aa4cfe1043710
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues/references/search.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: sha256:e73499b778efaaac7a90fd6a7c0359f30a89a7a62c25b27d994274e7f7ae172e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues/references/sub-issues.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: sha256:333339143e4a4ef0dfeb575cf0f18da2ca78d6388e2b9ba4b77daad7c1ce29a8
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-issues/references/templates.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-issues
+  active_owner: github/awesome-copilot/skills/github-issues
+  content_hash: sha256:8202c0277a34033acd44ed960a236f31a5b7a74d98769dffac497f2267279fed
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-release
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-release
+  active_owner: github/awesome-copilot/skills/github-release
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-release/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-release
+  active_owner: github/awesome-copilot/skills/github-release
+  content_hash: sha256:7ef644b19c8f87b09be121efdb3fc946c3354bb48ce6ec841ebb56384ee4c431
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-release/references/commit-classification.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-release
+  active_owner: github/awesome-copilot/skills/github-release
+  content_hash: sha256:61c0d5145358aea2fa5984364513d880d757a0946432ee074ffbadc8d0e47626
+- kind: project-relative
+  target: codex
+  value: .agents/skills/github-release/references/semver-rules.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/github-release
+  active_owner: github/awesome-copilot/skills/github-release
+  content_hash: sha256:96b607e4189eea07c77728081e9c69f17898cdce5b91bd2e3c03c42ea4b2ba2c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/java-springboot
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/java-springboot
+  active_owner: github/awesome-copilot/skills/java-springboot
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/java-springboot/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/java-springboot
+  active_owner: github/awesome-copilot/skills/java-springboot
+  content_hash: sha256:574898202ce298557226c49d35036a6e9e66a1cb205ea15c44db298e6d74e3bd
+- kind: project-relative
+  target: codex
+  value: .agents/skills/kafka-consumer-lag
+  runtime: null
+  scope: project
+  owners:
+  - lensesio/agentic-engineering-for-apache-kafka/skills/kafka-consumer-lag
+  active_owner: lensesio/agentic-engineering-for-apache-kafka/skills/kafka-consumer-lag
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/kafka-consumer-lag/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - lensesio/agentic-engineering-for-apache-kafka/skills/kafka-consumer-lag
+  active_owner: lensesio/agentic-engineering-for-apache-kafka/skills/kafka-consumer-lag
+  content_hash: sha256:3fc789347ce8675bed9f8874dca1a4d034fc8ee103d7b1dd29f9253fa49cd433
+- kind: project-relative
+  target: codex
+  value: .agents/skills/kafka-consumer-lag/references/test-cases.md
+  runtime: null
+  scope: project
+  owners:
+  - lensesio/agentic-engineering-for-apache-kafka/skills/kafka-consumer-lag
+  active_owner: lensesio/agentic-engineering-for-apache-kafka/skills/kafka-consumer-lag
+  content_hash: sha256:a2b24247c2df73c7af4e261b5218ced6168bd1f9623c9b8e128558d0594b3605
+- kind: project-relative
+  target: codex
+  value: .agents/skills/monitoring-expert
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/monitoring-expert
+  active_owner: jeffallan/claude-skills/skills/monitoring-expert
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/monitoring-expert/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/monitoring-expert
+  active_owner: jeffallan/claude-skills/skills/monitoring-expert
+  content_hash: sha256:dc69392186b8cc9b3db6e66bb3b8c5fd11f2483e346b544e77dbb3cb09488d01
+- kind: project-relative
+  target: codex
+  value: .agents/skills/monitoring-expert/references/alerting-rules.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/monitoring-expert
+  active_owner: jeffallan/claude-skills/skills/monitoring-expert
+  content_hash: sha256:0b8d94c81c09ce121ad00e399f204db9d7603ea08277e7587cbf2965940bb8c1
+- kind: project-relative
+  target: codex
+  value: .agents/skills/monitoring-expert/references/application-profiling.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/monitoring-expert
+  active_owner: jeffallan/claude-skills/skills/monitoring-expert
+  content_hash: sha256:db873957f8268ca329e86bdc216de556be68ff231d8b4147b65168333af5a51f
+- kind: project-relative
+  target: codex
+  value: .agents/skills/monitoring-expert/references/capacity-planning.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/monitoring-expert
+  active_owner: jeffallan/claude-skills/skills/monitoring-expert
+  content_hash: sha256:8f9cdd499931ab20fffbc89f7325ba3b1336463fbfacaf6d7bb754fc40a9c716
+- kind: project-relative
+  target: codex
+  value: .agents/skills/monitoring-expert/references/dashboards.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/monitoring-expert
+  active_owner: jeffallan/claude-skills/skills/monitoring-expert
+  content_hash: sha256:283607d4b1b94c4abdb8d1ed09668442ea048620f741127367ae52c9cacbcc9c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/monitoring-expert/references/opentelemetry.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/monitoring-expert
+  active_owner: jeffallan/claude-skills/skills/monitoring-expert
+  content_hash: sha256:2f2cf89ca63ed14f9db16a64865e31114134de10e5f9e45ea598a51acaf4623c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/monitoring-expert/references/performance-testing.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/monitoring-expert
+  active_owner: jeffallan/claude-skills/skills/monitoring-expert
+  content_hash: sha256:35ba1c05287ccb5fe6b2f62704cd9b99a90a6882c6bc94b8873af54f9f86dc55
+- kind: project-relative
+  target: codex
+  value: .agents/skills/monitoring-expert/references/prometheus-metrics.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/monitoring-expert
+  active_owner: jeffallan/claude-skills/skills/monitoring-expert
+  content_hash: sha256:f1c5d9271a599d5e34ac5e06ee2efddd20d08fc327f08a44722da1e51563321e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/monitoring-expert/references/structured-logging.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/monitoring-expert
+  active_owner: jeffallan/claude-skills/skills/monitoring-expert
+  content_hash: sha256:2d17ee1782d39cd07add6961dcba3ee24bd8a6fc0d88e7a8643941b433fdcf80
+- kind: project-relative
+  target: codex
+  value: .agents/skills/multi-stage-dockerfile
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/multi-stage-dockerfile
+  active_owner: github/awesome-copilot/skills/multi-stage-dockerfile
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/multi-stage-dockerfile/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/multi-stage-dockerfile
+  active_owner: github/awesome-copilot/skills/multi-stage-dockerfile
+  content_hash: sha256:7dfea7d31f3744930cb07869e15a79f90dbd47d2ddc56d165715fbd257db9ba7
+- kind: project-relative
+  target: codex
+  value: .agents/skills/openapi-spec-generation
+  runtime: null
+  scope: project
+  owners:
+  - wshobson/agents/plugins/documentation-generation/skills/openapi-spec-generation
+  active_owner: wshobson/agents/plugins/documentation-generation/skills/openapi-spec-generation
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/openapi-spec-generation/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - wshobson/agents/plugins/documentation-generation/skills/openapi-spec-generation
+  active_owner: wshobson/agents/plugins/documentation-generation/skills/openapi-spec-generation
+  content_hash: sha256:8071736973f8a99cbe8644e21f638493ac062c77d650d8fabc4a469285485d7e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/openapi-spec-generation/references/code-first-and-tooling.md
+  runtime: null
+  scope: project
+  owners:
+  - wshobson/agents/plugins/documentation-generation/skills/openapi-spec-generation
+  active_owner: wshobson/agents/plugins/documentation-generation/skills/openapi-spec-generation
+  content_hash: sha256:533398d65b933040d13e642414e6b9846adbe7d5c95947223beffdb3ebe1590f
+- kind: project-relative
+  target: codex
+  value: .agents/skills/openapi-spec-generation/references/details.md
+  runtime: null
+  scope: project
+  owners:
+  - wshobson/agents/plugins/documentation-generation/skills/openapi-spec-generation
+  active_owner: wshobson/agents/plugins/documentation-generation/skills/openapi-spec-generation
+  content_hash: sha256:f653781def324ce13ba73879282ae5ae78c15d57b5f665f2c20b8d6332569e55
+- kind: project-relative
+  target: codex
+  value: .agents/skills/performance
+  runtime: null
+  scope: project
+  owners:
+  - addyosmani/web-quality-skills/skills/performance
+  active_owner: addyosmani/web-quality-skills/skills/performance
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/performance/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - addyosmani/web-quality-skills/skills/performance
+  active_owner: addyosmani/web-quality-skills/skills/performance
+  content_hash: sha256:b0c220185d88c61f7770eb127d8facf86c86d2dd1fd82b86e15a4965a0137265
+- kind: project-relative
+  target: codex
+  value: .agents/skills/performance/references/MEASUREMENT.md
+  runtime: null
+  scope: project
+  owners:
+  - addyosmani/web-quality-skills/skills/performance
+  active_owner: addyosmani/web-quality-skills/skills/performance
+  content_hash: sha256:128f6f20c6c8fb55fcccd8b259cf680811022cf262dc55b03e9d623bcb555a99
+- kind: project-relative
+  target: codex
+  value: .agents/skills/performance/references/RUM.md
+  runtime: null
+  scope: project
+  owners:
+  - addyosmani/web-quality-skills/skills/performance
+  active_owner: addyosmani/web-quality-skills/skills/performance
+  content_hash: sha256:a2bdf660ecb23098afbadfb83254d39cef10c0da82938225f61271bad3f81b19
+- kind: project-relative
+  target: codex
+  value: .agents/skills/playwright-generate-test
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/playwright-generate-test
+  active_owner: github/awesome-copilot/skills/playwright-generate-test
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/playwright-generate-test/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/playwright-generate-test
+  active_owner: github/awesome-copilot/skills/playwright-generate-test
+  content_hash: sha256:79dbb1a49fc5a6502788ccba1a4bd30769a017a1cc31d9db329d1326ea3d898f
+- kind: project-relative
+  target: codex
+  value: .agents/skills/postgres-pro
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/postgres-pro
+  active_owner: jeffallan/claude-skills/skills/postgres-pro
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/postgres-pro/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/postgres-pro
+  active_owner: jeffallan/claude-skills/skills/postgres-pro
+  content_hash: sha256:e2f32f2fb3b4e640bd58d3133f7bed38697c85e526860cacdc504c8ef456655f
+- kind: project-relative
+  target: codex
+  value: .agents/skills/postgres-pro/references/extensions.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/postgres-pro
+  active_owner: jeffallan/claude-skills/skills/postgres-pro
+  content_hash: sha256:24151c2645e07c139afa9b6ff4ef1f2972950b7e7f08195772256a6f7f216b10
+- kind: project-relative
+  target: codex
+  value: .agents/skills/postgres-pro/references/jsonb.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/postgres-pro
+  active_owner: jeffallan/claude-skills/skills/postgres-pro
+  content_hash: sha256:8ad7086e676f86f23305a5127714566898e4c500593e1a4679194a32c7f530f2
+- kind: project-relative
+  target: codex
+  value: .agents/skills/postgres-pro/references/maintenance.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/postgres-pro
+  active_owner: jeffallan/claude-skills/skills/postgres-pro
+  content_hash: sha256:a9915cf08759fb92ccfbcfd2b811f36ac7c02ad0bffff2dc7f59aca9e670203c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/postgres-pro/references/performance.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/postgres-pro
+  active_owner: jeffallan/claude-skills/skills/postgres-pro
+  content_hash: sha256:b137e04782ab4c5387184862cb689d7657d5cbb13c3c41d61980a2edf7c2c8d4
+- kind: project-relative
+  target: codex
+  value: .agents/skills/postgres-pro/references/replication.md
+  runtime: null
+  scope: project
+  owners:
+  - jeffallan/claude-skills/skills/postgres-pro
+  active_owner: jeffallan/claude-skills/skills/postgres-pro
+  content_hash: sha256:c4993a7c459f10f4dba0ce5a2c4a703e534e588439a5e94168087f3460f15412
+- kind: project-relative
+  target: codex
+  value: .agents/skills/security-review
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/security-review
+  active_owner: github/awesome-copilot/skills/security-review
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/security-review/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/security-review
+  active_owner: github/awesome-copilot/skills/security-review
+  content_hash: sha256:002392d88637b89e4cbc409a0531834970937f3b57c0b448a17e04b5ca6d356c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/security-review/references/language-patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/security-review
+  active_owner: github/awesome-copilot/skills/security-review
+  content_hash: sha256:ddfbcbb68b9d605789c85a168a274219f0ad86f5fc76b46b5332eb42f0c042b3
+- kind: project-relative
+  target: codex
+  value: .agents/skills/security-review/references/report-format.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/security-review
+  active_owner: github/awesome-copilot/skills/security-review
+  content_hash: sha256:688ef9f2862303527314eb17a090a72d512b907a685f5d1f122d6ebd5ae66db1
+- kind: project-relative
+  target: codex
+  value: .agents/skills/security-review/references/secret-patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/security-review
+  active_owner: github/awesome-copilot/skills/security-review
+  content_hash: sha256:38f84f60021490d785f33fc70f2ce784888d2a751781a881372e6862e7e11288
+- kind: project-relative
+  target: codex
+  value: .agents/skills/security-review/references/vuln-categories.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/security-review
+  active_owner: github/awesome-copilot/skills/security-review
+  content_hash: sha256:d06159479bd92b9dcf3a2842e09f7712f1fd297c0bc9792fe20bc3cb69188df5
+- kind: project-relative
+  target: codex
+  value: .agents/skills/security-review/references/vulnerable-packages.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/security-review
+  active_owner: github/awesome-copilot/skills/security-review
+  content_hash: sha256:8693a6a258bad18a8a1d0925bc1eae9c744071ff37a36b8f1da83adca93608af
+- kind: project-relative
+  target: codex
+  value: .agents/skills/sonar-fix-issue
+  runtime: null
+  scope: project
+  owners:
+  - sonarsource/sonarqube-agent-plugins/skills/sonar-fix-issue
+  active_owner: sonarsource/sonarqube-agent-plugins/skills/sonar-fix-issue
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/sonar-fix-issue/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - sonarsource/sonarqube-agent-plugins/skills/sonar-fix-issue
+  active_owner: sonarsource/sonarqube-agent-plugins/skills/sonar-fix-issue
+  content_hash: sha256:6b57ea6a2b6348b53dc20c0bbe79e27e4fd8520d67c30f1139d919f285bced74
+- kind: project-relative
+  target: codex
+  value: .agents/skills/sonar-list-issues
+  runtime: null
+  scope: project
+  owners:
+  - sonarsource/sonarqube-agent-plugins/skills/sonar-list-issues
+  active_owner: sonarsource/sonarqube-agent-plugins/skills/sonar-list-issues
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/sonar-list-issues/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - sonarsource/sonarqube-agent-plugins/skills/sonar-list-issues
+  active_owner: sonarsource/sonarqube-agent-plugins/skills/sonar-list-issues
+  content_hash: sha256:5dfc6cc08df66a4a0ca5f25c1f3b5a3e89266daca5acea33493341fedcd92a9e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/sonar-quality-gate
+  runtime: null
+  scope: project
+  owners:
+  - sonarsource/sonarqube-agent-plugins/skills/sonar-quality-gate
+  active_owner: sonarsource/sonarqube-agent-plugins/skills/sonar-quality-gate
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/sonar-quality-gate/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - sonarsource/sonarqube-agent-plugins/skills/sonar-quality-gate
+  active_owner: sonarsource/sonarqube-agent-plugins/skills/sonar-quality-gate
+  content_hash: sha256:a10642dbea25b0c4fa724581af91bf80e7b84d61f8db470e8ef99bda03e418df
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:8161940340dc52766242ab30589369623b31089b41ebd7baa19a27f411648550
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/assertj-basics.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:7aef2421cde448fa8cf66b2a2fa5cddd61b695b31ebef4b4490281f7ddb91201
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/assertj-collections.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:108c029ac107026a4f0454979fcca34fc04172e3ed2f673b68071a9fe36150e3
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/context-caching.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:dbc938e69c086be119a02e7572b144c2849f164bed0968a2b78828ae391dd1c3
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/datajpatest.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:723d5539c99a1264c20979ba152c6c85f9d3dccdd27649c9d0d8b2fa74f1631b
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/instancio.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:1608700c0ced1fcf68f66b57b2ee2e16e2e8c610d8bb47594f2560a50c659620
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/mockitobean.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:4c94eaab7e27274f96b13dffcbbb26ce44d06ea9e34d3d1aacf9ec6d1feed757
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/mockmvc-classic.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:eda16b3957bf881522a5670d464d017239c9b01426e10aff955a7033a32403e8
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/mockmvc-tester.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:db478252be94c79eb8af0e71a17f8993896c3efafd4a2b88f55877c2d8541891
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/restclienttest.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:a15252889125344f8cf2caf0cfc873c944a80577f73ceac00060a9108b457e88
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/resttestclient.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:e5276df7d4e6be4cf40240502612a8cd3e521aad5539d8ceb77ab0e367802d9d
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/sb4-migration.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:959d81d7ede3e141f78e4782e60460aaf113940d89614c3eac928c39f167a04c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/test-slices-overview.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:1d4ec67ca92d6e84603f4cc2b5d3bf006c6ff932b1d28ee65f1c599f2a34060c
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/testcontainers-jdbc.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:a8a07d8063ae10db8cf237c159d199a9630830c5b9c6f97b789bea7a78eb11b5
+- kind: project-relative
+  target: codex
+  value: .agents/skills/spring-boot-testing/references/webmvctest.md
+  runtime: null
+  scope: project
+  owners:
+  - github/awesome-copilot/skills/spring-boot-testing
+  active_owner: github/awesome-copilot/skills/spring-boot-testing
+  content_hash: sha256:0b33963499584253f5d8c7f9086d25fb852e173b0614683fe9073d63af444f2e
+- kind: project-relative
+  target: codex
+  value: .agents/skills/webapp-testing
+  runtime: null
+  scope: project
+  owners:
+  - anthropics/skills/skills/webapp-testing
+  active_owner: anthropics/skills/skills/webapp-testing
+  content_hash: null
+- kind: project-relative
+  target: codex
+  value: .agents/skills/webapp-testing/LICENSE.txt
+  runtime: null
+  scope: project
+  owners:
+  - anthropics/skills/skills/webapp-testing
+  active_owner: anthropics/skills/skills/webapp-testing
+  content_hash: sha256:bc6b3af2f331cbc7fb0da1344efb2cbe5877a31498b4d70dbc7000f3405a1362
+- kind: project-relative
+  target: codex
+  value: .agents/skills/webapp-testing/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - anthropics/skills/skills/webapp-testing
+  active_owner: anthropics/skills/skills/webapp-testing
+  content_hash: sha256:51b7349e77ec63b7744a6f63647e7566a0b4d2e301121cc10e8c2113af6556a2
+- kind: project-relative
+  target: codex
+  value: .agents/skills/webapp-testing/examples/console_logging.py
+  runtime: null
+  scope: project
+  owners:
+  - anthropics/skills/skills/webapp-testing
+  active_owner: anthropics/skills/skills/webapp-testing
+  content_hash: sha256:ea46877289acb82da7e7ce59d0bc37c8977cd57e2a006d0c88d7a1c625bf95da
+- kind: project-relative
+  target: codex
+  value: .agents/skills/webapp-testing/examples/element_discovery.py
+  runtime: null
+  scope: project
+  owners:
+  - anthropics/skills/skills/webapp-testing
+  active_owner: anthropics/skills/skills/webapp-testing
+  content_hash: sha256:d63c89604a22f8845d724e95dda45db49b1bf57c25ce0a83afbb7b8da3d402f0
+- kind: project-relative
+  target: codex
+  value: .agents/skills/webapp-testing/examples/static_html_automation.py
+  runtime: null
+  scope: project
+  owners:
+  - anthropics/skills/skills/webapp-testing
+  active_owner: anthropics/skills/skills/webapp-testing
+  content_hash: sha256:9d533aafb875ee3ab8b8ebf8f5b9003ac8d999da3d09b285cce252e623140064
+- kind: project-relative
+  target: codex
+  value: .agents/skills/webapp-testing/scripts/with_server.py
+  runtime: null
+  scope: project
+  owners:
+  - anthropics/skills/skills/webapp-testing
+  active_owner: anthropics/skills/skills/webapp-testing
+  content_hash: sha256:b0dcf4918935b795f4eda9821579b9902119235ff4447f687a30286e7d0925fd

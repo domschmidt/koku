@@ -1,3 +1,7 @@
 **/target/
 /.idea/
 /log/
+
+# APM dependencies
+apm_modules/
+.agents/
