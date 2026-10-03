@@ -63,23 +63,19 @@ public class DateFilter implements IListFilter {
             final DateExpression<LocalDate> castedExpr,
             final LocalDate searchExpression,
             final EnumSearchOperator operator) {
-        final BooleanExpression monthBeforeOrAfter =
-                switch (operator) {
-                    case LIKE, EQ, LESS, LESS_OR_EQ -> castedExpr.month().lt(searchExpression.getMonthValue());
-                    case GREATER, GREATER_OR_EQ -> castedExpr.month().gt(searchExpression.getMonthValue());
-                    case STARTS_WITH, ENDS_WITH ->
-                        throw new IllegalStateException("Text operators are handled earlier");
-                };
-        final BooleanExpression dayComparison =
-                switch (operator) {
-                    case LIKE, EQ -> castedExpr.dayOfMonth().eq(searchExpression.getDayOfMonth());
-                    case LESS -> castedExpr.dayOfMonth().lt(searchExpression.getDayOfMonth());
-                    case GREATER -> castedExpr.dayOfMonth().gt(searchExpression.getDayOfMonth());
-                    case LESS_OR_EQ -> castedExpr.dayOfMonth().loe(searchExpression.getDayOfMonth());
-                    case GREATER_OR_EQ -> castedExpr.dayOfMonth().goe(searchExpression.getDayOfMonth());
-                    case STARTS_WITH, ENDS_WITH ->
-                        throw new IllegalStateException("Text operators are handled earlier");
-                };
+        final BooleanExpression monthBeforeOrAfter = switch (operator) {
+            case LIKE, EQ, LESS, LESS_OR_EQ -> castedExpr.month().lt(searchExpression.getMonthValue());
+            case GREATER, GREATER_OR_EQ -> castedExpr.month().gt(searchExpression.getMonthValue());
+            case STARTS_WITH, ENDS_WITH -> throw new IllegalStateException("Text operators are handled earlier");
+        };
+        final BooleanExpression dayComparison = switch (operator) {
+            case LIKE, EQ -> castedExpr.dayOfMonth().eq(searchExpression.getDayOfMonth());
+            case LESS -> castedExpr.dayOfMonth().lt(searchExpression.getDayOfMonth());
+            case GREATER -> castedExpr.dayOfMonth().gt(searchExpression.getDayOfMonth());
+            case LESS_OR_EQ -> castedExpr.dayOfMonth().loe(searchExpression.getDayOfMonth());
+            case GREATER_OR_EQ -> castedExpr.dayOfMonth().goe(searchExpression.getDayOfMonth());
+            case STARTS_WITH, ENDS_WITH -> throw new IllegalStateException("Text operators are handled earlier");
+        };
 
         return castedExpr
                 .year()
