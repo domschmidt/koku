@@ -23,7 +23,7 @@ test.describe('calendar customer appointment updates', () => {
     const entities = await createAppointment(customerAppointmentPage);
     try {
       await calendarPage.expectAppointmentVisible(entities.appointment.id);
-      await calendarPage.moveAppointment(entities.appointment.id, '21. Juli 2026');
+      await calendarPage.moveAppointment(entities.appointment.id, entities.moveTarget);
       await calendarPage.expectAppointmentVisible(entities.appointment.id);
     } finally {
       await cleanupEntities(page, entities);
@@ -66,19 +66,44 @@ test.describe('calendar customer appointment updates', () => {
   });
 });
 
+interface CreatedAppointmentEntities {
+  appointment: CreatedEntity;
+  customer: CreatedEntity;
+  moveTarget: string;
+}
+
 async function createAppointment(
   customerAppointmentPage: import('./pages/customer-appointment.page').CustomerAppointmentPage,
-) {
+): Promise<CreatedAppointmentEntities> {
   const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const customerName = `E2E Kalender-${suffix}`;
   const customer = await customerAppointmentPage.createCustomer('E2E', `Kalender-${suffix}`);
-  const appointment = await customerAppointmentPage.createAppointment('20.07.2026', '10:15', customerName);
-  return { appointment, customer };
+  const today = new Date();
+  const appointment = await customerAppointmentPage.createAppointment(toShortDate(today), '10:15', customerName);
+  return { appointment, customer, moveTarget: toLongDate(addDays(today, 1)) };
+}
+
+function addDays(date: Date, days: number): Date {
+  const shifted = new Date(date);
+  shifted.setDate(shifted.getDate() + days);
+  return shifted;
+}
+
+function toShortDate(date: Date): string {
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
+}
+
+function toLongDate(date: Date): string {
+  return new Intl.DateTimeFormat('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+}
+
+function pad(value: number): string {
+  return String(value).padStart(2, '0');
 }
 
 async function cleanupEntities(
   page: Page,
-  entities: { appointment: CreatedEntity; customer: CreatedEntity },
+  entities: CreatedAppointmentEntities,
   appointmentAlreadyDeleted = false,
 ): Promise<void> {
   if (!appointmentAlreadyDeleted) {
