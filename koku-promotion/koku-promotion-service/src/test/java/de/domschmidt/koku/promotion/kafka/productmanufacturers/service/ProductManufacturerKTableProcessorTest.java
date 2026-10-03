@@ -26,8 +26,9 @@ class ProductManufacturerKTableProcessorTest {
     void failsFastWhenKafkaStreamsAreNotStarted() {
         final StreamsBuilderFactoryBean factoryBean = mock(StreamsBuilderFactoryBean.class);
         when(factoryBean.getKafkaStreams()).thenReturn(null);
+        final ProductManufacturerKTableProcessor processor = new ProductManufacturerKTableProcessor(factoryBean);
 
-        assertThatThrownBy(() -> new ProductManufacturerKTableProcessor(factoryBean).getProductManufacturers())
+        assertThatThrownBy(processor::getProductManufacturers)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("not started");
     }

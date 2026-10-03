@@ -483,7 +483,7 @@ public class PromotionController {
 
     @PutMapping(value = "/promotions/{promotionId}")
     @ResponseStatus(HttpStatus.OK)
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public KokuPromotionDto update(
             @PathVariable("promotionId") Long promotionId,
             @RequestParam(value = "forceUpdate", required = false) Boolean forceUpdate,
@@ -549,7 +549,7 @@ public class PromotionController {
 
     @PostMapping("/promotions")
     @ResponseStatus(HttpStatus.CREATED)
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public KokuPromotionDto create(@RequestBody KokuPromotionDto newDto) throws ManufacturerIdNotFoundException {
         final Promotion newPromotion = this.transformer.transformToEntity(new Promotion(), newDto);
         final Promotion savedPromotion = this.promotionRepository.saveAndFlush(newPromotion);

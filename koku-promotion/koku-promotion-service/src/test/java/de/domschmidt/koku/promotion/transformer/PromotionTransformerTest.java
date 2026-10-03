@@ -111,7 +111,7 @@ class PromotionTransformerTest {
     }
 
     @Test
-    void kafkaSnapshotContainsEveryDiscountLevelAndProductManufacturers() throws Exception {
+    void kafkaSnapshotContainsEveryDiscountLevelAndProductManufacturers() {
         final Promotion promotion = new Promotion();
         promotion.setId(7L);
         promotion.setName("Summer");

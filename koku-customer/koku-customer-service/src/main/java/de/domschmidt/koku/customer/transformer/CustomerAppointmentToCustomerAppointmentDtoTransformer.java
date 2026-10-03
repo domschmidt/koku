@@ -145,18 +145,15 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
 
     private static List<KokuCustomerAppointmentActivityDto> transformActivities(
             final List<CustomerAppointmentActivity> activities) {
-        final List<KokuCustomerAppointmentActivityDto> result = new ArrayList<>();
         if (activities == null) {
-            return result;
+            return List.of();
         }
-
-        for (final CustomerAppointmentActivity currentActivity : activities) {
-            result.add(KokuCustomerAppointmentActivityDto.builder()
-                    .price(currentActivity.getSellPrice())
-                    .activityId(currentActivity.getActivityId())
-                    .build());
-        }
-        return result;
+        return activities.stream()
+                .<KokuCustomerAppointmentActivityDto>map(currentActivity -> KokuCustomerAppointmentActivityDto.builder()
+                        .price(currentActivity.getSellPrice())
+                        .activityId(currentActivity.getActivityId())
+                        .build())
+                .toList();
     }
 
     private static List<KokuCustomerAppointmentTreatmentDto> transformTreatmentSequence(
@@ -182,33 +179,29 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
 
     private static List<KokuCustomerAppointmentSoldProductDto> transformSoldProducts(
             final List<CustomerAppointmentSoldProduct> soldProducts) {
-        final List<KokuCustomerAppointmentSoldProductDto> result = new ArrayList<>();
         if (soldProducts == null) {
-            return result;
+            return List.of();
         }
-
-        for (final CustomerAppointmentSoldProduct currentSoldProduct : soldProducts) {
-            result.add(KokuCustomerAppointmentSoldProductDto.builder()
-                    .price(currentSoldProduct.getSellPrice())
-                    .productId(currentSoldProduct.getProductId())
-                    .build());
-        }
-        return result;
+        return soldProducts.stream()
+                .<KokuCustomerAppointmentSoldProductDto>map(
+                        currentSoldProduct -> KokuCustomerAppointmentSoldProductDto.builder()
+                                .price(currentSoldProduct.getSellPrice())
+                                .productId(currentSoldProduct.getProductId())
+                                .build())
+                .toList();
     }
 
     private static List<KokuCustomerAppointmentPromotionDto> transformPromotions(
             final List<CustomerAppointmentPromotion> promotions) {
-        final List<KokuCustomerAppointmentPromotionDto> result = new ArrayList<>();
         if (promotions == null) {
-            return result;
+            return List.of();
         }
-
-        for (final CustomerAppointmentPromotion currentPromotion : promotions) {
-            result.add(KokuCustomerAppointmentPromotionDto.builder()
-                    .promotionId(currentPromotion.getPromotionId())
-                    .build());
-        }
-        return result;
+        return promotions.stream()
+                .<KokuCustomerAppointmentPromotionDto>map(
+                        currentPromotion -> KokuCustomerAppointmentPromotionDto.builder()
+                                .promotionId(currentPromotion.getPromotionId())
+                                .build())
+                .toList();
     }
 
     public CustomerAppointment transformToEntity(
@@ -772,23 +765,21 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         return start.plus(duration);
     }
 
-    public String calculateCustomerAppointmentActivitySummary(List<KokuCustomerAppointmentActivityDomain> list) {
-        List<ActivityKafkaDto> kafkaActivities = new ArrayList<>();
-        for (final KokuCustomerAppointmentActivityDomain currentActivity : list) {
-            kafkaActivities.add(this.activityKTableProcessor.getActivities().get(currentActivity.getActivityId()));
-        }
-        return kafkaActivities.stream().map(ActivityKafkaDto::getName).collect(Collectors.joining(", "));
+    public String calculateCustomerAppointmentActivitySummary(final List<KokuCustomerAppointmentActivityDomain> list) {
+        return list.stream()
+                .map(currentActivity ->
+                        this.activityKTableProcessor.getActivities().get(currentActivity.getActivityId()))
+                .map(ActivityKafkaDto::getName)
+                .collect(Collectors.joining(", "));
     }
 
-    public String calculateCustomerAppointmentSoldProductSummary(List<KokuCustomerAppointmentSoldProductDomain> list) {
-        List<ProductKafkaDto> kafkaSoldProducts = new ArrayList<>();
-        ReadOnlyKeyValueStore<Long, ProductKafkaDto> productsSnapshot = this.productKTableProcessor.getProducts();
-        ReadOnlyKeyValueStore<Long, ProductManufacturerKafkaDto> manufacturerSnapshot =
+    public String calculateCustomerAppointmentSoldProductSummary(
+            final List<KokuCustomerAppointmentSoldProductDomain> list) {
+        final ReadOnlyKeyValueStore<Long, ProductKafkaDto> productsSnapshot = this.productKTableProcessor.getProducts();
+        final ReadOnlyKeyValueStore<Long, ProductManufacturerKafkaDto> manufacturerSnapshot =
                 this.productManufacturerKTableProcessor.getProductManufacturers();
-        for (final KokuCustomerAppointmentSoldProductDomain currentSoldProduct : list) {
-            kafkaSoldProducts.add(productsSnapshot.get(currentSoldProduct.getProductId()));
-        }
-        return kafkaSoldProducts.stream()
+        return list.stream()
+                .map(currentSoldProduct -> productsSnapshot.get(currentSoldProduct.getProductId()))
                 .map(productKafkaDto -> Stream.of(
                                 manufacturerSnapshot
                                         .get(productKafkaDto.getManufacturerId())
