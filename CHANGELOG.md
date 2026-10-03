@@ -1,3 +1,10 @@
+## [2.8.15](https://github.com/domschmidt/koku/compare/v2.8.14...v2.8.15) (2026-10-03)
+
+
+### Bug Fixes
+
+* create new version ([a65b9df](https://github.com/domschmidt/koku/commit/a65b9dfec29d4e20f85149f92f691845066bbf89))
+
 ## [2.8.14](https://github.com/domschmidt/koku/compare/v2.8.13...v2.8.14) (2026-07-27)
 
 
