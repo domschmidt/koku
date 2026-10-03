@@ -17,10 +17,18 @@
             "index": "src/index.html",
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
+            "externalDependencies": [
+              "node:*"
+            ],
             "assets": [
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "pdfium.esm.wasm",
+                "input": "node_modules/clawpdf/dist/vendor",
+                "output": "vendor"
               }
             ],
             "allowedCommonJsDependencies": [
