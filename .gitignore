@@ -5,3 +5,7 @@
 # APM dependencies
 apm_modules/
 .agents/
+
+# Local build toolchain / dependency cache
+/.toolchain/
+/.m2repo/

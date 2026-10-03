@@ -105,6 +105,7 @@
           <version>3.8.0</version>
 
           <configuration>
+            <lineEndings>UNIX</lineEndings>
             <java>
               <palantirJavaFormat>
                 <version>2.89.0</version>
