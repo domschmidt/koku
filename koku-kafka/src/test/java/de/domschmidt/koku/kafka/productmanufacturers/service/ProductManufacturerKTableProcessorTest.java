@@ -1,4 +1,4 @@
-package de.domschmidt.koku.promotion.kafka.productmanufacturers.service;
+package de.domschmidt.koku.kafka.productmanufacturers.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

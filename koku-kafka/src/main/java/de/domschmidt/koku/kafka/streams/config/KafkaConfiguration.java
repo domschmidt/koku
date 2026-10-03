@@ -1,4 +1,4 @@
-package de.domschmidt.koku.file.kafka.config;
+package de.domschmidt.koku.kafka.streams.config;
 
 import static org.apache.kafka.streams.StreamsConfig.BOOTSTRAP_SERVERS_CONFIG;
 

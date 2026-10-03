@@ -8,10 +8,10 @@ import static org.mockito.Mockito.when;
 
 import de.domschmidt.koku.customer.kafka.activities.service.ActivityKTableProcessor;
 import de.domschmidt.koku.customer.kafka.activity_steps.service.ActivityStepKTableProcessor;
-import de.domschmidt.koku.customer.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.customer.kafka.products.service.ProductKTableProcessor;
 import de.domschmidt.koku.customer.kafka.promotions.service.PromotionKTableProcessor;
 import de.domschmidt.koku.customer.kafka.users.service.UserKTableProcessor;
+import de.domschmidt.koku.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.user.kafka.dto.UserKafkaDto;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;

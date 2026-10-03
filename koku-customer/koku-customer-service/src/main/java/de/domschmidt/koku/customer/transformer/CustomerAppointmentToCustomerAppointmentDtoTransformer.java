@@ -8,12 +8,12 @@ import de.domschmidt.koku.customer.domain.KokuCustomerAppointmentSoldProductDoma
 import de.domschmidt.koku.customer.exceptions.*;
 import de.domschmidt.koku.customer.kafka.activities.service.ActivityKTableProcessor;
 import de.domschmidt.koku.customer.kafka.activity_steps.service.ActivityStepKTableProcessor;
-import de.domschmidt.koku.customer.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.customer.kafka.products.service.ProductKTableProcessor;
 import de.domschmidt.koku.customer.kafka.promotions.service.PromotionKTableProcessor;
 import de.domschmidt.koku.customer.kafka.users.service.UserKTableProcessor;
 import de.domschmidt.koku.customer.persistence.*;
 import de.domschmidt.koku.dto.customer.*;
+import de.domschmidt.koku.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.product.kafka.dto.ProductKafkaDto;
 import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
 import de.domschmidt.koku.product.kafka.dto.ProductPriceHistoryKafkaDto;

@@ -14,9 +14,9 @@ import de.domschmidt.koku.customer.kafka.customers.service.CustomerAppointmentKa
 import de.domschmidt.koku.customer.kafka.customers.service.CustomerKafkaService;
 import de.domschmidt.koku.customer.kafka.dto.CustomerAppointmentKafkaDto;
 import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
-import de.domschmidt.koku.customer.kafka.streams.config.KafkaConfiguration;
 import de.domschmidt.koku.customer.persistence.Customer;
 import de.domschmidt.koku.customer.persistence.CustomerAppointment;
+import de.domschmidt.koku.kafka.streams.config.KafkaConfiguration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

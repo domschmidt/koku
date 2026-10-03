@@ -31,7 +31,6 @@ import de.domschmidt.koku.customer.exceptions.*;
 import de.domschmidt.koku.customer.kafka.activities.service.ActivityKTableProcessor;
 import de.domschmidt.koku.customer.kafka.activity_steps.service.ActivityStepKTableProcessor;
 import de.domschmidt.koku.customer.kafka.customers.service.CustomerAppointmentKafkaService;
-import de.domschmidt.koku.customer.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.customer.kafka.products.service.ProductKTableProcessor;
 import de.domschmidt.koku.customer.kafka.promotions.service.PromotionKTableProcessor;
 import de.domschmidt.koku.customer.kafka.users.service.UserKTableProcessor;
@@ -79,6 +78,7 @@ import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStyli
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.koku.dto.product.KokuProductDto;
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
+import de.domschmidt.koku.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.product.kafka.util.ProductDisplayNameFormatter;
 import de.domschmidt.list.dto.response.ListViewDto;
 import de.domschmidt.list.dto.response.ListViewSourcePathReference;

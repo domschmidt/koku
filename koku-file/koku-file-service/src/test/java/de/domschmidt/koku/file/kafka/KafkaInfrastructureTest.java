@@ -6,8 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.domschmidt.koku.file.kafka.config.KafkaConfiguration;
 import de.domschmidt.koku.file.kafka.customers.service.CustomerKTableProcessor;
+import de.domschmidt.koku.kafka.streams.config.KafkaConfiguration;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;

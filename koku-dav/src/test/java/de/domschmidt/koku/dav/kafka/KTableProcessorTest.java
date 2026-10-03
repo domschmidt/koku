@@ -6,10 +6,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.domschmidt.koku.dav.kafka.config.KafkaConfiguration;
 import de.domschmidt.koku.dav.kafka.customers.service.CustomerAppointmentKTableProcessor;
 import de.domschmidt.koku.dav.kafka.customers.service.CustomerKTableProcessor;
 import de.domschmidt.koku.dav.kafka.users.service.UserAppointmentKTableProcessor;
+import de.domschmidt.koku.kafka.streams.config.KafkaConfiguration;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;

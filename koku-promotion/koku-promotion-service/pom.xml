@@ -23,6 +23,12 @@
     <dependencies>
         <dependency>
             <groupId>de.domschmidt</groupId>
+            <artifactId>koku-kafka</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.domschmidt</groupId>
             <artifactId>koku-promotion-kafka-dto</artifactId>
             <version>${project.version}</version>
         </dependency>

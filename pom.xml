@@ -30,8 +30,6 @@
 
     <sonar.plsql.file.suffixes>pks,pkb</sonar.plsql.file.suffixes>
     <sonar.coverage.jacoco.xmlReportPaths>**/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-    <!-- Streams config and the manufacturer KTable adapter are intentionally duplicated per service. -->
-    <sonar.cpd.exclusions>**/kafka/streams/config/KafkaConfiguration.java,**/kafka/productmanufacturers/service/ProductManufacturerKTableProcessor.java</sonar.cpd.exclusions>
     <!-- Spring MVC cannot express WebDAV PROPFIND/REPORT in @RequestMapping(method = ...). -->
     <sonar.issue.ignore.multicriteria>e1,e2,e3,e4</sonar.issue.ignore.multicriteria>
     <sonar.issue.ignore.multicriteria.e1.ruleKey>java:S3752</sonar.issue.ignore.multicriteria.e1.ruleKey>
@@ -72,6 +70,7 @@
     <module>koku-document</module>
     <module>koku-user</module>
     <module>koku-dto</module>
+    <module>koku-kafka</module>
     <module>koku-auth</module>
     <module>koku-file</module>
     <module>formular</module>

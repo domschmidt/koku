@@ -1,8 +1,8 @@
 package de.domschmidt.koku.promotion.transformer;
 
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
+import de.domschmidt.koku.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.promotion.exceptions.ManufacturerIdNotFoundException;
-import de.domschmidt.koku.promotion.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.promotion.persistence.Promotion;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;

@@ -1,4 +1,4 @@
-package de.domschmidt.koku.promotion.kafka.productmanufacturers.service;
+package de.domschmidt.koku.kafka.productmanufacturers.service;
 
 import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
 import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDtoSerdes;
@@ -15,9 +15,7 @@ import org.apache.kafka.streams.state.Stores;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
-import org.springframework.stereotype.Component;
 
-@Component
 public class ProductManufacturerKTableProcessor {
 
     public static final String STORE_NAME = "product-manufacturer-store";
