@@ -11,14 +11,18 @@ import static org.mockito.Mockito.when;
 
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
+import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
 import de.domschmidt.koku.promotion.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.promotion.kafka.promotion.service.PromotionKafkaService;
 import de.domschmidt.koku.promotion.persistence.Promotion;
 import de.domschmidt.koku.promotion.persistence.PromotionRepository;
 import de.domschmidt.koku.promotion.transformer.PromotionToPromotionDtoTransformer;
 import jakarta.persistence.EntityManager;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
@@ -51,6 +55,23 @@ class PromotionCrudTest {
         assertThat(controller.readSummary(5L).getId()).isEqualTo(5L);
         assertThatThrownBy(() -> controller.read(6L)).isInstanceOf(ResponseStatusException.class);
         assertThatThrownBy(() -> controller.readSummary(6L)).isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void readSummaryResolvesProductManufacturerNames() {
+        final Promotion promotion = promotion(5L, 2L, false);
+        promotion.setProductManufacturerIds(new LinkedHashSet<>(List.of(7L)));
+        when(repository.findById(5L)).thenReturn(Optional.of(promotion));
+        @SuppressWarnings("unchecked")
+        final ReadOnlyKeyValueStore<Long, ProductManufacturerKafkaDto> store = mock(ReadOnlyKeyValueStore.class);
+        when(store.get(7L))
+                .thenReturn(ProductManufacturerKafkaDto.builder()
+                        .id(7L)
+                        .name("Maker")
+                        .build());
+        when(manufacturerProcessor.getProductManufacturers()).thenReturn(store);
+
+        assertThat(controller.readSummary(5L).getSummary()).isEqualTo("Summer (Maker)");
     }
 
     @Test

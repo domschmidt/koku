@@ -69,9 +69,12 @@ public class ProductToProductDtoTransformer {
                 this.entityManager.getReference(ProductManufacturer.class, updatedDto.getManufacturerId()));
         if (updatedDto.getPrice() != null
                 && (model.getPriceHistory().isEmpty()
-                        || !updatedDto
-                                .getPrice()
-                                .equals(model.getPriceHistory().getLast().getPrice()))) {
+                        || updatedDto
+                                        .getPrice()
+                                        .compareTo(model.getPriceHistory()
+                                                .getLast()
+                                                .getPrice())
+                                != 0)) {
             model.getPriceHistory().add(new ProductPriceHistoryEntry(model, updatedDto.getPrice()));
         }
         if (updatedDto.getDeleted() != null) {

@@ -391,6 +391,22 @@ class CustomerAppointmentCalculationTest {
     }
 
     @Test
+    void soldProductSummaryContainsMilliliters() {
+        when(products.get(2L))
+                .thenReturn(ProductKafkaDto.builder()
+                        .name("Shampoo")
+                        .manufacturerId(4L)
+                        .milliliters(250)
+                        .build());
+        when(manufacturers.get(4L))
+                .thenReturn(ProductManufacturerKafkaDto.builder().name("Maker").build());
+
+        assertThat(transformer.calculateCustomerAppointmentSoldProductSummary(
+                        List.of(new KokuCustomerAppointmentSoldProductDomain(2L, null))))
+                .isEqualTo("Maker / Shampoo (250 ml)");
+    }
+
+    @Test
     void entityUpdateReplacesNestedContentAndRefreshesSnapshots() throws Exception {
         final LocalDateTime start = LocalDateTime.of(2026, java.time.Month.JULY, 12, 9, 0);
         final Customer customer = new Customer();

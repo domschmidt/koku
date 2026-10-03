@@ -2,6 +2,8 @@ package de.domschmidt.koku.product.controller;
 
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import de.domschmidt.chart.dto.response.axes.AxesDto;
@@ -604,13 +606,16 @@ public class ProductController {
         listQueryFactory.addFetchExpr(KokuProductDto.Fields.deleted, qClazz.deleted);
         listQueryFactory.addFetchExpr(KokuProductDto.Fields.name, qClazz.name);
         listQueryFactory.addFetchExpr(KokuProductDto.Fields.milliliters, qClazz.milliliters);
+        final StringExpression millilitersText = qClazz.milliliters.stringValue();
         listQueryFactory.addFetchExpr(
                 KokuProductDto.Fields.summary,
-                stringTemplate(
-                        "case when {0} is null or {0} <= 0 then {1}"
-                                + " when {1} is null or trim({1}) = '' then concat(to_char({0}, 'FM999999999'), ' ml')"
-                                + " else concat({1}, ' (', to_char({0}, 'FM999999999'), ' ml)') end",
-                        qClazz.milliliters, qClazz.name));
+                new CaseBuilder()
+                        .when(qClazz.milliliters.isNull().or(qClazz.milliliters.loe(0)))
+                        .then(qClazz.name)
+                        .when(qClazz.name.isNull().or(qClazz.name.trim().isEmpty()))
+                        .then(millilitersText.concat(" ml)"))
+                        .otherwise(
+                                qClazz.name.concat(" (").concat(millilitersText).concat(" ml)")));
         final QProductPriceHistoryEntry qProductPriceHistoryEntry = QProductPriceHistoryEntry.productPriceHistoryEntry;
         final QProductPriceHistoryEntry qProductPriceHistoryEntryInner = new QProductPriceHistoryEntry("priceInner");
         listQueryFactory.addFetchExpr(
