@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import de.domschmidt.koku.customer.kafka.customers.service.CustomerAppointmentKTableProcessor;
+import de.domschmidt.koku.customer.kafka.customers.service.CustomerKTableProcessor;
 import de.domschmidt.koku.customer.kafka.dto.CustomerAppointmentKafkaDto;
 import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
-import de.domschmidt.koku.dav.kafka.customers.service.CustomerAppointmentKTableProcessor;
-import de.domschmidt.koku.dav.kafka.customers.service.CustomerKTableProcessor;
-import de.domschmidt.koku.dav.kafka.users.service.UserAppointmentKTableProcessor;
 import de.domschmidt.koku.user.kafka.dto.UserAppointmentKafkaDto;
+import de.domschmidt.koku.user.kafka.users.service.UserAppointmentKTableProcessor;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Iterator;

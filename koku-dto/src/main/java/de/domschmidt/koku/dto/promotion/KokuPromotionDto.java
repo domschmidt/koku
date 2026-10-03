@@ -2,6 +2,7 @@ package de.domschmidt.koku.dto.promotion;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.*;
 import lombok.experimental.FieldNameConstants;
 
@@ -21,6 +22,8 @@ public class KokuPromotionDto {
 
     String shortSummary;
     String longSummary;
+
+    List<Long> productManufacturerIds;
 
     BigDecimal activityAbsoluteItemSavings;
     BigDecimal activityAbsoluteSavings;

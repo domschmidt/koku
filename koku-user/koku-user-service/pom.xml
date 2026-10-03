@@ -125,7 +125,7 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>koku-user-kafka-dto</artifactId>
+            <artifactId>koku-user-kafka</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

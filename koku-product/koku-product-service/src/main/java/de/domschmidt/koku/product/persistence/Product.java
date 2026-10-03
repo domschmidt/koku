@@ -31,6 +31,8 @@ public class Product implements Serializable {
 
     String name = "";
 
+    Integer milliliters;
+
     @ManyToOne(cascade = {CascadeType.ALL})
     ProductManufacturer manufacturer;
 

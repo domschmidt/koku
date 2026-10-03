@@ -1,7 +1,7 @@
 package de.domschmidt.koku.customer.kafka.customers.config;
 
 import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
-import de.domschmidt.koku.customer.kafka.streams.config.KafkaConfiguration;
+import de.domschmidt.koku.kafka.streams.config.KafkaConfiguration;
 import java.util.Map;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.LongSerializer;

@@ -36,6 +36,18 @@ class ProductKafkaTransformerTest {
     }
 
     @Test
+    void exportsMilliliters() {
+        final Product product = new Product();
+        product.setName("Shampoo");
+        product.setMilliliters(250);
+        product.setPriceHistory(null);
+
+        final var dto = transformer.transformToDto(product);
+
+        assertThat(dto.getMilliliters()).isEqualTo(250);
+    }
+
+    @Test
     void preservesNullOptionalRelationships() {
         final Product product = new Product();
         product.setPriceHistory(null);

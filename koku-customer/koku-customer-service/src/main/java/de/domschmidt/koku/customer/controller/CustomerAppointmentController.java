@@ -22,19 +22,15 @@ import de.domschmidt.formular.dto.FormViewDto;
 import de.domschmidt.formular.dto.content.buttons.EnumButtonType;
 import de.domschmidt.formular.factory.FormOutlet;
 import de.domschmidt.formular.factory.FormViewFactory;
+import de.domschmidt.koku.activity.kafka.activities.service.ActivityKTableProcessor;
+import de.domschmidt.koku.activity.kafka.activity_steps.service.ActivityStepKTableProcessor;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessErrorWithConfirmationMessageDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionCloseButtonDto;
 import de.domschmidt.koku.business_exception.dto.KokuBusinessExceptionSendToDifferentEndpointButtonDto;
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.business_logic.dto.*;
 import de.domschmidt.koku.customer.exceptions.*;
-import de.domschmidt.koku.customer.kafka.activities.service.ActivityKTableProcessor;
-import de.domschmidt.koku.customer.kafka.activity_steps.service.ActivityStepKTableProcessor;
 import de.domschmidt.koku.customer.kafka.customers.service.CustomerAppointmentKafkaService;
-import de.domschmidt.koku.customer.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
-import de.domschmidt.koku.customer.kafka.products.service.ProductKTableProcessor;
-import de.domschmidt.koku.customer.kafka.promotions.service.PromotionKTableProcessor;
-import de.domschmidt.koku.customer.kafka.users.service.UserKTableProcessor;
 import de.domschmidt.koku.customer.persistence.*;
 import de.domschmidt.koku.customer.transformer.CustomerAppointmentToCustomerAppointmentDtoTransformer;
 import de.domschmidt.koku.dto.KokuColorEnum;
@@ -79,6 +75,11 @@ import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStyli
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.koku.dto.product.KokuProductDto;
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
+import de.domschmidt.koku.product.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
+import de.domschmidt.koku.product.kafka.products.service.ProductKTableProcessor;
+import de.domschmidt.koku.product.kafka.util.ProductDisplayNameFormatter;
+import de.domschmidt.koku.promotion.kafka.promotions.service.PromotionKTableProcessor;
+import de.domschmidt.koku.user.kafka.users.service.UserKTableProcessor;
 import de.domschmidt.list.dto.response.ListViewDto;
 import de.domschmidt.list.dto.response.ListViewSourcePathReference;
 import de.domschmidt.list.dto.response.actions.*;
@@ -446,7 +447,7 @@ public class CustomerAppointmentController {
                                         .getProductManufacturers()
                                         .get(product.value.getManufacturerId())
                                         .getName(),
-                                product.value.getName()))
+                                ProductDisplayNameFormatter.withMilliliters(product.value)))
                         .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
                         .color(KokuColorEnum.PRIMARY)
                         .category(PRODUCTS_LABEL)
@@ -637,7 +638,8 @@ public class CustomerAppointmentController {
                                                                 "{productName}",
                                                                         StringTransformationSourcePathPatternParam
                                                                                 .builder()
-                                                                                .sourcePath(KokuProductDto.Fields.name)
+                                                                                .sourcePath(
+                                                                                        KokuProductDto.Fields.summary)
                                                                                 .build()))
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
@@ -694,7 +696,7 @@ public class CustomerAppointmentController {
                                                         .getProductManufacturers()
                                                         .get(product.value.getManufacturerId())
                                                         .getName(),
-                                                product.value.getName()))
+                                                ProductDisplayNameFormatter.withMilliliters(product.value)))
                                         .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
                                         .build())
                                 .toList())
@@ -760,7 +762,7 @@ public class CustomerAppointmentController {
                                                         .targetPath(SelectFormularFieldPossibleValue.Fields.id)
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
-                                                        .sourcePath(KokuProductDto.Fields.name)
+                                                        .sourcePath(KokuProductDto.Fields.summary)
                                                         .targetPath(SelectFormularFieldPossibleValue.Fields.text)
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
@@ -1748,7 +1750,7 @@ public class CustomerAppointmentController {
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
                                 .categories(visitsPerYear.keySet().stream()
-                                        .map(year -> String.format("%s", year))
+                                        .map(String::valueOf)
                                         .toList())
                                 .build())
                         .build())
@@ -1834,7 +1836,7 @@ public class CustomerAppointmentController {
                                                                 .getProductManufacturers()
                                                                 .get(product.value.getManufacturerId())
                                                                 .getName(),
-                                                        product.value.getName())
+                                                        ProductDisplayNameFormatter.withMilliliters(product.value))
                                                 .trim())
                                         .toList())
                                 .build())
@@ -1949,7 +1951,7 @@ public class CustomerAppointmentController {
                                                                         activityKafkaDto.key, BigDecimal.ZERO))
                                                         != 0
                                                 || applicationsPerActivity.getOrDefault(activityKafkaDto.key, 0L) != 0L)
-                                        .map(activity -> String.format("%s", activity.value.getName()))
+                                        .map(activity -> activity.value.getName())
                                         .toList())
                                 .build())
                         .y(YAxisDto.builder().text(REVENUE_LABEL).build())
@@ -2116,7 +2118,7 @@ public class CustomerAppointmentController {
                 .axes(AxesDto.builder()
                         .x(CategoricalXAxisDto.builder()
                                 .categories(revenuesPerYear.keySet().stream()
-                                        .map(year -> String.format("%s", year))
+                                        .map(String::valueOf)
                                         .toList())
                                 .build())
                         .build())

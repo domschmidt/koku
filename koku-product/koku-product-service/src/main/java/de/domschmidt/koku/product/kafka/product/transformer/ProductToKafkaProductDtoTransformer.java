@@ -11,6 +11,7 @@ public class ProductToKafkaProductDtoTransformer {
                 .id(model.getId())
                 .deleted(model.isDeleted())
                 .name(model.getName())
+                .milliliters(model.getMilliliters())
                 .priceHistory(
                         model.getPriceHistory() != null
                                 ? model.getPriceHistory().stream()

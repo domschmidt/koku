@@ -1,7 +1,7 @@
 package de.domschmidt.koku.dav.service;
 
+import de.domschmidt.koku.customer.kafka.customers.service.CustomerAppointmentKTableProcessor;
 import de.domschmidt.koku.customer.kafka.dto.CustomerAppointmentKafkaDto;
-import de.domschmidt.koku.dav.kafka.customers.service.CustomerAppointmentKTableProcessor;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;

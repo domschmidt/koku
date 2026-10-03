@@ -7,10 +7,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.domschmidt.formular.dto.FormViewDto;
+import de.domschmidt.koku.customer.kafka.customers.service.CustomerKTableProcessor;
 import de.domschmidt.koku.customer.kafka.dto.CustomerKafkaDto;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
 import de.domschmidt.koku.dto.formular.fields.select.SelectFormularField;
-import de.domschmidt.koku.file.kafka.customers.service.CustomerKTableProcessor;
 import de.domschmidt.list.dto.response.ListViewDto;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;

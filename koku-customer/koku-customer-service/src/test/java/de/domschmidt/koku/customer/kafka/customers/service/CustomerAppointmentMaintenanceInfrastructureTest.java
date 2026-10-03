@@ -9,10 +9,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.domschmidt.koku.customer.kafka.KafkaStreamsRunningEvent;
-import de.domschmidt.koku.customer.kafka.streams.config.KafkaConfiguration;
 import de.domschmidt.koku.customer.persistence.CustomerAppointment;
 import de.domschmidt.koku.customer.persistence.CustomerAppointmentRepository;
 import de.domschmidt.koku.customer.transformer.CustomerAppointmentToCustomerAppointmentDtoTransformer;
+import de.domschmidt.koku.kafka.streams.config.KafkaConfiguration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;

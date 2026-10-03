@@ -2,6 +2,8 @@ package de.domschmidt.koku.product.controller;
 
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import de.domschmidt.chart.dto.response.axes.AxesDto;
@@ -222,6 +224,15 @@ public class ProductController {
                 .outlet(FormOutlet.CONTENT);
         formFactory
                 .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuProductDto.Fields.milliliters)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Milliliter")
+                        .regexp("^\\d{0,9}$")
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
                         .valuePath(KokuProductDto.Fields.price)
                         .type(EnumInputFormularFieldType.NUMBER)
                         .label(PRICE_LABEL)
@@ -358,7 +369,7 @@ public class ProductController {
                 listViewFactory.addSourcePath(KokuProductDto.Fields.deleted);
         final ListViewSourcePathReference idSourcePathRef = listViewFactory.addSourcePath(KokuProductDto.Fields.id);
         final ListViewFieldReference nameFieldRef = listViewFactory.addField(
-                KokuProductDto.Fields.name,
+                KokuProductDto.Fields.summary,
                 ListViewInputFieldDto.builder().label("Name").build());
         final ListViewFieldReference manufacturerNameFieldRef = listViewFactory.addField(
                 KokuProductDto.Fields.manufacturerName,
@@ -397,7 +408,7 @@ public class ProductController {
                 .eventName(PRODUCT_CREATED_EVENT)
                 .idPath(KokuProductDto.Fields.id)
                 .valueMapping(Map.of(
-                        KokuProductDto.Fields.name, nameFieldRef,
+                        KokuProductDto.Fields.summary, nameFieldRef,
                         KokuProductDto.Fields.manufacturerName, manufacturerNameFieldRef,
                         KokuProductDto.Fields.formattedPrice, priceFieldRef,
                         KokuProductDto.Fields.deleted, deletedSourcePathRef))
@@ -440,7 +451,7 @@ public class ProductController {
                 .idPath(KokuProductDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuProductDto.Fields.deleted, deletedSourcePathRef,
-                        KokuProductDto.Fields.name, nameFieldRef,
+                        KokuProductDto.Fields.summary, nameFieldRef,
                         KokuProductDto.Fields.formattedPrice, priceFieldRef,
                         KokuProductDto.Fields.manufacturerName, manufacturerNameFieldRef))
                 .build());
@@ -454,7 +465,7 @@ public class ProductController {
                                 Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
                                         .eventName(PRODUCT_UPDATED_EVENT)
                                         .idPath(KokuProductDto.Fields.id)
-                                        .titleValuePath(KokuProductDto.Fields.name)
+                                        .titleValuePath(KokuProductDto.Fields.summary)
                                         .build()))
                         .content(ListViewDockContentDto.builder()
                                 .content(Arrays.asList(
@@ -594,6 +605,17 @@ public class ProductController {
         listQueryFactory.addFetchExpr(KokuProductDto.Fields.id, qClazz.id);
         listQueryFactory.addFetchExpr(KokuProductDto.Fields.deleted, qClazz.deleted);
         listQueryFactory.addFetchExpr(KokuProductDto.Fields.name, qClazz.name);
+        listQueryFactory.addFetchExpr(KokuProductDto.Fields.milliliters, qClazz.milliliters);
+        final StringExpression millilitersText = qClazz.milliliters.stringValue();
+        listQueryFactory.addFetchExpr(
+                KokuProductDto.Fields.summary,
+                new CaseBuilder()
+                        .when(qClazz.milliliters.isNull().or(qClazz.milliliters.loe(0)))
+                        .then(qClazz.name)
+                        .when(qClazz.name.isNull().or(qClazz.name.trim().isEmpty()))
+                        .then(millilitersText.concat(" ml)"))
+                        .otherwise(
+                                qClazz.name.concat(" (").concat(millilitersText).concat(" ml)")));
         final QProductPriceHistoryEntry qProductPriceHistoryEntry = QProductPriceHistoryEntry.productPriceHistoryEntry;
         final QProductPriceHistoryEntry qProductPriceHistoryEntryInner = new QProductPriceHistoryEntry("priceInner");
         listQueryFactory.addFetchExpr(

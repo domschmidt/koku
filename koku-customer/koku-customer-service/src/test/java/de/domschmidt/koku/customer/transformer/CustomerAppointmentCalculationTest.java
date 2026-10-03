@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import de.domschmidt.koku.activity.kafka.activities.service.ActivityKTableProcessor;
+import de.domschmidt.koku.activity.kafka.activity_steps.service.ActivityStepKTableProcessor;
 import de.domschmidt.koku.activity.kafka.dto.ActivityKafkaDto;
 import de.domschmidt.koku.activity.kafka.dto.ActivityPriceHistoryKafkaDto;
 import de.domschmidt.koku.customer.domain.KokuCustomerAppointmentActivityDomain;
@@ -15,12 +17,6 @@ import de.domschmidt.koku.customer.exceptions.ActivityStepIdNotFoundException;
 import de.domschmidt.koku.customer.exceptions.ProductIdNotFoundException;
 import de.domschmidt.koku.customer.exceptions.PromotionIdNotFoundException;
 import de.domschmidt.koku.customer.exceptions.UserIdNotFoundException;
-import de.domschmidt.koku.customer.kafka.activities.service.ActivityKTableProcessor;
-import de.domschmidt.koku.customer.kafka.activity_steps.service.ActivityStepKTableProcessor;
-import de.domschmidt.koku.customer.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
-import de.domschmidt.koku.customer.kafka.products.service.ProductKTableProcessor;
-import de.domschmidt.koku.customer.kafka.promotions.service.PromotionKTableProcessor;
-import de.domschmidt.koku.customer.kafka.users.service.UserKTableProcessor;
 import de.domschmidt.koku.customer.persistence.Customer;
 import de.domschmidt.koku.customer.persistence.CustomerAppointment;
 import de.domschmidt.koku.dto.customer.KokuActivityPriceSummaryRequestDto;
@@ -36,7 +32,11 @@ import de.domschmidt.koku.dto.customer.KokuCustomerAppointmentTreatmentDto;
 import de.domschmidt.koku.product.kafka.dto.ProductKafkaDto;
 import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
 import de.domschmidt.koku.product.kafka.dto.ProductPriceHistoryKafkaDto;
+import de.domschmidt.koku.product.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
+import de.domschmidt.koku.product.kafka.products.service.ProductKTableProcessor;
 import de.domschmidt.koku.promotion.kafka.dto.PromotionKafkaDto;
+import de.domschmidt.koku.promotion.kafka.promotions.service.PromotionKTableProcessor;
+import de.domschmidt.koku.user.kafka.users.service.UserKTableProcessor;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -154,6 +154,76 @@ class CustomerAppointmentCalculationTest {
                 List.of(new KokuCustomerAppointmentPromotionDomain(8L)));
 
         assertThat(result).isEqualByComparingTo("30.00");
+    }
+
+    @Test
+    void manufacturerBoundItemSavingsOnlyDiscountMatchingProducts() {
+        final LocalDateTime appointmentDate = LocalDateTime.of(2026, java.time.Month.JULY, 12, 10, 0);
+        when(products.get(1L))
+                .thenReturn(ProductKafkaDto.builder()
+                        .manufacturerId(10L)
+                        .priceHistory(List.of(ProductPriceHistoryKafkaDto.builder()
+                                .price(new BigDecimal("100.00"))
+                                .recorded(appointmentDate.minusDays(1))
+                                .build()))
+                        .build());
+        when(products.get(2L))
+                .thenReturn(ProductKafkaDto.builder()
+                        .manufacturerId(20L)
+                        .priceHistory(List.of(ProductPriceHistoryKafkaDto.builder()
+                                .price(new BigDecimal("50.00"))
+                                .recorded(appointmentDate.minusDays(1))
+                                .build()))
+                        .build());
+        when(promotions.get(9L))
+                .thenReturn(PromotionKafkaDto.builder()
+                        .productManufacturerIds(List.of(10L))
+                        .productRelativeItemSavings(new BigDecimal("10.00"))
+                        .build());
+
+        final BigDecimal result = transformer.calculateCustomerAppointmentSoldProductPriceSum(
+                appointmentDate,
+                List.of(
+                        new KokuCustomerAppointmentSoldProductDomain(1L, null),
+                        new KokuCustomerAppointmentSoldProductDomain(2L, null)),
+                List.of(new KokuCustomerAppointmentPromotionDomain(9L)));
+
+        assertThat(result).isEqualByComparingTo("140.00");
+    }
+
+    @Test
+    void manufacturerBoundOverallSavingsStillApplyToWholeBasket() {
+        final LocalDateTime appointmentDate = LocalDateTime.of(2026, java.time.Month.JULY, 12, 10, 0);
+        when(products.get(1L))
+                .thenReturn(ProductKafkaDto.builder()
+                        .manufacturerId(10L)
+                        .priceHistory(List.of(ProductPriceHistoryKafkaDto.builder()
+                                .price(new BigDecimal("100.00"))
+                                .recorded(appointmentDate.minusDays(1))
+                                .build()))
+                        .build());
+        when(products.get(2L))
+                .thenReturn(ProductKafkaDto.builder()
+                        .manufacturerId(20L)
+                        .priceHistory(List.of(ProductPriceHistoryKafkaDto.builder()
+                                .price(new BigDecimal("50.00"))
+                                .recorded(appointmentDate.minusDays(1))
+                                .build()))
+                        .build());
+        when(promotions.get(9L))
+                .thenReturn(PromotionKafkaDto.builder()
+                        .productManufacturerIds(List.of(10L))
+                        .productRelativeSavings(new BigDecimal("50.00"))
+                        .build());
+
+        final BigDecimal result = transformer.calculateCustomerAppointmentSoldProductPriceSum(
+                appointmentDate,
+                List.of(
+                        new KokuCustomerAppointmentSoldProductDomain(1L, null),
+                        new KokuCustomerAppointmentSoldProductDomain(2L, null)),
+                List.of(new KokuCustomerAppointmentPromotionDomain(9L)));
+
+        assertThat(result).isEqualByComparingTo("75.00");
     }
 
     @Test
@@ -318,6 +388,22 @@ class CustomerAppointmentCalculationTest {
                                         .build()))
                                 .build()))
                 .isInstanceOf(PromotionIdNotFoundException.class);
+    }
+
+    @Test
+    void soldProductSummaryContainsMilliliters() {
+        when(products.get(2L))
+                .thenReturn(ProductKafkaDto.builder()
+                        .name("Shampoo")
+                        .manufacturerId(4L)
+                        .milliliters(250)
+                        .build());
+        when(manufacturers.get(4L))
+                .thenReturn(ProductManufacturerKafkaDto.builder().name("Maker").build());
+
+        assertThat(transformer.calculateCustomerAppointmentSoldProductSummary(
+                        List.of(new KokuCustomerAppointmentSoldProductDomain(2L, null))))
+                .isEqualTo("Maker / Shampoo (250 ml)");
     }
 
     @Test

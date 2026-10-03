@@ -23,6 +23,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>de.domschmidt</groupId>
+            <artifactId>koku-kafka</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
@@ -105,12 +111,12 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>koku-customer-kafka-dto</artifactId>
+            <artifactId>koku-customer-kafka</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>koku-user-kafka-dto</artifactId>
+            <artifactId>koku-user-kafka</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

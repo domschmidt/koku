@@ -23,7 +23,7 @@
     </properties>
 
     <modules>
-        <module>koku-user-kafka-dto</module>
+        <module>koku-user-kafka</module>
         <module>koku-user-service</module>
     </modules>
 

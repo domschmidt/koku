@@ -1,0 +1,21 @@
+# Normalize line endings so Windows and Linux checkouts produce identical diffs and match Spotless.
+* text=auto eol=lf
+
+# Windows scripts must keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Never touch binary assets.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.jar binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.keystore binary
+*.p12 binary
