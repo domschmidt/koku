@@ -80,7 +80,7 @@ async function createAppointment(
   const customer = await customerAppointmentPage.createCustomer('E2E', `Kalender-${suffix}`);
   const today = new Date();
   const appointment = await customerAppointmentPage.createAppointment(toShortDate(today), '10:15', customerName);
-  return { appointment, customer, moveTarget: toLongDate(addDays(today, 1)) };
+  return { appointment, customer, moveTarget: toIsoDate(addDays(today, 1)) };
 }
 
 function addDays(date: Date, days: number): Date {
@@ -93,8 +93,8 @@ function toShortDate(date: Date): string {
   return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
 }
 
-function toLongDate(date: Date): string {
-  return new Intl.DateTimeFormat('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+function toIsoDate(date: Date): string {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 function pad(value: number): string {

@@ -34,11 +34,11 @@ export class CalendarPage {
     await expect(this.appointment(appointmentId)).toBeVisible();
   }
 
-  async moveAppointment(appointmentId: number, targetDateName: string): Promise<void> {
+  async moveAppointment(appointmentId: number, targetIsoDate: string): Promise<void> {
     const updateResponse = this.page.waitForResponse(
       (response) => response.request().method() === 'PUT' && response.url().includes(`/appointments/${appointmentId}`),
     );
-    await this.appointment(appointmentId).dragTo(this.page.getByRole('gridcell', { name: targetDateName }));
+    await this.appointment(appointmentId).dragTo(this.page.locator(`[role="gridcell"][data-date="${targetIsoDate}"]`));
     expect((await updateResponse).ok()).toBe(true);
   }
 
