@@ -17,6 +17,7 @@ import de.domschmidt.koku.dto.customer.*;
 import de.domschmidt.koku.product.kafka.dto.ProductKafkaDto;
 import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
 import de.domschmidt.koku.product.kafka.dto.ProductPriceHistoryKafkaDto;
+import de.domschmidt.koku.product.kafka.util.ProductDisplayNameFormatter;
 import de.domschmidt.koku.promotion.kafka.dto.PromotionKafkaDto;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityManager;
@@ -530,26 +531,43 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
         return sum;
     }
 
+    private static boolean isManufacturerBound(final PromotionKafkaDto promotion) {
+        return promotion.getProductManufacturerIds() != null
+                && !promotion.getProductManufacturerIds().isEmpty();
+    }
+
+    private static boolean appliesToProduct(final PromotionKafkaDto promotion, final ProductKafkaDto product) {
+        if (!isManufacturerBound(promotion)) {
+            return true;
+        }
+        return product != null
+                && product.getManufacturerId() != null
+                && promotion.getProductManufacturerIds().contains(product.getManufacturerId());
+    }
+
     public BigDecimal calculateSoldProductPrice(
             final LocalDateTime date,
             final KokuCustomerAppointmentSoldProductDomain currentSoldProduct,
             final List<KokuCustomerAppointmentPromotionDomain> promotions) {
+        final ProductKafkaDto soldProductKafkaDto =
+                this.productKTableProcessor.getProducts().get(currentSoldProduct.getProductId());
         BigDecimal sellPrice = currentSoldProduct.getPrice();
         if (sellPrice == null) {
-            sellPrice = getProductHistoryDefaultPrice(
-                    date, this.productKTableProcessor.getProducts().get(currentSoldProduct.getProductId()));
+            sellPrice = getProductHistoryDefaultPrice(date, soldProductKafkaDto);
 
             for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
                 final PromotionKafkaDto currentKafkaPromotion =
                         this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
-                if (currentKafkaPromotion.getProductAbsoluteItemSavings() != null) {
+                if (appliesToProduct(currentKafkaPromotion, soldProductKafkaDto)
+                        && currentKafkaPromotion.getProductAbsoluteItemSavings() != null) {
                     sellPrice = sellPrice.subtract(currentKafkaPromotion.getProductAbsoluteItemSavings());
                 }
             }
             for (final KokuCustomerAppointmentPromotionDomain currentPromotion : promotions) {
                 final PromotionKafkaDto currentKafkaPromotion =
                         this.promotionKTableProcessor.getPromotions().get(currentPromotion.getPromotionId());
-                if (currentKafkaPromotion.getProductRelativeItemSavings() != null) {
+                if (appliesToProduct(currentKafkaPromotion, soldProductKafkaDto)
+                        && currentKafkaPromotion.getProductRelativeItemSavings() != null) {
                     sellPrice = sellPrice.multiply(BigDecimal.ONE.subtract(currentKafkaPromotion
                             .getProductRelativeItemSavings()
                             .divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP)));
@@ -775,7 +793,7 @@ public class CustomerAppointmentToCustomerAppointmentDtoTransformer {
                                 manufacturerSnapshot
                                         .get(productKafkaDto.getManufacturerId())
                                         .getName(),
-                                productKafkaDto.getName())
+                                ProductDisplayNameFormatter.withMilliliters(productKafkaDto))
                         .filter(StringUtils::isNotBlank)
                         .collect(Collectors.joining(" / ")))
                 .collect(Collectors.joining(", "));

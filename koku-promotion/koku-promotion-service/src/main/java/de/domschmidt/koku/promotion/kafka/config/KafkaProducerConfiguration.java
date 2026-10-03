@@ -8,7 +8,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 @Configuration
 @EnableKafka
 @Getter
-public class KafkaConfiguration {
+public class KafkaProducerConfiguration {
 
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapAddress;

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
+import de.domschmidt.koku.promotion.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.promotion.kafka.promotion.service.PromotionKafkaService;
 import de.domschmidt.koku.promotion.persistence.Promotion;
 import de.domschmidt.koku.promotion.persistence.PromotionRepository;
@@ -28,11 +29,14 @@ class PromotionCrudTest {
     private final PromotionRepository repository = mock(PromotionRepository.class);
     private final PromotionKafkaService kafkaService = mock(PromotionKafkaService.class);
     private final PromotionToPromotionDtoTransformer transformer = mock(PromotionToPromotionDtoTransformer.class);
+    private final ProductManufacturerKTableProcessor manufacturerProcessor =
+            mock(ProductManufacturerKTableProcessor.class);
     private PromotionController controller;
 
     @BeforeEach
     void setUp() {
-        controller = new PromotionController(entityManager, repository, kafkaService, transformer);
+        controller =
+                new PromotionController(entityManager, repository, kafkaService, transformer, manufacturerProcessor);
     }
 
     @Test

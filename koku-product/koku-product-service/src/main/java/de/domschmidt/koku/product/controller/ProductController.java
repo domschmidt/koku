@@ -222,6 +222,15 @@ public class ProductController {
                 .outlet(FormOutlet.CONTENT);
         formFactory
                 .place(formFactory.addContent(InputFormularField.builder()
+                        .valuePath(KokuProductDto.Fields.milliliters)
+                        .type(EnumInputFormularFieldType.NUMBER)
+                        .label("Milliliter")
+                        .regexp("^\\d{0,9}$")
+                        .build()))
+                .in(rootId)
+                .outlet(FormOutlet.CONTENT);
+        formFactory
+                .place(formFactory.addContent(InputFormularField.builder()
                         .valuePath(KokuProductDto.Fields.price)
                         .type(EnumInputFormularFieldType.NUMBER)
                         .label(PRICE_LABEL)
@@ -358,7 +367,7 @@ public class ProductController {
                 listViewFactory.addSourcePath(KokuProductDto.Fields.deleted);
         final ListViewSourcePathReference idSourcePathRef = listViewFactory.addSourcePath(KokuProductDto.Fields.id);
         final ListViewFieldReference nameFieldRef = listViewFactory.addField(
-                KokuProductDto.Fields.name,
+                KokuProductDto.Fields.summary,
                 ListViewInputFieldDto.builder().label("Name").build());
         final ListViewFieldReference manufacturerNameFieldRef = listViewFactory.addField(
                 KokuProductDto.Fields.manufacturerName,
@@ -397,7 +406,7 @@ public class ProductController {
                 .eventName(PRODUCT_CREATED_EVENT)
                 .idPath(KokuProductDto.Fields.id)
                 .valueMapping(Map.of(
-                        KokuProductDto.Fields.name, nameFieldRef,
+                        KokuProductDto.Fields.summary, nameFieldRef,
                         KokuProductDto.Fields.manufacturerName, manufacturerNameFieldRef,
                         KokuProductDto.Fields.formattedPrice, priceFieldRef,
                         KokuProductDto.Fields.deleted, deletedSourcePathRef))
@@ -440,7 +449,7 @@ public class ProductController {
                 .idPath(KokuProductDto.Fields.id)
                 .valueMapping(Map.of(
                         KokuProductDto.Fields.deleted, deletedSourcePathRef,
-                        KokuProductDto.Fields.name, nameFieldRef,
+                        KokuProductDto.Fields.summary, nameFieldRef,
                         KokuProductDto.Fields.formattedPrice, priceFieldRef,
                         KokuProductDto.Fields.manufacturerName, manufacturerNameFieldRef))
                 .build());
@@ -454,7 +463,7 @@ public class ProductController {
                                 Arrays.asList(ListViewEventPayloadInlineHeaderContentGlobalEventListenersDto.builder()
                                         .eventName(PRODUCT_UPDATED_EVENT)
                                         .idPath(KokuProductDto.Fields.id)
-                                        .titleValuePath(KokuProductDto.Fields.name)
+                                        .titleValuePath(KokuProductDto.Fields.summary)
                                         .build()))
                         .content(ListViewDockContentDto.builder()
                                 .content(Arrays.asList(
@@ -594,6 +603,14 @@ public class ProductController {
         listQueryFactory.addFetchExpr(KokuProductDto.Fields.id, qClazz.id);
         listQueryFactory.addFetchExpr(KokuProductDto.Fields.deleted, qClazz.deleted);
         listQueryFactory.addFetchExpr(KokuProductDto.Fields.name, qClazz.name);
+        listQueryFactory.addFetchExpr(KokuProductDto.Fields.milliliters, qClazz.milliliters);
+        listQueryFactory.addFetchExpr(
+                KokuProductDto.Fields.summary,
+                stringTemplate(
+                        "case when {0} is null or {0} <= 0 then {1}"
+                                + " when {1} is null or trim({1}) = '' then concat(to_char({0}, 'FM999999999'), ' ml')"
+                                + " else concat({1}, ' (', to_char({0}, 'FM999999999'), ' ml)') end",
+                        qClazz.milliliters, qClazz.name));
         final QProductPriceHistoryEntry qProductPriceHistoryEntry = QProductPriceHistoryEntry.productPriceHistoryEntry;
         final QProductPriceHistoryEntry qProductPriceHistoryEntryInner = new QProductPriceHistoryEntry("priceInner");
         listQueryFactory.addFetchExpr(

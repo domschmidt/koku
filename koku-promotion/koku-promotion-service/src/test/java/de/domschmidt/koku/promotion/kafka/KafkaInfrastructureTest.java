@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import de.domschmidt.koku.promotion.kafka.config.KafkaConfiguration;
+import de.domschmidt.koku.promotion.kafka.config.KafkaProducerConfiguration;
 import de.domschmidt.koku.promotion.kafka.dto.PromotionKafkaDto;
 import de.domschmidt.koku.promotion.kafka.promotion.config.KafkaPromotionConfig;
 import de.domschmidt.koku.promotion.kafka.promotion.service.PromotionKafkaMaintenanceService;
@@ -29,8 +29,8 @@ class KafkaInfrastructureTest {
 
     @Test
     void producerConfigurationAndServicePreservePromotionIdentity() throws Exception {
-        assertThat(new KafkaConfiguration().getBootstrapAddress()).isNull();
-        final KafkaConfiguration configuration = mock(KafkaConfiguration.class);
+        assertThat(new KafkaProducerConfiguration().getBootstrapAddress()).isNull();
+        final KafkaProducerConfiguration configuration = mock(KafkaProducerConfiguration.class);
         when(configuration.getBootstrapAddress()).thenReturn("broker:9092");
         final KafkaPromotionConfig config = new KafkaPromotionConfig(configuration);
         assertThat(((DefaultKafkaProducerFactory<?, ?>) config.promotionKafkaDtoProducerFactory())

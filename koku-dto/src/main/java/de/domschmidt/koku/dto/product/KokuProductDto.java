@@ -18,6 +18,8 @@ public class KokuProductDto {
     Long version;
 
     String name;
+    Integer milliliters;
+    String summary;
     Long manufacturerId;
     String manufacturerName;
     BigDecimal price;

@@ -1,6 +1,6 @@
 package de.domschmidt.koku.promotion.kafka.promotion.config;
 
-import de.domschmidt.koku.promotion.kafka.config.KafkaConfiguration;
+import de.domschmidt.koku.promotion.kafka.config.KafkaProducerConfiguration;
 import de.domschmidt.koku.promotion.kafka.dto.PromotionKafkaDto;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,17 +19,17 @@ import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 @EnableKafka
 public class KafkaPromotionConfig {
 
-    private final KafkaConfiguration kafkaConfiguration;
+    private final KafkaProducerConfiguration kafkaProducerConfiguration;
 
     @Autowired
-    public KafkaPromotionConfig(final KafkaConfiguration kafkaConfiguration) {
-        this.kafkaConfiguration = kafkaConfiguration;
+    public KafkaPromotionConfig(final KafkaProducerConfiguration kafkaProducerConfiguration) {
+        this.kafkaProducerConfiguration = kafkaProducerConfiguration;
     }
 
     @Bean
     public ProducerFactory<Long, PromotionKafkaDto> promotionKafkaDtoProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.kafkaConfiguration.getBootstrapAddress());
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.kafkaProducerConfiguration.getBootstrapAddress());
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JacksonJsonSerializer.class);
         return new DefaultKafkaProducerFactory<>(configProps);

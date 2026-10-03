@@ -71,6 +71,17 @@ describe('MultiSelectFieldComponent', () => {
     expect(() => component.requireMatchingValue(undefined)).toThrow('Unknown value to match');
   });
 
+  it('loads scalar selections without an id path', () => {
+    const fixture = TestBed.createComponent(MultiSelectFieldComponent);
+    fixture.componentRef.setInput('name', 'items');
+    fixture.componentRef.setInput('possibleValues', [{ id: '1' }, { id: '2' }, { id: 'three' }] as any);
+    fixture.componentRef.setInput('value', [1, '2']);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.selectionIds()).toEqual(['1', '2']);
+    fixture.destroy();
+  });
+
   it('maps scalar selections through an id path', () => {
     const fixture = TestBed.createComponent(MultiSelectFieldComponent);
     fixture.componentRef.setInput('name', 'items');

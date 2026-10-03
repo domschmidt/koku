@@ -21,6 +21,8 @@ import de.domschmidt.koku.dto.formular.events.FormNotificationEventValueParamDto
 import de.domschmidt.koku.dto.formular.events.FormPropagateGlobalEventDto;
 import de.domschmidt.koku.dto.formular.fields.input.EnumInputFormularFieldType;
 import de.domschmidt.koku.dto.formular.fields.input.InputFormularField;
+import de.domschmidt.koku.dto.formular.fields.multi_select.MultiSelectFormularField;
+import de.domschmidt.koku.dto.formular.fields.multi_select.MultiSelectFormularFieldPossibleValue;
 import de.domschmidt.koku.dto.formular.listeners.FormViewEventPayloadSourceUpdateGlobalEventListenerDto;
 import de.domschmidt.koku.dto.formular.user_confirmation.FormUserConfirmationDto;
 import de.domschmidt.koku.dto.list.fields.input.ListViewInputFieldDto;
@@ -28,6 +30,9 @@ import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDefaultStateEnum;
 import de.domschmidt.koku.dto.list.filters.ListViewToggleFilterDto;
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
 import de.domschmidt.koku.dto.promotion.KokuPromotionSummaryDto;
+import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
+import de.domschmidt.koku.promotion.exceptions.ManufacturerIdNotFoundException;
+import de.domschmidt.koku.promotion.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.promotion.kafka.promotion.service.PromotionKafkaService;
 import de.domschmidt.koku.promotion.persistence.Promotion;
 import de.domschmidt.koku.promotion.persistence.PromotionRepository;
@@ -60,11 +65,19 @@ import de.domschmidt.listquery.dto.response.ListPage;
 import de.domschmidt.listquery.factory.ListQueryFactory;
 import jakarta.persistence.EntityManager;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -86,6 +99,7 @@ public class PromotionController {
     private final PromotionRepository promotionRepository;
     private final PromotionKafkaService promotionKafkaService;
     private final PromotionToPromotionDtoTransformer transformer;
+    private final ProductManufacturerKTableProcessor productManufacturerKTableProcessor;
 
     @GetMapping("/promotions/form")
     public FormViewDto getFormularView() {
@@ -147,6 +161,31 @@ public class PromotionController {
         formFactory.place(container3Id).in(container1Id).outlet(FormOutlet.CONTENT);
 
         formFactory
+                .place(formFactory.addContent(MultiSelectFormularField.builder()
+                        .valuePath(KokuPromotionDto.Fields.productManufacturerIds)
+                        .label("Hersteller")
+                        .placeholder("Herstellerfilter je Produkt")
+                        .possibleValues(StreamSupport.stream(
+                                        Spliterators.spliteratorUnknownSize(
+                                                this.productManufacturerKTableProcessor
+                                                        .getProductManufacturers()
+                                                        .all(),
+                                                Spliterator.DISTINCT),
+                                        false)
+                                .sorted(Comparator.comparing(manufacturerKeyValue ->
+                                        Objects.toString(manufacturerKeyValue.value.getName(), "")))
+                                .map(manufacturerKeyValue -> MultiSelectFormularFieldPossibleValue.builder()
+                                        .id(manufacturerKeyValue.key + "")
+                                        .text(manufacturerKeyValue.value.getName())
+                                        .disabled(Boolean.TRUE.equals(manufacturerKeyValue.value.getDeleted()))
+                                        .build())
+                                .toList())
+                        .uniqueValues(true)
+                        .build()))
+                .in(container3Id)
+                .outlet(FormOutlet.CONTENT);
+
+        formFactory
                 .place(formFactory.addContent(InputFormularField.builder()
                         .valuePath(KokuPromotionDto.Fields.productAbsoluteItemSavings)
                         .type(EnumInputFormularFieldType.NUMBER)
@@ -158,7 +197,7 @@ public class PromotionController {
                 .place(formFactory.addContent(InputFormularField.builder()
                         .valuePath(KokuPromotionDto.Fields.productAbsoluteSavings)
                         .type(EnumInputFormularFieldType.NUMBER)
-                        .label("Absolute Ersparnis")
+                        .label("Absolute Ersparnis für alle Produkte")
                         .build()))
                 .in(container3Id)
                 .outlet(FormOutlet.CONTENT);
@@ -174,7 +213,7 @@ public class PromotionController {
                 .place(formFactory.addContent(InputFormularField.builder()
                         .valuePath(KokuPromotionDto.Fields.productRelativeSavings)
                         .type(EnumInputFormularFieldType.NUMBER)
-                        .label("Relative Ersparnis")
+                        .label("Relative Ersparnis für alle Produkte")
                         .build()))
                 .in(container3Id)
                 .outlet(FormOutlet.CONTENT);
@@ -438,7 +477,8 @@ public class PromotionController {
         final Promotion promotion = this.promotionRepository
                 .findById(promotionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Promotion not found"));
-        return new PromotionToPromotionSummaryDtoTransformer().transformToDto(promotion);
+        return new PromotionToPromotionSummaryDtoTransformer()
+                .transformToDto(promotion, manufacturerNames(promotion.getProductManufacturerIds()));
     }
 
     @PutMapping(value = "/promotions/{promotionId}")
@@ -447,7 +487,8 @@ public class PromotionController {
     public KokuPromotionDto update(
             @PathVariable("promotionId") Long promotionId,
             @RequestParam(value = "forceUpdate", required = false) Boolean forceUpdate,
-            @RequestBody KokuPromotionDto updatedDto) {
+            @RequestBody KokuPromotionDto updatedDto)
+            throws ManufacturerIdNotFoundException {
         final Promotion promotion = this.entityManager.getReference(Promotion.class, promotionId);
         if (!Boolean.TRUE.equals(forceUpdate) && !promotion.getVersion().equals(updatedDto.getVersion())) {
             throw new KokuBusinessExceptionWithConfirmationMessage(KokuBusinessErrorWithConfirmationMessageDto.builder()
@@ -509,11 +550,26 @@ public class PromotionController {
     @PostMapping("/promotions")
     @ResponseStatus(HttpStatus.CREATED)
     @Transactional
-    public KokuPromotionDto create(@RequestBody KokuPromotionDto newDto) {
+    public KokuPromotionDto create(@RequestBody KokuPromotionDto newDto) throws ManufacturerIdNotFoundException {
         final Promotion newPromotion = this.transformer.transformToEntity(new Promotion(), newDto);
         final Promotion savedPromotion = this.promotionRepository.saveAndFlush(newPromotion);
         sendPromotionUpdate(savedPromotion);
         return this.transformer.transformToDto(savedPromotion);
+    }
+
+    private String manufacturerNames(final Collection<Long> productManufacturerIds) {
+        if (productManufacturerIds == null || productManufacturerIds.isEmpty()) {
+            return null;
+        }
+        final ReadOnlyKeyValueStore<Long, ProductManufacturerKafkaDto> manufacturerSnapshot =
+                this.productManufacturerKTableProcessor.getProductManufacturers();
+        return productManufacturerIds.stream()
+                .map(manufacturerSnapshot::get)
+                .filter(Objects::nonNull)
+                .map(ProductManufacturerKafkaDto::getName)
+                .filter(Objects::nonNull)
+                .sorted()
+                .collect(Collectors.joining(", "));
     }
 
     public void sendPromotionUpdate(final Promotion promotion) {

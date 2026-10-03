@@ -89,6 +89,9 @@ export class MultiSelectFieldComponent {
           if (idPathMappingSnapshot) {
             return String(get(currentValue, idPathMappingSnapshot)) === value.id;
           }
+          if (currentValue === null || typeof currentValue !== 'object') {
+            return String(currentValue) === String(value.id);
+          }
           return isMatch(value.valueMapping, currentValue);
         });
         this.requireMatchingValue(matchingValue);

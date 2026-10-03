@@ -47,7 +47,7 @@ class ProductViewContractTest {
 
         assertThat(form.getAlias()).isEqualTo("product");
         assertThat(form.getContents()).hasSizeGreaterThanOrEqualTo(10);
-        assertThat(form.getPlacements()).hasSize(9);
+        assertThat(form.getPlacements()).hasSize(10);
         assertThat(form.getBusinessRules()).isNotEmpty();
         assertThat(form.getGlobalEventListeners()).isNotEmpty();
     }

@@ -79,6 +79,7 @@ import de.domschmidt.koku.dto.list.items.style.ListViewConditionalItemValueStyli
 import de.domschmidt.koku.dto.list.items.style.ListViewItemStylingDto;
 import de.domschmidt.koku.dto.product.KokuProductDto;
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
+import de.domschmidt.koku.product.kafka.util.ProductDisplayNameFormatter;
 import de.domschmidt.list.dto.response.ListViewDto;
 import de.domschmidt.list.dto.response.ListViewSourcePathReference;
 import de.domschmidt.list.dto.response.actions.*;
@@ -446,7 +447,7 @@ public class CustomerAppointmentController {
                                         .getProductManufacturers()
                                         .get(product.value.getManufacturerId())
                                         .getName(),
-                                product.value.getName()))
+                                ProductDisplayNameFormatter.withMilliliters(product.value)))
                         .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
                         .color(KokuColorEnum.PRIMARY)
                         .category(PRODUCTS_LABEL)
@@ -637,7 +638,8 @@ public class CustomerAppointmentController {
                                                                 "{productName}",
                                                                         StringTransformationSourcePathPatternParam
                                                                                 .builder()
-                                                                                .sourcePath(KokuProductDto.Fields.name)
+                                                                                .sourcePath(
+                                                                                        KokuProductDto.Fields.summary)
                                                                                 .build()))
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
@@ -694,7 +696,7 @@ public class CustomerAppointmentController {
                                                         .getProductManufacturers()
                                                         .get(product.value.getManufacturerId())
                                                         .getName(),
-                                                product.value.getName()))
+                                                ProductDisplayNameFormatter.withMilliliters(product.value)))
                                         .disabled(Boolean.TRUE.equals(product.value.getDeleted()))
                                         .build())
                                 .toList())
@@ -760,7 +762,7 @@ public class CustomerAppointmentController {
                                                         .targetPath(SelectFormularFieldPossibleValue.Fields.id)
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
-                                                        .sourcePath(KokuProductDto.Fields.name)
+                                                        .sourcePath(KokuProductDto.Fields.summary)
                                                         .targetPath(SelectFormularFieldPossibleValue.Fields.text)
                                                         .build(),
                                                 SourcePathConfigMappingAppendListItemDto.builder()
@@ -1834,7 +1836,7 @@ public class CustomerAppointmentController {
                                                                 .getProductManufacturers()
                                                                 .get(product.value.getManufacturerId())
                                                                 .getName(),
-                                                        product.value.getName())
+                                                        ProductDisplayNameFormatter.withMilliliters(product.value))
                                                 .trim())
                                         .toList())
                                 .build())

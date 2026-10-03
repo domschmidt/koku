@@ -1,11 +1,24 @@
 package de.domschmidt.koku.promotion.transformer;
 
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
+import de.domschmidt.koku.promotion.exceptions.ManufacturerIdNotFoundException;
+import de.domschmidt.koku.promotion.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.promotion.persistence.Promotion;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PromotionToPromotionDtoTransformer {
+
+    private final ProductManufacturerKTableProcessor productManufacturerKTableProcessor;
+
+    public PromotionToPromotionDtoTransformer(
+            final ProductManufacturerKTableProcessor productManufacturerKTableProcessor) {
+        this.productManufacturerKTableProcessor = productManufacturerKTableProcessor;
+    }
 
     public KokuPromotionDto transformToDto(final Promotion model) {
         return KokuPromotionDto.builder()
@@ -13,6 +26,10 @@ public class PromotionToPromotionDtoTransformer {
                 .deleted(model.isDeleted())
                 .version(model.getVersion())
                 .name(model.getName())
+                .productManufacturerIds(
+                        model.getProductManufacturerIds() != null
+                                ? new ArrayList<>(model.getProductManufacturerIds())
+                                : new ArrayList<>())
                 .activityAbsoluteItemSavings(model.getActivityAbsoluteItemSavings())
                 .activityAbsoluteSavings(model.getActivityAbsoluteSavings())
                 .activityRelativeItemSavings(model.getActivityRelativeItemSavings())
@@ -26,10 +43,14 @@ public class PromotionToPromotionDtoTransformer {
                 .build();
     }
 
-    public Promotion transformToEntity(final Promotion model, final KokuPromotionDto updatedDto) {
+    public Promotion transformToEntity(final Promotion model, final KokuPromotionDto updatedDto)
+            throws ManufacturerIdNotFoundException {
 
         if (updatedDto.getName() != null) {
             model.setName(updatedDto.getName());
+        }
+        if (updatedDto.getProductManufacturerIds() != null) {
+            model.setProductManufacturerIds(resolveProductManufacturerIds(updatedDto.getProductManufacturerIds()));
         }
         if (updatedDto.getActivityAbsoluteItemSavings() != null) {
             model.setActivityAbsoluteItemSavings(updatedDto.getActivityAbsoluteItemSavings());
@@ -60,5 +81,23 @@ public class PromotionToPromotionDtoTransformer {
         }
 
         return model;
+    }
+
+    private Set<Long> resolveProductManufacturerIds(final List<Long> productManufacturerIds)
+            throws ManufacturerIdNotFoundException {
+        final Set<Long> result = new LinkedHashSet<>();
+        for (final Long manufacturerId : productManufacturerIds) {
+            if (manufacturerId == null) {
+                continue;
+            }
+            if (this.productManufacturerKTableProcessor
+                            .getProductManufacturers()
+                            .get(manufacturerId)
+                    == null) {
+                throw new ManufacturerIdNotFoundException(manufacturerId);
+            }
+            result.add(manufacturerId);
+        }
+        return result;
     }
 }

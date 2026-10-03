@@ -67,6 +67,37 @@ class ProductToProductDtoTransformerTest {
     }
 
     @Test
+    void dtoSummaryContainsMilliliters() {
+        final Product product = new Product();
+        product.setName("Shampoo");
+        product.setMilliliters(250);
+
+        final KokuProductDto dto = transformer.transformToDto(product);
+
+        assertThat(dto.getMilliliters()).isEqualTo(250);
+        assertThat(dto.getSummary()).isEqualTo("Shampoo (250 ml)");
+    }
+
+    @Test
+    void updatePersistsMilliliters() throws Exception {
+        final EntityManager entityManager = mock(EntityManager.class);
+        final ProductManufacturer manufacturer = new ProductManufacturer();
+        when(entityManager.getReference(ProductManufacturer.class, 7L)).thenReturn(manufacturer);
+        final Product product = new Product();
+        final ProductToProductDtoTransformer entityTransformer = new ProductToProductDtoTransformer(entityManager);
+
+        entityTransformer.transformToEntity(
+                product,
+                KokuProductDto.builder()
+                        .manufacturerId(7L)
+                        .name("Shampoo")
+                        .milliliters(250)
+                        .build());
+
+        assertThat(product.getMilliliters()).isEqualTo(250);
+    }
+
+    @Test
     void updateResolvesManufacturerAndAddsOnlyChangedPrices() throws Exception {
         final EntityManager entityManager = mock(EntityManager.class);
         final ProductManufacturer manufacturer = new ProductManufacturer();

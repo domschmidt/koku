@@ -17,6 +17,7 @@ public class ProductKafkaDto {
 
     Boolean deleted;
     String name;
+    Integer milliliters;
 
     List<ProductPriceHistoryKafkaDto> priceHistory;
     Long manufacturerId;

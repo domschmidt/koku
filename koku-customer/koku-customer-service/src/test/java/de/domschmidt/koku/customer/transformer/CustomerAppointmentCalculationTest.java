@@ -157,6 +157,76 @@ class CustomerAppointmentCalculationTest {
     }
 
     @Test
+    void manufacturerBoundItemSavingsOnlyDiscountMatchingProducts() {
+        final LocalDateTime appointmentDate = LocalDateTime.of(2026, java.time.Month.JULY, 12, 10, 0);
+        when(products.get(1L))
+                .thenReturn(ProductKafkaDto.builder()
+                        .manufacturerId(10L)
+                        .priceHistory(List.of(ProductPriceHistoryKafkaDto.builder()
+                                .price(new BigDecimal("100.00"))
+                                .recorded(appointmentDate.minusDays(1))
+                                .build()))
+                        .build());
+        when(products.get(2L))
+                .thenReturn(ProductKafkaDto.builder()
+                        .manufacturerId(20L)
+                        .priceHistory(List.of(ProductPriceHistoryKafkaDto.builder()
+                                .price(new BigDecimal("50.00"))
+                                .recorded(appointmentDate.minusDays(1))
+                                .build()))
+                        .build());
+        when(promotions.get(9L))
+                .thenReturn(PromotionKafkaDto.builder()
+                        .productManufacturerIds(List.of(10L))
+                        .productRelativeItemSavings(new BigDecimal("10.00"))
+                        .build());
+
+        final BigDecimal result = transformer.calculateCustomerAppointmentSoldProductPriceSum(
+                appointmentDate,
+                List.of(
+                        new KokuCustomerAppointmentSoldProductDomain(1L, null),
+                        new KokuCustomerAppointmentSoldProductDomain(2L, null)),
+                List.of(new KokuCustomerAppointmentPromotionDomain(9L)));
+
+        assertThat(result).isEqualByComparingTo("140.00");
+    }
+
+    @Test
+    void manufacturerBoundOverallSavingsStillApplyToWholeBasket() {
+        final LocalDateTime appointmentDate = LocalDateTime.of(2026, java.time.Month.JULY, 12, 10, 0);
+        when(products.get(1L))
+                .thenReturn(ProductKafkaDto.builder()
+                        .manufacturerId(10L)
+                        .priceHistory(List.of(ProductPriceHistoryKafkaDto.builder()
+                                .price(new BigDecimal("100.00"))
+                                .recorded(appointmentDate.minusDays(1))
+                                .build()))
+                        .build());
+        when(products.get(2L))
+                .thenReturn(ProductKafkaDto.builder()
+                        .manufacturerId(20L)
+                        .priceHistory(List.of(ProductPriceHistoryKafkaDto.builder()
+                                .price(new BigDecimal("50.00"))
+                                .recorded(appointmentDate.minusDays(1))
+                                .build()))
+                        .build());
+        when(promotions.get(9L))
+                .thenReturn(PromotionKafkaDto.builder()
+                        .productManufacturerIds(List.of(10L))
+                        .productRelativeSavings(new BigDecimal("50.00"))
+                        .build());
+
+        final BigDecimal result = transformer.calculateCustomerAppointmentSoldProductPriceSum(
+                appointmentDate,
+                List.of(
+                        new KokuCustomerAppointmentSoldProductDomain(1L, null),
+                        new KokuCustomerAppointmentSoldProductDomain(2L, null)),
+                List.of(new KokuCustomerAppointmentPromotionDomain(9L)));
+
+        assertThat(result).isEqualByComparingTo("75.00");
+    }
+
+    @Test
     void missingPriceHistoryDefaultsToZero() {
         when(products.get(2L)).thenReturn(ProductKafkaDto.builder().build());
 

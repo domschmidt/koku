@@ -2,6 +2,7 @@ package de.domschmidt.koku.product.transformer;
 
 import de.domschmidt.koku.dto.product.KokuProductDto;
 import de.domschmidt.koku.product.exceptions.ManufacturerIdNotFoundException;
+import de.domschmidt.koku.product.kafka.util.ProductDisplayNameFormatter;
 import de.domschmidt.koku.product.persistence.Product;
 import de.domschmidt.koku.product.persistence.ProductManufacturer;
 import de.domschmidt.koku.product.persistence.ProductPriceHistoryEntry;
@@ -30,6 +31,8 @@ public class ProductToProductDtoTransformer {
                 .deleted(model.isDeleted())
                 .version(model.getVersion())
                 .name(model.getName())
+                .milliliters(model.getMilliliters())
+                .summary(ProductDisplayNameFormatter.withMilliliters(model.getName(), model.getMilliliters()))
                 .manufacturerId(manufacturer != null ? manufacturer.getId() : null)
                 .manufacturerName(manufacturer != null ? manufacturer.getName() : null)
                 .price(price)
@@ -58,6 +61,9 @@ public class ProductToProductDtoTransformer {
         }
         if (updatedDto.getName() != null) {
             model.setName(updatedDto.getName());
+        }
+        if (updatedDto.getMilliliters() != null) {
+            model.setMilliliters(updatedDto.getMilliliters());
         }
         model.setManufacturer(
                 this.entityManager.getReference(ProductManufacturer.class, updatedDto.getManufacturerId()));

@@ -117,6 +117,12 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
+            <artifactId>koku-product-kafka-dto</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.domschmidt</groupId>
             <artifactId>list</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
