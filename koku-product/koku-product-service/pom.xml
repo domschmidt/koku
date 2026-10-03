@@ -24,7 +24,7 @@
     <dependencies>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>koku-product-kafka-dto</artifactId>
+            <artifactId>koku-product-kafka</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

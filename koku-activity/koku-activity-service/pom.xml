@@ -123,7 +123,7 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>koku-activity-kafka-dto</artifactId>
+            <artifactId>koku-activity-kafka</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

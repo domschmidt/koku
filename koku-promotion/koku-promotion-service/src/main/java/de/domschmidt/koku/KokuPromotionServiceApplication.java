@@ -1,6 +1,6 @@
 package de.domschmidt.koku;
 
-import de.domschmidt.koku.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
+import de.domschmidt.koku.product.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import java.util.Locale;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

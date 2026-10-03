@@ -6,15 +6,15 @@ import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import de.domschmidt.koku.activity.kafka.activities.service.ActivityKTableProcessor;
 import de.domschmidt.koku.activity.kafka.dto.ActivityKafkaDto;
-import de.domschmidt.koku.customer.kafka.activities.service.ActivityKTableProcessor;
-import de.domschmidt.koku.customer.kafka.products.service.ProductKTableProcessor;
 import de.domschmidt.koku.customer.persistence.CustomerAppointment;
 import de.domschmidt.koku.customer.persistence.CustomerAppointmentActivity;
 import de.domschmidt.koku.customer.persistence.CustomerAppointmentSoldProduct;
-import de.domschmidt.koku.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.product.kafka.dto.ProductKafkaDto;
 import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
+import de.domschmidt.koku.product.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
+import de.domschmidt.koku.product.kafka.products.service.ProductKTableProcessor;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Query;

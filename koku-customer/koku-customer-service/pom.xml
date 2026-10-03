@@ -30,7 +30,7 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>koku-customer-kafka-dto</artifactId>
+            <artifactId>koku-customer-kafka</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -134,7 +134,7 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>koku-activity-kafka-dto</artifactId>
+            <artifactId>koku-activity-kafka</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -146,19 +146,19 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>koku-product-kafka-dto</artifactId>
+            <artifactId>koku-product-kafka</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>koku-promotion-kafka-dto</artifactId>
+            <artifactId>koku-promotion-kafka</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>koku-user-kafka-dto</artifactId>
+            <artifactId>koku-user-kafka</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>

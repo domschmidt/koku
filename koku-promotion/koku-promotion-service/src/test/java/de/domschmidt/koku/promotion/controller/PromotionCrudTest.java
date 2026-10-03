@@ -11,8 +11,8 @@ import static org.mockito.Mockito.when;
 
 import de.domschmidt.koku.business_exception.with_confirmation_message.KokuBusinessExceptionWithConfirmationMessage;
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
-import de.domschmidt.koku.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
+import de.domschmidt.koku.product.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.promotion.kafka.promotion.service.PromotionKafkaService;
 import de.domschmidt.koku.promotion.persistence.Promotion;
 import de.domschmidt.koku.promotion.persistence.PromotionRepository;

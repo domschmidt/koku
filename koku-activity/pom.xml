@@ -23,7 +23,7 @@
     </properties>
 
     <modules>
-        <module>koku-activity-kafka-dto</module>
+        <module>koku-activity-kafka</module>
         <module>koku-activity-service</module>
     </modules>
 

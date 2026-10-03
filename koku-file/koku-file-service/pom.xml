@@ -30,7 +30,7 @@
         </dependency>
         <dependency>
             <groupId>de.domschmidt</groupId>
-            <artifactId>koku-customer-kafka-dto</artifactId>
+            <artifactId>koku-customer-kafka</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

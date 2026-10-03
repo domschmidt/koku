@@ -6,8 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.domschmidt.koku.dto.promotion.KokuPromotionDto;
-import de.domschmidt.koku.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.product.kafka.dto.ProductManufacturerKafkaDto;
+import de.domschmidt.koku.product.kafka.productmanufacturers.service.ProductManufacturerKTableProcessor;
 import de.domschmidt.koku.promotion.exceptions.ManufacturerIdNotFoundException;
 import de.domschmidt.koku.promotion.kafka.promotion.transformer.PromotionToKafkaPromotionDtoTransformer;
 import de.domschmidt.koku.promotion.persistence.Promotion;
